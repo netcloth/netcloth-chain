@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 
 	"github.com/cosmos/cosmos-sdk/version"
 	"os"
@@ -19,7 +20,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	//bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"
 )
@@ -44,9 +45,7 @@ func main() {
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(types.Bech32PrefixAccAddr, types.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
+	app.SetBech32AddressPrefixes(config)
 	config.Seal()
 
 	rootCmd := &cobra.Command{
@@ -65,7 +64,7 @@ func main() {
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),
-		//txCmd(cdc),
+		txCmd(cdc),
 		client.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
 		client.LineBreak,
@@ -96,13 +95,13 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 	}
 
 	queryCmd.AddCommand(
-		//authcmd.GetAccountCmd(cdc),
+		authcmd.GetAccountCmd(cdc),
 		client.LineBreak,
-		//rpc.ValidatorCommand(cdc),
+		rpc.ValidatorCommand(cdc),
 		rpc.BlockCommand(),
-		//authcmd.QueryTxsByEventsCmd(cdc),
-		//authcmd.QueryTxCmd(cdc),
-		//client.LineBreak,
+		authcmd.QueryTxsByEventsCmd(cdc),
+		authcmd.QueryTxCmd(cdc),
+		client.LineBreak,
 	)
 	// add modules' query commands
 	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
@@ -117,15 +116,29 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	}
 
 	txCmd.AddCommand(
-		//bankcmd.SendTxCmd(cdc),
+		bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
-		//authcmd.GetMultiSignCommand(cdc),
-		//client.LineBreak,
-		//authcmd.GetBroadcastCommand(cdc),
-		//authcmd.GetEncodeCommand(cdc),
-		//client.LineBreak,
+		authcmd.GetMultiSignCommand(cdc),
+		client.LineBreak,
+		authcmd.GetBroadcastCommand(cdc),
+		authcmd.GetEncodeCommand(cdc),
+		client.LineBreak,
 	)
+
+	// add modules' tx commands
+	app.ModuleBasics.AddTxCommands(txCmd, cdc)
+
+	// remove auth and bank commands as they're mounted under the root tx command
+	var cmdsToRemove []*cobra.Command
+
+	for _, cmd := range txCmd.Commands() {
+		if cmd.Use == auth.ModuleName || cmd.Use == bank.ModuleName {
+			cmdsToRemove = append(cmdsToRemove, cmd)
+		}
+	}
+
+	txCmd.RemoveCommand(cmdsToRemove...)
 
 	return txCmd
 }

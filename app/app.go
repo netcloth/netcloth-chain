@@ -1,8 +1,9 @@
 package app
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/NetCloth/netcloth-chain/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -20,8 +21,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-
-	"github.com/NetCloth/netcloth-chain/x/nch"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -90,6 +89,8 @@ type NCHApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
+	invCheckPeriod uint
+
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
 	tkeys map[string]*sdk.TransientStoreKey
@@ -102,16 +103,16 @@ type NCHApp struct {
 	slashingKeeper slashing.Keeper
 	mintKeeper     mint.Keeper
 	distrKeeper    distr.Keeper
-
-	paramsKeeper params.Keeper
-	nchKeeper    nch.Keeper
+	govKeeper      gov.Keeper
+	crisisKeeper   crisis.Keeper
+	paramsKeeper   params.Keeper
 
 	// the module manager
 	mm *module.Manager
 }
 
 // NewNCHApp is a constructor function for NCHApp
-func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
+func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uint) *NCHApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := CreateCodec()
@@ -127,14 +128,16 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 		mint.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
-		params.StoreKey,
-		NCHStoreKey)
+		params.StoreKey)
+
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
 		BaseApp: bApp,
 		cdc:     cdc,
+		invCheckPeriod: invCheckPeriod,
+
 		keys : keys,
 		tkeys : tkeys,
 	}
@@ -149,6 +152,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
 	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
+	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
+	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -164,27 +169,23 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 	app.slashingKeeper = slashing.NewKeeper(
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
 	)
+	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
-
+	app.govKeeper = gov.NewKeeper(
+		app.cdc, keys[gov.StoreKey], govSubspace,
+		app.supplyKeeper, &stakingKeeper, gov.DefaultCodespace, govRouter,
+	)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.stakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
 	)
-
-	// The NCHKeeper is the Keeper from the module for this tutorial
-	// It handles interactions with the nch
-	app.nchKeeper = nch.NewKeeper(
-		app.bankKeeper,
-		keys[NCHStoreKey],
-		app.cdc,
-		)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -193,9 +194,12 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		crisis.NewAppModule(&app.crisisKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
 		mint.NewAppModule(app.mintKeeper),
+		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
@@ -209,11 +213,17 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
-		genaccounts.ModuleName, distr.ModuleName, staking.ModuleName,
-		auth.ModuleName, bank.ModuleName,
-		mint.ModuleName, supply.ModuleName,  genutil.ModuleName,
+		genaccounts.ModuleName,
+		distr.ModuleName,
+		staking.ModuleName,
+		auth.ModuleName,
+		bank.ModuleName,
+		mint.ModuleName,
+		supply.ModuleName,
+		genutil.ModuleName,
 	)
 
+	app.mm.RegisterInvariants(&app.crisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 
 	// initialize stores
@@ -227,9 +237,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
 	app.SetEndBlocker(app.EndBlocker)
 
-	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
-	if err != nil {
-		cmn.Exit(err.Error())
+	if loadLatest {
+		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+		if err != nil {
+			cmn.Exit(err.Error())
+		}
 	}
 
 	return app
@@ -239,7 +251,6 @@ func (app *NCHApp) initChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 	var genesisState simapp.GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
-	fmt.Println("InitGensis in initChainer ...")
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
@@ -259,6 +270,17 @@ func (app *NCHApp) EndBlocker(
 ) abci.ResponseEndBlock {
 
 	return abci.ResponseEndBlock{}
+}
+
+func SetBech32AddressPrefixes(config *sdk.Config) {
+	config.SetBech32PrefixForAccount(types.Bech32PrefixAccAddr, types.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
+}
+
+// load a particular height
+func (app *NCHApp) LoadHeight(height int64) error {
+	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.

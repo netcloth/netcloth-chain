@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/NetCloth/netcloth-chain/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -33,15 +32,20 @@ const (
 	flagOverwrite = "overwrite"
 )
 
+// nchd custom flags
+const flagInvCheckPeriod = "inv-check-period"
+
+var invCheckPeriod uint
+
+
 func main() {
 	cdc := app.CreateCodec()
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(types.Bech32PrefixAccAddr, types.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
+	app.SetBech32AddressPrefixes(config)
 	config.Seal()
+
 
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
@@ -65,6 +69,8 @@ func main() {
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "NCH", DefaultNodeHome)
+	rootCmd.PersistentFlags().UintVar(&invCheckPeriod, flagInvCheckPeriod,
+		0, "Assert registered invariants every N blocks")
 	err := executor.Execute()
 	if err != nil {
 		// handle with #870
@@ -73,12 +79,21 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewNCHApp(logger, db)
+	return app.NewNCHApp(logger, db, true, invCheckPeriod)
 }
 
 func exportAppStateAndTMValidators(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailWhiteList []string,
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
-	nchApp := app.NewNCHApp(logger, db)
+	if height != -1 {
+		nchApp := app.NewNCHApp(logger, db, false, uint(1))
+		err := nchApp.LoadHeight(height)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nchApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+	}
+
+	nchApp := app.NewNCHApp(logger, db, true, uint(1))
 	return nchApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }
