@@ -1,15 +1,25 @@
 package app
 
 import (
-	"encoding/json"
-	"github.com/tendermint/tendermint/libs/log"
+	"fmt"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/NetCloth/netcloth-chain/x/nch"
 
@@ -17,38 +27,87 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	tmtypes "github.com/tendermint/tendermint/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+)
+
+const (
+	NCHStoreKey = "nch"
 )
 
 var (
 	appName = "nch"
 
-	// default home directories for gaiacli
+	// default home directories for nchcli
 	DefaultCLIHome = os.ExpandEnv("$HOME/.nchcli")
 
-	// default home directories for gaiad
+	// default home directories for nchd
 	DefaultNodeHome = os.ExpandEnv("$HOME/.nchd")
+
+	// The module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration
+	// and genesis verification.
+	ModuleBasics = module.NewBasicManager(
+		genaccounts.AppModuleBasic{},
+		genutil.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		mint.AppModuleBasic{},
+		distr.AppModuleBasic{},
+		gov.NewAppModuleBasic(paramsclient.ProposalHandler, distr.ProposalHandler),
+		params.AppModuleBasic{},
+		crisis.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+		supply.AppModuleBasic{},
+	)
+
+	// module account permissions
+	maccPerms = map[string][]string{
+		auth.FeeCollectorName:     nil,
+		distr.ModuleName:          nil,
+		mint.ModuleName:           {supply.Minter},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {supply.Burner},
+	}
+
 )
+
+// CreateCodec generates the necessary codecs for Amino
+func CreateCodec() *codec.Codec {
+	var cdc = codec.New()
+
+	ModuleBasics.RegisterCodec(cdc)
+	sdk.RegisterCodec(cdc)
+	codec.RegisterCrypto(cdc)
+	codec.RegisterEvidences(cdc)
+
+	return cdc
+}
 
 type NCHApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
 	// keys to access the substores
-	keyMain          *sdk.KVStoreKey
-	keyAccount       *sdk.KVStoreKey
-	keyNCH           *sdk.KVStoreKey
-	keyFeeCollection *sdk.KVStoreKey
-	keyParams        *sdk.KVStoreKey
-	tkeyParams       *sdk.TransientStoreKey
+	keys  map[string]*sdk.KVStoreKey
+	tkeys map[string]*sdk.TransientStoreKey
 
 	// keepers
-	accountKeeper       auth.AccountKeeper
-	bankKeeper          bank.Keeper
-	feeCollectionKeeper auth.FeeCollectionKeeper
-	paramsKeeper        params.Keeper
-	nchKeeper 			nch.Keeper
+	accountKeeper  auth.AccountKeeper
+	bankKeeper     bank.Keeper
+	supplyKeeper   supply.Keeper
+	stakingKeeper  staking.Keeper
+	slashingKeeper slashing.Keeper
+	mintKeeper     mint.Keeper
+	distrKeeper    distr.Keeper
+
+	paramsKeeper params.Keeper
+	nchKeeper    nch.Keeper
+
+	// the module manager
+	mm *module.Manager
 }
 
 // NewNCHApp is a constructor function for NCHApp
@@ -60,87 +119,115 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc))
 
+	keys := sdk.NewKVStoreKeys(
+		bam.MainStoreKey,
+		auth.StoreKey,
+		staking.StoreKey,
+		supply.StoreKey,
+		mint.StoreKey,
+		distr.StoreKey,
+		slashing.StoreKey,
+		params.StoreKey,
+		NCHStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
+
 	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
 		BaseApp: bApp,
 		cdc:     cdc,
-
-		keyNCH:     sdk.NewKVStoreKey("nch"),
-		keyMain:    sdk.NewKVStoreKey(bam.MainStoreKey),
-		keyAccount: sdk.NewKVStoreKey(auth.StoreKey),
-		//keyStaking:       sdk.NewKVStoreKey(staking.StoreKey),
-		//tkeyStaking:      sdk.NewTransientStoreKey(staking.TStoreKey),
-		//keyMint:          sdk.NewKVStoreKey(mint.StoreKey),
-		//keyDistr:         sdk.NewKVStoreKey(distr.StoreKey),
-		//tkeyDistr:        sdk.NewTransientStoreKey(distr.TStoreKey),
-		//keySlashing:      sdk.NewKVStoreKey(slashing.StoreKey),
-		//keyGov:           sdk.NewKVStoreKey(gov.StoreKey),
-		keyFeeCollection: sdk.NewKVStoreKey(auth.FeeStoreKey),
-		keyParams:        sdk.NewKVStoreKey(params.StoreKey),
-		tkeyParams:       sdk.NewTransientStoreKey(params.TStoreKey),
+		keys : keys,
+		tkeys : tkeys,
 	}
 
 	// init params keeper
 	// The ParamsKeeper handles parameter storage for the application
-	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams)
+	// init params keeper and subspaces
+	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
+	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
+	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
+	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
+	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
+	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
 	// add keepers
-	// The AccountKeeper handles address -> account lookups
-	app.accountKeeper = auth.NewAccountKeeper(
-		app.cdc,
-		app.keyAccount,
-		app.paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAccount,
+	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
+	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
+	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
+	stakingKeeper := staking.NewKeeper(
+		app.cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey],
+		app.supplyKeeper, stakingSubspace, staking.DefaultCodespace,
+	)
+	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
+	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
+		app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
+	app.slashingKeeper = slashing.NewKeeper(
+		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
 	)
 
-	// The BankKeeper allows you perform sdk.Coins interactions
-	app.bankKeeper = bank.NewBaseKeeper(
-		app.accountKeeper,
-		app.paramsKeeper.Subspace(bank.DefaultParamspace),
-		bank.DefaultCodespace,
-	)
+	// register the proposal types
+	govRouter := gov.NewRouter()
+	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
+		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 
-	// The FeeCollectionKeeper collects transaction fees and renders them to the fee distribution module
-	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyFeeCollection)
+
+	// register the staking hooks
+	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
+	)
 
 	// The NCHKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the nch
 	app.nchKeeper = nch.NewKeeper(
 		app.bankKeeper,
-		app.keyNCH,
+		keys[NCHStoreKey],
 		app.cdc,
+		)
+
+	// NOTE: Any module instantiated in the module manager that is later modified
+	// must be passed by reference here.
+	app.mm = module.NewManager(
+		genaccounts.NewAppModule(app.accountKeeper),
+		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
+		auth.NewAppModule(app.accountKeeper),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
+		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		mint.NewAppModule(app.mintKeeper),
+		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
-	// The AnteHandler handles signature verification and transaction pre-processing
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.feeCollectionKeeper))
+	// During begin block slashing happens after distr.BeginBlocker so that
+	// there is nothing left over in the validator fee pool, so as to keep the
+	// CanWithdrawInvariant invariant.
+	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	// The app.Router is the main transaction router where each module registers its routes
-	// Register the bank and nch routes here
-	app.Router().
-		AddRoute("bank", bank.NewHandler(app.bankKeeper)).
-		AddRoute("nch", nch.NewHandler(app.nchKeeper))
+	app.mm.SetOrderEndBlockers(staking.ModuleName)
 
-	// The app.QueryRouter is the main query router where each module registers its routes
-	app.QueryRouter().
-		AddRoute("acc", auth.NewQuerier(app.accountKeeper))
+	// NOTE: The genutils module must occur after staking so that pools are
+	// properly initialized with tokens from genesis accounts.
+	app.mm.SetOrderInitGenesis(
+		genaccounts.ModuleName, distr.ModuleName, staking.ModuleName,
+		auth.ModuleName, bank.ModuleName,
+		mint.ModuleName, supply.ModuleName,  genutil.ModuleName,
+	)
 
+	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
+
+	// initialize stores
+	app.MountKVStores(keys)
+	app.MountTransientStores(tkeys)
 
 	// The initChainer handles translating the genesis.json file into initial state for the network
 	app.SetInitChainer(app.initChainer)
-
 	app.SetBeginBlocker(app.BeginBlocker)
+	// The AnteHandler handles signature verification and transaction pre-processing
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
 	app.SetEndBlocker(app.EndBlocker)
 
-	app.MountStores(
-		app.keyMain,
-		app.keyAccount,
-		app.keyNCH,
-		app.keyFeeCollection,
-		app.keyParams,
-		app.tkeyParams,
-	)
-
-	err := app.LoadLatestVersion(app.keyMain)
+	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 	if err != nil {
 		cmn.Exit(err.Error())
 	}
@@ -149,23 +236,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB) *NCHApp {
 }
 
 func (app *NCHApp) initChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	stateJSON := req.AppStateBytes
+	var genesisState simapp.GenesisState
+	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
-	genesisState := new(GenesisState)
-	err := app.cdc.UnmarshalJSON(stateJSON, genesisState)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, acc := range genesisState.Accounts {
-		acc.AccountNumber = app.accountKeeper.GetNextAccountNumber(ctx)
-		app.accountKeeper.SetAccount(ctx, acc)
-	}
-
-	auth.InitGenesis(ctx, app.accountKeeper, app.feeCollectionKeeper, genesisState.AuthData)
-	bank.InitGenesis(ctx, app.bankKeeper, genesisState.BankData)
-
-	return abci.ResponseInitChain{}
+	fmt.Println("InitGensis in initChainer ...")
+	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 // BeginBlocker signals the beginning of a block. It performs application
@@ -186,45 +261,12 @@ func (app *NCHApp) EndBlocker(
 	return abci.ResponseEndBlock{}
 }
 
-// ExportAppStateAndValidators does the things
-func (app *NCHApp) ExportAppStateAndValidators() (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
-	ctx := app.NewContext(true, abci.Header{})
-	accounts := []*auth.BaseAccount{}
-
-	appendAccountsFn := func(acc auth.Account) bool {
-		account := &auth.BaseAccount{
-			Address: acc.GetAddress(),
-			Coins:   acc.GetCoins(),
-		}
-
-		accounts = append(accounts, account)
-		return false
+// ModuleAccountAddrs returns all the app's module account addresses.
+func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
+	modAccAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
 	}
 
-	app.accountKeeper.IterateAccounts(ctx, appendAccountsFn)
-
-	genState := GenesisState{
-		Accounts: accounts,
-		AuthData: auth.DefaultGenesisState(),
-		BankData: bank.DefaultGenesisState(),
-	}
-
-	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return appState, validators, err
-}
-
-// CreateCodec generates the necessary codecs for Amino
-func CreateCodec() *codec.Codec {
-	var cdc = codec.New()
-	auth.RegisterCodec(cdc)
-	bank.RegisterCodec(cdc)
-	nch.RegisterCodec(cdc)
-	staking.RegisterCodec(cdc)
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-	return cdc
+	return modAccAddrs
 }

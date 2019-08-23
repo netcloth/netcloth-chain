@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/x/nch"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/utils"
+
+	"github.com/cosmos/cosmos-sdk/version"
 	"os"
 	"path"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
@@ -21,14 +18,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	auth "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
-	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
-	bank "github.com/cosmos/cosmos-sdk/x/bank/client/rest"
+	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	//bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"
-	nchclient "github.com/NetCloth/netcloth-chain/x/nch/client"
-	nchrest "github.com/NetCloth/netcloth-chain/x/nch/client/rest"
 )
 
 const (
@@ -43,9 +36,10 @@ const (
 var defaultCLIHome = os.ExpandEnv("$HOME/.nchcli")
 
 func main() {
-
+	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
 
+	// Instantiate the codec for the command line application
 	cdc := app.CreateCodec()
 
 	// Read in the configuration file for the sdk
@@ -54,10 +48,6 @@ func main() {
 	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
 	config.Seal()
-
-	mc := []sdk.ModuleClients{
-		nchclient.NewModuleClient(storeNCH, cdc),
-	}
 
 	rootCmd := &cobra.Command{
 		Use:   "nchcli",
@@ -73,18 +63,17 @@ func main() {
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
-		client.ConfigCmd(defaultCLIHome),
-		queryCmd(cdc, mc),
-		txCmd(cdc, mc),
-		transferCmd(cdc, mc),
+		client.ConfigCmd(app.DefaultCLIHome),
+		queryCmd(cdc),
+		//txCmd(cdc),
 		client.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
+		client.LineBreak,
 		keys.Commands(),
+		client.LineBreak,
+		version.Cmd,
+		client.NewCompletionCmd(rootCmd, true),
 	)
-
-	for _, m := range mc {
-		rootCmd.AddCommand(m.GetTxCmd())
-	}
 
 	executor := cli.PrepareMainCmd(rootCmd, "NCH", defaultCLIHome)
 	err := executor.Execute()
@@ -94,15 +83,12 @@ func main() {
 }
 
 func registerRoutes(rs *lcd.RestServer) {
-	rs.CliCtx = rs.CliCtx.WithAccountDecoder(rs.Cdc)
-	rpc.RegisterRoutes(rs.CliCtx, rs.Mux)
-	tx.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc)
-	auth.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, storeAcc)
-	bank.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, rs.KeyBase)
-	nchrest.RegisterRoutes(rs.CliCtx, rs.Mux, rs.Cdc, storeNCH)
+	client.RegisterRoutes(rs.CliCtx, rs.Mux)
+	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
-func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
+func queryCmd(cdc *amino.Codec) *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:     "query",
 		Aliases: []string{"q"},
@@ -110,90 +96,38 @@ func queryCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
 	}
 
 	queryCmd.AddCommand(
-		rpc.ValidatorCommand(cdc),
-		rpc.BlockCommand(),
-		tx.SearchTxCmd(cdc),
-		tx.QueryTxCmd(cdc),
+		//authcmd.GetAccountCmd(cdc),
 		client.LineBreak,
-		authcmd.GetAccountCmd(storeAcc, cdc),
+		//rpc.ValidatorCommand(cdc),
+		rpc.BlockCommand(),
+		//authcmd.QueryTxsByEventsCmd(cdc),
+		//authcmd.QueryTxCmd(cdc),
+		//client.LineBreak,
 	)
-
-	for _, m := range mc {
-		queryCmd.AddCommand(m.GetQueryCmd())
-	}
+	// add modules' query commands
+	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
 }
 
-func txCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
+func txCmd(cdc *amino.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   "tx",
 		Short: "Transactions subcommands",
 	}
 
 	txCmd.AddCommand(
-		bankcmd.SendTxCmd(cdc),
+		//bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
-		tx.GetBroadcastCommand(cdc),
-		client.LineBreak,
+		//authcmd.GetMultiSignCommand(cdc),
+		//client.LineBreak,
+		//authcmd.GetBroadcastCommand(cdc),
+		//authcmd.GetEncodeCommand(cdc),
+		//client.LineBreak,
 	)
 
 	return txCmd
-}
-
-func transferCmd(cdc *amino.Codec, mc []sdk.ModuleClients) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "transfer --from [fromAddress] --to [toAddress] --amount [amount]",
-		Short: "transfer asset",
-		Long:  ` transfer asset from an address to another address.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc).WithAccountDecoder(cdc)
-			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-
-			to := viper.GetString(flagTo)
-			amount := viper.GetString(flagAmount)
-
-			if err := cliCtx.EnsureAccountExists(); err != nil {
-				fmt.Println("from account not exists")
-				return err
-			}
-
-			// get from address
-			fromAddr := cliCtx.GetFromAddress()
-
-			// get to address
-			toAddr, err := sdk.AccAddressFromBech32(to)
-			if err != nil {
-				return err
-			}
-
-			// get transfer amount
-			coins, err := sdk.ParseCoins(amount)
-			if err != nil {
-				return err
-			}
-
-			msg := nch.NewMsgTransfer(fromAddr, toAddr, coins)
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
-
-			cliCtx.PrintResponse = true
-
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
-		},
-	}
-
-	cmd.Flags().StringP(flagFrom, "f", "", "from address")
-	cmd.Flags().StringP(flagTo, "t", "", "to address")
-	cmd.Flags().StringP(flagAmount, "a", "", "coin amount")
-	cmd.MarkFlagRequired(flagFrom)
-	cmd.MarkFlagRequired(flagTo)
-	cmd.MarkFlagRequired(flagAmount)
-
-	return cmd
 }
 
 func initConfig(cmd *cobra.Command) error {

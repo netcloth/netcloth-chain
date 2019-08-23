@@ -33,7 +33,7 @@ func handleMsgTransfer(ctx sdk.Context, keeper Keeper, msg MsgTransfer) sdk.Resu
 	}
 
 	// substract fee
-	_, _, err := keeper.coinKeeper.SubtractCoins(ctx, msg.From, msg.Fee)
+	_, err := keeper.coinKeeper.SubtractCoins(ctx, msg.From, msg.Fee)
 	if err != nil {
 		return sdk.ErrInsufficientCoins("does not have enough coins for fee").Result()
 	}
@@ -41,7 +41,7 @@ func handleMsgTransfer(ctx sdk.Context, keeper Keeper, msg MsgTransfer) sdk.Resu
 	ctx.Logger().Info(fmt.Sprintf("transfer %s from %s to %s", msg.Value.String(), msg.From.String(), msg.To.String()))
 
 	// transfer coin
-	_, err = keeper.coinKeeper.SendCoins(ctx, msg.From, msg.To, msg.Value)
+	err = keeper.coinKeeper.SendCoins(ctx, msg.From, msg.To, msg.Value)
 	if err != nil {
 		return sdk.ErrInsufficientCoins("does not have enough coins").Result()
 	}
