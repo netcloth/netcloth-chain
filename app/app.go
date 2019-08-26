@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/version"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -119,6 +120,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc))
+	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey,
