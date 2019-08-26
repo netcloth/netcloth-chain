@@ -3,12 +3,10 @@ package main
 import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"io"
-	"os"
-
-	"github.com/cosmos/cosmos-sdk/server"
 
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
@@ -24,9 +22,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
-
-// DefaultNodeHome sets the folder where the applcation data and configuration will be stored
-var DefaultNodeHome = os.ExpandEnv("$HOME/.nchd")
 
 const (
 	flagOverwrite = "overwrite"
@@ -68,7 +63,7 @@ func main() {
 	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
 
 	// prepare and add flags
-	executor := cli.PrepareBaseCmd(rootCmd, "NCH", DefaultNodeHome)
+	executor := cli.PrepareBaseCmd(rootCmd, "NCH", app.DefaultNodeHome)
 	rootCmd.PersistentFlags().UintVar(&invCheckPeriod, flagInvCheckPeriod,
 		0, "Assert registered invariants every N blocks")
 	err := executor.Execute()

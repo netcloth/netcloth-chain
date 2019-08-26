@@ -34,8 +34,6 @@ const (
 	flagAmount = "amount"
 )
 
-var defaultCLIHome = os.ExpandEnv("$HOME/.nchcli")
-
 func main() {
 	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
@@ -74,7 +72,7 @@ func main() {
 		client.NewCompletionCmd(rootCmd, true),
 	)
 
-	executor := cli.PrepareMainCmd(rootCmd, "NCH", defaultCLIHome)
+	executor := cli.PrepareMainCmd(rootCmd, "NCH", app.DefaultCLIHome)
 	err := executor.Execute()
 	if err != nil {
 		panic(err)
