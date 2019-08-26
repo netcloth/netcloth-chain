@@ -177,7 +177,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 	app.govKeeper = gov.NewKeeper(
-		app.cdc, keys[gov.StoreKey], govSubspace,
+		app.cdc, keys[gov.StoreKey], app.paramsKeeper, govSubspace,
 		app.supplyKeeper, &stakingKeeper, gov.DefaultCodespace, govRouter,
 	)
 
