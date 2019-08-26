@@ -3,8 +3,7 @@ module github.com/NetCloth/netcloth-chain
 go 1.12
 
 require (
-	github.com/cosmos/cosmos-sdk v0.28.2-0.20190813160135-f90d969ded97
-	github.com/go-logfmt/logfmt v0.4.0 // indirect
+	github.com/cosmos/cosmos-sdk v0.36.0-rc1
 	github.com/gorilla/mux v1.7.0
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/otiai10/copy v1.0.1
