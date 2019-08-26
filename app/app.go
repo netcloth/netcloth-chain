@@ -23,8 +23,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/version"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/version"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -71,7 +71,6 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
 	}
-
 )
 
 // CreateCodec generates the necessary codecs for Amino
@@ -130,18 +129,18 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 		mint.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
-		params.StoreKey)
-
+		gov.StoreKey,
+		params.StoreKey,
+	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
-		BaseApp: bApp,
-		cdc:     cdc,
+		BaseApp:        bApp,
+		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
-
-		keys : keys,
-		tkeys : tkeys,
+		keys:           keys,
+		tkeys:          tkeys,
 	}
 
 	// init params keeper
@@ -218,7 +217,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(staking.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -228,8 +227,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 		staking.ModuleName,
 		auth.ModuleName,
 		bank.ModuleName,
+		slashing.ModuleName,
+		gov.ModuleName,
 		mint.ModuleName,
 		supply.ModuleName,
+		crisis.ModuleName,
 		genutil.ModuleName,
 	)
 
@@ -241,7 +243,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 	app.MountTransientStores(tkeys)
 
 	// The initChainer handles translating the genesis.json file into initial state for the network
-	app.SetInitChainer(app.initChainer)
+	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
@@ -257,29 +259,22 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 	return app
 }
 
-func (app *NCHApp) initChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+// application updates every begin block
+func (app *NCHApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	return app.mm.BeginBlock(ctx, req)
+}
+
+// application updates every end block
+func (app *NCHApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	return app.mm.EndBlock(ctx, req)
+}
+
+// application update at chain initialization
+func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState simapp.GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return app.mm.InitGenesis(ctx, genesisState)
-}
-
-// BeginBlocker signals the beginning of a block. It performs application
-// updates on the start of every block.
-func (app *NCHApp) BeginBlocker(
-	_ sdk.Context, _ abci.RequestBeginBlock,
-) abci.ResponseBeginBlock {
-
-	return abci.ResponseBeginBlock{}
-}
-
-// EndBlocker signals the end of a block. It performs application updates on
-// the end of every block.
-func (app *NCHApp) EndBlocker(
-	_ sdk.Context, _ abci.RequestEndBlock,
-) abci.ResponseEndBlock {
-
-	return abci.ResponseEndBlock{}
 }
 
 func SetBech32AddressPrefixes(config *sdk.Config) {
