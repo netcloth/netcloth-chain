@@ -152,7 +152,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
 	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
+	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	// add keepers
@@ -173,12 +173,20 @@ func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uin
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
-	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
+	govRouter.
+		AddRoute(gov.RouterKey, gov.ProposalHandler).
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
+
 	app.govKeeper = gov.NewKeeper(
-		app.cdc, keys[gov.StoreKey], app.paramsKeeper, govSubspace,
-		app.supplyKeeper, &stakingKeeper, gov.DefaultCodespace, govRouter,
+		app.cdc,
+		keys[gov.StoreKey],
+		app.paramsKeeper,
+		govSubspace,
+		app.supplyKeeper,
+		&stakingKeeper,
+		gov.DefaultCodespace,
+		govRouter,
 	)
 
 	// register the staking hooks
