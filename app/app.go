@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"io"
 
 	"github.com/NetCloth/netcloth-chain/types"
 
@@ -112,13 +113,14 @@ type NCHApp struct {
 }
 
 // NewNCHApp is a constructor function for NCHApp
-func NewNCHApp(logger log.Logger, db dbm.DB, loadLatest bool, invCheckPeriod uint) *NCHApp {
+func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *NCHApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := CreateCodec()
 
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc))
+	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(

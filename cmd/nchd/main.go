@@ -2,10 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/spf13/viper"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -74,14 +77,17 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewNCHApp(logger, db, true, invCheckPeriod)
+	return app.NewNCHApp(
+		logger, db,  traceStore, true, invCheckPeriod,
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
+	)
 }
 
 func exportAppStateAndTMValidators(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailWhiteList []string,
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 	if height != -1 {
-		nchApp := app.NewNCHApp(logger, db, false, uint(1))
+		nchApp := app.NewNCHApp(logger, db, traceStore, false, uint(1))
 		err := nchApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -89,6 +95,6 @@ func exportAppStateAndTMValidators(
 		return nchApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	nchApp := app.NewNCHApp(logger, db, true, uint(1))
+	nchApp := app.NewNCHApp(logger, db, traceStore, true, uint(1))
 	return nchApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }
