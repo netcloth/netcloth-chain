@@ -1,6 +1,8 @@
 package app
 
 import (
+	"github.com/NetCloth/netcloth-chain/x/nch"
+
 	"io"
 	"os"
 
@@ -81,6 +83,7 @@ func CreateCodec() *codec.Codec {
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
+	nch.RegisterCodec(cdc)
 
 	return cdc
 }
@@ -106,6 +109,7 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
+	nchKeeper      nch.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -132,6 +136,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		slashing.StoreKey,
 		gov.StoreKey,
 		params.StoreKey,
+		NCHStoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -173,12 +178,25 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
+	app.nchKeeper = nch.NewKeeper(
+		app.bankKeeper,
+		keys[NCHStoreKey],
+		app.cdc)
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
 		AddRoute(gov.RouterKey, gov.ProposalHandler).
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
+
+	app.Router().
+		AddRoute("nch", nch.NewHandler(app.nchKeeper))
+
+	/*
+	app.QueryRouter().
+		AddRoute("nch", nch.NewQuirer(app.nchKeeper))
+	 */
 
 	app.govKeeper = gov.NewKeeper(
 		app.cdc,

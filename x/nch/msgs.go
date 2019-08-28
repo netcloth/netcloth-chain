@@ -3,59 +3,54 @@ package nch
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/NetCloth/netcloth-chain/types"
 )
 
-const (
-	MinTransferFee = 1
-)
-
-// MsgTransfer defines a transfer message
-type MsgTransfer struct {
-	From  sdk.AccAddress
-	To    sdk.AccAddress
-	Value sdk.Coins
-	Fee   sdk.Coins
+// MsgSend defines a transfer message
+type MsgSend struct {
+	From   sdk.AccAddress `json:"from_address" yaml:"from_address"`
+	To     sdk.AccAddress `json:"to_address" yaml:"to_address"`
+	Amount sdk.Coins      `json:"amount" yaml:"amount"`
 }
 
-// NewMsgTransfer is a constructor function for MsgTransfer
-func NewMsgTransfer(from sdk.AccAddress, to sdk.AccAddress, value sdk.Coins) MsgTransfer {
-	return MsgTransfer{
+var _ sdk.Msg = MsgSend{}
+
+// NewMsgSend is a constructor function for MsgSend
+func NewMsgSend(from sdk.AccAddress, to sdk.AccAddress, amount sdk.Coins) MsgSend {
+	return MsgSend{
 		from,
 		to,
-		value,
-		sdk.Coins{sdk.NewInt64Coin(types.AppCoin, MinTransferFee)},
+		amount,
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgTransfer) Route() string { return "nch" }
+func (msg MsgSend) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgTransfer) Type() string { return "transfer" }
+func (msg MsgSend) Type() string { return "send" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgTransfer) ValidateBasic() sdk.Error {
+func (msg MsgSend) ValidateBasic() sdk.Error {
 	if msg.From.Empty() {
-		return sdk.ErrInvalidAddress("missing from address")
+		return sdk.ErrInvalidAddress("missing sender address")
 	}
 
 	if msg.To.Empty() {
 		return sdk.ErrInvalidAddress("missing recipient address")
 	}
 
-	if !msg.Value.IsValid() {
-		return sdk.ErrInvalidCoins("transfer amount is invalid: " + msg.Value.String())
+	if !msg.Amount.IsValid() {
+		return sdk.ErrInvalidCoins("send amount is invalid: " + msg.Amount.String())
 	}
 
-	if !msg.Value.IsAllPositive() {
-		return sdk.ErrInsufficientCoins("transfer amount must be positive")
+	if !msg.Amount.IsAllPositive() {
+		return sdk.ErrInsufficientCoins("send amount must be positive")
 	}
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgTransfer) GetSignBytes() []byte {
+func (msg MsgSend) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -64,6 +59,6 @@ func (msg MsgTransfer) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
+func (msg MsgSend) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
 }

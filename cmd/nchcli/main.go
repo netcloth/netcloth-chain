@@ -23,6 +23,7 @@ import (
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"
+	nchcli "github.com/NetCloth/netcloth-chain/x/nch/client/cli"
 )
 
 const (
@@ -59,6 +60,7 @@ func main() {
 
 	// Construct Root Command
 	rootCmd.AddCommand(
+		nchcli.SendTxCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),
