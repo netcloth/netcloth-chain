@@ -1,13 +1,5 @@
 package types
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
-const (
-	AppCoin = "nametoken"
-)
-
 const (
 	// AddrLen defines a valid address length
 	AddrLen = 20
@@ -25,14 +17,4 @@ const (
 	// Bech32PrefixConsPub defines the Bech32 prefix of a consensus node public key
 	Bech32PrefixConsPub = "nchvalconspub"
 )
-
-type Amount struct {
-	Address []sdk.AccAddress `json:"address"`
-	Value   []sdk.Coin       `json:"value"`
-}
-
-type Balance struct {
-	Address []sdk.AccAddress `json:"address"`
-	Value   []sdk.Coins      `json:"value"`
-}
 
