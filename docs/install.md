@@ -1,3 +1,7 @@
+### Requirement
+ * macOS / Ubuntu 14.04 LTS +
+ * RAM: 8 GB+
+ * Disk: 100 GB+
 
 ### Install go
 
@@ -13,6 +17,12 @@ echo "export GOBIN=\$GOPATH/bin" >> ~/.bash_profile
 echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
 echo "export GO111MODULE=on" >> ~/.bash_profile
 source ~/.bash_profile
+```
+
+check go version
+```cassandraql
+go version
+
 ```
 
 ### Build and install nch
