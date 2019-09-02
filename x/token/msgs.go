@@ -9,19 +9,19 @@ import (
 const TokenRouterKey = "token"
 
 //----------------------------------------
-// MsgTokenIssue
+// MsgIssue
 
-// MsgTokenIssue - high level transaction of the coin module
-type MsgTokenIssue struct {
+// MsgIssue - high level transaction of the coin module
+type MsgIssue struct {
 	Banker  sdk.AccAddress `json:"banker"`
 	Address sdk.AccAddress `json:"address"`
 	Coins   sdk.Coins      `json:"coins"`}
 
-var _ sdk.Msg = MsgTokenIssue{}
+var _ sdk.Msg = MsgIssue{}
 
-// NewMsgTokenIssue - construct arbitrary multi-in, multi-out send msg.
-func NewMsgTokenIssue(banker sdk.AccAddress, addr sdk.AccAddress, coins sdk.Coins) MsgTokenIssue {
-	return MsgTokenIssue{
+// NewMsgIssue - construct arbitrary multi-in, multi-out send msg.
+func NewMsgIssue(banker sdk.AccAddress, addr sdk.AccAddress, coins sdk.Coins) MsgIssue {
+	return MsgIssue{
 		banker,
 		addr,
 		coins,
@@ -30,25 +30,25 @@ func NewMsgTokenIssue(banker sdk.AccAddress, addr sdk.AccAddress, coins sdk.Coin
 
 // Implements Msg.
 // nolint
-func (msg MsgTokenIssue) Route() string { return TokenRouterKey }
-func (msg MsgTokenIssue) Type() string  { return "issue" }
+func (msg MsgIssue) Route() string { return TokenRouterKey }
+func (msg MsgIssue) Type() string  { return "issue" }
 
 // Implements Msg.
-func (msg MsgTokenIssue) ValidateBasic() sdk.Error {
+func (msg MsgIssue) ValidateBasic() sdk.Error {
 	if len(msg.Address) == 0 {
 		return sdk.ErrInvalidAddress(msg.Address.String())
 	}
-	if !msg.Coins.IsValid() {
-		return sdk.ErrInvalidCoins(msg.Coins.String())
-	}
-	if !msg.Coins.IsAnyNegative() {
-		return sdk.ErrInvalidCoins(msg.Coins.String())
-	}
+	//if !msg.Coins.IsValid() {
+	//	return sdk.ErrInvalidCoins(msg.Coins.String())
+	//}
+	//if !msg.Coins.IsAnyNegative() {
+	//	return sdk.ErrInvalidCoins(msg.Coins.String())
+	//}
 	return nil
 }
 
 // Implements Msg.
-func (msg MsgTokenIssue) GetSignBytes() []byte {
+func (msg MsgIssue) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -57,6 +57,6 @@ func (msg MsgTokenIssue) GetSignBytes() []byte {
 }
 
 // Implements Msg.
-func (msg MsgTokenIssue) GetSigners() []sdk.AccAddress {
+func (msg MsgIssue) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Banker}
 }

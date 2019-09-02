@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/NetCloth/netcloth-chain/x/nch"
+	"github.com/NetCloth/netcloth-chain/x/token"
 
 	"io"
 	"os"
@@ -35,8 +36,10 @@ import (
 )
 
 const (
-	NCHStoreKey = "nch"
 	appName = "nch"
+
+	NCHStoreKey = "nch"
+	TokenStoreKey = "token"
 )
 
 var (
@@ -62,6 +65,7 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		// nch.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -83,7 +87,9 @@ func CreateCodec() *codec.Codec {
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
+
 	nch.RegisterCodec(cdc)
+	token.RegisterCodec(cdc)
 
 	return cdc
 }
@@ -109,7 +115,9 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
+
 	nchKeeper      nch.Keeper
+	tokenKeeper    token.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -137,6 +145,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		gov.StoreKey,
 		params.StoreKey,
 		NCHStoreKey,
+		TokenStoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -183,6 +192,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		keys[NCHStoreKey],
 		app.cdc)
 
+	app.tokenKeeper = token.NewKeeper(
+		app.bankKeeper,
+		keys[TokenStoreKey],
+		app.cdc)
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
@@ -191,7 +205,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 
 	app.Router().
-		AddRoute("nch", nch.NewHandler(app.nchKeeper))
+		AddRoute("nch", nch.NewHandler(app.nchKeeper)).AddRoute("token", token.NewHandler(app.tokenKeeper))
 
 	/*
 	app.QueryRouter().

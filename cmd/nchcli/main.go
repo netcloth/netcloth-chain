@@ -61,6 +61,7 @@ func main() {
 	// Construct Root Command
 	rootCmd.AddCommand(
 		nchcli.SendTxCmd(cdc),
+		nchcli.TokenIssueCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),

@@ -1,5 +1,5 @@
 //nolint
-package bank
+package token
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -44,19 +44,19 @@ all: install
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/nchd.exe ./cmd/nchd
-	go build -mod=readonly $(BUILD_FLAGS) -o build/nchcli.exe ./cmd/nchcli
+	go build $(BUILD_FLAGS) -o build/nchd.exe ./cmd/nchd
+	go build $(BUILD_FLAGS) -o build/nchcli.exe ./cmd/nchcli
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/nchd ./cmd/nchd
-	go build -mod=readonly $(BUILD_FLAGS) -o build/nchcli ./cmd/nchcli
+	go build $(BUILD_FLAGS) -o build/nchd ./cmd/nchd
+	go build $(BUILD_FLAGS) -o build/nchcli ./cmd/nchcli
 endif
 
 build-linux: go.sum
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/nchd
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/nchcli
+	go install $(BUILD_FLAGS) ./cmd/nchd
+	go install $(BUILD_FLAGS) ./cmd/nchcli
 
 
 ########################################
@@ -68,7 +68,7 @@ go-mod-cache: go.sum
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
-	@go mod verify
+#	@go mod verify
 
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz

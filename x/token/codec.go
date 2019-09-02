@@ -6,5 +6,5 @@ import (
 
 // Register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgTokenIssue{}, "nch/token/issue", nil)
+	cdc.RegisterConcrete(MsgIssue{}, "token/issue", nil)
 }
