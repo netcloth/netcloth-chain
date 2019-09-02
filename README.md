@@ -3,34 +3,10 @@ An efficient blockchain network.
 
 ## QuickStart
 
-### Build
-set env
-```bash
-mkdir -p $HOME/go/bin
-echo "export GOPATH=$HOME/go" >> ~/.bash_profile
-echo "export GOBIN=\$GOPATH/bin" >> ~/.bash_profile
-echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
-echo "export GO111MODULE=on" >> ~/.bash_profile
-source ~/.bash_profile
-```
-
-build
-```bash
-# get source code
-git clone https://github.com/NetCloth/netcloth-chain.git
-
-
-# Install the app into your $GOBIN
-make install
-
-# Now you should be able to run the following commands:
-nchd help
-nchcli help
-
-```
+### Install
+Install nch from [here](hhttps://github.com/NetCloth/netcloth-chain/tree/develop/docs/install.md)
 
 ### Run
-
 init
 ```
 # Initialize configuration files and genesis file
