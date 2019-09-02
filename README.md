@@ -4,7 +4,7 @@ An efficient blockchain network.
 ## QuickStart
 
 ### Install
-Install nch from [here](hhttps://github.com/NetCloth/netcloth-chain/tree/develop/docs/install.md)
+Install nch from [here](https://github.com/NetCloth/netcloth-chain/tree/develop/docs/install.md)
 
 ### Run
 init
