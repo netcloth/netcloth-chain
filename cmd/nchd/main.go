@@ -62,6 +62,7 @@ func main() {
 	rootCmd.AddCommand(genaccscli.AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
 	rootCmd.AddCommand(client.NewCompletionCmd(rootCmd, true))
 	rootCmd.AddCommand(replayCmd())
+	rootCmd.AddCommand(client.LineBreak)
 
 	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
 

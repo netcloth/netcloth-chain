@@ -15,16 +15,17 @@ const TokenRouterKey = "token"
 type MsgIssue struct {
 	Banker  sdk.AccAddress `json:"banker"`
 	Address sdk.AccAddress `json:"address"`
-	Coins   sdk.Coins      `json:"coins"`}
+	Amount  sdk.Coin     `json:"amount"`
+}
 
 var _ sdk.Msg = MsgIssue{}
 
 // NewMsgIssue - construct arbitrary multi-in, multi-out send msg.
-func NewMsgIssue(banker sdk.AccAddress, addr sdk.AccAddress, coins sdk.Coins) MsgIssue {
+func NewMsgIssue(banker sdk.AccAddress, addr sdk.AccAddress, amount sdk.Coin) MsgIssue {
 	return MsgIssue{
 		banker,
 		addr,
-		coins,
+		amount,
 	}
 }
 
@@ -38,11 +39,8 @@ func (msg MsgIssue) ValidateBasic() sdk.Error {
 	if len(msg.Address) == 0 {
 		return sdk.ErrInvalidAddress(msg.Address.String())
 	}
-	if !msg.Coins.IsValid() {
-		return sdk.ErrInvalidCoins("issue coins invalid " +  msg.Coins.String())
-	}
-	if !msg.Coins.IsAllPositive() {
-		return sdk.ErrInvalidCoins("issue amount must be positive " + msg.Coins.String())
+	if !msg.Amount.IsValid() {
+		return sdk.ErrInvalidCoins("issue coin invalid " +  msg.Amount.String())
 	}
 	return nil
 }

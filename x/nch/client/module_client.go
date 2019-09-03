@@ -15,23 +15,10 @@ func NewModuleClient(storeKey string, cdc *amino.Codec) ModuleClient {
 	return ModuleClient{storeKey, cdc}
 }
 
-// GetTxCmd returns the transaction commands for this module
 func (mc ModuleClient) GetTxCmd() *cobra.Command {
-	nchTxCmd := &cobra.Command{
-		Use:   "nch",
-		Short: "nch transactions subcommands",
-	}
-
-	return nchTxCmd
+	return nil
 }
 
-// GetQueryCmd returns the cli query commands for this module
 func (mc ModuleClient) GetQueryCmd() *cobra.Command {
-	// Group nch queries under a subcommand
-	nchTxCmd := &cobra.Command{
-		Use:   "nch",
-		Short: "Querying commands for the nch module",
-	}
-
-	return nchTxCmd
+	return nil
 }

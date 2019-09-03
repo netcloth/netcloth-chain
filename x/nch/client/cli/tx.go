@@ -79,7 +79,7 @@ func TokenIssueCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := token.NewMsgIssue(cliCtx.GetFromAddress(), to, coins)
+			msg := token.NewMsgIssue(cliCtx.GetFromAddress(), to, coins[0])
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
