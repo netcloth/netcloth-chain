@@ -38,12 +38,12 @@ func (msg MsgIssue) ValidateBasic() sdk.Error {
 	if len(msg.Address) == 0 {
 		return sdk.ErrInvalidAddress(msg.Address.String())
 	}
-	//if !msg.Coins.IsValid() {
-	//	return sdk.ErrInvalidCoins(msg.Coins.String())
-	//}
-	//if !msg.Coins.IsAnyNegative() {
-	//	return sdk.ErrInvalidCoins(msg.Coins.String())
-	//}
+	if !msg.Coins.IsValid() {
+		return sdk.ErrInvalidCoins("issue coins invalid " +  msg.Coins.String())
+	}
+	if !msg.Coins.IsAllPositive() {
+		return sdk.ErrInvalidCoins("issue amount must be positive " + msg.Coins.String())
+	}
 	return nil
 }
 
