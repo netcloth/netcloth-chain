@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 
 	"github.com/cosmos/cosmos-sdk/version"
@@ -100,7 +100,6 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		rpc.ValidatorCommand(cdc),
 		rpc.BlockCommand(),
-		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
 	)

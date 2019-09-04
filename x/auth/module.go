@@ -2,19 +2,18 @@ package auth
 
 import (
 	"encoding/json"
-	types2 "github.com/NetCloth/netcloth-chain/x/auth/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/NetCloth/netcloth-chain/x/auth/client/cli"
+	"github.com/NetCloth/netcloth-chain/x/auth/client/rest"
+	"github.com/NetCloth/netcloth-chain/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 var (
@@ -101,20 +100,20 @@ func (AppModule) QuerierRoute() string {
 
 // module querier
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return types2.NewQuerier(am.accountKeeper)
+	return NewQuerier(am.accountKeeper)
 }
 
 // module init-genesis
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	types2.InitGenesis(ctx, am.accountKeeper, genesisState)
+	InitGenesis(ctx, am.accountKeeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }
 
 // module export genesis
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	gs := types2.ExportGenesis(ctx, am.accountKeeper)
+	gs := ExportGenesis(ctx, am.accountKeeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }
 
