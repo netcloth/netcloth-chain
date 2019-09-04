@@ -17,9 +17,9 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
+	authcmd "github.com/NetCloth/netcloth-chain/x/auth/client/cli"
+	authrest "github.com/NetCloth/netcloth-chain/x/auth/client/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"

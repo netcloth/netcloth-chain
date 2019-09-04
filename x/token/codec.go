@@ -1,7 +1,7 @@
 package token
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/NetCloth/netcloth-chain/codec"
 )
 
 // Register concrete types on codec codec

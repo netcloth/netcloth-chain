@@ -1,4 +1,4 @@
-package token
+package params
 
 import (
 	"encoding/json"
@@ -7,34 +7,35 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/NetCloth/netcloth-chain/x/params/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 var (
-	_ module.AppModuleBasic   = AppModuleBasic{}
+	_ module.AppModuleBasic = AppModuleBasic{}
 )
+
+const moduleName = "params"
 
 // app module basics object
 type AppModuleBasic struct{}
 
 // module name
 func (AppModuleBasic) Name() string {
-	return ModuleName
+	return moduleName
 }
 
 // register module codec
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {}
+func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
+	types.RegisterCodec(cdc)
+}
 
 // default genesis state
-func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return nil
-}
+func (AppModuleBasic) DefaultGenesis() json.RawMessage { return nil }
 
 // module validate genesis
-func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	return nil
-}
+func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error { return nil }
 
 // register rest routes
 func (AppModuleBasic) RegisterRESTRoutes(_ context.CLIContext, _ *mux.Router) {}

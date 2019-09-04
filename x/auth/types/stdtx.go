@@ -8,7 +8,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/multisig"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/NetCloth/netcloth-chain/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

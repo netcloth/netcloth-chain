@@ -5,8 +5,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/NetCloth/netcloth-chain/x/auth/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // creates a querier for auth REST endpoints

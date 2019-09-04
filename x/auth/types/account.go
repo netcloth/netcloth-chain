@@ -8,8 +8,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/NetCloth/netcloth-chain/x/auth/exported"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 )
 
 //-----------------------------------------------------------------------------

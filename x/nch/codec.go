@@ -1,7 +1,7 @@
 package nch
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/NetCloth/netcloth-chain/codec"
 )
 
 // RegisterCodec registers concrete types on the Amino codec

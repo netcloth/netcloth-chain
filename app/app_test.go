@@ -8,7 +8,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
