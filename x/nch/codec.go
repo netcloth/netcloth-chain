@@ -8,3 +8,12 @@ import (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgSend{}, "nch/send", nil)
 }
+
+// module codec
+var ModuleCdc *codec.Codec
+
+func init() {
+	ModuleCdc = codec.New()
+	RegisterCodec(ModuleCdc)
+	ModuleCdc.Seal()
+}
