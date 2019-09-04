@@ -12,4 +12,5 @@ require (
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/tendermint v0.32.2
 	github.com/tendermint/tm-db v0.1.1
+	gopkg.in/yaml.v2 v2.2.2
 )
