@@ -15,6 +15,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth"
+	"github.com/NetCloth/netcloth-chain/x/params"
+	"github.com/NetCloth/netcloth-chain/x/staking"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,10 +29,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/NetCloth/netcloth-chain/x/params"
 	//paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	dbm "github.com/tendermint/tm-db"
 )
@@ -65,7 +65,7 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		// nch.AppModuleBasic{},
+		//nch.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -163,29 +163,29 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// init params keeper and subspaces
 	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
 	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
-	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
+	//bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
-	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
-	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
-	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
-	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
+	//mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
+	//distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
+	//slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
+	//govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
+	//crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	//app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
-	//app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
+	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(
 		app.cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey],
 		app.supplyKeeper, stakingSubspace, staking.DefaultCodespace,
 	)
-	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
-	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
-		app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
-	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
-	)
-	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
+	//app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
+	//app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
+	//	app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
+	//app.slashingKeeper = slashing.NewKeeper(
+	//	app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
+	//)
+	//app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
 	app.nchKeeper = nch.NewKeeper(
 		app.bankKeeper,
@@ -198,11 +198,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.cdc)
 
 	// register the proposal types
-	govRouter := gov.NewRouter()
-	govRouter.
-		AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
-		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
+	//govRouter := gov.NewRouter()
+	//govRouter.
+		//AddRoute(gov.RouterKey, gov.ProposalHandler).
+		//AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
+		//AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 
 	app.Router().
 		AddRoute("nch", nch.NewHandler(app.nchKeeper)).AddRoute("token", token.NewHandler(app.tokenKeeper))
@@ -212,16 +212,16 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		AddRoute("nch", nch.NewQuirer(app.nchKeeper))
 	 */
 
-	app.govKeeper = gov.NewKeeper(
-		app.cdc,
-		keys[gov.StoreKey],
-		app.paramsKeeper,
-		govSubspace,
-		app.supplyKeeper,
-		&stakingKeeper,
-		gov.DefaultCodespace,
-		govRouter,
-	)
+	//app.govKeeper = gov.NewKeeper(
+	//	app.cdc,
+	//	keys[gov.StoreKey],
+	//	app.paramsKeeper,
+	//	govSubspace,
+	//	app.supplyKeeper,
+	//	&stakingKeeper,
+	//	gov.DefaultCodespace,
+	//	govRouter,
+	//)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -236,13 +236,13 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		//genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		//bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		crisis.NewAppModule(&app.crisisKeeper),
+		//crisis.NewAppModule(&app.crisisKeeper),
 		//supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
-		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
-		mint.NewAppModule(app.mintKeeper),
-		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
-		//staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
+		//distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		//gov.NewAppModule(app.govKeeper, app.supplyKeeper),
+		//mint.NewAppModule(app.mintKeeper),
+		//slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
+		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -256,16 +256,16 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
 		genaccounts.ModuleName,
-		distr.ModuleName,
+		//distr.ModuleName,
 		staking.ModuleName,
 		auth.ModuleName,
-		bank.ModuleName,
-		slashing.ModuleName,
-		gov.ModuleName,
-		mint.ModuleName,
-		supply.ModuleName,
-		crisis.ModuleName,
-		genutil.ModuleName,
+		//bank.ModuleName,
+		//slashing.ModuleName,
+		//gov.ModuleName,
+		//mint.ModuleName,
+		//supply.ModuleName,
+		//crisis.ModuleName,
+		//genutil.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.crisisKeeper)

@@ -20,7 +20,6 @@ const (
 	CodeEmptyData        = types.CodeEmptyData
 	ModuleName           = types.ModuleName
 	RouterKey            = types.RouterKey
-	ProposalTypeChange   = types.ProposalTypeChange
 )
 
 var (
@@ -35,10 +34,7 @@ var (
 	ErrEmptySubspace           = types.ErrEmptySubspace
 	ErrEmptyKey                = types.ErrEmptyKey
 	ErrEmptyValue              = types.ErrEmptyValue
-	NewParameterChangeProposal = types.NewParameterChangeProposal
-	NewParamChange             = types.NewParamChange
-	NewParamChangeWithSubkey   = types.NewParamChangeWithSubkey
-	ValidateChanges            = types.ValidateChanges
+
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
@@ -51,6 +47,5 @@ type (
 	Subspace                = subspace.Subspace
 	ReadOnlySubspace        = subspace.ReadOnlySubspace
 	KeyTable                = subspace.KeyTable
-	ParameterChangeProposal = types.ParameterChangeProposal
-	ParamChange             = types.ParamChange
+
 )

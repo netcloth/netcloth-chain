@@ -8,9 +8,9 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/NetCloth/netcloth-chain/x/staking"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 
 // export the state of nchd for a genesis file

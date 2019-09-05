@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/spf13/viper"
 	"io"
 
