@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
+	"github.com/NetCloth/netcloth-chain/x/supply/exported"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply/exported"
 )
 
 // GetBondedPool returns the bonded tokens pool's module account

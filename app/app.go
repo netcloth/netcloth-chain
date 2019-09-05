@@ -31,7 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	//paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/NetCloth/netcloth-chain/x/supply"
 	dbm "github.com/tendermint/tm-db"
 )
 
