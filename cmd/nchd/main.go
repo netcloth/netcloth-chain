@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/spf13/viper"
 	"io"
 
@@ -20,7 +20,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/app"
 
 	genutilcli "github.com/NetCloth/netcloth-chain/x/genutil/client/cli"
-	genaccscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
+	genaccscli "github.com/NetCloth/netcloth-chain/x/genaccounts/client/cli"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"

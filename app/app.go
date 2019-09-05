@@ -15,8 +15,11 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth"
+	"github.com/NetCloth/netcloth-chain/x/genaccounts"
+	"github.com/NetCloth/netcloth-chain/x/genutil"
 	"github.com/NetCloth/netcloth-chain/x/params"
 	"github.com/NetCloth/netcloth-chain/x/staking"
+	"github.com/NetCloth/netcloth-chain/x/supply"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,13 +28,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/NetCloth/netcloth-chain/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	//paramsclient "github.com/NetCloth/netcloth-chain/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/NetCloth/netcloth-chain/x/supply"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -211,7 +211,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.QueryRouter().
 		AddRoute("nch", nch.NewQuirer(app.nchKeeper))
 	 */
-
+	//
 	//app.govKeeper = gov.NewKeeper(
 	//	app.cdc,
 	//	keys[gov.StoreKey],
@@ -232,12 +232,12 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
-		//genaccounts.NewAppModule(app.accountKeeper),
-		//genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
+		genaccounts.NewAppModule(app.accountKeeper),
+		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		//bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		//crisis.NewAppModule(&app.crisisKeeper),
-		//supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		//distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		//gov.NewAppModule(app.govKeeper, app.supplyKeeper),
 		//mint.NewAppModule(app.mintKeeper),

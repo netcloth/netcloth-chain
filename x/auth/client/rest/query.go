@@ -10,10 +10,10 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
+	genutilrest "github.com/NetCloth/netcloth-chain/x/genutil/client/rest"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	genutilrest "github.com/cosmos/cosmos-sdk/x/genutil/client/rest"
 )
 
 // query accountREST Handler
