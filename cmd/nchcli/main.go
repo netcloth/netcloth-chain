@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/NetCloth/netcloth-chain/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/NetCloth/netcloth-chain/x/bank"
 
 	"github.com/cosmos/cosmos-sdk/version"
 	"os"
@@ -20,7 +20,7 @@ import (
 	authcmd "github.com/NetCloth/netcloth-chain/x/auth/client/cli"
 	authrest "github.com/NetCloth/netcloth-chain/x/auth/client/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	bankcmd "github.com/NetCloth/netcloth-chain/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"
 	nchcli "github.com/NetCloth/netcloth-chain/x/nch/client/cli"

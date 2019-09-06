@@ -2,7 +2,7 @@ package token
 
 import (
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/NetCloth/netcloth-chain/x/bank"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
