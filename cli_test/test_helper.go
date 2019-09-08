@@ -26,9 +26,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/NetCloth/netcloth-chain/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 )
 

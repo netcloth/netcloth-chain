@@ -9,7 +9,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/NetCloth/netcloth-chain/x/params"
 	"github.com/NetCloth/netcloth-chain/x/slashing/types"
 )
 

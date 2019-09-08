@@ -10,7 +10,7 @@ import (
 
 	authtypes "github.com/NetCloth/netcloth-chain/x/auth/types"
 	stakingtypes "github.com/NetCloth/netcloth-chain/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/NetCloth/netcloth-chain/codec"
 )
 
 // GenesisState defines the raw genesis transaction in JSON

@@ -1,4 +1,4 @@
-package slashing
+package distribution
 
 import (
 	"encoding/json"
@@ -8,13 +8,13 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/NetCloth/netcloth-chain/x/distribution/client/cli"
+	"github.com/NetCloth/netcloth-chain/x/distribution/client/rest"
+	"github.com/NetCloth/netcloth-chain/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/NetCloth/netcloth-chain/x/slashing/client/cli"
-	"github.com/NetCloth/netcloth-chain/x/slashing/client/rest"
-	"github.com/NetCloth/netcloth-chain/x/slashing/types"
 )
 
 var (
@@ -25,11 +25,9 @@ var (
 // app module basics object
 type AppModuleBasic struct{}
 
-var _ module.AppModuleBasic = AppModuleBasic{}
-
 // module name
 func (AppModuleBasic) Name() string {
-	return types.ModuleName
+	return ModuleName
 }
 
 // register module codec
@@ -54,12 +52,12 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // register rest routes
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr)
+	rest.RegisterRoutes(ctx, rtr, StoreKey)
 }
 
 // get the root tx command of this module
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetTxCmd(cdc)
+	return cli.GetTxCmd(StoreKey, cdc)
 }
 
 // get the root query command of this module
@@ -67,20 +65,19 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
-//___________________________
 // app module
 type AppModule struct {
 	AppModuleBasic
-	keeper        Keeper
-	stakingKeeper types.StakingKeeper
+	keeper       Keeper
+	supplyKeeper types.SupplyKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper, stakingKeeper types.StakingKeeper) AppModule {
+func NewAppModule(keeper Keeper, supplyKeeper types.SupplyKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		stakingKeeper:  stakingKeeper,
+		supplyKeeper:   supplyKeeper,
 	}
 }
 
@@ -90,7 +87,9 @@ func (AppModule) Name() string {
 }
 
 // register invariants
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+	RegisterInvariants(ir, am.keeper)
+}
 
 // module message route name
 func (AppModule) Route() string {
@@ -116,7 +115,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	InitGenesis(ctx, am.keeper, am.stakingKeeper, genesisState)
+	InitGenesis(ctx, am.keeper, am.supplyKeeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }
 

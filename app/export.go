@@ -10,7 +10,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/NetCloth/netcloth-chain/x/slashing"
 )
 
 // export the state of nchd for a genesis file
