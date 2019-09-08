@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	govtypes "github.com/NetCloth/netcloth-chain/x/gov/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 const (

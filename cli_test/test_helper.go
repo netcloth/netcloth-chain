@@ -27,7 +27,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/NetCloth/netcloth-chain/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/NetCloth/netcloth-chain/x/gov"
 	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 )

@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/NetCloth/netcloth-chain/x/distribution/client/cli"
 	"github.com/NetCloth/netcloth-chain/x/distribution/client/rest"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govclient "github.com/NetCloth/netcloth-chain/x/gov/client"
 )
 
 // param change proposal handler

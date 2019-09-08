@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/NetCloth/netcloth-chain/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 )
 

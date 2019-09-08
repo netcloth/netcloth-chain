@@ -10,8 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	govrest "github.com/cosmos/cosmos-sdk/x/gov/client/rest"
+	"github.com/NetCloth/netcloth-chain/x/gov"
+	govrest "github.com/NetCloth/netcloth-chain/x/gov/client/rest"
 )
 
 // RegisterRoutes register distribution REST routes.

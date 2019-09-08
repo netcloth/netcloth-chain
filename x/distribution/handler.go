@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/NetCloth/netcloth-chain/x/distribution/keeper"
 	"github.com/NetCloth/netcloth-chain/x/distribution/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypes "github.com/NetCloth/netcloth-chain/x/gov/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
