@@ -1,4 +1,4 @@
-package nch
+package types
 
 // RouterKey is key name of the nch module
 const (

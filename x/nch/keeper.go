@@ -1,8 +1,6 @@
 package nch
 
 import (
-	// "github.com/NetCloth/netcloth-chain/types"
-
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/bank"
 

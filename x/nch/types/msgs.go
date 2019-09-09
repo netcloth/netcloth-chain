@@ -1,4 +1,4 @@
-package nch
+package types
 
 import (
 	"encoding/json"
