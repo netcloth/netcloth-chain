@@ -19,12 +19,12 @@ nchcli keys add jack
 nchcli keys add alice
 
 # Add both accounts, with coins to the genesis file
-nchd add-genesis-account $(nchcli keys show jack -a) 1000000000000unch,1000000000000stake
-nchd add-genesis-account $(nchcli keys show alice -a) 1000000000000unch,1000000000000stake
+nchd add-genesis-account $(nchcli keys show jack -a) 1000000000000unch
+nchd add-genesis-account $(nchcli keys show alice -a) 1000000000000unch
 
 # create validator
 nchd gentx \
-  --amount 1000000stake \
+  --amount 1000000unch \
   --commission-rate "0.10" \
   --commission-max-rate "0.20" \
   --commission-max-change-rate "0.10" \
