@@ -15,4 +15,3 @@ var (
 type (
 	MsgSend = types.MsgSend
 )
-

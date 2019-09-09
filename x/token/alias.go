@@ -9,12 +9,11 @@ const (
 )
 
 var (
-	DefaultCodespace = types.DefaultCodespace
+	DefaultCodespace   = types.DefaultCodespace
 	CodeInvalidMoniker = types.CodeInvalidMoniker
 
 	ErrInvalidMoniker = types.ErrInvalidMoniker
-	NewMsgIssue = types.NewMsgIssue
-
+	NewMsgIssue       = types.NewMsgIssue
 )
 
 type (
