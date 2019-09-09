@@ -51,11 +51,12 @@ nchd start --log_level "*:debug" --trace
 transfer asset
 ```cassandraql
 # transfer asset
-nchcli send --from $(nchcli keys show jack -a)  --to $(nchcli keys show jack -a) --amount 1unch
+nchcli send --from $(nchcli keys show jack -a)  --to $(nchcli keys show alice -a) --amount 1unch
 ```
 
 query account
 ```
 nchcli query account  $(nchcli keys show jack -a)
+nchcli query account  $(nchcli keys show alice -a)
 ```
 
