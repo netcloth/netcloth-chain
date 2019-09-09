@@ -9,6 +9,13 @@ Go 1.12.5+ is required.
 
 Install ```go``` from [here](https://golang.org/doc/install)
 
+```bash
+# download go package
+wget https://dl.google.com/go/go1.12.2.linux-amd64.tar.gz
+tar -xvf go1.12.2.linux-amd64.tar.gz
+mv go $HOME/
+```
+
 set env
 ```bash
 mkdir -p $HOME/go/bin
