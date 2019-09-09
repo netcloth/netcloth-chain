@@ -16,6 +16,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/bank"
+	"github.com/NetCloth/netcloth-chain/x/crisis"
 	distr "github.com/NetCloth/netcloth-chain/x/distribution"
 	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/NetCloth/netcloth-chain/x/genutil"
@@ -31,7 +32,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/NetCloth/netcloth-chain/x/crisis"
 	dbm "github.com/tendermint/tm-db"
 )
 

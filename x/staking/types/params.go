@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/NetCloth/netcloth-chain/codec"
+	nchtypes "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/params"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Staking params default values
@@ -75,7 +75,7 @@ func (p Params) Equal(p2 Params) bool {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
-	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, sdk.DefaultBondDenom)
+	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, nchtypes.DefaultBondDenom)
 }
 
 // String returns a human readable string representation of the parameters.

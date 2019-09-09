@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	nchtypes "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/gov/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -41,7 +43,7 @@ func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		StartingProposalID: 1,
 		DepositParams: DepositParams{
-			MinDeposit:       sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, minDepositTokens)},
+			MinDeposit:       sdk.Coins{sdk.NewCoin(nchtypes.DefaultBondDenom, minDepositTokens)},
 			MaxDepositPeriod: DefaultPeriod,
 		},
 		VotingParams: VotingParams{

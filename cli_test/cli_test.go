@@ -19,13 +19,14 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
+	nchtypes "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/genaccounts"
+	"github.com/NetCloth/netcloth-chain/x/gov"
+	"github.com/NetCloth/netcloth-chain/x/mint"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/NetCloth/netcloth-chain/x/gov"
-	"github.com/NetCloth/netcloth-chain/x/mint"
 )
 
 func TestNCHCLIKeysAddMultisig(t *testing.T) {
@@ -394,7 +395,7 @@ func TestNchCLICreateValidator(t *testing.T) {
 	require.NotZero(t, validatorDelegations[0].Shares)
 
 	// unbond a single share
-	unbondAmt := sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(1))
+	unbondAmt := sdk.NewCoin(nchtypes.DefaultBondDenom, sdk.TokensFromConsensusPower(1))
 	success = f.TxStakingUnbond(keyBar, unbondAmt.String(), barVal, "-y")
 	require.True(t, success)
 	tests.WaitForNextNBlocksTM(1, f.Port)
@@ -479,7 +480,7 @@ func TestNchCLISubmitProposal(t *testing.T) {
 
 	fooAcc := f.QueryAccount(fooAddr)
 	startTokens := sdk.TokensFromConsensusPower(50)
-	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(sdk.DefaultBondDenom))
+	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(nchtypes.DefaultBondDenom))
 
 	proposalsQuery := f.QueryGovProposals()
 	require.Empty(t, proposalsQuery)
@@ -617,7 +618,7 @@ func TestNchCLISubmitParamChangeProposal(t *testing.T) {
 	fooAddr := f.KeyAddress(keyFoo)
 	fooAcc := f.QueryAccount(fooAddr)
 	startTokens := sdk.TokensFromConsensusPower(50)
-	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(sdk.DefaultBondDenom))
+	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(nchtypes.DefaultBondDenom))
 
 	// write proposal to file
 	proposalTokens := sdk.TokensFromConsensusPower(5)
@@ -652,7 +653,7 @@ func TestNchCLISubmitParamChangeProposal(t *testing.T) {
 
 	// ensure deposit was deducted
 	fooAcc = f.QueryAccount(fooAddr)
-	require.Equal(t, startTokens.Sub(proposalTokens).String(), fooAcc.GetCoins().AmountOf(sdk.DefaultBondDenom).String())
+	require.Equal(t, startTokens.Sub(proposalTokens).String(), fooAcc.GetCoins().AmountOf(nchtypes.DefaultBondDenom).String())
 
 	// ensure proposal is directly queryable
 	proposal1 := f.QueryGovProposal(1)
@@ -700,7 +701,7 @@ func TestNchCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 	fooAddr := f.KeyAddress(keyFoo)
 	fooAcc := f.QueryAccount(fooAddr)
 	startTokens := sdk.TokensFromConsensusPower(50)
-	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(sdk.DefaultBondDenom))
+	require.Equal(t, startTokens, fooAcc.GetCoins().AmountOf(nchtypes.DefaultBondDenom))
 
 	tests.WaitForNextNBlocksTM(3, f.Port)
 
@@ -723,7 +724,7 @@ func TestNchCLISubmitCommunityPoolSpendProposal(t *testing.T) {
     }
   ]
 }
-`, fooAddr, sdk.DefaultBondDenom, sdk.DefaultBondDenom, proposalTokens.String())
+`, fooAddr, nchtypes.DefaultBondDenom, nchtypes.DefaultBondDenom, proposalTokens.String())
 	proposalFile := WriteToNewTempFile(t, proposal)
 
 	// create the param change proposal
@@ -736,7 +737,7 @@ func TestNchCLISubmitCommunityPoolSpendProposal(t *testing.T) {
 
 	// ensure deposit was deducted
 	fooAcc = f.QueryAccount(fooAddr)
-	require.Equal(t, startTokens.Sub(proposalTokens).String(), fooAcc.GetCoins().AmountOf(sdk.DefaultBondDenom).String())
+	require.Equal(t, startTokens.Sub(proposalTokens).String(), fooAcc.GetCoins().AmountOf(nchtypes.DefaultBondDenom).String())
 
 	// ensure proposal is directly queryable
 	proposal1 := f.QueryGovProposal(1)
