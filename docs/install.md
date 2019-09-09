@@ -5,7 +5,7 @@
 
 ### Install go
 
-Go 1.12.5+ is required.
+Go 1.12+ is required.
 
 Install ```go``` from [here](https://golang.org/doc/install)
 
