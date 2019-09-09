@@ -5,7 +5,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/nch"
-	"github.com/NetCloth/netcloth-chain/x/token"
+	token "github.com/NetCloth/netcloth-chain/x/token"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"

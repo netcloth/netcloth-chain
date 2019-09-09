@@ -1,4 +1,4 @@
-package token
+package types
 
 const (
 	// module name

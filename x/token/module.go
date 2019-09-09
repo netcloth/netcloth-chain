@@ -2,6 +2,7 @@ package token
 
 import (
 	"encoding/json"
+	"github.com/NetCloth/netcloth-chain/x/token/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ type AppModuleBasic struct{}
 
 // module name
 func (AppModuleBasic) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // register module codec
