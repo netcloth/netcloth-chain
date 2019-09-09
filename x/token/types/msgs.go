@@ -15,7 +15,7 @@ const TokenRouterKey = "token"
 type MsgIssue struct {
 	Banker  sdk.AccAddress `json:"banker"`
 	Address sdk.AccAddress `json:"address"`
-	Amount  sdk.Coin     `json:"amount"`
+	Amount  sdk.Coin       `json:"amount"`
 }
 
 var _ sdk.Msg = MsgIssue{}
@@ -40,7 +40,7 @@ func (msg MsgIssue) ValidateBasic() sdk.Error {
 		return sdk.ErrInvalidAddress(msg.Address.String())
 	}
 	if !msg.Amount.IsValid() {
-		return sdk.ErrInvalidCoins("issue coin invalid " +  msg.Amount.String())
+		return sdk.ErrInvalidCoins("issue coin invalid " + msg.Amount.String())
 	}
 	return nil
 }
