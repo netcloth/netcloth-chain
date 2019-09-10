@@ -38,7 +38,7 @@ func handleMsgIssue(ctx sdk.Context, k Keeper, msg MsgIssue) sdk.Result {
 		return sdk.ErrInsufficientCoins("invalid coins").Result()
 	}
 
-	// check coin name
+	// check moniker
 	if err := ValidateMoniker(msg.Amount.Denom); err != nil {
 		return err.Result()
 	}
@@ -68,5 +68,7 @@ func ValidateMoniker(moniker string) sdk.Error {
 	if strings.Contains(strings.ToLower(moniker), nch.NativeTokenName) {
 		return ErrInvalidMoniker(DefaultCodespace, fmt.Sprintf("the moniker must not contain the native token name"))
 	}
+
+	// check moniker not exists
 	return nil
 }
