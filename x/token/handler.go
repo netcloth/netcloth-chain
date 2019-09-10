@@ -43,7 +43,12 @@ func handleMsgIssue(ctx sdk.Context, k Keeper, msg MsgIssue) sdk.Result {
 		return err.Result()
 	}
 
-	ctx.Logger().Debug("%s issue %s to %s ", msg.Banker.String(), msg.Amount.String(), msg.Address.String())
+	ctx.Logger().Debug(
+		fmt.Sprintf(
+			"issue coins, from: %s,  to: %s, amount: %s ",
+			msg.Banker.String(), msg.Amount.String(), msg.Address.String(),
+			),
+		)
 
 	newCoins := sdk.NewCoins(msg.Amount)
 	_, err := k.coinKeeper.AddCoins(ctx, msg.Address, newCoins)
