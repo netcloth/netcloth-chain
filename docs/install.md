@@ -10,7 +10,12 @@ Go 1.12+ is required.
 Install ```go``` from [here](https://golang.org/doc/install)
 
 ```bash
-# download go package
+# macOS
+wget https://dl.google.com/go/go1.12.2.darwin-amd64.tar.gz
+tar -xvf go1.12.2.darwin-amd64.tar.gz
+mv go $HOME/
+
+# ubuntu
 wget https://dl.google.com/go/go1.12.2.linux-amd64.tar.gz
 tar -xvf go1.12.2.linux-amd64.tar.gz
 mv go $HOME/
