@@ -22,6 +22,9 @@ const (
 
 	// Default maximum entries in a UBD/RED pair
 	DefaultMaxEntries uint16 = 7
+
+	// Default maximum lever
+	DefaultMaxLever uint16 = 20
 )
 
 // nolint - Keys for parameter access
@@ -30,6 +33,7 @@ var (
 	KeyMaxValidators = []byte("MaxValidators")
 	KeyMaxEntries    = []byte("KeyMaxEntries")
 	KeyBondDenom     = []byte("BondDenom")
+	KeyMaxLever      = []byte{"MaxLever"}
 )
 
 var _ params.ParamSet = (*Params)(nil)
@@ -41,17 +45,19 @@ type Params struct {
 	MaxEntries    uint16        `json:"max_entries" yaml:"max_entries"`       // max entries for either unbonding delegation or redelegation (per pair/trio)
 	// note: we need to be a bit careful about potential overflow here, since this is user-determined
 	BondDenom string `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
+	MaxLever  uint16 `json:"max_lever" yaml:"max_lever"`   // max lever: total user delegate / self delegate < max_lever
 }
 
 // NewParams creates a new Params instance
 func NewParams(unbondingTime time.Duration, maxValidators, maxEntries uint16,
-	bondDenom string) Params {
+	bondDenom string, maxLeverRate uint16) Params {
 
 	return Params{
 		UnbondingTime: unbondingTime,
 		MaxValidators: maxValidators,
 		MaxEntries:    maxEntries,
 		BondDenom:     bondDenom,
+		MaxLever:      maxLeverRate,
 	}
 }
 
@@ -62,6 +68,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{KeyMaxValidators, &p.MaxValidators},
 		{KeyMaxEntries, &p.MaxEntries},
 		{KeyBondDenom, &p.BondDenom},
+		{KeyMaxLever, &p.MaxLever},
 	}
 }
 
@@ -75,7 +82,7 @@ func (p Params) Equal(p2 Params) bool {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
-	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, nchtypes.DefaultBondDenom)
+	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, nchtypes.DefaultBondDenom, DefaultMaxEntries)
 }
 
 // String returns a human readable string representation of the parameters.
@@ -84,8 +91,9 @@ func (p Params) String() string {
   Unbonding Time:    %s
   Max Validators:    %d
   Max Entries:       %d
-  Bonded Coin Denom: %s`, p.UnbondingTime,
-		p.MaxValidators, p.MaxEntries, p.BondDenom)
+  Bonded Coin Denom: %s
+  Max Lever:		 %d`,
+  p.UnbondingTime, p.MaxValidators, p.MaxEntries, p.BondDenom, p.MaxLever)
 }
 
 // unmarshal the current staking params value from store key or panic
