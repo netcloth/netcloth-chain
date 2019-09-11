@@ -33,7 +33,7 @@ var (
 	KeyMaxValidators = []byte("MaxValidators")
 	KeyMaxEntries    = []byte("KeyMaxEntries")
 	KeyBondDenom     = []byte("BondDenom")
-	KeyMaxLever      = []byte{"MaxLever"}
+	KeyMaxLever      = []byte("MaxLever")
 )
 
 var _ params.ParamSet = (*Params)(nil)
