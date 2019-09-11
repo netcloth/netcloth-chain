@@ -45,8 +45,8 @@ func handleMsgIssue(ctx sdk.Context, k Keeper, msg MsgIssue) sdk.Result {
 
 	ctx.Logger().Debug(
 		fmt.Sprintf(
-			"issue coins, from: %s,  to: %s, amount: %s ",
-			msg.Banker.String(), msg.Amount.String(), msg.Address.String(),
+			"issue coins, from: %s, to: %s, amount: %s ",
+			msg.Banker.String(), msg.Address.String(), msg.Amount.String(),
 			),
 		)
 
