@@ -3,8 +3,8 @@ package types
 import (
 	authexported "github.com/NetCloth/netcloth-chain/x/auth/exported"
 	stakingexported "github.com/NetCloth/netcloth-chain/x/staking/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	supplyexported "github.com/NetCloth/netcloth-chain/x/supply/exported"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // DistributionKeeper expected distribution keeper (noalias)

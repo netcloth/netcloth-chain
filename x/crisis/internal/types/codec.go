@@ -6,7 +6,7 @@ import (
 
 // Register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgVerifyInvariant{}, "cosmos-sdk/MsgVerifyInvariant", nil)
+	cdc.RegisterConcrete(MsgVerifyInvariant{}, "nch/MsgVerifyInvariant", nil)
 }
 
 // generic sealed codec to be used throughout module
