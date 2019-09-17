@@ -4,7 +4,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/bank"
 
-	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/NetCloth/netcloth-chain/version"
 	"os"
 	"path"
 

@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
-	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/spf13/viper"
 	"io"
 
@@ -19,8 +19,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
-	genutilcli "github.com/NetCloth/netcloth-chain/x/genutil/client/cli"
 	genaccscli "github.com/NetCloth/netcloth-chain/x/genaccounts/client/cli"
+	genutilcli "github.com/NetCloth/netcloth-chain/x/genutil/client/cli"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"

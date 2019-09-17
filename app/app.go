@@ -31,7 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/NetCloth/netcloth-chain/version"
 	dbm "github.com/tendermint/tm-db"
 )
 

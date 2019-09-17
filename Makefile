@@ -25,12 +25,12 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=nch \
-		  -X github.com/cosmos/cosmos-sdk/version.ServerName=nchd \
-		  -X github.com/cosmos/cosmos-sdk/version.ClientName=nchcli \
-		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+ldflags = -X github.com/NetCloth/netcloth-chain/version.Name=nch \
+		  -X github.com/NetCloth/netcloth-chain/version.ServerName=nchd \
+		  -X github.com/NetCloth/netcloth-chain/version.ClientName=nchcli \
+		  -X github.com/NetCloth/netcloth-chain/version.Version=$(VERSION) \
+		  -X github.com/NetCloth/netcloth-chain/version.Commit=$(COMMIT) \
+		  -X "github.com/NetCloth/netcloth-chain/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
