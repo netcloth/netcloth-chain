@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
 	gcutils "github.com/NetCloth/netcloth-chain/x/gov/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/gov/types"

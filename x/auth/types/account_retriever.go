@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/NetCloth/netcloth-chain/x/auth/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // NodeQuerier is an interface that is satisfied by types that provide the QueryWithData method

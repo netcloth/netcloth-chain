@@ -11,8 +11,8 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/store"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/store"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Keys for parameter access

@@ -24,9 +24,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/NetCloth/netcloth-chain/x/gov"
 	"github.com/NetCloth/netcloth-chain/x/mint"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/tests"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/tests"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func TestNCHCLIKeysAddMultisig(t *testing.T) {

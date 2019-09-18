@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func buildCommissionRates(rateStr, maxRateStr, maxChangeRateStr string) (commission types.CommissionRates, err error) {

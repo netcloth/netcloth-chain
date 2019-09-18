@@ -6,9 +6,9 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
 	"github.com/spf13/cobra"
 )

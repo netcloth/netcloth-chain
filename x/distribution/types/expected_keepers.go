@@ -4,7 +4,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	stakingexported "github.com/NetCloth/netcloth-chain/x/staking/exported"
 	supplyexported "github.com/NetCloth/netcloth-chain/x/supply/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // StakingKeeper expected staking keeper (noalias)

@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // names used as root for pool module accounts:

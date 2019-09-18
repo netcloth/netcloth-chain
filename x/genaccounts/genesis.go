@@ -4,7 +4,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	authexported "github.com/NetCloth/netcloth-chain/x/auth/exported"
 	"github.com/NetCloth/netcloth-chain/x/genaccounts/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // InitGenesis initializes accounts and deliver genesis transactions

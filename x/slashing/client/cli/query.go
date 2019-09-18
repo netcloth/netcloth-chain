@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 
 	"github.com/NetCloth/netcloth-chain/x/slashing/types"
 )

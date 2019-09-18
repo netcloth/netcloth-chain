@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/NetCloth/netcloth-chain/x/supply/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Implements Delegation interface

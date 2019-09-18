@@ -8,10 +8,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/client/flags"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (

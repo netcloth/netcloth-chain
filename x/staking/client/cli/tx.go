@@ -18,10 +18,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/NetCloth/netcloth-chain/version"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -144,7 +144,7 @@ func GetCmdDelegate(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Delegate an amount of liquid coins to a validator from your wallet.
 
 Example:
-$ %s tx staking delegate cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000stake --from mykey
+$ %s tx staking delegate nchvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000unch --from mykey
 `,
 				version.ClientName,
 			),
@@ -180,7 +180,7 @@ func GetCmdRedelegate(storeName string, cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Redelegate an amount of illiquid staking tokens from one validator to another.
 
 Example:
-$ %s tx staking redelegate cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 100stake --from mykey
+$ %s tx staking redelegate nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj nchvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 100ustake --from mykey
 `,
 				version.ClientName,
 			),
@@ -221,7 +221,7 @@ func GetCmdUnbond(storeName string, cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Unbond an amount of bonded shares from a validator.
 
 Example:
-$ %s tx staking unbond cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake --from mykey
+$ %s tx staking unbond nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100unch --from mykey
 `,
 				version.ClientName,
 			),

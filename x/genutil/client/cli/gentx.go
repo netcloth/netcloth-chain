@@ -20,12 +20,12 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	kbkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	kbkeys "github.com/NetCloth/netcloth-chain/crypto/keys"
 	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/genutil"

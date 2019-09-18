@@ -13,8 +13,8 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client/flags"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (

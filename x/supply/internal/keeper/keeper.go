@@ -8,7 +8,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/supply/exported"
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Keeper of the supply store

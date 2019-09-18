@@ -1,7 +1,7 @@
 package bank
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GenesisState is the bank state that must be provided at genesis.

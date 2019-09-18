@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/NetCloth/netcloth-chain/x/auth/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // AccountKeeper defines the expected account keeper (noalias)

@@ -1,6 +1,6 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import sdk "github.com/NetCloth/netcloth-chain/types"
 
 // querier keys
 const (

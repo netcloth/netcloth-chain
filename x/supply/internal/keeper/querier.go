@@ -6,8 +6,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // NewQuerier creates a querier for supply REST endpoints

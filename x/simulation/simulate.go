@@ -13,8 +13,8 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/baseapp"
 )
 
 // AppStateFn returns the app state json bytes, the genesis accounts, and the chain identifier

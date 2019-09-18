@@ -29,8 +29,8 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/NetCloth/netcloth-chain/x/supply"
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/baseapp"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // List of available flags for the simulator

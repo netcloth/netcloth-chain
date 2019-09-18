@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 // RegisterRoutes registers staking-related REST handlers to a router

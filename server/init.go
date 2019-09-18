@@ -3,10 +3,10 @@ package server
 import (
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/NetCloth/netcloth-chain/crypto/keys"
 
-	clkeys "github.com/cosmos/cosmos-sdk/client/keys"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	clkeys "github.com/NetCloth/netcloth-chain/client/keys"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GenerateCoinKey returns the address of a public key, along with the secret

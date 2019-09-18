@@ -6,9 +6,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	nch "github.com/NetCloth/netcloth-chain/x/nch"
 	"github.com/NetCloth/netcloth-chain/x/token"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

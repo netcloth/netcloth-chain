@@ -8,7 +8,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/crisis/internal/types"
 	"github.com/NetCloth/netcloth-chain/x/params"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Keeper - crisis keeper

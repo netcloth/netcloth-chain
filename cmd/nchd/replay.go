@@ -19,7 +19,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/app"
 
 	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func replayCmd() *cobra.Command {

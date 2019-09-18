@@ -8,10 +8,10 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/x/slashing/client/cli"
 	"github.com/NetCloth/netcloth-chain/x/slashing/client/rest"
 	"github.com/NetCloth/netcloth-chain/x/slashing/types"

@@ -12,11 +12,11 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	authtypes "github.com/NetCloth/netcloth-chain/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/input"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/NetCloth/netcloth-chain/client/input"
+	"github.com/NetCloth/netcloth-chain/client/keys"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GasEstimateResponse defines a response definition for tx gas estimation.

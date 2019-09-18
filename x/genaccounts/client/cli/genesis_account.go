@@ -10,9 +10,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/NetCloth/netcloth-chain/x/genutil"
-	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (

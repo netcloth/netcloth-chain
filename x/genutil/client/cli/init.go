@@ -15,10 +15,10 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/genutil"
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 const (

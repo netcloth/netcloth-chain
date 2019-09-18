@@ -9,9 +9,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/distribution/client/common"
 	"github.com/NetCloth/netcloth-chain/x/distribution/types"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router, queryRoute string) {

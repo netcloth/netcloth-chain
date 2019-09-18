@@ -10,7 +10,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/staking/keeper"
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

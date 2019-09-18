@@ -8,7 +8,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/gov/types"
 	"github.com/NetCloth/netcloth-chain/x/params"
 	"github.com/NetCloth/netcloth-chain/x/supply/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 )

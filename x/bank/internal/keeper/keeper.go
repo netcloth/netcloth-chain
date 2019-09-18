@@ -9,7 +9,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth/exported"
 	"github.com/NetCloth/netcloth-chain/x/bank/internal/types"
 	"github.com/NetCloth/netcloth-chain/x/params"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 var _ Keeper = (*BaseKeeper)(nil)

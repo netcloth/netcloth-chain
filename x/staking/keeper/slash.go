@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	types "github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Slash a validator for an infraction committed at a known height

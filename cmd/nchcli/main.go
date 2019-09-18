@@ -8,10 +8,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/lcd"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/keys"
+	"github.com/NetCloth/netcloth-chain/client/lcd"
+	"github.com/NetCloth/netcloth-chain/client/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
@@ -19,7 +19,7 @@ import (
 
 	authcmd "github.com/NetCloth/netcloth-chain/x/auth/client/cli"
 	authrest "github.com/NetCloth/netcloth-chain/x/auth/client/rest"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	bankcmd "github.com/NetCloth/netcloth-chain/x/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"

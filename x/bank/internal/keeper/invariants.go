@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/NetCloth/netcloth-chain/x/bank/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // RegisterInvariants registers the bank module invariants

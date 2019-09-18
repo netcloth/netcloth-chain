@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // RouterKey is they name of the bank module

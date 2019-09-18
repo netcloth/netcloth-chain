@@ -6,7 +6,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/mint/internal/types"
 	"github.com/NetCloth/netcloth-chain/x/params"
 )

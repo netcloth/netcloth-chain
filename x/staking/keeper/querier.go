@@ -8,8 +8,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // creates a querier for staking REST endpoints

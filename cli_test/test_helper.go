@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/client"
 
 	"github.com/stretchr/testify/require"
 
@@ -19,13 +19,13 @@ import (
 	"github.com/NetCloth/netcloth-chain/app"
 
 	"github.com/NetCloth/netcloth-chain/x/auth"
-	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
+	clientkeys "github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/NetCloth/netcloth-chain/crypto/keys"
 	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/NetCloth/netcloth-chain/simapp"
-	"github.com/cosmos/cosmos-sdk/tests"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/tests"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/distribution"
 	"github.com/NetCloth/netcloth-chain/x/gov"
 	"github.com/NetCloth/netcloth-chain/x/slashing"

@@ -8,10 +8,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/distribution/client/common"
 	"github.com/NetCloth/netcloth-chain/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/NetCloth/netcloth-chain/client/context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router, queryRoute string) {

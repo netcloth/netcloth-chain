@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/NetCloth/netcloth-chain/x/params"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Default parameter namespace

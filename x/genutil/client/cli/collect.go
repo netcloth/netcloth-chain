@@ -12,7 +12,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/genutil"
 	"github.com/NetCloth/netcloth-chain/x/genutil/types"
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/server"
 )
 

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	govtypes "github.com/NetCloth/netcloth-chain/x/gov/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (
@@ -18,7 +18,7 @@ var _ govtypes.Content = CommunityPoolSpendProposal{}
 
 func init() {
 	govtypes.RegisterProposalType(ProposalTypeCommunityPoolSpend)
-	govtypes.RegisterProposalTypeCodec(CommunityPoolSpendProposal{}, "cosmos-sdk/CommunityPoolSpendProposal")
+	govtypes.RegisterProposalTypeCodec(CommunityPoolSpendProposal{}, "nch/CommunityPoolSpendProposal")
 }
 
 // CommunityPoolSpendProposal spends from the community pool

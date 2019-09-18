@@ -8,7 +8,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Apply and return accumulated updates to the bonded validator set. Also,

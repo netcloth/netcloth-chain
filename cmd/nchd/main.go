@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"github.com/NetCloth/netcloth-chain/x/genaccounts"
 	"github.com/NetCloth/netcloth-chain/x/staking"
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/baseapp"
+	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/server"
-	"github.com/cosmos/cosmos-sdk/store"
+	"github.com/NetCloth/netcloth-chain/store"
 	"github.com/spf13/viper"
 	"io"
 
@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 
 	"github.com/NetCloth/netcloth-chain/app"
 

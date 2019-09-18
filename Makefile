@@ -33,7 +33,7 @@ ldflags = -X github.com/NetCloth/netcloth-chain/version.Name=nch \
 		  -X "github.com/NetCloth/netcloth-chain/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+  ldflags += -X github.com/NetCloth/netcloth-chain/types.DBBackend=cleveldb
 endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))

@@ -28,10 +28,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/NetCloth/netcloth-chain/x/supply"
-	bam "github.com/cosmos/cosmos-sdk/baseapp"
+	bam "github.com/NetCloth/netcloth-chain/baseapp"
 	"github.com/NetCloth/netcloth-chain/simapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 	dbm "github.com/tendermint/tm-db"
 )
 

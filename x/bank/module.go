@@ -13,9 +13,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/bank/client/rest"
 	"github.com/NetCloth/netcloth-chain/x/bank/internal/keeper"
 	"github.com/NetCloth/netcloth-chain/x/bank/internal/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (

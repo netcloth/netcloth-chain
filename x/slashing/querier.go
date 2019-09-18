@@ -5,9 +5,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // NewQuerier creates a new querier for slashing clients.

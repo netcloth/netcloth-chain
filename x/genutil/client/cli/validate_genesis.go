@@ -10,7 +10,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/server"
-	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 // Validate genesis command takes

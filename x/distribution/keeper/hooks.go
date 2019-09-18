@@ -3,7 +3,7 @@ package keeper
 import (
 	"github.com/NetCloth/netcloth-chain/x/distribution/types"
 	stakingtypes "github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Wrapper struct

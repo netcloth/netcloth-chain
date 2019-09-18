@@ -5,9 +5,9 @@ import (
 	"reflect"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/NetCloth/netcloth-chain/store/prefix"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	authexported "github.com/NetCloth/netcloth-chain/x/auth/exported"
 	"github.com/NetCloth/netcloth-chain/x/supply"
 	supplyexported "github.com/NetCloth/netcloth-chain/x/supply/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GenesisAccount is a struct for account initialization used exclusively during genesis

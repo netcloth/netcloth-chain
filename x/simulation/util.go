@@ -8,8 +8,8 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/baseapp"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // assertAll asserts the all invariants against application state

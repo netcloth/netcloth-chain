@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/NetCloth/netcloth-chain/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // QueryParams actually queries distribution params.

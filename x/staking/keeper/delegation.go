@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // return a specific delegation

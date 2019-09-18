@@ -3,7 +3,7 @@ package keeper
 import (
 	"github.com/NetCloth/netcloth-chain/x/supply/exported"
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GetModuleAddress returns an address based on the module name

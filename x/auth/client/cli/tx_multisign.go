@@ -16,10 +16,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
 	"github.com/NetCloth/netcloth-chain/version"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	crkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/NetCloth/netcloth-chain/client/keys"
+	crkeys "github.com/NetCloth/netcloth-chain/crypto/keys"
 )
 
 // GetSignCommand returns the sign command

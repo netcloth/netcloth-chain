@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	govtypes "github.com/NetCloth/netcloth-chain/x/gov/types"
 )
 
@@ -18,7 +18,7 @@ var _ govtypes.Content = ParameterChangeProposal{}
 
 func init() {
 	govtypes.RegisterProposalType(ProposalTypeChange)
-	govtypes.RegisterProposalTypeCodec(ParameterChangeProposal{}, "cosmos-sdk/ParameterChangeProposal")
+	govtypes.RegisterProposalTypeCodec(ParameterChangeProposal{}, "nch/ParameterChangeProposal")
 }
 
 // ParameterChangeProposal defines a proposal which contains multiple parameter

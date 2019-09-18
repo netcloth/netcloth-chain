@@ -7,7 +7,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	authexported "github.com/NetCloth/netcloth-chain/x/auth/exported"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // StakingKeeper defines the expected staking keeper (noalias)

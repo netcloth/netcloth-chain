@@ -8,7 +8,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/staking/exported"
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // InitGenesis sets the pool and parameters for the provided keeper.  For each

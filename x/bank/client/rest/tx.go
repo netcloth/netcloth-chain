@@ -7,9 +7,9 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/x/bank/internal/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application

@@ -5,7 +5,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/crisis/internal/keeper"
 	"github.com/NetCloth/netcloth-chain/x/crisis/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // RouterKey

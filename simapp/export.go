@@ -8,10 +8,10 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/NetCloth/netcloth-chain/x/staking/exported"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis

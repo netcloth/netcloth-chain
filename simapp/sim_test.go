@@ -17,8 +17,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/NetCloth/netcloth-chain/baseapp"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	authsim "github.com/NetCloth/netcloth-chain/x/auth/simulation"
 	"github.com/NetCloth/netcloth-chain/x/bank"

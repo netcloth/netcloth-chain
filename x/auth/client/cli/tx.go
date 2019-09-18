@@ -5,7 +5,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/NetCloth/netcloth-chain/client"
 )
 
 // GetTxCmd returns the transaction commands for this module

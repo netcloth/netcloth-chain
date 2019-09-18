@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/client/flags"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 // WriteGenerateStdTxResponse writes response for the generate only mode.

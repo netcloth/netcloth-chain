@@ -5,7 +5,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/x/auth/exported"
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // RegisterInvariants register all supply invariants

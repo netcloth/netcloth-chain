@@ -9,10 +9,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/NetCloth/netcloth-chain/version"
 	"github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/bank"
@@ -27,6 +24,9 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/slashing"
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/NetCloth/netcloth-chain/x/supply"
+	bam "github.com/NetCloth/netcloth-chain/baseapp"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 const appName = "SimApp"

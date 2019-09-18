@@ -3,7 +3,7 @@ package supply
 import (
 	autypes "github.com/NetCloth/netcloth-chain/x/auth"
 	"github.com/NetCloth/netcloth-chain/x/supply/internal/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // InitGenesis sets supply information for genesis.

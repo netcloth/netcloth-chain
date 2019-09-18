@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	nchtypes "github.com/NetCloth/netcloth-chain/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GenesisState - crisis genesis state

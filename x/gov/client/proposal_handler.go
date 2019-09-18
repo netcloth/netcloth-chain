@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/x/gov/client/rest"
 )

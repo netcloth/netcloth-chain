@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/NetCloth/netcloth-chain/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 // BroadcastReq defines a tx broadcasting request.

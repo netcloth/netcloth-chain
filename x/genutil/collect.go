@@ -20,7 +20,7 @@ import (
 	authtypes "github.com/NetCloth/netcloth-chain/x/auth/types"
 	"github.com/NetCloth/netcloth-chain/x/genutil/types"
 	stakingtypes "github.com/NetCloth/netcloth-chain/x/staking/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // GenAppStateFromConfig gets the genesis app state from the config
