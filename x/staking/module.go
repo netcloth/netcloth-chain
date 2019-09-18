@@ -11,14 +11,14 @@ import (
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 	authtypes "github.com/NetCloth/netcloth-chain/x/auth/types"
 	"github.com/NetCloth/netcloth-chain/x/staking/client/cli"
 	"github.com/NetCloth/netcloth-chain/x/staking/client/rest"
 	"github.com/NetCloth/netcloth-chain/x/staking/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (
