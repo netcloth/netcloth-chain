@@ -18,7 +18,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
-	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/NetCloth/netcloth-chain/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

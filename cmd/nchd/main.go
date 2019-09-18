@@ -6,7 +6,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/staking"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/spf13/viper"
 	"io"

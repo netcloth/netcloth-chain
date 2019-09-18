@@ -22,7 +22,7 @@ import (
 	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/NetCloth/netcloth-chain/simapp"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -9,7 +9,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 

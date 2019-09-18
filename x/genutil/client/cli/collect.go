@@ -13,7 +13,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/x/genutil"
 	"github.com/NetCloth/netcloth-chain/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/NetCloth/netcloth-chain/server"
 )
 
 const flagGenTxDir = "gentx-dir"

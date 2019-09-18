@@ -21,10 +21,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	pvm "github.com/tendermint/tendermint/privval"
 
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/server/config"
+	"github.com/NetCloth/netcloth-chain/server/config"
 	"github.com/NetCloth/netcloth-chain/version"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 )
 
 // server context
