@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/cosmos/cosmos-sdk/server/config"
-	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/NetCloth/netcloth-chain/version"
 )
 
 // server context

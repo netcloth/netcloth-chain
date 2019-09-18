@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/tm-db"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/NetCloth/netcloth-chain/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )

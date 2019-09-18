@@ -50,6 +50,7 @@ const (
 	MaxWebsiteLength                   = types.MaxWebsiteLength
 	MaxDetailsLength                   = types.MaxDetailsLength
 	DoNotModifyDesc                    = types.DoNotModifyDesc
+	DefaultMaxLever 				   = types.DefaultMaxLever
 )
 
 var (
