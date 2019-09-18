@@ -51,7 +51,7 @@ func GetCmdQueryValidator(storeName string, cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Query details about an individual validator.
 
 Example:
-$ %s query staking validator cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking validator nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -121,7 +121,7 @@ func GetCmdQueryValidatorUnbondingDelegations(queryRoute string, cdc *codec.Code
 			fmt.Sprintf(`Query delegations that are unbonding _from_ a validator.
 
 Example:
-$ %s query staking unbonding-delegations-from cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking unbonding-delegations-from nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -163,7 +163,7 @@ func GetCmdQueryValidatorRedelegations(queryRoute string, cdc *codec.Codec) *cob
 			fmt.Sprintf(`Query delegations that are redelegating _from_ a validator.
 
 Example:
-$ %s query staking redelegations-from cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking redelegations-from nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -207,7 +207,7 @@ func GetCmdQueryDelegation(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Query delegations for an individual delegator on an individual validator.
 
 Example:
-$ %s query staking delegation cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking delegation nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -257,7 +257,7 @@ func GetCmdQueryDelegations(queryRoute string, cdc *codec.Codec) *cobra.Command 
 			fmt.Sprintf(`Query delegations for an individual delegator on all validators.
 
 Example:
-$ %s query staking delegations cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
+$ %s query staking delegations nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
 `,
 				version.ClientName,
 			),
@@ -302,7 +302,7 @@ func GetCmdQueryValidatorDelegations(queryRoute string, cdc *codec.Codec) *cobra
 			fmt.Sprintf(`Query delegations on an individual validator.
 
 Example:
-$ %s query staking delegations-to cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking delegations-to nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -347,7 +347,7 @@ func GetCmdQueryUnbondingDelegation(queryRoute string, cdc *codec.Codec) *cobra.
 			fmt.Sprintf(`Query unbonding delegations for an individual delegator on an individual validator.
 
 Example:
-$ %s query staking unbonding-delegation cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking unbonding-delegation nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),
@@ -392,7 +392,7 @@ func GetCmdQueryUnbondingDelegations(queryRoute string, cdc *codec.Codec) *cobra
 			fmt.Sprintf(`Query unbonding delegations for an individual delegator.
 
 Example:
-$ %s query staking unbonding-delegation cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
+$ %s query staking unbonding-delegation nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
 `,
 				version.ClientName,
 			),
@@ -437,7 +437,7 @@ func GetCmdQueryRedelegation(queryRoute string, cdc *codec.Codec) *cobra.Command
 			fmt.Sprintf(`Query a redelegation record for an individual delegator between a source and destination validator.
 
 Example:
-$ %s query staking redelegation cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking redelegation nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p nchvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.ClientName,
 			),

@@ -92,8 +92,8 @@ func GetCmdWithdrawRewards(cdc *codec.Codec) *cobra.Command {
 and optionally withdraw validator commission if the delegation address given is a validator operator.
 
 Example:
-$ %s tx distr withdraw-rewards cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --from mykey
-$ %s tx distr withdraw-rewards cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --from mykey --commission
+$ %s tx distr withdraw-rewards nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --from mykey
+$ %s tx distr withdraw-rewards nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj --from mykey --commission
 `,
 				version.ClientName, version.ClientName,
 			),
@@ -171,7 +171,7 @@ func GetCmdSetWithdrawAddr(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Set the withdraw address for rewards associated with a delegator address.
 
 Example:
-$ %s tx set-withdraw-addr cosmos1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
+$ %s tx set-withdraw-addr nch1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p --from mykey
 `,
 				version.ClientName,
 			),
@@ -212,7 +212,7 @@ Where proposal.json contains:
 {
   "title": "Community Pool Spend",
   "description": "Pay me some Atoms!",
-  "recipient": "cosmos1s5afhd6gxevu37mkqcvvsj8qeylhn0rz46zdlq",
+  "recipient": "nch1s5afhd6gxevu37mkqcvvsj8qeylhn0rz46zdlq",
   "amount": [
     {
       "denom": "stake",

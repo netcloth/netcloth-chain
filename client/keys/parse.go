@@ -71,7 +71,7 @@ func parseKeyStringCommand() *cobra.Command {
 		Use:   "parse <hex-or-bech32-address>",
 		Short: "Parse address from hex to bech32 and vice versa",
 		Long: `Convert and print to stdout key addresses and fingerprints from
-hexadecimal into bech32 cosmos prefixed format and vice versa.
+hexadecimal into bech32 nch prefixed format and vice versa.
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: parseKey,
