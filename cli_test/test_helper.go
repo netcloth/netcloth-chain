@@ -18,7 +18,7 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
-	"github.com/NetCloth/netcloth-chain/x/auth"
+	"github.com/NetCloth/netcloth-chain/modules/auth"
 	clientkeys "github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/crypto/keys"
@@ -26,10 +26,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/simapp"
 	"github.com/NetCloth/netcloth-chain/tests"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/x/distribution"
-	"github.com/NetCloth/netcloth-chain/x/gov"
-	"github.com/NetCloth/netcloth-chain/x/slashing"
-	"github.com/NetCloth/netcloth-chain/x/staking"
+	"github.com/NetCloth/netcloth-chain/modules/distribution"
+	"github.com/NetCloth/netcloth-chain/modules/gov"
+	"github.com/NetCloth/netcloth-chain/modules/slashing"
+	"github.com/NetCloth/netcloth-chain/modules/staking"
 )
 
 const (

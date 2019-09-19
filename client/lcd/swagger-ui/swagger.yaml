@@ -921,7 +921,7 @@ paths:
   #          name: validatorPubKey
   #          required: true
   #          in: path
-  #          x-example: cosmosvalconspub1zcjduepq0vu2zgkgk49efa0nqwzndanq5m4c7pa3u4apz4g2r9gspqg6g9cs3k9cuf
+  #          modules-example: cosmosvalconspub1zcjduepq0vu2zgkgk49efa0nqwzndanq5m4c7pa3u4apz4g2r9gspqg6g9cs3k9cuf
   #      responses:
   #        200:
   #          description: OK

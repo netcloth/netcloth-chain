@@ -7555,7 +7555,7 @@
                 r = e.getIn(["meta", "paths"].concat((0, i.default)(t)), (0, s.fromJS)({})),
                 o = M(e, t),
                 a = n.get("parameters") || new s.List,
-                u = r.get("consumes_value") ? r.get("consumes_value") : T(a, "file") ? "multipart/form-data" : T(a, "formData") ? "application/x-www-form-urlencoded" : void 0;
+                u = r.get("consumes_value") ? r.get("consumes_value") : T(a, "file") ? "multipart/form-data" : T(a, "formData") ? "application/modules-www-form-urlencoded" : void 0;
             return (0, s.fromJS)({
                 requestContentType: u,
                 responseContentType: o
@@ -9222,7 +9222,7 @@
                 var x = E.toString(),
                     S = (0, o.default)({
                         Accept: "application/json, text/plain, */*",
-                        "Content-Type": "application/x-www-form-urlencoded"
+                        "Content-Type": "application/modules-www-form-urlencoded"
                     }, g);
                 n.fetch({
                     url: x,
@@ -15426,7 +15426,7 @@
                         m && (t.headers["Content-Type"] = m, p = m)
                     }
                 } else p && v && (t.headers["Content-Type"] = p);
-                return r && (p ? h.indexOf(p) > -1 && ("application/x-www-form-urlencoded" === p || 0 === p.indexOf("multipart/") ? "object" === (void 0 === r ? "undefined" : (0, a.default)(r)) ? (t.form = {}, (0, u.default)(r).forEach(function(e) {
+                return r && (p ? h.indexOf(p) > -1 && ("application/modules-www-form-urlencoded" === p || 0 === p.indexOf("multipart/") ? "object" === (void 0 === r ? "undefined" : (0, a.default)(r)) ? (t.form = {}, (0, u.default)(r).forEach(function(e) {
                     var n, o = r[e],
                         u = void 0;
                     "undefined" != typeof File && (u = o instanceof File), "undefined" != typeof Blob && (u = u || o instanceof Blob), void 0 !== f.Buffer && (u = u || f.Buffer.isBuffer(o)), n = "object" !== (void 0 === o ? "undefined" : (0, a.default)(o)) || u ? o : Array.isArray(o) ? o.toString() : (0, i.default)(o), t.form[e] = {
@@ -15502,7 +15502,7 @@
                     return "file" === e.type
                 }).length ? t.headers["Content-Type"] = "multipart/form-data" : r.parameters && r.parameters.filter(function(e) {
                     return "formData" === e.in
-                }).length && (t.headers["Content-Type"] = "application/x-www-form-urlencoded");
+                }).length && (t.headers["Content-Type"] = "application/modules-www-form-urlencoded");
                 else if (a) {
                     var s = r.parameters && r.parameters.filter(function(e) {
                             return "body" === e.in
@@ -19458,7 +19458,7 @@
                     }
                 }) : r.default.createElement("i", null, "Example values are not available for ", r.default.createElement("code", null, "application/octet-stream"), " media types.")
             }
-            if (b && ("application/x-www-form-urlencoded" === l || 0 === l.indexOf("multipart/"))) {
+            if (b && ("application/modules-www-form-urlencoded" === l || 0 === l.indexOf("multipart/"))) {
                 var w = i("JsonSchemaForm"),
                     E = t.getIn(["content", l, "schema"], (0, o.OrderedMap)()),
                     x = E.getIn(["properties"], (0, o.OrderedMap)());
@@ -30281,8 +30281,8 @@
                 gradientTransform: "gradientTransform",
                 gradientUnits: "gradientUnits",
                 hanging: 0,
-                horizAdvX: "horiz-adv-x",
-                horizOriginX: "horiz-origin-x",
+                horizAdvX: "horiz-adv-modules",
+                horizOriginX: "horiz-origin-modules",
                 ideographic: 0,
                 imageRendering: "image-rendering",
                 in : 0,
@@ -30408,7 +30408,7 @@
                 vectorEffect: "vector-effect",
                 version: 0,
                 vertAdvY: "vert-adv-y",
-                vertOriginX: "vert-origin-x",
+                vertOriginX: "vert-origin-modules",
                 vertOriginY: "vert-origin-y",
                 viewBox: "viewBox",
                 viewTarget: "viewTarget",
@@ -30417,7 +30417,7 @@
                 wordSpacing: "word-spacing",
                 writingMode: "writing-mode",
                 x: 0,
-                xHeight: "x-height",
+                xHeight: "modules-height",
                 x1: 0,
                 x2: 0,
                 xChannelSelector: "xChannelSelector",
@@ -32172,7 +32172,7 @@
                             if (!h.arrayBuffer || !ArrayBuffer.prototype.isPrototypeOf(e) && !g(e)) throw new Error("unsupported BodyInit type");
                             this._bodyArrayBuffer = s(e)
                         } else this._bodyText = "";
-                    this.headers.get("content-type") || ("string" == typeof e ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : h.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"))
+                    this.headers.get("content-type") || ("string" == typeof e ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : h.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/modules-www-form-urlencoded;charset=UTF-8"))
                 }, h.blob && (this.blob = function() {
                     var e = i(this);
                     if (e) return e;
@@ -32951,7 +32951,7 @@
                             if (!h.arrayBuffer || !ArrayBuffer.prototype.isPrototypeOf(e) && !g(e)) throw new Error("unsupported BodyInit type");
                             this._bodyArrayBuffer = s(e)
                         } else this._bodyText = "";
-                    this.headers.get("content-type") || ("string" == typeof e ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : h.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"))
+                    this.headers.get("content-type") || ("string" == typeof e ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : h.searchParams && URLSearchParams.prototype.isPrototypeOf(e) && this.headers.set("content-type", "application/modules-www-form-urlencoded;charset=UTF-8"))
                 }, h.blob && (this.blob = function() {
                     var e = i(this);
                     if (e) return e;
@@ -36408,7 +36408,7 @@
                         o = t.parameterWithMetaByIdentity(n, r);
                     if (void 0 === o.get("value") && "body" !== o.get("in")) {
                         var a = void 0;
-                        t.isSwagger2() ? a = o.get("x-example") || o.getIn(["default"]) || o.getIn(["schema", "example"]) || o.getIn(["schema", "default"]) : t.isOAS3() && (a = o.get("example") || o.getIn(["schema", "example"]) || o.getIn(["schema", "default"])), void 0 !== a && i.onChangeWrapper((0, p.numberToString)(a))
+                        t.isSwagger2() ? a = o.get("modules-example") || o.getIn(["default"]) || o.getIn(["schema", "example"]) || o.getIn(["schema", "default"]) : t.isOAS3() && (a = o.get("example") || o.getIn(["schema", "example"]) || o.getIn(["schema", "default"])), void 0 !== a && i.onChangeWrapper((0, p.numberToString)(a))
                     }
                 }, i.setDefaultValue(), i
             }
@@ -36479,7 +36479,7 @@
                         U = void 0,
                         q = void 0,
                         F = !1;
-                    return void 0 !== t && (L = O.get("items")), void 0 !== L ? (U = L.get("enum"), q = L.get("default")) : U = O.get("enum"), void 0 !== U && U.size > 0 && (F = !0), void 0 !== t && (q = O.get("default"), void 0 === t.get("example") && t.get("x-example")), l.default.createElement("tr", {
+                    return void 0 !== t && (L = O.get("items")), void 0 !== L ? (U = L.get("enum"), q = L.get("default")) : U = O.get("enum"), void 0 !== U && U.size > 0 && (F = !0), void 0 !== t && (q = O.get("default"), void 0 === t.get("example") && t.get("modules-example")), l.default.createElement("tr", {
                         "data-param-name": t.get("name"),
                         "data-param-in": t.get("in")
                     }, l.default.createElement("td", {
@@ -38229,7 +38229,7 @@
                         var t = (0, i.default)(e, 2),
                             n = t[0],
                             o = t[1];
-                        if ("x-" === n.slice(0, 2)) {
+                        if ("modules-" === n.slice(0, 2)) {
                             var a = o ? o.toJS ? o.toJS() : o : null;
                             return d.default.createElement("tr", {
                                 key: n,
@@ -40773,7 +40773,7 @@
                 r = ["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmuliscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mpspace", "msqrt", "mystyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover"],
                 o = ["#text"],
                 i = ["accept", "action", "align", "alt", "autocomplete", "background", "bgcolor", "border", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "coords", "crossorigin", "datetime", "default", "dir", "disabled", "download", "enctype", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "integrity", "ismap", "label", "lang", "list", "loop", "low", "max", "maxlength", "media", "method", "min", "multiple", "name", "noshade", "novalidate", "nowrap", "open", "optimum", "pattern", "placeholder", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "type", "usemap", "valign", "value", "width", "xmlns"],
-                a = ["accent-height", "accumulate", "additivive", "alignment-baseline", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "fill", "fill-opacity", "fill-rule", "filter", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "specularconstant", "specularexponent", "spreadmethod", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "tabindex", "targetx", "targety", "transform", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"],
+                a = ["accent-height", "accumulate", "additivive", "alignment-baseline", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "fill", "fill-opacity", "fill-rule", "filter", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "specularconstant", "specularexponent", "spreadmethod", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "tabindex", "targetx", "targety", "transform", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "vert-adv-y", "vert-origin-modules", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"],
                 u = ["accent", "accentunder", "align", "bevelled", "close", "columnsalign", "columnlines", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lspace", "lquote", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"],
                 s = ["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"];
 
@@ -40924,7 +40924,7 @@
                     var e = Te('<svg><g onload="this.parentNode.remove()"></g></svg>');
                     e.querySelector("svg") || (k = !0);
                     try {
-                        (e = Te('<svg><p><style><img src="</style><img src=x onerror=alert(1)//">')).querySelector("svg img") && (C = !0)
+                        (e = Te('<svg><p><style><img src="</style><img src=modules onerror=alert(1)//">')).querySelector("svg img") && (C = !0)
                     } catch (e) {}
                 }();
                 var Me = function(e) {

@@ -43,7 +43,7 @@ func TestToABCIEvents(t *testing.T) {
 
 func TestEventManager(t *testing.T) {
 	em := NewEventManager()
-	event := NewEvent("reward", NewAttribute("x", "y"))
+	event := NewEvent("reward", NewAttribute("modules", "y"))
 	events := Events{NewEvent("transfer", NewAttribute("sender", "foo"))}
 
 	em.EmitEvents(events)

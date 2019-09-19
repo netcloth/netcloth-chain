@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/NetCloth/netcloth-chain/x/auth"
-	"github.com/NetCloth/netcloth-chain/x/bank"
+	"github.com/NetCloth/netcloth-chain/modules/auth"
+	"github.com/NetCloth/netcloth-chain/modules/bank"
 
 	"github.com/NetCloth/netcloth-chain/version"
 	"os"
@@ -17,13 +17,13 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	authcmd "github.com/NetCloth/netcloth-chain/x/auth/client/cli"
-	authrest "github.com/NetCloth/netcloth-chain/x/auth/client/rest"
+	authcmd "github.com/NetCloth/netcloth-chain/modules/auth/client/cli"
+	authrest "github.com/NetCloth/netcloth-chain/modules/auth/client/rest"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	bankcmd "github.com/NetCloth/netcloth-chain/x/bank/client/cli"
+	bankcmd "github.com/NetCloth/netcloth-chain/modules/bank/client/cli"
 
 	"github.com/NetCloth/netcloth-chain/app"
-	nchcli "github.com/NetCloth/netcloth-chain/x/nch/client/cli"
+	nchcli "github.com/NetCloth/netcloth-chain/modules/nch/client/cli"
 )
 
 const (

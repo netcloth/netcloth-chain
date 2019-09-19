@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/NetCloth/netcloth-chain/x/genaccounts"
-	"github.com/NetCloth/netcloth-chain/x/staking"
+	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
+	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/baseapp"
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/server"
@@ -19,8 +19,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
-	genaccscli "github.com/NetCloth/netcloth-chain/x/genaccounts/client/cli"
-	genutilcli "github.com/NetCloth/netcloth-chain/x/genutil/client/cli"
+	genaccscli "github.com/NetCloth/netcloth-chain/modules/genaccounts/client/cli"
+	genutilcli "github.com/NetCloth/netcloth-chain/modules/genutil/client/cli"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"

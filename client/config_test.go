@@ -13,7 +13,6 @@ import (
 	"github.com/NetCloth/netcloth-chain/client/flags"
 )
 
-// For https://github.com/cosmos/cosmos-sdk/issues/3899
 func Test_runConfigCmdTwiceWithShorterNodeValue(t *testing.T) {
 	// Prepare environment
 	t.Parallel()

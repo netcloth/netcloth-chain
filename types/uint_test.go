@@ -214,7 +214,7 @@ func TestSafeSub(t *testing.T) {
 		}
 		require.Equal(
 			t, tc.expected, tc.x.Sub(tc.y).Uint64(),
-			"invalid subtraction result; x: %s, y: %s, tc: #%d", tc.x, tc.y, i,
+			"invalid subtraction result; modules: %s, y: %s, tc: #%d", tc.x, tc.y, i,
 		)
 	}
 }

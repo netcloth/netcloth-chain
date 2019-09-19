@@ -265,7 +265,7 @@ func (ctx CLIContext) PrintOutput(toPrint fmt.Stringer) (err error) {
 }
 
 // GetFromFields returns a from account address and Keybase name given either
-// an address or key name. If genOnly is true, only a valid Bech32 cosmos
+// an address or key name. If genOnly is true, only a valid Bech32 nch
 // address is returned.
 func GetFromFields(from string, genOnly bool) (sdk.AccAddress, string, error) {
 	if from == "" {

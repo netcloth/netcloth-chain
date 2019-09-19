@@ -8,9 +8,9 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/x/slashing"
-	"github.com/NetCloth/netcloth-chain/x/staking"
-	"github.com/NetCloth/netcloth-chain/x/staking/exported"
+	"github.com/NetCloth/netcloth-chain/modules/slashing"
+	"github.com/NetCloth/netcloth-chain/modules/staking"
+	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
