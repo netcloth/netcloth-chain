@@ -8,9 +8,9 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/staking/keeper"
 	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
@@ -108,6 +108,7 @@ func handleMsgCreateValidator(ctx sdk.Context, msg types.MsgCreateValidator, k k
 		return ErrValidatorPubKeyExists(k.Codespace()).Result()
 	}
 
+	// check bond denom
 	if msg.Value.Denom != k.BondDenom(ctx) {
 		return ErrBadDenom(k.Codespace()).Result()
 	}

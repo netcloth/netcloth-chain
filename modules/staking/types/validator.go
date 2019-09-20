@@ -47,6 +47,7 @@ type Validator struct {
 	UnbondingCompletionTime time.Time      `json:"unbonding_time" yaml:"unbonding_time"`           // if unbonding, min time for the validator to complete unbonding
 	Commission              Commission     `json:"commission" yaml:"commission"`                   // commission parameters
 	MinSelfDelegation       sdk.Int        `json:"min_self_delegation" yaml:"min_self_delegation"` // validator's self declared minimum self delegation
+	SelfDelegation          sdk.Dec        `json:"self_delegation" yaml:"self_delegation"`         // validator's self-delegation
 }
 
 // custom marshal yaml function due to consensus pubkey
@@ -63,6 +64,7 @@ func (v Validator) MarshalYAML() (interface{}, error) {
 		UnbondingCompletionTime time.Time
 		Commission              Commission
 		MinSelfDelegation       sdk.Int
+		SelfDelegation          sdk.Dec
 	}{
 		OperatorAddress:         v.OperatorAddress,
 		ConsPubKey:              sdk.MustBech32ifyConsPub(v.ConsPubKey),
@@ -75,6 +77,7 @@ func (v Validator) MarshalYAML() (interface{}, error) {
 		UnbondingCompletionTime: v.UnbondingCompletionTime,
 		Commission:              v.Commission,
 		MinSelfDelegation:       v.MinSelfDelegation,
+		SelfDelegation:          v.SelfDelegation,
 	})
 	if err != nil {
 		return nil, err
@@ -115,6 +118,7 @@ func NewValidator(operator sdk.ValAddress, pubKey crypto.PubKey, description Des
 		UnbondingCompletionTime: time.Unix(0, 0).UTC(),
 		Commission:              NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
 		MinSelfDelegation:       sdk.OneInt(),
+		SelfDelegation:          sdk.ZeroDec(),
 	}
 }
 
@@ -155,10 +159,12 @@ func (v Validator) String() string {
   Unbonding Height:           %d
   Unbonding Completion Time:  %v
   Minimum Self Delegation:    %v
-  Commission:                 %s`, v.OperatorAddress, bechConsPubKey,
+  Commission:                 %s
+  Self Delegation:            %v`, v.OperatorAddress, bechConsPubKey,
+
 		v.Jailed, v.Status, v.Tokens,
 		v.DelegatorShares, v.Description,
-		v.UnbondingHeight, v.UnbondingCompletionTime, v.MinSelfDelegation, v.Commission)
+		v.UnbondingHeight, v.UnbondingCompletionTime, v.MinSelfDelegation, v.Commission, v.SelfDelegation)
 }
 
 // this is a helper struct used for JSON de- and encoding only
@@ -174,6 +180,7 @@ type bechValidator struct {
 	UnbondingCompletionTime time.Time      `json:"unbonding_time" yaml:"unbonding_time"`           // if unbonding, min time for the validator to complete unbonding
 	Commission              Commission     `json:"commission" yaml:"commission"`                   // commission parameters
 	MinSelfDelegation       sdk.Int        `json:"min_self_delegation" yaml:"min_self_delegation"` // minimum self delegation
+	SelfDelegation          sdk.Dec        `json:"self_delegation" yaml:"self_delegation"`         // validator's self-delegation
 }
 
 // MarshalJSON marshals the validator to JSON using Bech32
@@ -195,6 +202,7 @@ func (v Validator) MarshalJSON() ([]byte, error) {
 		UnbondingCompletionTime: v.UnbondingCompletionTime,
 		MinSelfDelegation:       v.MinSelfDelegation,
 		Commission:              v.Commission,
+		SelfDelegation:          v.SelfDelegation,
 	})
 }
 
@@ -220,6 +228,7 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 		UnbondingCompletionTime: bv.UnbondingCompletionTime,
 		Commission:              bv.Commission,
 		MinSelfDelegation:       bv.MinSelfDelegation,
+		SelfDelegation:          bv.SelfDelegation,
 	}
 	return nil
 }
@@ -232,7 +241,8 @@ func (v Validator) TestEquivalent(v2 Validator) bool {
 		v.Tokens.Equal(v2.Tokens) &&
 		v.DelegatorShares.Equal(v2.DelegatorShares) &&
 		v.Description == v2.Description &&
-		v.Commission.Equal(v2.Commission)
+		v.Commission.Equal(v2.Commission) &&
+		v.SelfDelegation.Equal(v2.SelfDelegation)
 }
 
 // return the TM validator address
@@ -398,6 +408,14 @@ func (v Validator) BondedTokens() sdk.Int {
 	return sdk.ZeroInt()
 }
 
+// get current delegation lever
+func (v Validator) BondedLever() sdk.Dec {
+	if v.IsBonded() {
+		return v.DelegatorShares.MulInt(sdk.NewInt(100)).QuoTruncate(v.SelfDelegation)
+	}
+	return sdk.ZeroDec()
+}
+
 // get the consensus-engine power
 // a reduction of 10^6 from validator tokens is applied
 func (v Validator) ConsensusPower() int64 {
@@ -494,3 +512,4 @@ func (v Validator) GetConsensusPower() int64      { return v.ConsensusPower() }
 func (v Validator) GetCommission() sdk.Dec        { return v.Commission.Rate }
 func (v Validator) GetMinSelfDelegation() sdk.Int { return v.MinSelfDelegation }
 func (v Validator) GetDelegatorShares() sdk.Dec   { return v.DelegatorShares }
+func (v Validator) GetSelfDelegation() sdk.Dec    { return v.SelfDelegation }
