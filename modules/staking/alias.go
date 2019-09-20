@@ -50,10 +50,11 @@ const (
 	MaxWebsiteLength                   = types.MaxWebsiteLength
 	MaxDetailsLength                   = types.MaxDetailsLength
 	DoNotModifyDesc                    = types.DoNotModifyDesc
-	DefaultMaxLever 				   = types.DefaultMaxLever
 )
 
 var (
+	DefaultMaxLever = types.DefaultMaxLever
+
 	// functions aliases
 	RegisterInvariants                 = keeper.RegisterInvariants
 	AllInvariants                      = keeper.AllInvariants
@@ -127,6 +128,7 @@ var (
 	ErrTransitiveRedelegation          = types.ErrTransitiveRedelegation
 	ErrMaxRedelegationEntries          = types.ErrMaxRedelegationEntries
 	ErrDelegatorShareExRateInvalid     = types.ErrDelegatorShareExRateInvalid
+	ErrDelegatorShareExceedMaxLever    = types.ErrDelegatorShareExceedMaxLever
 	ErrBothShareMsgsGiven              = types.ErrBothShareMsgsGiven
 	ErrNeitherShareMsgsGiven           = types.ErrNeitherShareMsgsGiven
 	ErrMissingSignature                = types.ErrMissingSignature

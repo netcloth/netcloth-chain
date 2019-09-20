@@ -197,8 +197,11 @@ func ErrMaxRedelegationEntries(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func ErrDelegatorShareExRateInvalid(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidDelegation,
-		"cannot delegate to validators with invalid (zero) ex-rate")
+	return sdk.NewError(codespace, CodeInvalidDelegation, "cannot delegate to validators with invalid (zero) ex-rate")
+}
+
+func ErrDelegatorShareExceedMaxLever(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidDelegation, "delegate shares exceeds max lever")
 }
 
 func ErrBothShareMsgsGiven(codespace sdk.CodespaceType) sdk.Error {

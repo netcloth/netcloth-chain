@@ -3,8 +3,8 @@ package slashing
 import (
 	"time"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // MaxEvidenceAge - max age for evidence

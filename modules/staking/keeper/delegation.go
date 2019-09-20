@@ -521,6 +521,10 @@ func (k Keeper) Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.In
 		}
 	}
 
+	if validator.BondedLever().LT(k.MaxLever(ctx)) {
+		return sdk.ZeroDec(), types.ErrDelegatorShareExceedMaxLever(k.Codespace())
+	}
+
 	validator, newShares = k.AddValidatorTokensAndShares(ctx, validator, bondAmt)
 
 	// Update delegation

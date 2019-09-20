@@ -45,7 +45,7 @@ func (k Keeper) BondDenom(ctx sdk.Context) (res string) {
 
 // MaxLever - max delegation lever
 // total user delegation / self delegation
-func (k Keeper) MaxLever(ctx sdk.Context) (res uint16) {
+func (k Keeper) MaxLever(ctx sdk.Context) (res sdk.Dec) {
 	k.paramstore.Get(ctx, types.KeyMaxLever, &res)
 	return
 }
