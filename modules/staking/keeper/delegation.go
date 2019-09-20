@@ -783,7 +783,7 @@ func (k Keeper) CompleteRedelegation(ctx sdk.Context, delAddr sdk.AccAddress,
 }
 
 // ValidateUnbondAmount validates that a given unbond or redelegation amount is
-// valied based on upon the converted shares. If the amount is valid, the total
+// valid based on upon the converted shares. If the amount is valid, the total
 // amount of respective shares is returned, otherwise an error is returned.
 func (k Keeper) ValidateUnbondAmount(
 	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt sdk.Int,

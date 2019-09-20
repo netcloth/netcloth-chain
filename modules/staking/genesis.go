@@ -6,9 +6,9 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
 	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // InitGenesis sets the pool and parameters for the provided keeper.  For each
