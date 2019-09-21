@@ -521,7 +521,9 @@ func (k Keeper) Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.In
 		}
 	}
 
-	if validator.BondedLever().LT(k.MaxLever(ctx)) {
+	ctx.Logger().Info(fmt.Sprintf("current delegation lever: %d", validator.BondedLever()))
+
+	if validator.BondedLever().GT(k.MaxLever(ctx)) {
 		return sdk.ZeroDec(), types.ErrDelegatorShareExceedMaxLever(k.Codespace())
 	}
 
