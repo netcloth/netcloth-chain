@@ -2,6 +2,7 @@ package nch
 
 import (
 	"fmt"
+	"github.com/NetCloth/netcloth-chain/modules/nch/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
@@ -33,5 +34,12 @@ func handleMsgSend(ctx sdk.Context, keeper Keeper, msg MsgSend) sdk.Result {
 		return sdk.ErrInsufficientCoins("does not have enough coins").Result()
 	}
 
-	return sdk.Result{}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
 }

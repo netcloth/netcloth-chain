@@ -9,7 +9,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	tmtypes "github.com/tendermint/tendermint/types"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
@@ -411,7 +411,11 @@ func (v Validator) BondedTokens() sdk.Int {
 // get current delegation lever
 func (v Validator) BondedLever() sdk.Dec {
 	if v.IsBonded() {
-		return v.DelegatorShares.MulInt(sdk.NewInt(100)).QuoTruncate(v.SelfDelegation)
+		fmt.Println("++++++++++++++++++++++++++")
+		fmt.Println(v.DelegatorShares.String())
+		fmt.Println(v.SelfDelegation.String())
+		fmt.Println("++++++++++++++++++++++++++")
+		return v.DelegatorShares.QuoTruncate(v.SelfDelegation)
 	}
 	return sdk.ZeroDec()
 }
