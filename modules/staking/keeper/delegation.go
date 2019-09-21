@@ -521,13 +521,13 @@ func (k Keeper) Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.In
 		}
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("current delegation lever: %d", validator.BondedLever()))
-
-	if validator.BondedLever().GT(k.MaxLever(ctx)) {
+	isValidatorOperator := delegation.DelegatorAddress.Equals(validator.OperatorAddress)
+	ctx.Logger().Info(fmt.Sprintf("delegation lever: %d", validator.BondedLever(isValidatorOperator, bondAmt.ToDec())))
+	if validator.BondedLever(isValidatorOperator, bondAmt.ToDec()).GT(k.MaxLever(ctx)) {
 		return sdk.ZeroDec(), types.ErrDelegatorShareExceedMaxLever(k.Codespace())
 	}
 
-	validator, newShares = k.AddValidatorTokensAndShares(ctx, validator, bondAmt)
+	validator, newShares = k.AddValidatorTokensAndShares(ctx, validator, bondAmt, isValidatorOperator)
 
 	// Update delegation
 	delegation.Shares = delegation.Shares.Add(newShares)

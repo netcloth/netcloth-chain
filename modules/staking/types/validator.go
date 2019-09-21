@@ -409,13 +409,13 @@ func (v Validator) BondedTokens() sdk.Int {
 }
 
 // get current delegation lever
-func (v Validator) BondedLever() sdk.Dec {
+func (v Validator) BondedLever(self_delegation bool, delta sdk.Dec) sdk.Dec {
 	if v.IsBonded() {
-		fmt.Println("++++++++++++++++++++++++++")
-		fmt.Println(v.DelegatorShares.String())
-		fmt.Println(v.SelfDelegation.String())
-		fmt.Println("++++++++++++++++++++++++++")
-		return v.DelegatorShares.QuoTruncate(v.SelfDelegation)
+		if self_delegation {
+			return v.DelegatorShares.Add(delta).QuoTruncate(v.SelfDelegation.Add(delta))
+		} else {
+			return v.DelegatorShares.Add(delta).QuoTruncate(v.SelfDelegation)
+		}
 	}
 	return sdk.ZeroDec()
 }
@@ -442,7 +442,7 @@ func (v Validator) UpdateStatus(newStatus sdk.BondStatus) Validator {
 }
 
 // AddTokensFromDel adds tokens to a validator
-func (v Validator) AddTokensFromDel(amount sdk.Int) (Validator, sdk.Dec) {
+func (v Validator) AddTokensFromDel(amount sdk.Int, selfDelegation bool) (Validator, sdk.Dec) {
 
 	// calculate the shares to issue
 	var issuedShares sdk.Dec
@@ -460,6 +460,9 @@ func (v Validator) AddTokensFromDel(amount sdk.Int) (Validator, sdk.Dec) {
 
 	v.Tokens = v.Tokens.Add(amount)
 	v.DelegatorShares = v.DelegatorShares.Add(issuedShares)
+	if selfDelegation {
+		v.SelfDelegation = v.SelfDelegation.Add(amount.ToDec())
+	}
 
 	return v, issuedShares
 }
