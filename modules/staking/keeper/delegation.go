@@ -588,7 +588,13 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 
 	// remove the shares and coins from the validator
 	// NOTE that the amount is later (in keeper.Delegation) moved between staking module pools
-	validator, amount = k.RemoveValidatorTokensAndShares(ctx, validator, shares)
+	validator, amount = k.RemoveValidatorTokensAndShares(ctx, validator, shares, isValidatorOperator)
+
+	// if the validator lever > 20, jail the validator
+	if validator.BondedLever(true, sdk.ZeroDec()).GT(k.MaxLever(ctx)) {
+		k.jailValidator(ctx, validator)
+		validator = k.mustGetValidator(ctx, validator.OperatorAddress)
+	}
 
 	if validator.DelegatorShares.IsZero() && validator.IsUnbonded() {
 		// if not unbonded, we must instead remove validator in EndBlocker once it finishes its unbonding period
@@ -817,7 +823,7 @@ func (k Keeper) ValidateUnbondAmount(
 
 	delShares := del.GetShares()
 	if sharesTruncated.GT(delShares) {
-		return shares, types.ErrBadSharesAmount(k.Codespace())
+		return shares, types.ErrNotEnoughDelegationShares(k.Codespace(), delShares.String())
 	}
 
 	// Cap the shares at the delegation's shares. Shares being greater could occur

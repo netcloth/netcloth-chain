@@ -133,10 +133,10 @@ func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Val
 
 // Update the tokens of an existing validator, update the validators power index key
 func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator,
-	sharesToRemove sdk.Dec) (valOut types.Validator, removedTokens sdk.Int) {
+	sharesToRemove sdk.Dec, selfDelegation bool) (valOut types.Validator, removedTokens sdk.Int) {
 
 	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, removedTokens = validator.RemoveDelShares(sharesToRemove)
+	validator, removedTokens = validator.RemoveDelShares(sharesToRemove, selfDelegation)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
 	return validator, removedTokens
