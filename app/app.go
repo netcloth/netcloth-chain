@@ -13,8 +13,8 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 
+	bam "github.com/NetCloth/netcloth-chain/baseapp"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/version"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	"github.com/NetCloth/netcloth-chain/modules/crisis"
@@ -28,10 +28,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/modules/supply"
-	bam "github.com/NetCloth/netcloth-chain/baseapp"
 	"github.com/NetCloth/netcloth-chain/simapp"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
+	"github.com/NetCloth/netcloth-chain/version"
 	dbm "github.com/tendermint/tm-db"
 )
 

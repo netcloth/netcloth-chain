@@ -115,8 +115,8 @@ type UnbondingDelegation struct {
 type UnbondingDelegationEntry struct {
 	CreationHeight int64     `json:"creation_height" yaml:"creation_height"` // height which the unbonding took place
 	CompletionTime time.Time `json:"completion_time" yaml:"completion_time"` // time at which the unbonding delegation will complete
-	InitialBalance sdk.Int   `json:"initial_balance" yaml:"initial_balance"` // atoms initially scheduled to receive at completion
-	Balance        sdk.Int   `json:"balance" yaml:"balance"`                 // atoms to receive at completion
+	InitialBalance sdk.Int   `json:"initial_balance" yaml:"initial_balance"` // nchs initially scheduled to receive at completion
+	Balance        sdk.Int   `json:"balance" yaml:"balance"`                 // nchs to receive at completion
 }
 
 // IsMature - is the current entry mature

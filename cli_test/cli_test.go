@@ -19,13 +19,13 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/app"
 
-	nchtypes "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
 	"github.com/NetCloth/netcloth-chain/modules/mint"
-	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/tests"
+	nchtypes "github.com/NetCloth/netcloth-chain/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 

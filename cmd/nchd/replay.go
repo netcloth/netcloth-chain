@@ -17,7 +17,6 @@ import (
 	tm "github.com/tendermint/tendermint/types"
 
 	"github.com/NetCloth/netcloth-chain/app"
-
 	"github.com/NetCloth/netcloth-chain/server"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )

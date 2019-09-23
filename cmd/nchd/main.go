@@ -2,25 +2,24 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
-	"github.com/NetCloth/netcloth-chain/modules/staking"
-	"github.com/NetCloth/netcloth-chain/baseapp"
-	"github.com/NetCloth/netcloth-chain/client"
-	"github.com/NetCloth/netcloth-chain/server"
-	"github.com/NetCloth/netcloth-chain/store"
-	"github.com/spf13/viper"
 	"io"
 
+	"github.com/NetCloth/netcloth-chain/app"
+	"github.com/NetCloth/netcloth-chain/baseapp"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
+	genaccscli "github.com/NetCloth/netcloth-chain/modules/genaccounts/client/cli"
+	genutilcli "github.com/NetCloth/netcloth-chain/modules/genutil/client/cli"
+	"github.com/NetCloth/netcloth-chain/modules/staking"
+	"github.com/NetCloth/netcloth-chain/server"
+	"github.com/NetCloth/netcloth-chain/store"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
-
-	"github.com/NetCloth/netcloth-chain/app"
-
-	genaccscli "github.com/NetCloth/netcloth-chain/modules/genaccounts/client/cli"
-	genutilcli "github.com/NetCloth/netcloth-chain/modules/genutil/client/cli"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -35,7 +34,6 @@ const flagInvCheckPeriod = "inv-check-period"
 
 var invCheckPeriod uint
 
-
 func main() {
 	cdc := app.CreateCodec()
 
@@ -43,7 +41,6 @@ func main() {
 	config := sdk.GetConfig()
 	app.SetBech32AddressPrefixes(config)
 	config.Seal()
-
 
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
@@ -78,7 +75,7 @@ func main() {
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
 	return app.NewNCHApp(
-		logger, db,  traceStore, true, invCheckPeriod,
+		logger, db, traceStore, true, invCheckPeriod,
 		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
 	)
 }
