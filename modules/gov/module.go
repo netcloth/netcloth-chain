@@ -10,12 +10,12 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/modules/gov/client"
 	"github.com/NetCloth/netcloth-chain/modules/gov/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/gov/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (

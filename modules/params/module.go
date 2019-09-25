@@ -8,8 +8,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/modules/params/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (

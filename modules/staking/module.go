@@ -13,12 +13,12 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
 	authtypes "github.com/NetCloth/netcloth-chain/modules/auth/types"
 	"github.com/NetCloth/netcloth-chain/modules/staking/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/staking/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (

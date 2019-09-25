@@ -8,11 +8,11 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
 )

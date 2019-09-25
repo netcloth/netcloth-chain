@@ -10,11 +10,11 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/types/module"
 )
 
 var (

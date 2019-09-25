@@ -1,29 +1,27 @@
 package main
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	"github.com/NetCloth/netcloth-chain/modules/bank"
-
-	"github.com/NetCloth/netcloth-chain/version"
 	"os"
 	"path"
 
-	"github.com/NetCloth/netcloth-chain/client"
-	"github.com/NetCloth/netcloth-chain/client/keys"
-	"github.com/NetCloth/netcloth-chain/client/lcd"
-	"github.com/NetCloth/netcloth-chain/client/rpc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
+	"github.com/NetCloth/netcloth-chain/app"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/keys"
+	"github.com/NetCloth/netcloth-chain/client/lcd"
+	"github.com/NetCloth/netcloth-chain/client/rpc"
+	"github.com/NetCloth/netcloth-chain/modules/auth"
 	authcmd "github.com/NetCloth/netcloth-chain/modules/auth/client/cli"
 	authrest "github.com/NetCloth/netcloth-chain/modules/auth/client/rest"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/modules/bank"
 	bankcmd "github.com/NetCloth/netcloth-chain/modules/bank/client/cli"
-
-	"github.com/NetCloth/netcloth-chain/app"
 	nchcli "github.com/NetCloth/netcloth-chain/modules/nch/client/cli"
+	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/NetCloth/netcloth-chain/version"
 )
 
 const (
