@@ -137,7 +137,6 @@ func handleMsgCreateValidator(ctx sdk.Context, msg types.MsgCreateValidator, k k
 	}
 
 	validator.MinSelfDelegation = msg.MinSelfDelegation
-	validator.SelfDelegation = msg.Value.Amount.ToDec()
 
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
