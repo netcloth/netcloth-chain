@@ -10,6 +10,10 @@ export GO111MODULE = on
 
 build_tags = netgo
 
+#update-swagger-docs:
+#	statik -src=client/lcd/swagger-ui -dest=client/lcd -f -m
+#.PHONY: update-swagger-docs
+
 
 ifeq ($(WITH_CLEVELDB),yes)
   build_tags += gcc
