@@ -46,7 +46,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// fetch the validator
 		valAddr := sdk.ValAddress(iterator.Value())
 		validator := k.mustGetValidator(ctx, valAddr)
-		ctx.Logger().Info("++++++++ validator: " + validator.String())
 
 		if validator.Jailed {
 			panic("should never retrieve a jailed validator from the power store")
