@@ -6,8 +6,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/mint/internal/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // NewQuerier returns a minting Querier handler.

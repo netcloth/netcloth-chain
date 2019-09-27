@@ -3,8 +3,8 @@ package params
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	govtypes "github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewParamChangeProposalHandler(k Keeper) govtypes.Handler {

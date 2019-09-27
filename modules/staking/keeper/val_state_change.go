@@ -46,6 +46,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// fetch the validator
 		valAddr := sdk.ValAddress(iterator.Value())
 		validator := k.mustGetValidator(ctx, valAddr)
+		ctx.Logger().Info("++++++++ validator: " + validator.String())
 
 		if validator.Jailed {
 			panic("should never retrieve a jailed validator from the power store")
@@ -56,6 +57,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		if validator.PotentialConsensusPower() == 0 {
 			break
 		}
+		ctx.Logger().Info(fmt.Sprintf("voting power:  %d", validator.PotentialConsensusPower()))
 
 		// apply the appropriate state change if necessary
 		switch {
@@ -135,6 +137,11 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)
+
+		ctx.Logger().Info("-------------- updates: ")
+		for _, item := range updates {
+			ctx.Logger().Info(item.String())
+		}
 	}
 
 	return updates

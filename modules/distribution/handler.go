@@ -3,10 +3,10 @@ package distribution
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/keeper"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
 	govtypes "github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

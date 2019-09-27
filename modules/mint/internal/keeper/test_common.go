@@ -8,20 +8,19 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/stretchr/testify/require"
 
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/store"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	"github.com/NetCloth/netcloth-chain/modules/mint/internal/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/modules/supply"
+	"github.com/NetCloth/netcloth-chain/store"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 type testInput struct {

@@ -6,8 +6,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewQuerier(keeper Keeper) sdk.Querier {

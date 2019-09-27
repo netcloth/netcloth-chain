@@ -6,11 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/codec"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
 )
 

@@ -8,9 +8,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Keeper of the slashing store

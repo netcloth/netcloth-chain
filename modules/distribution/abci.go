@@ -3,8 +3,8 @@ package distribution
 import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/keeper"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // set the proposer for determining distribution during endblock

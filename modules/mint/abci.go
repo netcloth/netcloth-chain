@@ -1,8 +1,8 @@
 package mint
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/mint/internal/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // BeginBlocker mints new tokens for the previous block.

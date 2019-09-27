@@ -3,12 +3,12 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
-	"github.com/NetCloth/netcloth-chain/client"
-	"github.com/NetCloth/netcloth-chain/client/context"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 

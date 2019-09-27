@@ -6,8 +6,8 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func (k Keeper) AfterValidatorBonded(ctx sdk.Context, address sdk.ConsAddress, _ sdk.ValAddress) {

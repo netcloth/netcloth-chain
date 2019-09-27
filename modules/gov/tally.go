@@ -1,9 +1,9 @@
 package gov
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/gov/types"
 	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // validatorGovInfo used for tallying

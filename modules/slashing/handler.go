@@ -3,8 +3,8 @@ package slashing
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {

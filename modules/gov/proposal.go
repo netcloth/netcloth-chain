@@ -3,8 +3,8 @@ package gov
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // SubmitProposal create new proposal given a content
