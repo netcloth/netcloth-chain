@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // DistributeFromFeePool distributes funds from the distribution module account to

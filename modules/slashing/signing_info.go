@@ -1,8 +1,8 @@
 package slashing
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // Stored by *validator* address (not operator address)

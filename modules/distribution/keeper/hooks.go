@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
 	stakingtypes "github.com/NetCloth/netcloth-chain/modules/staking/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
@@ -85,9 +86,11 @@ func (h Hooks) BeforeDelegationCreated(ctx sdk.Context, delAddr sdk.AccAddress, 
 func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) {
 	val := h.k.stakingKeeper.Validator(ctx, valAddr)
 	del := h.k.stakingKeeper.Delegation(ctx, delAddr, valAddr)
-	if _, err := h.k.withdrawDelegationRewards(ctx, val, del); err != nil {
+	coins, err := h.k.withdrawDelegationRewards(ctx, val, del)
+	if err != nil {
 		panic(err)
 	}
+	ctx.Logger().Info(fmt.Sprintf("withdrawDelegationRewards %s from validator %s, amount %s", delAddr.String(), valAddr.String(), coins.String()))
 }
 
 // create new delegation period record
