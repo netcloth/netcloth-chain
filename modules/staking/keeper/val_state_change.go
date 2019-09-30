@@ -137,7 +137,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	if len(updates) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)
 
-		ctx.Logger().Info("-------------- updates: ")
 		for _, item := range updates {
 			ctx.Logger().Info(item.String())
 		}
