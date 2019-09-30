@@ -2,7 +2,6 @@ package exported
 
 import (
 	sdk "github.com/NetCloth/netcloth-chain/types"
-
 	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
 )
 
