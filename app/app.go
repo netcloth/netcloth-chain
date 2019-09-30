@@ -28,7 +28,6 @@ import (
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/modules/supply"
-	"github.com/NetCloth/netcloth-chain/simapp"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/version"
@@ -303,7 +302,7 @@ func (app *NCHApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 
 // application update at chain initialization
 func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState simapp.GenesisState
+	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return app.mm.InitGenesis(ctx, genesisState)
