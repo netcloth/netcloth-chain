@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
 	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // register all distribution invariants

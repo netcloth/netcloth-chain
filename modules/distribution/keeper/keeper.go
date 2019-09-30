@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 )

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	govtypes "github.com/NetCloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (

@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 // type declaration for parameters
