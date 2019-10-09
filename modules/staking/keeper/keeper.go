@@ -97,3 +97,23 @@ func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdk.Int) {
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(power)
 	store.Set(types.LastTotalPowerKey, b)
 }
+
+func (k Keeper) EndBlock(ctx sdk.Context) {
+	p := k.GetParams(ctx)
+
+	if ctx.BlockTime().Unix() < p.NextExtendingTime {
+		return
+	}
+
+	if p.MaxValidatorsExtending > p.MaxValidators {
+		e := p.MaxValidatorsExtendingSpeed
+		if p.MaxValidatorsExtending - p.MaxValidators < p.MaxValidatorsExtendingSpeed {
+			e = p.MaxValidatorsExtending - p.MaxValidators
+		}
+
+		p.MaxValidators += e
+	}
+
+	p.NextExtendingTime += types.MaxValidatorsExtendingInterval
+	k.SetParams(ctx, p)
+}

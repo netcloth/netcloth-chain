@@ -30,6 +30,21 @@ func (k Keeper) MaxValidators(ctx sdk.Context) (res uint16) {
 	return
 }
 
+func (k Keeper) MaxValidatorsExtending(ctx sdk.Context) (res uint16) {
+	k.paramstore.Get(ctx, types.KeyMaxValidatorsExtending, &res)
+	return
+}
+
+func (k Keeper) MaxValidatorsExtendingSpeed(ctx sdk.Context) (res uint16) {
+	k.paramstore.Get(ctx, types.KeyMaxValidatorsExtendingSpeed, &res)
+	return
+}
+
+func (k Keeper) NextExtendingTime(ctx sdk.Context) (res int64) {
+	k.paramstore.Get(ctx, types.KeyNextExtendingTime, &res)
+	return
+}
+
 // MaxEntries - Maximum number of simultaneous unbonding
 // delegations or redelegations (per pair/trio)
 func (k Keeper) MaxEntries(ctx sdk.Context) (res uint16) {
@@ -55,6 +70,9 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
 		k.UnbondingTime(ctx),
 		k.MaxValidators(ctx),
+		k.MaxValidatorsExtending(ctx),
+		k.MaxValidatorsExtendingSpeed(ctx),
+		k.NextExtendingTime(ctx),
 		k.MaxEntries(ctx),
 		k.BondDenom(ctx),
 		k.MaxLever(ctx),
