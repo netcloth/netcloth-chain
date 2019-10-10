@@ -19,6 +19,7 @@ import (
 	authrest "github.com/NetCloth/netcloth-chain/modules/auth/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	bankcmd "github.com/NetCloth/netcloth-chain/modules/bank/client/cli"
+	ipalcli "github.com/NetCloth/netcloth-chain/modules/ipal/client/cli"
 	nchcli "github.com/NetCloth/netcloth-chain/modules/nch/client/cli"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
@@ -59,6 +60,7 @@ func main() {
 	// Construct Root Command
 	rootCmd.AddCommand(
 		nchcli.SendTxCmd(cdc),
+		ipalcli.IPALCmd(cdc),
 		nchcli.TokenIssueCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),

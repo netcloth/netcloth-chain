@@ -19,25 +19,23 @@ const (
 )
 
 // GetTxCmd returns the transaction commands for this module
-func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func IPALCmd(cdc *codec.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      "IPAL transaction subcommands",
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
+		Use:   types.ModuleName,
+		Short: "IPAL transaction subcommands",
 	}
 	txCmd.AddCommand(
-		SendTxCmd(cdc),
+		IPALClaimCmd(cdc),
 	)
 	return txCmd
 }
 
-func SendTxCmd(cdc *codec.Codec) *cobra.Command {
+func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ipal [from_key_or_address] [user_address] [server_ip]",
-		Short: "Create and sign a IPALClaim tx",
-		Args:  cobra.ExactArgs(3),
+		Use:     "claim",
+		Short:   "Create and sign a IPALClaim tx",
+		Example: "nchcli ipal claim  --from <key name> --address=<address> --ip=<ip>",
+		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
