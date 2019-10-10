@@ -6,6 +6,8 @@ import (
 
 const (
 	RouterKey = types.RouterKey
+
+	StoreKey = types.StoreKey
 )
 
 var (

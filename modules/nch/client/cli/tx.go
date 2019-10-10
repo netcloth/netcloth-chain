@@ -1,13 +1,14 @@
 package cli
 
 import (
+	"fmt"
+	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
 	nch "github.com/NetCloth/netcloth-chain/modules/nch"
 	"github.com/NetCloth/netcloth-chain/modules/token"
-	"github.com/NetCloth/netcloth-chain/client"
-	"github.com/NetCloth/netcloth-chain/client/context"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

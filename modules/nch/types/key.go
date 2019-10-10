@@ -2,6 +2,10 @@ package types
 
 // RouterKey is key name of the nch module
 const (
-	RouterKey = "nch"
 	ModuleName   = "nch"
+
+	// RouterKey is the message route for nch
+	RouterKey = ModuleName
+
+	StoreKey = ModuleName
 )

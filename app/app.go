@@ -35,10 +35,6 @@ import (
 
 const (
 	appName = "nch"
-
-	NCHStoreKey = "nch"
-	TokenStoreKey = "token"
-	IPALStoreKey = "ipal"
 )
 
 var (
@@ -144,9 +140,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		slashing.StoreKey,
 		gov.StoreKey,
 		params.StoreKey,
-		NCHStoreKey,
-		TokenStoreKey,
-		IPALStoreKey,
+		nch.StoreKey,
+		token.StoreKey,
+		ipal.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -190,16 +186,16 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	app.nchKeeper = nch.NewKeeper(
 		app.bankKeeper,
-		keys[NCHStoreKey],
+		keys[nch.StoreKey],
 		app.cdc)
 
 	app.tokenKeeper = token.NewKeeper(
 		app.bankKeeper,
-		keys[TokenStoreKey],
+		keys[token.StoreKey],
 		app.cdc)
 
 	app.ipalKeeper = ipal.NewKeeper(
-		keys[IPALStoreKey],
+		keys[ipal.StoreKey],
 		app.cdc)
 
 	// register the proposal types
@@ -210,7 +206,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 
 	app.Router().
-		AddRoute("nch", nch.NewHandler(app.nchKeeper)).AddRoute("token", token.NewHandler(app.tokenKeeper))
+		AddRoute(nch.RouterKey, nch.NewHandler(app.nchKeeper)).
+		AddRoute(token.RouterKey, token.NewHandler(app.tokenKeeper)).
+		AddRoute(ipal.RouterKey, ipal.NewHandler(app.ipalKeeper))
 
 	//app.QueryRouter().
 	//	AddRoute("nch", nch.NewQuirer(app.nchKeeper))

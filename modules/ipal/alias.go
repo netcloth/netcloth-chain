@@ -7,6 +7,10 @@ import (
 
 const (
 	DefaultCodespace = types.DefaultCodespace
+
+	StoreKey = types.StoreKey
+	RouterKey = types.RouterKey
+
 )
 
 var (
