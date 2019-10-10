@@ -35,10 +35,9 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
 		Example: "nchcli ipal claim  --from <key name> --address=<address> --ip=<ip>",
-		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			userAddress := viper.GetString(flagUserAddress)
 			serverIP := viper.GetString(flagServerIP)

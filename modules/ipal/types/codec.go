@@ -6,7 +6,7 @@ import (
 
 // RegisterCodec registers concrete types on the codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(&MsgIPALClaim{}, "nch/IPALCLaim", nil)
+	cdc.RegisterConcrete(MsgIPALClaim{}, "nch/IPALCLaim", nil)
 }
 
 // module wide codec

@@ -1,28 +1,27 @@
 package ipal
 
 import (
-	"fmt"
-
-	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
-func NewHandler (k keeper.Keeper) sdk.Handler {
+func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case MsgIPALClaim:
+		case types.MsgIPALClaim:
 			return handleMsgIPALClaim(ctx, k, msg)
 		default:
-			errMsg := fmt.Sprintf("unrecognized ipal claim message type: %T", msg)
+			errMsg := "Unrecognized Msg type: %s" + msg.Type()
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}
 }
 
 func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
-	ctx.Logger().Info("handleMsgIPALClaim ...")
+
+	ctx.Logger().Info("+++ handleMsgIPALClaim ...")
 
 	// check to see if the userAddress and serverIP has been registered before
 	//if _, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP); found {
