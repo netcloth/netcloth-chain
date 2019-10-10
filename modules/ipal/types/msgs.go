@@ -31,6 +31,10 @@ func (msg MsgIPALClaim) Type() string { return "ipal_claim" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
+	if msg.From.Empty() {
+		return sdk.ErrInvalidAddress("missing sender address")
+	}
+
 	if msg.UserAddress == "" {
 		return ErrEmptyInputs("missing user address")
 	}

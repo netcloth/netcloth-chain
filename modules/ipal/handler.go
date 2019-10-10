@@ -36,5 +36,4 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	)
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
-
 }
