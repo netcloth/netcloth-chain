@@ -18,15 +18,14 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/codec"
 	kbkeys "github.com/NetCloth/netcloth-chain/crypto/keys"
+	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/NetCloth/netcloth-chain/server"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
-
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/genutil"
 	"github.com/NetCloth/netcloth-chain/modules/genutil/types"

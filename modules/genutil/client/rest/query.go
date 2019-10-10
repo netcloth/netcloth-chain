@@ -3,8 +3,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/NetCloth/netcloth-chain/modules/genutil/types"
 	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/NetCloth/netcloth-chain/modules/genutil/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/rest"
 )
