@@ -1,17 +1,13 @@
 package app
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/nch"
-	"github.com/NetCloth/netcloth-chain/modules/token"
-
 	"io"
 	"os"
-
-	"github.com/NetCloth/netcloth-chain/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/NetCloth/netcloth-chain/baseapp"
 	"github.com/NetCloth/netcloth-chain/codec"
@@ -22,16 +18,19 @@ import (
 	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
 	"github.com/NetCloth/netcloth-chain/modules/genutil"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
+	"github.com/NetCloth/netcloth-chain/modules/ipal"
 	"github.com/NetCloth/netcloth-chain/modules/mint"
+	"github.com/NetCloth/netcloth-chain/modules/nch"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	paramsclient "github.com/NetCloth/netcloth-chain/modules/params/client"
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/modules/supply"
+	"github.com/NetCloth/netcloth-chain/modules/token"
+	"github.com/NetCloth/netcloth-chain/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/NetCloth/netcloth-chain/version"
-	dbm "github.com/tendermint/tm-db"
 )
 
 const (
@@ -39,6 +38,7 @@ const (
 
 	NCHStoreKey = "nch"
 	TokenStoreKey = "token"
+	IPALStoreKey = "ipal"
 )
 
 var (
@@ -89,6 +89,7 @@ func CreateCodec() *codec.Codec {
 
 	nch.RegisterCodec(cdc)
 	token.RegisterCodec(cdc)
+	ipal.RegisterCodec(cdc)
 
 	return cdc
 }
@@ -114,9 +115,9 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-
 	nchKeeper      nch.Keeper
 	tokenKeeper    token.Keeper
+	ipalKeeper     ipal.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -145,6 +146,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		params.StoreKey,
 		NCHStoreKey,
 		TokenStoreKey,
+		IPALStoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -194,6 +196,10 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.tokenKeeper = token.NewKeeper(
 		app.bankKeeper,
 		keys[TokenStoreKey],
+		app.cdc)
+
+	app.ipalKeeper = ipal.NewKeeper(
+		keys[IPALStoreKey],
 		app.cdc)
 
 	// register the proposal types
