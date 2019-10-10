@@ -19,6 +19,8 @@ var (
 	ErrEmptyInputs      = types.ErrEmptyInputs
 	ErrIPALObjectExists = types.ErrIPALObjectExists
 
+	NewIPALObject = types.NewIPALObject
+
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
 
@@ -29,7 +31,6 @@ var (
 
 type (
 	Keeper = keeper.Keeper
-	//Codespace    = keeper.Codespace
 
 	MsgIPALClaim = types.MsgIPALClaim
 	IPALObject   = types.IPALObject

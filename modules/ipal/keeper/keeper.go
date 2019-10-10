@@ -12,18 +12,19 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey   sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc        *codec.Codec // The wire codec for binary encoding/decoding.
+	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
+	cdc      *codec.Codec // The wire codec for binary encoding/decoding.
 
 	// codespace
 	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates new instances of the nch Keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, codespace sdk.CodespaceType) Keeper {
 	return Keeper{
-		storeKey:   storeKey,
-		cdc:        cdc,
+		storeKey:  storeKey,
+		cdc:       cdc,
+		codespace: codespace,
 	}
 }
 
@@ -37,6 +38,23 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
 
-func (k Keeper) GetIPALObject(userAddress, serverIP string) types.IPALObject {
-	return types.IPALObject{"", ""}
+// get a single ipal object
+func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress, serverIP string) (obj types.IPALObject, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.GetIPALObjectKey(userAddress))
+	ctx.Logger().Info(string(types.GetIPALObjectKey(userAddress)))
+	if value == nil {
+		return obj, false
+	}
+
+	obj = types.MustUnmarshalIPALObject(k.cdc, value)
+	return obj, true
+}
+
+// set ipal object
+func (k Keeper) SetIPALObject(ctx sdk.Context, obj types.IPALObject) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalIPALObject(k.cdc, obj)
+	store.Set(types.GetIPALObjectKey(obj.UserAddress), bz)
+	ctx.Logger().Info(string(types.GetIPALObjectKey(obj.UserAddress)))
 }

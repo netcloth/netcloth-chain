@@ -20,13 +20,13 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
-
-	ctx.Logger().Info("+++ handleMsgIPALClaim ...")
-
 	// check to see if the userAddress and serverIP has been registered before
-	//if _, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP); found {
-	//	return ErrIPALObjectExists(k.CodeSpace()).Result()
-	//}
+	if _, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP); found {
+		return ErrIPALObjectExists(k.Codespace()).Result()
+	}
+
+	obj := NewIPALObject(msg.UserAddress, msg.ServerIP)
+	k.SetIPALObject(ctx, obj)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

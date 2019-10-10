@@ -12,4 +12,15 @@ const (
 
 	// QuerierRoute is the querier route for ipal
 	QuerierRoute = ModuleName
+
+	// DefaultParamspace default name for parameter store
+	DefaultParamspace = ModuleName
 )
+
+var (
+	IPALObjectKey = []byte{0x11} // prefix for each key to an ipal object
+)
+
+func GetIPALObjectKey(addr string) []byte {
+	return append(IPALObjectKey, []byte(addr)...)
+}

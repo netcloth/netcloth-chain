@@ -7,16 +7,15 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 )
 
-
 type IPALObject struct {
 	UserAddress string `json:"user_address" yaml:"user_address"`
-	ServerIP string `json:"server_ip" yaml:"server_ip"`
+	ServerIP    string `json:"server_ip" yaml:"server_ip"`
 }
 
-func NewIPALObject (userAddress, serverIP string) IPALObject {
+func NewIPALObject(userAddress string, serverIP string) IPALObject {
 	return IPALObject{
-		UserAddress: "userAddress",
-		ServerIP:    "serverIP",
+		userAddress,
+		serverIP,
 	}
 }
 

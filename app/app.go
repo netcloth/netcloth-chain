@@ -196,7 +196,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
-		app.cdc)
+		app.cdc,
+		ipal.DefaultCodespace)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()

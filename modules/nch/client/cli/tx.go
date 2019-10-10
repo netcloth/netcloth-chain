@@ -1,7 +1,9 @@
 package cli
 
 import (
-	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
@@ -10,8 +12,6 @@ import (
 	nch "github.com/NetCloth/netcloth-chain/modules/nch"
 	"github.com/NetCloth/netcloth-chain/modules/token"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
