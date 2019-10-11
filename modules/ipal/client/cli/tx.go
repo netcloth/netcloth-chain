@@ -13,11 +13,6 @@ import (
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
-const (
-	flagUserAddress = "address"
-	flagServerIP    = "ip"
-)
-
 // GetTxCmd returns the transaction commands for this module
 func IPALCmd(cdc *codec.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
