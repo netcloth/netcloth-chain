@@ -1,6 +1,7 @@
 package ipal
 
 import (
+	"fmt"
 	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
@@ -21,12 +22,18 @@ func NewHandler(k Keeper) sdk.Handler {
 
 func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
 	// check to see if the userAddress and serverIP has been registered before
-	if _, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP); found {
-		return ErrIPALObjectExists(k.Codespace()).Result()
+	obj, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP)
+	if found {
+		// update ipal object
+		ctx.Logger().Info(fmt.Sprintf("update ipal object, key: %s", msg.UserAddress))
+		obj.ServerIP = msg.ServerIP
+		k.SetIPALObject(ctx, obj)
+	} else {
+		// create new ipal object
+		ctx.Logger().Info(fmt.Sprintf("create ipal object, key: %s", msg.UserAddress))
+		obj = NewIPALObject(msg.UserAddress, msg.ServerIP)
+		k.SetIPALObject(ctx, obj)
 	}
-
-	obj := NewIPALObject(msg.UserAddress, msg.ServerIP)
-	k.SetIPALObject(ctx, obj)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

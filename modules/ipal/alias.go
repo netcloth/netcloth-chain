@@ -17,7 +17,6 @@ var (
 	// functions aliases
 	RegisterCodec       = types.RegisterCodec
 	ErrEmptyInputs      = types.ErrEmptyInputs
-	ErrIPALObjectExists = types.ErrIPALObjectExists
 
 	NewIPALObject = types.NewIPALObject
 
