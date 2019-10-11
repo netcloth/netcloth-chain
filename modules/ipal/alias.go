@@ -8,15 +8,15 @@ import (
 const (
 	DefaultCodespace = types.DefaultCodespace
 
-	StoreKey = types.StoreKey
+	StoreKey  = types.StoreKey
 	RouterKey = types.RouterKey
-
 )
 
 var (
 	// functions aliases
-	RegisterCodec       = types.RegisterCodec
-	ErrEmptyInputs      = types.ErrEmptyInputs
+	RegisterCodec    = types.RegisterCodec
+	ErrEmptyInputs   = types.ErrEmptyInputs
+	ErrStringTooLong = types.ErrStringTooLong
 
 	NewIPALObject = types.NewIPALObject
 

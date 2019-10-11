@@ -5,6 +5,10 @@ import (
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
+const (
+	maxStringSize = 64
+)
+
 // MsgIPALClaim defines an ipal claim message
 type MsgIPALClaim struct {
 	From        sdk.AccAddress `json:"from" yaml:"from`
@@ -36,12 +40,21 @@ func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
 	}
 
 	if msg.UserAddress == "" {
-		return ErrEmptyInputs("missing user address")
+		return ErrEmptyInputs(DefaultCodespace)
 	}
 
 	if msg.ServerIP == "" {
-		return ErrEmptyInputs("missing server ip")
+		return ErrEmptyInputs(DefaultCodespace)
 	}
+
+	if len(msg.UserAddress) > maxStringSize {
+		return ErrStringTooLong(DefaultCodespace)
+	}
+
+	if len(msg.ServerIP) > maxStringSize {
+		return ErrStringTooLong(DefaultCodespace)
+	}
+
 	return nil
 }
 
