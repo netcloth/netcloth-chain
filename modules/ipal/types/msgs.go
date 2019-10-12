@@ -3,27 +3,43 @@ package types
 import (
 	"encoding/json"
 	sdk "github.com/NetCloth/netcloth-chain/types"
+	"go/types"
+	"time"
 )
 
 const (
-	maxStringSize = 64
+	maxStringLength = 64
 )
+
+type IPALUserRequest struct {
+	UserAddress string          `json:"user_address" yaml:"user_address"`
+	ServerIP    string          `json:"server_ip" yaml:"server_ip"`
+	Expiration  time.Time       `json:"expiration"`
+	Sig         types.Signature `json:"signature" yaml:"signature`
+}
 
 // MsgIPALClaim defines an ipal claim message
 type MsgIPALClaim struct {
-	From        sdk.AccAddress `json:"from" yaml:"from`
-	UserAddress string         `json:"user_address" yaml:"user_address"`
-	ServerIP    string         `json:"server_ip" yaml:"server_ip"`
+	From        sdk.AccAddress  `json:"from" yaml:"from`
+	UserRequest IPALUserRequest `json: "user_request" yaml:"user_request"`
+}
+
+func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time) IPALUserRequest {
+	return IPALUserRequest{
+		UserAddress: userAddress,
+		ServerIP:    serverIP,
+		Expiration:  expiration,
+		Sig:         types.Signature{},
+	}
 }
 
 var _ sdk.Msg = MsgIPALClaim{}
 
 // NewMsgIPALClaim is a constructor function for MsgIPALClaim
-func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string) MsgIPALClaim {
+func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time) MsgIPALClaim {
 	return MsgIPALClaim{
 		from,
-		userAddress,
-		serverIP,
+		NewIPALUserRequest(userAddress, serverIP, expiration),
 	}
 }
 
@@ -39,19 +55,19 @@ func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
 		return sdk.ErrInvalidAddress("missing sender address")
 	}
 
-	if msg.UserAddress == "" {
+	if msg.UserRequest.UserAddress == "" {
 		return ErrEmptyInputs(DefaultCodespace)
 	}
 
-	if msg.ServerIP == "" {
+	if msg.UserRequest.ServerIP == "" {
 		return ErrEmptyInputs(DefaultCodespace)
 	}
 
-	if len(msg.UserAddress) > maxStringSize {
+	if len(msg.UserRequest.UserAddress) > maxStringLength {
 		return ErrStringTooLong(DefaultCodespace)
 	}
 
-	if len(msg.ServerIP) > maxStringSize {
+	if len(msg.UserRequest.ServerIP) > maxStringLength {
 		return ErrStringTooLong(DefaultCodespace)
 	}
 

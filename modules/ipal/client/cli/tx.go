@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"time"
 
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
@@ -38,7 +39,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			serverIP := viper.GetString(flagServerIP)
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgIPALClaim(cliCtx.GetFromAddress(), userAddress, serverIP)
+			msg := types.NewMsgIPALClaim(cliCtx.GetFromAddress(), userAddress, serverIP, time.Now())
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
