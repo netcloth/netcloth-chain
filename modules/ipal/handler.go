@@ -21,17 +21,22 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
+	// check user request expiration
+	if ctx.BlockHeader().Time.After(msg.UserRequest.Params.Expiration) {
+		return ErrIPALClaimExpired(DefaultCodespace).Result()
+	}
+
 	// check to see if the userAddress and serverIP has been registered before
-	obj, found := k.GetIPALObject(ctx, msg.UserAddress, msg.ServerIP)
+	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServerIP)
 	if found {
 		// update ipal object
-		ctx.Logger().Info(fmt.Sprintf("update ipal object, key: %s", msg.UserAddress))
-		obj.ServerIP = msg.ServerIP
+		ctx.Logger().Info(fmt.Sprintf("update ipal object, key: %s", msg.UserRequest.Params.UserAddress))
+		obj.ServerIP = msg.UserRequest.Params.ServerIP
 		k.SetIPALObject(ctx, obj)
 	} else {
 		// create new ipal object
-		ctx.Logger().Info(fmt.Sprintf("create ipal object, key: %s", msg.UserAddress))
-		obj = NewIPALObject(msg.UserAddress, msg.ServerIP)
+		ctx.Logger().Info(fmt.Sprintf("create ipal object, key: %s", msg.UserRequest.Params.UserAddress))
+		obj = NewIPALObject(msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServerIP)
 		k.SetIPALObject(ctx, obj)
 	}
 

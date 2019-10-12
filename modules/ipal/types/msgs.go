@@ -2,8 +2,8 @@ package types
 
 import (
 	"encoding/json"
+	"github.com/NetCloth/netcloth-chain/modules/auth"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	"go/types"
 	"time"
 )
 
@@ -11,11 +11,43 @@ const (
 	maxStringLength = 64
 )
 
+type ADParam struct {
+	UserAddress string    `json:"user_address" yaml:"user_address"`
+	ServerIP    string    `json:"server_ip" yaml:"server_ip"`
+	Expiration  time.Time `json:"expiration"`
+}
+
+func (p ADParam) GetSignBytes() []byte {
+	b, err := json.Marshal(p)
+	if err != nil {
+		panic(err)
+	}
+	return sdk.MustSortJSON(b)
+}
+
+func (p ADParam) Validate() sdk.Error {
+	if p.UserAddress == "" {
+		return ErrEmptyInputs(DefaultCodespace)
+	}
+
+	if p.ServerIP == "" {
+		return ErrEmptyInputs(DefaultCodespace)
+	}
+
+	if len(p.UserAddress) > maxStringLength {
+		return ErrStringTooLong(DefaultCodespace)
+	}
+
+	if len(p.ServerIP) > maxStringLength {
+		return ErrStringTooLong(DefaultCodespace)
+	}
+
+	return nil
+}
+
 type IPALUserRequest struct {
-	UserAddress string          `json:"user_address" yaml:"user_address"`
-	ServerIP    string          `json:"server_ip" yaml:"server_ip"`
-	Expiration  time.Time       `json:"expiration"`
-	Sig         types.Signature `json:"signature" yaml:"signature`
+	Params ADParam           `json:"params" yaml:"params"`
+	Sig    auth.StdSignature `json:"signature" yaml:"signature`
 }
 
 // MsgIPALClaim defines an ipal claim message
@@ -24,12 +56,18 @@ type MsgIPALClaim struct {
 	UserRequest IPALUserRequest `json: "user_request" yaml:"user_request"`
 }
 
-func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time) IPALUserRequest {
-	return IPALUserRequest{
+func NewADParam(userAddress string, serverIP string, expiration time.Time) ADParam {
+	return ADParam{
 		UserAddress: userAddress,
 		ServerIP:    serverIP,
 		Expiration:  expiration,
-		Sig:         types.Signature{},
+	}
+}
+
+func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time) IPALUserRequest {
+	return IPALUserRequest{
+		Params: NewADParam(userAddress, serverIP, expiration),
+		Sig:    auth.StdSignature{},
 	}
 }
 
@@ -51,24 +89,22 @@ func (msg MsgIPALClaim) Type() string { return "ipal_claim" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
+	// check msg sender
 	if msg.From.Empty() {
 		return sdk.ErrInvalidAddress("missing sender address")
 	}
 
-	if msg.UserRequest.UserAddress == "" {
-		return ErrEmptyInputs(DefaultCodespace)
+	// check userAddress and serverIP
+	err := msg.UserRequest.Params.Validate()
+	if err != nil {
+		return err
 	}
 
-	if msg.UserRequest.ServerIP == "" {
-		return ErrEmptyInputs(DefaultCodespace)
-	}
-
-	if len(msg.UserRequest.UserAddress) > maxStringLength {
-		return ErrStringTooLong(DefaultCodespace)
-	}
-
-	if len(msg.UserRequest.ServerIP) > maxStringLength {
-		return ErrStringTooLong(DefaultCodespace)
+	// check user request signature
+	pubKey := msg.UserRequest.Sig.PubKey
+	signBytes := msg.UserRequest.Params.GetSignBytes()
+	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
+		return ErrInvalidSignature(DefaultCodespace)
 	}
 
 	return nil
