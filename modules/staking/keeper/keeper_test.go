@@ -33,7 +33,7 @@ var (
 		gov.ModuleName:            {supply.Burner},
 	}
 )
-func ModuleAccountAddrs() map[string]bool {
+func moduleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -41,7 +41,7 @@ func ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func TestEndBlock(t *testing.T) {
+func setupTest() (stakingKeeper staking.Keeper, ctx sdk.Context) {
 	cdc := codec.New()
 
 	db := dbm.NewMemDB()
@@ -66,23 +66,40 @@ func TestEndBlock(t *testing.T) {
 	ms.LoadLatestVersion()
 
 	accountKeeper := auth.NewAccountKeeper(cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, ModuleAccountAddrs())
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, moduleAccountAddrs())
 	supplyKeeper := supply.NewKeeper(cdc, keys[supply.StoreKey], accountKeeper, bankKeeper, maccPerms)
-	stakingKeeper := staking.NewKeeper(cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey], supplyKeeper, stakingSubspace, staking.DefaultCodespace)
+	stakingKeeper = staking.NewKeeper(cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey], supplyKeeper, stakingSubspace, staking.DefaultCodespace)
+	ctx = sdk.NewContext(ms, abci.Header{Time: time.Unix(0, 0)}, false, log.NewTMLogger(os.Stdout))
+
+	return
+}
+
+func TestEndBlock(t *testing.T) {
+	k, ctx := setupTest()
 
 	p := staking.Params {
 		MaxValidators                   : 100,
-		MaxValidatorsExtending          : 300,
+		MaxValidatorsExtending          : 130,
 		MaxValidatorsExtendingSpeed     : 10,
-		NextExtendingTime               : time.Now().Unix() + 60,
+		NextExtendingTime               : time.Now().Unix() + stakingtypes.MaxValidatorsExtendingInterval,
 	}
 
-	ctx := sdk.NewContext(ms, abci.Header{Time: time.Unix(0, 0)}, false, log.NewTMLogger(os.Stdout))
-	stakingKeeper.SetParams(ctx, p)
+	k.SetParams(ctx, p)
 
-	require.Equal(t, stakingKeeper.GetParams(ctx).MaxValidators, uint16(100))
+	require.Equal(t, 100, int(k.GetParams(ctx).MaxValidators))
 
-	ctx = ctx.WithBlockTime(time.Now().Add(stakingtypes.MaxValidatorsExtendingInterval * 1e9))
-	stakingKeeper.EndBlock(ctx)
-	require.Equal(t, stakingKeeper.GetParams(ctx).MaxValidators, uint16(110))
+	ctx = ctx.WithBlockTime(time.Now().Add(stakingtypes.MaxValidatorsExtendingInterval * 1e9 * 1))
+	k.EndBlock(ctx)
+	require.Equal(t, 110, int(k.GetParams(ctx).MaxValidators))
+
+	p = k.GetParams(ctx)
+	p.MaxValidatorsExtendingSpeed = 11
+	k.SetParams(ctx, p)
+	ctx = ctx.WithBlockTime(time.Now().Add(stakingtypes.MaxValidatorsExtendingInterval * 1e9 * 2))
+	k.EndBlock(ctx)
+	require.Equal(t, 121, int(k.GetParams(ctx).MaxValidators))
+
+	ctx = ctx.WithBlockTime(time.Now().Add(stakingtypes.MaxValidatorsExtendingInterval * 1e9 * 3))
+	k.EndBlock(ctx)
+	require.Equal(t, 130, int(k.GetParams(ctx).MaxValidators))
 }
