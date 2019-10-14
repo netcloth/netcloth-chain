@@ -1,6 +1,6 @@
 package cli
 
 const (
-	flagUserAddress = "address"
-	flagServerIP    = "ip"
+	flagUser     = "user"
+	flagServerIP = "ip"
 )

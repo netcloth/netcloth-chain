@@ -53,7 +53,7 @@ type IPALUserRequest struct {
 // MsgIPALClaim defines an ipal claim message
 type MsgIPALClaim struct {
 	From        sdk.AccAddress  `json:"from" yaml:"from`
-	UserRequest IPALUserRequest `json: "user_request" yaml:"user_request"`
+	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
 func NewADParam(userAddress string, serverIP string, expiration time.Time) ADParam {
@@ -64,20 +64,20 @@ func NewADParam(userAddress string, serverIP string, expiration time.Time) ADPar
 	}
 }
 
-func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time) IPALUserRequest {
+func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) IPALUserRequest {
 	return IPALUserRequest{
 		Params: NewADParam(userAddress, serverIP, expiration),
-		Sig:    auth.StdSignature{},
+		Sig:    sig,
 	}
 }
 
 var _ sdk.Msg = MsgIPALClaim{}
 
 // NewMsgIPALClaim is a constructor function for MsgIPALClaim
-func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time) MsgIPALClaim {
+func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
 	return MsgIPALClaim{
 		from,
-		NewIPALUserRequest(userAddress, serverIP, expiration),
+		NewIPALUserRequest(userAddress, serverIP, expiration, sig),
 	}
 }
 
