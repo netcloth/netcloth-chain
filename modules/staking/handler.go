@@ -92,6 +92,8 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
 		)
 	}
 
+	k.EndBlock(ctx)
+
 	return validatorUpdates
 }
 
