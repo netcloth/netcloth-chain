@@ -31,18 +31,13 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim  --from <key name> --user=<user key name> --ip=<server ip>",
+		Example: "nchcli ipal claim  --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
+			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
 
-			user, err := sdk.AccAddressFromBech32(viper.GetString(flagUser))
-			if err != nil {
-				return err
-			}
-			serverIP := viper.GetString(flagServerIP)
-
-			info, err := txBldr.Keybase().Get(cliCtx.GetFromName())
+			info, err := txBldr.Keybase().Get(cliCtxUser.GetFromName())
 			if err != nil {
 				return err
 			}
@@ -50,8 +45,9 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 
 			// build user request signature
 			// build msg
+			serverIP := viper.GetString(flagServerIP)
 			adMsg := types.NewADParam(userAddress, serverIP, time.Now().AddDate(0, 0, 1))
-			passphrase, err := keys.GetPassphrase(cliCtx.GetFromName())
+			passphrase, err := keys.GetPassphrase(cliCtxUser.GetFromName())
 			if err != nil {
 				return err
 			}
@@ -66,19 +62,21 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgIPALClaim(cliCtx.FromAddress(), userAddress, serverIP, time.Now().AddDate(0, 0, 1), stdSig)
+			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, time.Now().AddDate(0, 0, 1), stdSig)
 
 			//if err := msg.ValidateBasic(); err != nil {
 			//	return err
 			//}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return utils.GenerateOrBroadcastMsgs(cliCtxProxy, txBldr, []sdk.Msg{msg})
 		},
 	}
 
 	cmd.Flags().String(flagServerIP, "", "server ip")
-	cmd.Flags().String(flagUser, "", "proxy account")
+	cmd.Flags().String(flagUser, "", "user account")
+	cmd.Flags().String(flagProxy, "", "proxy account")
 	cmd.MarkFlagRequired(flagServerIP)
 	cmd.MarkFlagRequired(flagUser)
+	cmd.MarkFlagRequired(flagProxy)
 
 	cmd = client.PostCommands(cmd)[0]
 
