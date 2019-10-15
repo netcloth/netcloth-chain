@@ -34,7 +34,6 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 		Example: "nchcli ipal claim  --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
 			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
 
 			info, err := txBldr.Keybase().Get(cliCtxUser.GetFromName())
@@ -44,11 +43,11 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			userAddress := info.GetAddress().String()
 
 			// build user request signature
-			// build msg
 			serverIP := viper.GetString(flagServerIP)
-
 			expiration := time.Now().UTC().AddDate(0, 0, 1)
 			adMsg := types.NewADParam(userAddress, serverIP, expiration)
+
+			// build msg
 			passphrase, err := keys.GetPassphrase(cliCtxUser.GetFromName())
 			if err != nil {
 				return err
@@ -64,11 +63,11 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// build and sign the transaction, then broadcast to Tendermint
+			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
 			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, expiration, stdSig)
-
-			//if err := msg.ValidateBasic(); err != nil {
-			//	return err
-			//}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
 			return utils.GenerateOrBroadcastMsgs(cliCtxProxy, txBldr, []sdk.Msg{msg})
 		},
 	}
