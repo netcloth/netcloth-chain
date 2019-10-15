@@ -21,9 +21,13 @@ func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 Example:
 $ %s query ipal <user-address>
 `,
+
 				version.ClientName,
 			),
+
 		),
+		Args: cobra.ExactArgs(1),
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
