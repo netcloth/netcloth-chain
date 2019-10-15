@@ -14,16 +14,16 @@ const (
 
 var (
 	// functions aliases
-	RegisterCodec       = types.RegisterCodec
-	ErrEmptyInputs      = types.ErrEmptyInputs
-	ErrStringTooLong    = types.ErrStringTooLong
-	ErrInvalidSignature = types.ErrInvalidSignature
-	ErrIPALClaimExpired = types.ErrIPALClaimExpired
+	RegisterCodec                  = types.RegisterCodec
+	ErrEmptyInputs                 = types.ErrEmptyInputs
+	ErrStringTooLong               = types.ErrStringTooLong
+	ErrInvalidSignature            = types.ErrInvalidSignature
+	ErrIPALClaimUserRequestExpired = types.ErrIPALClaimUserRequestExpired
 
-	NewIPALObject = types.NewIPALObject
+	NewIPALObject       = types.NewIPALObject
 	NewServerNodeObject = types.NewServerNodeObject
 
-	NewMsgIPALClaim = types.NewMsgIPALClaim
+	NewMsgIPALClaim        = types.NewMsgIPALClaim
 	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
 
 	// variable aliases

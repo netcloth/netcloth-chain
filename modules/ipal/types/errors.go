@@ -7,29 +7,28 @@ import (
 const (
 	DefaultCodespace sdk.CodespaceType = ModuleName
 
-	CodeEmptyInputs sdk.CodeType = 110
-	CodeStringTooLong sdk.CodeType = 111
-	CodeInvalidIPALClaimUserRequestSig = 112
-	CdoeIPALClaimUserRequestExpired = 113
+	CodeEmptyInputs                    sdk.CodeType = 110
+	CodeStringTooLong                  sdk.CodeType = 111
+	CodeInvalidIPALClaimUserRequestSig sdk.CodeType = 112
+	CodeIPALClaimUserRequestExpired    sdk.CodeType = 113
 )
 
-
 // ErrEmptyInputs is an error
-func ErrEmptyInputs(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptyInputs, "empty input to ipal transaction")
+func ErrEmptyInputs(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
 }
 
 // ErrStringTooLon is an error
-func ErrStringTooLong(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeStringTooLong, "string size exceeds limit")
+func ErrStringTooLong(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeStringTooLong, msg)
 }
 
 // ErrInvalidSignature is an error
-func ErrInvalidSignature(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidIPALClaimUserRequestSig, "invalid IPALClaim user request signature")
+func ErrInvalidSignature(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeInvalidIPALClaimUserRequestSig, msg)
 }
 
-// ErrIPALClaimExpired is an error
-func ErrIPALClaimExpired(codespaceType sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespaceType, CdoeIPALClaimUserRequestExpired, "IPALClaim user request expired")
+// ErrIPALClaimUserRequestExpired is an error
+func ErrIPALClaimUserRequestExpired(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeIPALClaimUserRequestExpired, msg)
 }
