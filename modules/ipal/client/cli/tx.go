@@ -46,7 +46,9 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			// build user request signature
 			// build msg
 			serverIP := viper.GetString(flagServerIP)
-			adMsg := types.NewADParam(userAddress, serverIP, time.Now().AddDate(0, 0, 1))
+
+			expiration := time.Now().UTC().AddDate(0, 0, 1)
+			adMsg := types.NewADParam(userAddress, serverIP, expiration)
 			passphrase, err := keys.GetPassphrase(cliCtxUser.GetFromName())
 			if err != nil {
 				return err
@@ -62,7 +64,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, time.Now().AddDate(0, 0, 1), stdSig)
+			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, expiration, stdSig)
 
 			//if err := msg.ValidateBasic(); err != nil {
 			//	return err
