@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"time"
 
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
@@ -29,27 +31,53 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim  --from <key name> --address=<address> --ip=<ip>",
+		Example: "nchcli ipal claim  --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
 
-			userAddress := viper.GetString(flagUserAddress)
+			info, err := txBldr.Keybase().Get(cliCtxUser.GetFromName())
+			if err != nil {
+				return err
+			}
+			userAddress := info.GetAddress().String()
+
+			// build user request signature
 			serverIP := viper.GetString(flagServerIP)
+			expiration := time.Now().UTC().AddDate(0, 0, 1)
+			adMsg := types.NewADParam(userAddress, serverIP, expiration)
+
+			// build msg
+			passphrase, err := keys.GetPassphrase(cliCtxUser.GetFromName())
+			if err != nil {
+				return err
+			}
+			// sign
+			sigBytes, pubkey, err := txBldr.Keybase().Sign(info.GetName(), passphrase, adMsg.GetSignBytes())
+			if err != nil {
+				return err
+			}
+			stdSig := auth.StdSignature{
+				PubKey:    pubkey,
+				Signature: sigBytes,
+			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgIPALClaim(cliCtx.GetFromAddress(), userAddress, serverIP)
+			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
+			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, expiration, stdSig)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return utils.GenerateOrBroadcastMsgs(cliCtxProxy, txBldr, []sdk.Msg{msg})
 		},
 	}
 
-	cmd.Flags().String(flagUserAddress, "", "user address")
 	cmd.Flags().String(flagServerIP, "", "server ip")
-	cmd.MarkFlagRequired(flagUserAddress)
+	cmd.Flags().String(flagUser, "", "user account")
+	cmd.Flags().String(flagProxy, "", "proxy account")
 	cmd.MarkFlagRequired(flagServerIP)
+	cmd.MarkFlagRequired(flagUser)
+	cmd.MarkFlagRequired(flagProxy)
 
 	cmd = client.PostCommands(cmd)[0]
 

@@ -14,9 +14,11 @@ const (
 
 var (
 	// functions aliases
-	RegisterCodec    = types.RegisterCodec
-	ErrEmptyInputs   = types.ErrEmptyInputs
-	ErrStringTooLong = types.ErrStringTooLong
+	RegisterCodec       = types.RegisterCodec
+	ErrEmptyInputs      = types.ErrEmptyInputs
+	ErrStringTooLong    = types.ErrStringTooLong
+	ErrInvalidSignature = types.ErrInvalidSignature
+	ErrIPALClaimExpired = types.ErrIPALClaimExpired
 
 	NewIPALObject = types.NewIPALObject
 
