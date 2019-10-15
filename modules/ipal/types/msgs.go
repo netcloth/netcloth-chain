@@ -53,19 +53,19 @@ func (p ADParam) GetSignBytes() []byte {
 
 func (p ADParam) Validate() sdk.Error {
 	if p.UserAddress == "" {
-		return ErrEmptyInputs(DefaultCodespace)
+		return ErrEmptyInputs("user address empty")
 	}
 
 	if p.ServerIP == "" {
-		return ErrEmptyInputs(DefaultCodespace)
+		return ErrEmptyInputs("server ip empty")
 	}
 
 	if len(p.UserAddress) > maxUserAddressLength {
-		return ErrStringTooLong(DefaultCodespace)
+		return ErrStringTooLong("user address too long")
 	}
 
 	if len(p.ServerIP) > maxServerIPLength {
-		return ErrStringTooLong(DefaultCodespace)
+		return ErrStringTooLong("server ip too long")
 	}
 
 	return nil
@@ -117,7 +117,7 @@ func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
 	pubKey := msg.UserRequest.Sig.PubKey
 	signBytes := msg.UserRequest.Params.GetSignBytes()
 	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
-		return ErrInvalidSignature(DefaultCodespace)
+		return ErrInvalidSignature("user request signature invalid")
 	}
 
 	return nil
@@ -157,6 +157,18 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 	// check msg sender
 	if msg.OperatorAddress.Empty() {
 		return sdk.ErrInvalidAddress("missing operator address")
+	}
+
+	if msg.Moniker == "" {
+		return ErrEmptyInputs("moniker empty")
+	}
+
+	if msg.Website == "" {
+		return ErrEmptyInputs("website empty")
+	}
+
+	if msg.ServerEndPoint == "" {
+		return ErrEmptyInputs("server empty")
 	}
 
 	return nil
