@@ -21,6 +21,10 @@ var (
 	ErrIPALClaimExpired = types.ErrIPALClaimExpired
 
 	NewIPALObject = types.NewIPALObject
+	NewServerNodeObject = types.NewServerNodeObject
+
+	NewMsgIPALClaim = types.NewMsgIPALClaim
+	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
@@ -33,6 +37,6 @@ var (
 type (
 	Keeper = keeper.Keeper
 
-	MsgIPALClaim = types.MsgIPALClaim
-	IPALObject   = types.IPALObject
+	MsgIPALClaim        = types.MsgIPALClaim
+	MsgServiceNodeClaim = types.MsgServiceNodeClaim
 )

@@ -58,3 +58,24 @@ func (k Keeper) SetIPALObject(ctx sdk.Context, obj types.IPALObject) {
 	store.Set(types.GetIPALObjectKey(obj.UserAddress), bz)
 	ctx.Logger().Info(string(types.GetIPALObjectKey(obj.UserAddress)))
 }
+
+// get a single ServerNode object
+func (k Keeper) GetServerNodeObject(ctx sdk.Context, operator sdk.AccAddress) (obj types.ServerNodeObject, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.GetServerNodeObjectKey(operator))
+	ctx.Logger().Info(string(types.GetServerNodeObjectKey(operator)))
+	if value == nil {
+		return obj, false
+	}
+
+	obj = types.MustUnmarshalServerNodeObject(k.cdc, value)
+	return obj, true
+}
+
+// set ServerNode object
+func (k Keeper) SetServerNodeObject(ctx sdk.Context, obj types.ServerNodeObject) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalServerNodeObject(k.cdc, obj)
+	store.Set(types.GetServerNodeObjectKey(obj.OperatorAddress), bz)
+	ctx.Logger().Info(string(types.GetServerNodeObjectKey(obj.OperatorAddress)))
+}

@@ -8,13 +8,39 @@ import (
 )
 
 const (
-	maxStringLength = 64
+	maxUserAddressLength = 64
+	maxServerIPLength    = 64
+)
+
+var (
+	_ sdk.Msg = MsgIPALClaim{}
+	_ sdk.Msg = MsgServiceNodeClaim{}
 )
 
 type ADParam struct {
 	UserAddress string    `json:"user_address" yaml:"user_address"`
 	ServerIP    string    `json:"server_ip" yaml:"server_ip"`
 	Expiration  time.Time `json:"expiration"`
+}
+
+type IPALUserRequest struct {
+	Params ADParam           `json:"params" yaml:"params"`
+	Sig    auth.StdSignature `json:"signature" yaml:"signature`
+}
+
+// MsgIPALClaim defines an ipal claim message
+type MsgIPALClaim struct {
+	From        sdk.AccAddress  `json:"from" yaml:"from`
+	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
+}
+
+type MsgServiceNodeClaim struct {
+	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
+	Identity        string         `json:"identity" yaml:"identity"`                 // optional identity signature (ex. UPort or Keybase)
+	Website         string         `json:"website" yaml:"website"`                   // optional website link
+	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
+	Details         string         `json:"details" yaml:"details"`                   // optional details	DelegatorShares sdk.Dec        `json:"delegator_shares" yaml:"delegator_shares"` // total shares issued to a validator's delegators
 }
 
 func (p ADParam) GetSignBytes() []byte {
@@ -34,26 +60,15 @@ func (p ADParam) Validate() sdk.Error {
 		return ErrEmptyInputs(DefaultCodespace)
 	}
 
-	if len(p.UserAddress) > maxStringLength {
+	if len(p.UserAddress) > maxUserAddressLength {
 		return ErrStringTooLong(DefaultCodespace)
 	}
 
-	if len(p.ServerIP) > maxStringLength {
+	if len(p.ServerIP) > maxServerIPLength {
 		return ErrStringTooLong(DefaultCodespace)
 	}
 
 	return nil
-}
-
-type IPALUserRequest struct {
-	Params ADParam           `json:"params" yaml:"params"`
-	Sig    auth.StdSignature `json:"signature" yaml:"signature`
-}
-
-// MsgIPALClaim defines an ipal claim message
-type MsgIPALClaim struct {
-	From        sdk.AccAddress  `json:"from" yaml:"from`
-	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
 func NewADParam(userAddress string, serverIP string, expiration time.Time) ADParam {
@@ -70,8 +85,6 @@ func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Tim
 		Sig:    sig,
 	}
 }
-
-var _ sdk.Msg = MsgIPALClaim{}
 
 // NewMsgIPALClaim is a constructor function for MsgIPALClaim
 func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
@@ -122,4 +135,38 @@ func (msg MsgIPALClaim) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgIPALClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
+}
+
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, identity, website, serverEndPoint, details string) MsgServiceNodeClaim {
+	return MsgServiceNodeClaim{
+		OperatorAddress: operator,
+		Moniker:         moniker,
+		Identity:        identity,
+		Website:         website,
+		ServerEndPoint:  serverEndPoint,
+		Details:         details,
+	}
+}
+
+func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
+
+func (msg MsgServiceNodeClaim) Type() string { return "server_node_claim" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
+	// check msg sender
+	if msg.OperatorAddress.Empty() {
+		return sdk.ErrInvalidAddress("missing operator address")
+	}
+
+	return nil
+}
+
+func (msg MsgServiceNodeClaim) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.AccAddress(msg.OperatorAddress)}
+}
+
+func (msg MsgServiceNodeClaim) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }

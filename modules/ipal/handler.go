@@ -2,7 +2,6 @@ package ipal
 
 import (
 	"fmt"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
@@ -11,8 +10,10 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case types.MsgIPALClaim:
+		case MsgIPALClaim:
 			return handleMsgIPALClaim(ctx, k, msg)
+		case MsgServiceNodeClaim:
+			return handleMsgServerNodeClaim(ctx, k, msg)
 		default:
 			errMsg := "Unrecognized Msg type: %s" + msg.Type()
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -48,4 +49,28 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	)
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim) sdk.Result {
+	obj, found := k.GetServerNodeObject(ctx, msg.OperatorAddress)
+	if found {
+		// update
+		obj.Moniker = msg.Moniker
+		obj.Identity = msg.Identity
+		obj.Website = msg.Website
+		obj.ServerEndPoint = msg.ServerEndPoint
+		obj.Details = msg.Details
+	} else {
+		// create
+		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Identity, msg.Website, msg.ServerEndPoint, msg.Details)
+		k.SetServerNodeObject(ctx, obj)
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
+		),
+	)
+	return sdk.Result{}
 }

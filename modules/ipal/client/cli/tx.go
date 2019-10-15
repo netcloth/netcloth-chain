@@ -23,6 +23,7 @@ func IPALCmd(cdc *codec.Codec) *cobra.Command {
 	}
 	txCmd.AddCommand(
 		IPALClaimCmd(cdc),
+		ServerNodeClaimCmd(cdc),
 	)
 	return txCmd
 }
@@ -78,6 +79,44 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.MarkFlagRequired(flagServerIP)
 	cmd.MarkFlagRequired(flagUser)
 	cmd.MarkFlagRequired(flagProxy)
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
+}
+
+func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "server-node-claim",
+		Short:   "Create and sign a ServerNodeClaim tx",
+		Example: "nchcli ipal server-node-claim  --from=<user key name> --moniker=<name> --identity=<identity> --website=<website> --server_endpoint=<server_endpoint> --details=<details>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			moniker := viper.GetString(flagMoniker)
+			identity := viper.GetString(flagIdentity)
+			website := viper.GetString(flagWebsite)
+			serverEndPoint := viper.GetString(flagServerEndPoint)
+			details := viper.GetString(flagDetails)
+
+			// build and sign the transaction, then broadcast to Tendermint
+			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker,identity, website, serverEndPoint, details)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	cmd.Flags().String(flagMoniker, "", "server node moniker")
+	cmd.Flags().String(flagIdentity, "", "server node identity")
+	cmd.Flags().String(flagWebsite, "", "server node website")
+	cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
+	cmd.Flags().String(flagDetails, "", "server node details")
+
+	cmd.MarkFlagRequired(flagMoniker)
+	cmd.MarkFlagRequired(flagServerEndPoint)
 
 	cmd = client.PostCommands(cmd)[0]
 

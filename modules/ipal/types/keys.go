@@ -1,5 +1,9 @@
 package types
 
+import 	(
+	sdk "github.com/NetCloth/netcloth-chain/types"
+)
+
 const (
 	// ModuleName is the module name constant used in many places
 	ModuleName = "ipal"
@@ -18,9 +22,14 @@ const (
 )
 
 var (
-	IPALObjectKey = []byte{0x11} // prefix for each key to an ipal object
+	IPALObjectKey       = []byte{0x11} // prefix for each key to an ipal object
+	ServerNodeObjectKey = []byte{0x12} // prefix for each key to a ServerNode object
 )
 
 func GetIPALObjectKey(addr string) []byte {
 	return append(IPALObjectKey, []byte(addr)...)
+}
+
+func GetServerNodeObjectKey(addr sdk.AccAddress) []byte {
+	return append(ServerNodeObjectKey, addr...)
 }
