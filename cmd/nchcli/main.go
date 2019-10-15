@@ -103,6 +103,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
 		ipalcli.GetQueryCmd(cdc),
+		ipalcli.GetServerNodeCmd(cdc),
 		client.LineBreak,
 	)
 	// add modules' query commands

@@ -46,3 +46,37 @@ $ %s query ipal <user-address>
 		},
 	}
 }
+
+func GetServerNodeCmd(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "server-nodes",
+		Short: "Querying commands for ServerNodes",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`List all ServerNodes.
+
+Example:
+$ %s query ipal server-nodes
+`,
+
+				version.ClientName,
+			),
+
+		),
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			resKVs, _, err := cliCtx.QuerySubspace(types.ServerNodeObjectKey, types.StoreKey)
+			if err != nil {
+				return err
+			}
+
+			var serverNodes types.ServerNodeObjects
+			for _, kv := range resKVs {
+				serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cdc, kv.Value))
+			}
+
+			return cliCtx.PrintOutput(serverNodes)
+		},
+	}
+}

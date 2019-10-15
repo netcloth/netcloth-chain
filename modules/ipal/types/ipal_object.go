@@ -5,6 +5,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 type IPALObject struct {
@@ -19,6 +20,16 @@ type ServerNodeObject struct {
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
 	Details         string         `json:"details" yaml:"details"`                   // optional details	DelegatorShares sdk.Dec        `json:"delegator_shares" yaml:"delegator_shares"` // total shares issued to a validator's delegators
+}
+
+// ServerNodeObjects is a collection of ServerNodeObject
+type ServerNodeObjects []ServerNodeObject
+
+func (v ServerNodeObjects) String() (out string) {
+	for _, val := range v {
+		out += val.String() + "\n"
+	}
+	return strings.TrimSpace(out)
 }
 
 func NewIPALObject(userAddress string, serverIP string) IPALObject {
