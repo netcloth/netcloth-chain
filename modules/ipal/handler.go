@@ -57,6 +57,7 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim
 		obj.Website = msg.Website
 		obj.ServerEndPoint = msg.ServerEndPoint
 		obj.Details = msg.Details
+		k.SetServerNodeObject(ctx, obj)
 	} else {
 		// create
 		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Identity, msg.Website, msg.ServerEndPoint, msg.Details)
