@@ -2,9 +2,10 @@ package types
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	"time"
 )
 
 const (
@@ -167,6 +168,9 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 		return ErrEmptyInputs("website empty")
 	}
 
+	if msg.Identity == "" {
+		return ErrEmptyInputs("identity empty")
+	}
 	if msg.ServerEndPoint == "" {
 		return ErrEmptyInputs("server empty")
 	}

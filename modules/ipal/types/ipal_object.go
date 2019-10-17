@@ -2,17 +2,21 @@ package types
 
 import (
 	"fmt"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+
 	"github.com/NetCloth/netcloth-chain/codec"
 	sdk "github.com/NetCloth/netcloth-chain/types"
-	"gopkg.in/yaml.v2"
-	"strings"
 )
 
+// IPALObject stores the binding of UserAddress and ServerNode ip
 type IPALObject struct {
 	UserAddress string `json:"user_address" yaml:"user_address"`
 	ServerIP    string `json:"server_ip" yaml:"server_ip"`
 }
 
+// IPALObject store info of ServerNode
 type ServerNodeObject struct {
 	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
