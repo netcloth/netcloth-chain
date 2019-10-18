@@ -38,10 +38,10 @@ type MsgIPALClaim struct {
 type MsgServiceNodeClaim struct {
 	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
-	Identity        string         `json:"identity" yaml:"identity"`                 // optional identity signature (ex. UPort or Keybase)
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
-	Details         string         `json:"details" yaml:"details"`                   // optional details	DelegatorShares sdk.Dec        `json:"delegator_shares" yaml:"delegator_shares"` // total shares issued to a validator's delegators
+	Details         string         `json:"details" yaml:"details"`                   // optional details
+	StakeShares     sdk.Dec        `json:"stake_shares" yaml:"stake_shares"`         // total stake shares
 }
 
 func (p ADParam) GetSignBytes() []byte {
@@ -138,11 +138,10 @@ func (msg MsgIPALClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, identity, website, serverEndPoint, details string) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEndPoint, details string) MsgServiceNodeClaim {
 	return MsgServiceNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
-		Identity:        identity,
 		Website:         website,
 		ServerEndPoint:  serverEndPoint,
 		Details:         details,
@@ -168,9 +167,6 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 		return ErrEmptyInputs("website empty")
 	}
 
-	if msg.Identity == "" {
-		return ErrEmptyInputs("identity empty")
-	}
 	if msg.ServerEndPoint == "" {
 		return ErrEmptyInputs("server empty")
 	}

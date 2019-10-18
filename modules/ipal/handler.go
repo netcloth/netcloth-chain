@@ -53,14 +53,13 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim
 	if found {
 		// update
 		obj.Moniker = msg.Moniker
-		obj.Identity = msg.Identity
 		obj.Website = msg.Website
 		obj.ServerEndPoint = msg.ServerEndPoint
 		obj.Details = msg.Details
 		k.SetServerNodeObject(ctx, obj)
 	} else {
 		// create
-		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Identity, msg.Website, msg.ServerEndPoint, msg.Details)
+		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Website, msg.ServerEndPoint, msg.Details)
 		k.SetServerNodeObject(ctx, obj)
 	}
 

@@ -81,11 +81,10 @@ User Address:			%s
 Server IP:				%s`, obj.UserAddress, obj.ServerIP)
 }
 
-func NewServerNodeObject(operator sdk.AccAddress, moniker, identity, website, serverEndPoint, details string) ServerNodeObject {
+func NewServerNodeObject(operator sdk.AccAddress, moniker, website, serverEndPoint, details string) ServerNodeObject {
 	return ServerNodeObject{
 		OperatorAddress: operator,
 		Moniker:         moniker,
-		Identity:        identity,
 		Website:         website,
 		ServerEndPoint:  serverEndPoint,
 		Details:         details,
@@ -96,14 +95,12 @@ func (obj ServerNodeObject) MarshalYAML() (interface{}, error) {
 	bs, err := yaml.Marshal(struct {
 		OperatorAddress sdk.AccAddress
 		Moniker         string
-		Identity        string
 		Website         string
 		ServerEndPoint  string
 		Details         string
 	}{
 		OperatorAddress: obj.OperatorAddress,
 		Moniker:         obj.Moniker,
-		Identity:        obj.Identity,
 		Website:         obj.Website,
 		ServerEndPoint:  obj.ServerEndPoint,
 		Details:         obj.Details,
@@ -136,9 +133,8 @@ func (obj ServerNodeObject) String() string {
 	return fmt.Sprintf(`ServerNodeObject
 Operator Address:		%s
 Moniker:				%s
-Identity: 				%s
 Website: 				%s
 ServerEndPoint:			%s
 Details:				%s`,
-		obj.OperatorAddress, obj.Moniker, obj.Identity, obj.Website, obj.ServerEndPoint, obj.Details)
+		obj.OperatorAddress, obj.Moniker, obj.Website, obj.ServerEndPoint, obj.Details)
 }

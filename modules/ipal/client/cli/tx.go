@@ -95,13 +95,12 @@ func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			moniker := viper.GetString(flagMoniker)
-			identity := viper.GetString(flagIdentity)
 			website := viper.GetString(flagWebsite)
 			serverEndPoint := viper.GetString(flagServerEndPoint)
 			details := viper.GetString(flagDetails)
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker,identity, website, serverEndPoint, details)
+			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker, website, serverEndPoint, details)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -110,7 +109,6 @@ func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagMoniker, "", "server node moniker")
-	cmd.Flags().String(flagIdentity, "", "server node identity")
 	cmd.Flags().String(flagWebsite, "", "server node website")
 	cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
 	cmd.Flags().String(flagDetails, "", "server node details")

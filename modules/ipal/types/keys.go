@@ -1,6 +1,6 @@
 package types
 
-import 	(
+import (
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
