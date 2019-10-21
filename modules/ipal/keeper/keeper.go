@@ -12,19 +12,26 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc      *codec.Codec // The wire codec for binary encoding/decoding.
+	storeKey     sdk.StoreKey // Unexposed key to access store from sdk.Context
+	cdc          *codec.Codec // The wire codec for binary encoding/decoding.
+	supplyKeeper types.SupplyKeeper
 
 	// codespace
 	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates new instances of the nch Keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, codespace sdk.CodespaceType) Keeper {
+	// ensure ipal module account is set
+	if addr := supplyKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
 	return Keeper{
-		storeKey:  storeKey,
-		cdc:       cdc,
-		codespace: codespace,
+		storeKey:     storeKey,
+		cdc:          cdc,
+		supplyKeeper: supplyKeeper,
+		codespace:    codespace,
 	}
 }
 

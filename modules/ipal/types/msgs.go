@@ -41,7 +41,7 @@ type MsgServiceNodeClaim struct {
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
 	Details         string         `json:"details" yaml:"details"`                   // optional details
-	StakeShares     sdk.Dec        `json:"stake_shares" yaml:"stake_shares"`         // total stake shares
+	StakeShares     sdk.Coin       `json:"stake_shares" yaml:"stake_shares"`         // total stake shares
 }
 
 func (p ADParam) GetSignBytes() []byte {
@@ -138,13 +138,14 @@ func (msg MsgIPALClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEndPoint, details string) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEndPoint, details string, amount sdk.Coin) MsgServiceNodeClaim {
 	return MsgServiceNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
 		Website:         website,
 		ServerEndPoint:  serverEndPoint,
 		Details:         details,
+		StakeShares:     amount,
 	}
 }
 
@@ -169,6 +170,10 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 
 	if msg.ServerEndPoint == "" {
 		return ErrEmptyInputs("server empty")
+	}
+
+	if msg.StakeShares.IsNegative() {
+		return ErrEmptyInputs("stake amount must > 0 ")
 	}
 
 	return nil

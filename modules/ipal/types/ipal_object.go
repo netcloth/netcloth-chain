@@ -20,10 +20,10 @@ type IPALObject struct {
 type ServerNodeObject struct {
 	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
-	Identity        string         `json:"identity" yaml:"identity"`                 // optional identity signature (ex. UPort or Keybase)
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
-	Details         string         `json:"details" yaml:"details"`                   // optional details	DelegatorShares sdk.Dec        `json:"delegator_shares" yaml:"delegator_shares"` // total shares issued to a validator's delegators
+	Details         string         `json:"details" yaml:"details"`                   // optional details
+	StakeShares     sdk.Coin       `json:"stake_shares" yaml:"stake_shares"`         // total stake shares
 }
 
 // ServerNodeObjects is a collection of ServerNodeObject
@@ -81,13 +81,14 @@ User Address:			%s
 Server IP:				%s`, obj.UserAddress, obj.ServerIP)
 }
 
-func NewServerNodeObject(operator sdk.AccAddress, moniker, website, serverEndPoint, details string) ServerNodeObject {
+func NewServerNodeObject(operator sdk.AccAddress, moniker, website, serverEndPoint, details string, amount sdk.Coin) ServerNodeObject {
 	return ServerNodeObject{
 		OperatorAddress: operator,
 		Moniker:         moniker,
 		Website:         website,
 		ServerEndPoint:  serverEndPoint,
 		Details:         details,
+		StakeShares:     amount,
 	}
 }
 
@@ -98,12 +99,14 @@ func (obj ServerNodeObject) MarshalYAML() (interface{}, error) {
 		Website         string
 		ServerEndPoint  string
 		Details         string
+		StakeShares     sdk.Coin
 	}{
 		OperatorAddress: obj.OperatorAddress,
 		Moniker:         obj.Moniker,
 		Website:         obj.Website,
 		ServerEndPoint:  obj.ServerEndPoint,
 		Details:         obj.Details,
+		StakeShares:     obj.StakeShares,
 	})
 
 	if err != nil {
@@ -135,6 +138,7 @@ Operator Address:		%s
 Moniker:				%s
 Website: 				%s
 ServerEndPoint:			%s
-Details:				%s`,
-		obj.OperatorAddress, obj.Moniker, obj.Website, obj.ServerEndPoint, obj.Details)
+Details:				%s
+StakeShares: 			%s`,
+		obj.OperatorAddress, obj.Moniker, obj.Website, obj.ServerEndPoint, obj.Details, obj.StakeShares)
 }

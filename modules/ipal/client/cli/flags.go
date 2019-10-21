@@ -9,4 +9,5 @@ const (
 	flagWebsite        = "website"
 	flagServerEndPoint = "server"
 	flagDetails        = "details"
+	flagStakeAmount    = "stake"
 )

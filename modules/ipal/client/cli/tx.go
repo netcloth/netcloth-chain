@@ -98,9 +98,15 @@ func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 			website := viper.GetString(flagWebsite)
 			serverEndPoint := viper.GetString(flagServerEndPoint)
 			details := viper.GetString(flagDetails)
+			stakeAmount := viper.GetString(flagStakeAmount)
+
+			coin, err := sdk.ParseCoin(stakeAmount)
+			if err != nil {
+				return err
+			}
 
 			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker, website, serverEndPoint, details)
+			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker, website, serverEndPoint, details, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -112,9 +118,11 @@ func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagWebsite, "", "server node website")
 	cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
 	cmd.Flags().String(flagDetails, "", "server node details")
+	cmd.Flags().String(flagStakeAmount, "", "stake amount")
 
 	cmd.MarkFlagRequired(flagMoniker)
 	cmd.MarkFlagRequired(flagServerEndPoint)
+	cmd.MarkFlagRequired(flagStakeAmount)
 
 	cmd = client.PostCommands(cmd)[0]
 
