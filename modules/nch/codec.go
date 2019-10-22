@@ -6,7 +6,7 @@ import (
 
 // RegisterCodec registers concrete types on the Amino codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgSend{}, "nch/send", nil)
+	cdc.RegisterConcrete(MsgSend{}, "nch/MsgSend", nil)
 }
 
 // module codec
