@@ -38,10 +38,10 @@ func SendTxCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "send [from_key_or_address] [to_address] [amount]",
 		Short: "Create and sign a send tx",
-		Args:  cobra.ExactArgs(3),
+		Example: "nchcli send --from <key name> --to=<account address> --chain-id=<chain-id> --amount=10nch",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithFrom(args[0]).WithCodec(cdc)
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			to, err := sdk.AccAddressFromBech32(viper.GetString(flagTo))
 			if err != nil {
