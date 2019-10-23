@@ -1,7 +1,9 @@
 package ipal
 
 import (
+	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
 	sdk "github.com/NetCloth/netcloth-chain/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
@@ -49,39 +51,14 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 }
 
 func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim) sdk.Result {
-	obj, found := k.GetServerNodeObject(ctx, msg.OperatorAddress)
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
 
-	// check coin denom
-
-
-	if found {
-		//if msg.StakeShares.Amount.LT() {
-		//	// refund all stake
-		//	// remove ServerNodeObject
-		//}
-
-		if msg.StakeShares.IsLT(obj.StakeShares) {
-			// refund delta stake
-			stakeDelta := obj.StakeShares.Sub(msg.StakeShares)
-			k.Refund()
-			// k.supplyKeeper.SendCoinsFromModuleToAccount()
-		} else {
-			// add stake
-		}
-
-		// update
-		obj.Moniker = msg.Moniker
-		obj.Website = msg.Website
-		obj.ServerEndPoint = msg.ServerEndPoint
-		obj.Details = msg.Details
-		obj.StakeShares = msg.StakeShares
-		k.SetServerNodeObject(ctx, obj)
-	} else {
-		// create
-		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Website, msg.ServerEndPoint, msg.Details, msg.StakeShares)
-		// transfer from OperatorAddress to ipal module
-
-		k.SetServerNodeObject(ctx, obj)
+	err = k.DoServerNodeClaim(ctx, msg)
+	if err != nil {
+		return err.Result()
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -90,5 +67,15 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim
 			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 		),
 	)
+
 	return sdk.Result{}
+}
+
+
+func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
+	matureUnstakings := k.DequeueAllMatureUnStakingQueue(ctx, ctx.BlockHeader().Time)
+	for _, matureUnstaking := range matureUnstakings {
+		k.DoUnStaking(ctx, matureUnstaking)
+	}
+	return []abci.ValidatorUpdate{}
 }

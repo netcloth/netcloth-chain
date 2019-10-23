@@ -102,8 +102,8 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
-		ipalcli.GetQueryCmd(cdc),
-		ipalcli.GetServerNodeCmd(cdc),
+		//ipalcli.GetQueryCmd(cdc),
+		//ipalcli.GetServerNodeCmd(cdc),
 		client.LineBreak,
 	)
 	// add modules' query commands

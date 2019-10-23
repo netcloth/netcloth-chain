@@ -61,6 +61,7 @@ var (
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		//nch.AppModuleBasic{},
+		ipal.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -71,6 +72,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
+		ipal.ModuleName: {supply.Staking},
 	}
 )
 
@@ -85,7 +87,7 @@ func CreateCodec() *codec.Codec {
 
 	nch.RegisterCodec(cdc)
 	token.RegisterCodec(cdc)
-	ipal.RegisterCodec(cdc)
+	//ipal.RegisterCodec(cdc)
 
 	return cdc
 }
@@ -167,6 +169,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -198,6 +201,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
+		ipalSubspace,
 		ipal.DefaultCodespace)
 
 	// register the proposal types
@@ -209,8 +213,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	app.Router().
 		AddRoute(nch.RouterKey, nch.NewHandler(app.nchKeeper)).
-		AddRoute(token.RouterKey, token.NewHandler(app.tokenKeeper)).
-		AddRoute(ipal.RouterKey, ipal.NewHandler(app.ipalKeeper))
+		AddRoute(token.RouterKey, token.NewHandler(app.tokenKeeper))
+		//AddRoute(ipal.RouterKey, ipal.NewHandler(app.ipalKeeper))
 
 	//app.QueryRouter().
 	//	AddRoute("nch", nch.NewQuirer(app.nchKeeper))
@@ -247,6 +251,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
+		ipal.NewAppModule(app.ipalKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -254,7 +259,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -270,6 +275,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		supply.ModuleName,
 		crisis.ModuleName,
 		genutil.ModuleName,
+		ipal.ModuleName,
 	)
 
 	//app.mm.RegisterInvariants(&app.crisisKeeper)

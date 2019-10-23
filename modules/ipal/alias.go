@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	DefaultCodespace = types.DefaultCodespace
-
-	StoreKey  = types.StoreKey
-	RouterKey = types.RouterKey
+	StoreKey            = types.StoreKey
+	RouterKey           = types.RouterKey
+	QuerierRoute        = types.QuerierRoute
+	DefaultCodespace    = types.DefaultCodespace
+	DefaultParamspace   = keeper.DefaultParamspace
 )
 
 var (
@@ -22,9 +23,12 @@ var (
 
 	NewIPALObject       = types.NewIPALObject
 	NewServerNodeObject = types.NewServerNodeObject
+	NewQuerier = keeper.NewQuerier
 
 	NewMsgIPALClaim        = types.NewMsgIPALClaim
 	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
+
+	ModuleName = types.ModuleName
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc

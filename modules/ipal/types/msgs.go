@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/NetCloth/netcloth-chain/modules/auth"
@@ -9,8 +10,12 @@ import (
 )
 
 const (
-	maxUserAddressLength = 64
-	maxServerIPLength    = 64
+	maxUserAddressLength            = 64
+	maxServerIPLength               = 64
+	maxMonikerLength                = 64
+	maxWebsiteLength                = 64
+	maxServerEndPointLength         = 64
+	maxDetailsLength                = 1024
 )
 
 var (
@@ -174,6 +179,22 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 
 	if msg.StakeShares.IsNegative() {
 		return ErrEmptyInputs("stake amount must > 0 ")
+	}
+
+	if len(msg.Moniker) > maxMonikerLength {
+		return ErrStringTooLong(fmt.Sprintf("moniker too long, max length: %v", maxMonikerLength))
+	}
+
+	if len(msg.Website) > maxWebsiteLength {
+		return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
+	}
+
+	if len(msg.ServerEndPoint) > maxServerEndPointLength {
+		return ErrStringTooLong(fmt.Sprintf("server too long, max length: %v", maxServerEndPointLength))
+	}
+
+	if len(msg.Details) > maxDetailsLength {
+		return ErrStringTooLong(fmt.Sprintf("details too long, max length: %v", maxDetailsLength))
 	}
 
 	return nil

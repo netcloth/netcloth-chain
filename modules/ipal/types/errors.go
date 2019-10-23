@@ -11,6 +11,8 @@ const (
 	CodeStringTooLong                  sdk.CodeType = 111
 	CodeInvalidIPALClaimUserRequestSig sdk.CodeType = 112
 	CodeIPALClaimUserRequestExpired    sdk.CodeType = 113
+	CodeBadDenom                       sdk.CodeType = 114
+	CodeStakeSharesInsufficient        sdk.CodeType = 115
 )
 
 // ErrEmptyInputs is an error
@@ -31,4 +33,12 @@ func ErrInvalidSignature(msg string) sdk.Error {
 // ErrIPALClaimUserRequestExpired is an error
 func ErrIPALClaimUserRequestExpired(msg string) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeIPALClaimUserRequestExpired, msg)
+}
+
+func ErrBadDenom(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeBadDenom, msg)
+}
+
+func ErrStakeSharesInsufficient(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeStakeSharesInsufficient, msg)
 }
