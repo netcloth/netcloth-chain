@@ -89,7 +89,7 @@ func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "server-node-claim",
 		Short:   "Create and sign a ServerNodeClaim tx",
-		Example: "nchcli ipal server-node-claim  --from=<user key name> --moniker=<name> --identity=<identity> --website=<website> --server_endpoint=<server_endpoint> --details=<details>",
+		Example: "nchcli ipal server-node-claim  --from=<user key name> --moniker=<name> --website=<website> --server=<server_endpoint> --details=<details>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

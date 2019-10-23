@@ -145,12 +145,12 @@ func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEnd
 		Website:         website,
 		ServerEndPoint:  serverEndPoint,
 		Details:         details,
+		StakeShares: sdk.NewDec(0),
 	}
 }
-
 func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
 
-func (msg MsgServiceNodeClaim) Type() string { return "server_node_claim" }
+func (msg MsgServiceNodeClaim) Type() string { return "ServerNodeClaim" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
