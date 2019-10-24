@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/NetCloth/netcloth-chain/modules/auth"
@@ -12,15 +11,10 @@ import (
 const (
 	maxUserAddressLength            = 64
 	maxServerIPLength               = 64
-	maxMonikerLength                = 64
-	maxWebsiteLength                = 64
-	maxServerEndPointLength         = 64
-	maxDetailsLength                = 1024
 )
 
 var (
 	_ sdk.Msg = MsgIPALClaim{}
-	_ sdk.Msg = MsgServiceNodeClaim{}
 )
 
 type ADParam struct {
@@ -38,15 +32,6 @@ type IPALUserRequest struct {
 type MsgIPALClaim struct {
 	From        sdk.AccAddress  `json:"from" yaml:"from`
 	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
-}
-
-type MsgServiceNodeClaim struct {
-	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
-	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
-	Website         string         `json:"website" yaml:"website"`                   // optional website link
-	ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
-	Details         string         `json:"details" yaml:"details"`                   // optional details
-	StakeShares     sdk.Coin       `json:"stake_shares" yaml:"stake_shares"`         // total stake shares
 }
 
 func (p ADParam) GetSignBytes() []byte {
@@ -92,7 +77,6 @@ func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Tim
 	}
 }
 
-// NewMsgIPALClaim is a constructor function for MsgIPALClaim
 func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
 	return MsgIPALClaim{
 		from,
@@ -100,26 +84,20 @@ func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, e
 	}
 }
 
-// Route should return the name of the module
 func (msg MsgIPALClaim) Route() string { return RouterKey }
 
-// Type should return the action
 func (msg MsgIPALClaim) Type() string { return "ipal_claim" }
 
-// ValidateBasic runs stateless checks on the message
 func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
-	// check msg sender
 	if msg.From.Empty() {
 		return sdk.ErrInvalidAddress("missing sender address")
 	}
 
-	// check userAddress and serverIP
 	err := msg.UserRequest.Params.Validate()
 	if err != nil {
 		return err
 	}
 
-	// check user request signature
 	pubKey := msg.UserRequest.Sig.PubKey
 	signBytes := msg.UserRequest.Params.GetSignBytes()
 	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
@@ -129,7 +107,6 @@ func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
 	return nil
 }
 
-// GetSignBytes encodes the message for signing
 func (msg MsgIPALClaim) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
@@ -138,73 +115,6 @@ func (msg MsgIPALClaim) GetSignBytes() []byte {
 	return sdk.MustSortJSON(b)
 }
 
-// GetSigners defines whose signature is required
 func (msg MsgIPALClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
-}
-
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEndPoint, details string, amount sdk.Coin) MsgServiceNodeClaim {
-	return MsgServiceNodeClaim{
-		OperatorAddress: operator,
-		Moniker:         moniker,
-		Website:         website,
-		ServerEndPoint:  serverEndPoint,
-		Details:         details,
-		StakeShares:     amount,
-	}
-}
-
-func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
-
-func (msg MsgServiceNodeClaim) Type() string { return "ServerNodeClaim" }
-
-// ValidateBasic runs stateless checks on the message
-func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
-	// check msg sender
-	if msg.OperatorAddress.Empty() {
-		return sdk.ErrInvalidAddress("missing operator address")
-	}
-
-	if msg.Moniker == "" {
-		return ErrEmptyInputs("moniker empty")
-	}
-
-	if msg.Website == "" {
-		return ErrEmptyInputs("website empty")
-	}
-
-	if msg.ServerEndPoint == "" {
-		return ErrEmptyInputs("server empty")
-	}
-
-	if msg.StakeShares.IsNegative() {
-		return ErrEmptyInputs("stake amount must > 0 ")
-	}
-
-	if len(msg.Moniker) > maxMonikerLength {
-		return ErrStringTooLong(fmt.Sprintf("moniker too long, max length: %v", maxMonikerLength))
-	}
-
-	if len(msg.Website) > maxWebsiteLength {
-		return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
-	}
-
-	if len(msg.ServerEndPoint) > maxServerEndPointLength {
-		return ErrStringTooLong(fmt.Sprintf("server too long, max length: %v", maxServerEndPointLength))
-	}
-
-	if len(msg.Details) > maxDetailsLength {
-		return ErrStringTooLong(fmt.Sprintf("details too long, max length: %v", maxDetailsLength))
-	}
-
-	return nil
-}
-
-func (msg MsgServiceNodeClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.OperatorAddress)}
-}
-
-func (msg MsgServiceNodeClaim) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
 }

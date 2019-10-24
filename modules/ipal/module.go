@@ -6,11 +6,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/ipal/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/ipal/client/rest"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	sdk "github.com/NetCloth/netcloth-chain/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -30,12 +29,11 @@ func (a AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 }
 
 func (a AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
+	return ModuleCdc.MustMarshalJSON("")
 }
 
-func (a AppModuleBasic) ValidateGenesis(value json.RawMessage) error {
-	var data types.GenesisState
-	return ModuleCdc.UnmarshalJSON(value, &data)
+func (a AppModuleBasic) ValidateGenesis(value json.RawMessage) (err error) {
+	return
 }
 
 func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
@@ -62,10 +60,6 @@ func NewAppModule(keeper Keeper) AppModule{
 }
 
 func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types.GenesisState
-	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-
-	a.k.SetParams(ctx, genesisState.Params)
 	return nil
 }
 

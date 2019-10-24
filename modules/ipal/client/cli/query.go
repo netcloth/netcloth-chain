@@ -13,7 +13,7 @@ import (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	ipalQueryCmd := &cobra.Command{
+	ipalQueryCmd := &cobra.Command {
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for ipal",
 		DisableFlagParsing:         true,
@@ -22,13 +22,10 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 
 	ipalQueryCmd.AddCommand(client.GetCommands(
-		GetCmdQueryParams(queryRoute, cdc),
 		GetCmdQueryCIPAL(queryRoute, cdc),
-		GetCmdQueryServerNode(queryRoute, cdc),
 		)...)
 
 	return ipalQueryCmd
-
 }
 
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
@@ -60,65 +57,6 @@ func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			return cliCtx.PrintOutput(types.MustUnmarshalIPALObject(cdc, res))
-		},
-	}
-}
-
-func GetCmdQueryParams(storeName string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
-		Use: "params",
-		Args: cobra.NoArgs,
-		Short: "Query the current ipal parameters",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query values set as ipal parameters.
-Example:
-$ %s query ipal params`,
-        version.ClientName,),),
-        RunE: func(cmd *cobra.Command, args []string) error {
-
-        	cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-        	route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryParameters)
-        	bz, _, err := cliCtx.QueryWithData(route, nil)
-        	if err != nil {
-        		fmt.Println("fail")
-        		return err
-			}
-
-			var params types.Params
-        	cdc.MustUnmarshalJSON(bz, &params)
-        	return cliCtx.PrintOutput(params)
-		},
-	}
-}
-
-func GetCmdQueryServerNode(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
-		Use:   "servernode",
-		Short: "Querying commands for ServerNodes",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`List all ServerNodes.
-Example:
-$ %s query ipal servernode
-`,
-				version.ClientName,
-			),
-		),
-
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			resKVs, _, err := cliCtx.QuerySubspace(types.ServerNodeObjectKey, types.StoreKey)
-			if err != nil {
-				return err
-			}
-
-			var serverNodes types.ServerNodeObjects
-			for _, kv := range resKVs {
-				serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cdc, kv.Value))
-			}
-
-			return cliCtx.PrintOutput(serverNodes)
 		},
 	}
 }

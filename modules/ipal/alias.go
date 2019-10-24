@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	ModuleName		    = types.ModuleName
 	StoreKey            = types.StoreKey
 	RouterKey           = types.RouterKey
 	QuerierRoute        = types.QuerierRoute
@@ -14,33 +15,20 @@ const (
 )
 
 var (
-	// functions aliases
-	RegisterCodec                  = types.RegisterCodec
-	ErrEmptyInputs                 = types.ErrEmptyInputs
-	ErrStringTooLong               = types.ErrStringTooLong
-	ErrInvalidSignature            = types.ErrInvalidSignature
-	ErrIPALClaimUserRequestExpired = types.ErrIPALClaimUserRequestExpired
-
-	NewIPALObject       = types.NewIPALObject
-	NewServerNodeObject = types.NewServerNodeObject
-	NewQuerier = keeper.NewQuerier
-
-	NewMsgIPALClaim        = types.NewMsgIPALClaim
-	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
-
-	ModuleName = types.ModuleName
-
-	// variable aliases
-	ModuleCdc = types.ModuleCdc
-
-	NewKeeper = keeper.NewKeeper
-
-	AttributeValueCategory = types.AttributeValueCategory
+	RegisterCodec					= types.RegisterCodec
+	NewIPALObject       			= types.NewIPALObject
+	NewQuerier						= keeper.NewQuerier
+	NewMsgIPALClaim					= types.NewMsgIPALClaim
+	NewKeeper 						= keeper.NewKeeper
+	ErrEmptyInputs					= types.ErrEmptyInputs
+	ErrStringTooLong				= types.ErrStringTooLong
+	ErrInvalidSignature				= types.ErrInvalidSignature
+	ErrIPALClaimUserRequestExpired	= types.ErrIPALClaimUserRequestExpired
+	ModuleCdc 						= types.ModuleCdc
+	AttributeValueCategory 			= types.AttributeValueCategory
 )
 
 type (
 	Keeper = keeper.Keeper
-
-	MsgIPALClaim        = types.MsgIPALClaim
-	MsgServiceNodeClaim = types.MsgServiceNodeClaim
+	MsgIPALClaim = types.MsgIPALClaim
 )

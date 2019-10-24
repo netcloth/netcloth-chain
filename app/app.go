@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/NetCloth/netcloth-chain/modules/ipala"
 	"io"
 	"os"
 
@@ -58,8 +59,8 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		//nch.AppModuleBasic{},
 		ipal.AppModuleBasic{},
+		ipala.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -70,7 +71,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
-		ipal.ModuleName: {supply.Staking},
+		ipala.ModuleName:          {supply.Staking},
 	}
 )
 
@@ -108,6 +109,7 @@ type NCHApp struct {
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
 	ipalKeeper     ipal.Keeper
+	ipalaKeeper    ipala.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -135,6 +137,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		gov.StoreKey,
 		params.StoreKey,
 		ipal.StoreKey,
+		ipala.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -160,6 +163,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	ipalaSubspace := app.paramsKeeper.Subspace(ipala.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -180,9 +184,15 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
-		app.supplyKeeper,
 		ipalSubspace,
 		ipal.DefaultCodespace)
+
+	app.ipalaKeeper = ipala.NewKeeper(
+		keys[ipala.StoreKey],
+		app.cdc,
+		app.supplyKeeper,
+		ipalaSubspace,
+		ipala.DefaultCodespace)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -223,6 +233,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 		ipal.NewAppModule(app.ipalKeeper),
+		ipala.NewAppModule(app.ipalaKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -230,7 +241,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipala.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -246,7 +257,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		supply.ModuleName,
 		crisis.ModuleName,
 		genutil.ModuleName,
-		ipal.ModuleName,
+		ipala.ModuleName,
 	)
 
 	//app.mm.RegisterInvariants(&app.crisisKeeper)

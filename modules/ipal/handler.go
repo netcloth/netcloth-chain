@@ -13,8 +13,6 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgIPALClaim:
 			return handleMsgIPALClaim(ctx, k, msg)
-		case MsgServiceNodeClaim:
-			return handleMsgServerNodeClaim(ctx, k, msg)
 		default:
 			errMsg := "Unrecognized Msg type: %s" + msg.Type()
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -50,32 +48,6 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim) sdk.Result {
-	err := msg.ValidateBasic()
-	if err != nil {
-		return err.Result()
-	}
-
-	err = k.DoServerNodeClaim(ctx, msg)
-	if err != nil {
-		return err.Result()
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
-		),
-	)
-
-	return sdk.Result{}
-}
-
-
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
-	matureUnstakings := k.DequeueAllMatureUnStakingQueue(ctx, ctx.BlockHeader().Time)
-	for _, matureUnstaking := range matureUnstakings {
-		k.DoUnStaking(ctx, matureUnstaking)
-	}
 	return []abci.ValidatorUpdate{}
 }
