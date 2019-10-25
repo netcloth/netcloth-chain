@@ -6,42 +6,6 @@ import (
     sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
-func (k Keeper) GetUnBonds(ctx sdk.Context, aa sdk.AccAddress) (unBonds types.UnBonds, found bool) {
-    store := ctx.KVStore(k.storeKey)
-    key := types.GetUnBondsKey(aa)
-    value := store.Get(key)
-    if value == nil {
-        return unBonds, false
-    }
-
-    unBonds = types.MustUnmarshalUnstaking(k.cdc, value)//TODO check register type to codec????????????????
-    return unBonds, true
-}
-
-func(k Keeper) SetUnBonds(ctx sdk.Context, unBonds types.UnBonds) {
-    store := ctx.KVStore(k.storeKey)
-    value := types.MustMarshalUnstaking(k.cdc, unBonds)
-    key := types.GetUnBondsKey(unBonds.AccountAddress)
-    store.Set(key, value)
-}
-
-func (k Keeper) RemoveUnBonds(ctx sdk.Context, unBonds types.UnBonds) {
-    store := ctx.KVStore(k.storeKey)
-    key := types.GetUnBondsKey(unBonds.AccountAddress)
-    store.Delete(key)
-}
-
-func (k Keeper) SetUnBondsEntry(ctx sdk.Context, aa sdk.AccAddress, endTime time.Time, amt sdk.Coin) types.UnBonds {
-    unBonds, found := k.GetUnBonds(ctx, aa)
-    if found {
-        unBonds.AddEntry(endTime, amt)
-    } else {
-        unBonds = types.NewUnBonds(aa, endTime, amt)
-    }
-    k.SetUnBonds(ctx, unBonds)
-    return unBonds
-}
-
 func (k Keeper) GetUnBondingQueueTimeSlice(ctx sdk.Context, timestamp time.Time) (unBondings types.UnBondings) {
     store := ctx.KVStore(k.storeKey)
     value := store.Get(types.GetUnBondingKey(timestamp))
@@ -58,21 +22,10 @@ func (k Keeper) SetUnBondingQueueTimeSlice(ctx sdk.Context, timestamp time.Time,
     store.Set(types.GetUnBondingKey(timestamp), value)
 }
 
-func (k Keeper) InsertUnBondingQueue(ctx sdk.Context, unBonds types.UnBonds, endTime time.Time) {
-    currentUnBondings :=  k.GetUnBondingQueueTimeSlice(ctx, endTime)
-    unBondings := types.UnBondings{}
-
-    for _, v := range unBonds.Entries {
-        unBonding := types.NewUnBonding(unBonds.AccountAddress, v.Amount, v.EndTime)
-        unBondings = append(unBondings, unBonding)
-    }
-
-    if len(currentUnBondings) == 0 {
-        k.SetUnBondingQueueTimeSlice(ctx, endTime, unBondings)
-    } else {
-        currentUnBondings = append(currentUnBondings, unBondings...)
-        k.SetUnBondingQueueTimeSlice(ctx, endTime, currentUnBondings)
-    }
+func (k Keeper) InsertUnBondingQueue(ctx sdk.Context, unBonding types.UnBonding, endTime time.Time) {
+    s := k.GetUnBondingQueueTimeSlice(ctx, endTime)
+    s = append(s, unBonding)
+    k.SetUnBondingQueueTimeSlice(ctx, endTime, s)
 }
 
 func (k Keeper) UnBondingQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {

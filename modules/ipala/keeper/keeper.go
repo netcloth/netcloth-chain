@@ -87,8 +87,8 @@ func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) {
 
 func (k Keeper) unBond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) {
     endTime := ctx.BlockHeader().Time.Add(k.GetUnbondingTime(ctx))
-    unBonds := k.SetUnBondsEntry(ctx, aa, endTime, amt)
-    k.InsertUnBondingQueue(ctx, unBonds, endTime)
+    unBonding := types.NewUnBonding(aa, amt, endTime)
+    k.InsertUnBondingQueue(ctx, unBonding, endTime)
 }
 
 /*
@@ -135,7 +135,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
             k.createServiceNode(ctx, m)
             k.bond(ctx, m.OperatorAddress, m.Bond)
         } else {
-            return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min: %v", minBond.String()))
+            return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, catual req bond: %s", minBond.String(), m.Bond.String()))
         }
     }
 

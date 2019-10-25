@@ -9,7 +9,7 @@ import (
 )
 
 const (
-    DefaultUnbondingTime = time.Minute * 5
+    DefaultUnbondingTime = time.Minute * 2
 )
 
 var (
