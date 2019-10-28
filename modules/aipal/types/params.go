@@ -7,8 +7,9 @@ import (
     "time"
 )
 
-var (
-    DefaultUnbondingTime = time.Minute * 1
+const (
+    //DefaultUnbondingTime = time.Minute * 1
+    DefaultUnbondingTime = time.Second * 10
 )
 
 var (

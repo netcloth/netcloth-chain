@@ -10,12 +10,10 @@ import (
 	"github.com/NetCloth/netcloth-chain/modules/distribution"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
 	"github.com/NetCloth/netcloth-chain/modules/ipal"
-	"github.com/NetCloth/netcloth-chain/modules/nch"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
 	"github.com/NetCloth/netcloth-chain/modules/supply"
-	"github.com/NetCloth/netcloth-chain/modules/token"
 	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/types"
@@ -197,11 +195,9 @@ func MakeCodec() *codec.Codec {
 	distribution.RegisterCodec(cdc)
 	gov.RegisterCodec(cdc)
 	ipal.RegisterCodec(cdc)
-	nch.RegisterCodec(cdc)
 	slashing.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)
-	token.RegisterCodec(cdc)
 	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
 	cdc.RegisterConcrete(secp256k1.PubKeySecp256k1{},
 		"tendermint/PubKeySecp256k1", nil)

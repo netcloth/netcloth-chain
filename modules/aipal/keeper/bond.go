@@ -41,6 +41,7 @@ func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Tim
 
     store := ctx.KVStore(k.storeKey)
     itr := k.UnBondingQueueIterator(ctx, ctx.BlockHeader().Time)
+    defer itr.Close()
     for ; itr.Valid(); itr.Next() {
         tMatureUnBondings := types.UnBondings{}
         v := itr.Value()
