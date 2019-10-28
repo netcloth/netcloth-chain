@@ -163,7 +163,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 
 func (k Keeper) GetAllServerNodes(ctx sdk.Context) (serverNodes types.ServiceNodes) {
     store := ctx.KVStore(k.storeKey)
-    iterator := sdk.KVStorePrefixIterator(store, types.ServiceNodeKey)
+    iterator := sdk.KVStorePrefixIterator(store, types.ServiceNodeByBondKey)
     defer iterator.Close()
 
     for ; iterator.Valid(); iterator.Next() {
