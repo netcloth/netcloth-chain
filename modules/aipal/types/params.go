@@ -7,7 +7,7 @@ import (
     "time"
 )
 
-const (
+var (
     DefaultUnbondingTime = time.Minute * 1
 )
 
