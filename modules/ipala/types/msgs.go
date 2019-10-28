@@ -3,6 +3,7 @@ package types
 import (
     "fmt"
     sdk "github.com/NetCloth/netcloth-chain/types"
+    "strings"
 )
 
 const (
@@ -40,7 +41,15 @@ func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
 
 func (msg MsgServiceNodeClaim) Type() string { return "serviceNodeClaim" }
 
+func (msg *MsgServiceNodeClaim) TrimSpace() {
+    msg.Moniker = strings.TrimSpace(msg.Moniker)
+    msg.Website = strings.TrimSpace(msg.Website)
+    msg.Details = strings.TrimSpace(msg.Details)
+    msg.ServerEndPoint = strings.TrimSpace(msg.ServerEndPoint)
+}
+
 func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
+
     if msg.OperatorAddress.Empty() {
         return sdk.ErrInvalidAddress("missing operator address")
     }

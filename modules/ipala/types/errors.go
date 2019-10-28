@@ -7,10 +7,11 @@ import (
 const (
     DefaultCodespace sdk.CodespaceType = ModuleName
 
-    CodeEmptyInputs      sdk.CodeType = 100
-    CodeStringTooLong    sdk.CodeType = 101
-    CodeBadDenom         sdk.CodeType = 102
-    CodeBondInsufficient sdk.CodeType = 103
+    CodeEmptyInputs         sdk.CodeType = 100
+    CodeStringTooLong       sdk.CodeType = 101
+    CodeBadDenom            sdk.CodeType = 102
+    CodeBondInsufficient    sdk.CodeType = 103
+    CodeMonikerExist        sdk.CodeType = 104
 )
 
 func ErrEmptyInputs(msg string) sdk.Error {
@@ -27,4 +28,8 @@ func ErrBadDenom(msg string) sdk.Error {
 
 func ErrBondInsufficient(msg string) sdk.Error {
     return sdk.NewError(DefaultCodespace, CodeBondInsufficient, msg)
+}
+
+func ErrMonikerExist(msg string) sdk.Error {
+    return sdk.NewError(DefaultCodespace, CodeMonikerExist, msg)
 }

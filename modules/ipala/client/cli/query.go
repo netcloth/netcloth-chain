@@ -57,7 +57,7 @@ $ %s query ipala params`, version.ClientName,)),
 
 func GetCmdQueryServerNode(cdc *codec.Codec) *cobra.Command {
     return &cobra.Command {
-        Use: "servicenode",
+        Use: "servicenodes",
         Short: "Querying commands for ServiceNodes",
         Long: strings.TrimSpace(fmt.Sprintf(`List all ServiceNodes.
 Example:

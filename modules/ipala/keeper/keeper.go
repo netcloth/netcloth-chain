@@ -54,12 +54,28 @@ func (k Keeper) delServiceNode(ctx sdk.Context, accAddress sdk.AccAddress) {
 
 func (k Keeper) setServiceNodeByBond(ctx sdk.Context, obj types.ServiceNode) {
     store := ctx.KVStore(k.storeKey)
-    store.Set(types.GetServiceNodeByBondKey(obj), obj.OperatorAddress)
+    bz := types.MustMarshalServerNodeObject(k.cdc, obj)
+    store.Set(types.GetServiceNodeByBondKey(obj), bz)
 }
 
 func (k Keeper) delServiceNodeByBond(ctx sdk.Context, obj types.ServiceNode) {
     store := ctx.KVStore(k.storeKey)
     store.Delete(types.GetServiceNodeByBondKey(obj))
+}
+
+func (k Keeper) ServiceNodeMonikerExist(ctx sdk.Context, moniker string) bool {
+    store := ctx.KVStore(k.storeKey)
+    return store.Get(types.GetServiceNodeByMonikerKey(moniker)) != nil
+}
+
+func (k Keeper) setServiceNodeByMonikerIndex(ctx sdk.Context, obj types.ServiceNode) {
+    store := ctx.KVStore(k.storeKey)
+    store.Set(types.GetServiceNodeByMonikerKey(obj.Moniker), obj.OperatorAddress)
+}
+
+func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
+    store := ctx.KVStore(k.storeKey)
+    store.Delete(types.GetServiceNodeByMonikerKey(moniker))
 }
 
 func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
@@ -74,6 +90,9 @@ func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new ty
 
     k.delServiceNodeByBond(ctx, old)
     k.setServiceNodeByBond(ctx, u)
+
+    k.delServiceNodeByMonikerIndex(ctx, old.Moniker)
+    k.setServiceNodeByMonikerIndex(ctx, u)
 }
 
 func (k Keeper) deleteServiceNode(ctx sdk.Context, n types.ServiceNode) {

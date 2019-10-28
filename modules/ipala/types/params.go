@@ -2,7 +2,6 @@ package types
 
 import (
     "fmt"
-    "github.com/NetCloth/netcloth-chain/codec"
     "github.com/NetCloth/netcloth-chain/modules/params"
     sdk "github.com/NetCloth/netcloth-chain/types"
     "time"
@@ -56,26 +55,3 @@ func (p Params) String() string {
         p.UnbondingTime,
         p.MinBond)
 }
-
-func MustUnmarshalParams(cdc *codec.Codec, value []byte) Params {
-    params, err := UnmarshalParams(cdc, value)
-    if err != nil {
-        panic(err)
-    }
-    return params
-}
-
-func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) {
-    err = cdc.UnmarshalBinaryLengthPrefixed(value, &params)
-    if err != nil {
-        return
-    }
-    return
-}
-
-func (p Params) Validate() error {
-    //TODO
-    return nil
-}
-
-

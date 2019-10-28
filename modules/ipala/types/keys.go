@@ -14,10 +14,10 @@ const (
 )
 
 var (
-    ServiceNodeKey       = []byte{0x10}
-    ServiceNodeByBondKey = []byte{0x11}
-    UnBondsKey           = []byte{0x12}
-    UnBondingKey         = []byte{0x13}
+    ServiceNodeKey          = []byte{0x10}
+    ServiceNodeByBondKey    = []byte{0x11}
+    ServiceNodeByMonikerKey = []byte{0x12}
+    UnBondingKey            = []byte{0x13}
 )
 
 func GetServiceNodeKey(addr sdk.AccAddress) []byte {
@@ -44,8 +44,8 @@ func GetServiceNodeByBondKey(obj ServiceNode) []byte {
     return key
 }
 
-func GetUnBondsKey(accountAddress sdk.AccAddress) []byte {
-    return append(UnBondsKey, accountAddress.Bytes()...)
+func GetServiceNodeByMonikerKey(moniker string) []byte {
+    return append(ServiceNodeByMonikerKey, []byte(moniker)...)
 }
 
 func GetUnBondingKey(timestamp time.Time) []byte {
