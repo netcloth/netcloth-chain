@@ -2,13 +2,16 @@ package sim
 
 import (
     "fmt"
+    itypes "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/tests"
+    "github.com/NetCloth/netcloth-chain/types"
     "github.com/stretchr/testify/require"
     "testing"
+    "time"
 )
 
-func aipalClaimCmd(amt, nchcliHome, port string) string {
-    return fmt.Sprintf("nchcli aipal claim --from=foo --moniker=foo --website=sky.com --server=sky.com --details=\" sky nb  \" --service_type=\"storage|chatting\" --bond=%s --home=%s --node localhost:%s", amt, nchcliHome, port)
+func aipalClaimCmd(server, moniker, website, details, serviceType, amt, nchcliHome, port string) string {
+    return fmt.Sprintf(`nchcli aipal claim -y --from foo --server %s --moniker=%s --website=%s --bond %s --details %s --home=%s --service_type=%s --node localhost:%s -o json`, server, moniker, website, amt, details, nchcliHome, serviceType, port)
 }
 
 func aipalParamsCmd(nchcliHome, port string) string {
@@ -24,6 +27,17 @@ func accountQueryCmd(t *testing.T, acc, nchcliHome, port string) string {
     return fmt.Sprintf("nchcli query account %s --home=%s --node localhost:%s -o json", fooAddr, nchcliHome, port)
 }
 
+func executeGetServiceNodes(t *testing.T, cmdStr string) (nodes itypes.ServiceNodes) {
+    out, _ := tests.ExecuteT(t, cmdStr, "")
+
+    cdc := MakeCodec()
+
+    err := cdc.UnmarshalJSON([]byte(out), &nodes)
+    require.NoError(t, err, "acc %v, err %v", string(out), err)
+
+    return
+}
+
 func Test_aipal(t *testing.T) {
     t.Parallel()
 
@@ -35,14 +49,122 @@ func Test_aipal(t *testing.T) {
     tests.WaitForTMStart(port)
     tests.WaitForNextNBlocksTM(1, port)
 
-
     cmdGetAccount := accountQueryCmd(t, "foo", nchcliHome, port)
-    acc := executeGetAccount(t, cmdGetAccount)
+    initAccount := executeGetAccount(t, cmdGetAccount)
+    //foo Account's init unch is 10000000unch
+    require.True(t, initAccount.Coins.IsEqual(types.NewCoins(types.NewCoin("unch", types.NewInt(10000000)))))
 
     //failed for amount insufficient
-    r := executeWrite(t, aipalClaimCmd("100000unch", nchcliHome, port), DefaultKeyPass)
+    r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "chatting", "100000unch", nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
-    newAcc := executeGetAccount(t, cmdGetAccount)
-    require.True(t, acc.Coins.IsEqual(newAcc.Coins))
+    tmpAccount := executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.IsEqual(initAccount.Coins))
+
+    //succ to claim aipal
+    bondAmount := types.NewCoin("unch", types.NewInt(2000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky.com", "skygood", "chatting", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(bondAmount)).IsEqual(initAccount.Coins))
+    nodes := executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 1)
+    require.True(t, nodes[0].Bond.IsEqual(bondAmount))
+    require.True(t, nodes[0].ServiceType == 1)
+    require.True(t, nodes[0].Moniker == "sky")
+    require.True(t, nodes[0].ServerEndPoint == "sky")
+    require.True(t, nodes[0].Details == "skygood")
+    require.True(t, nodes[0].Website == "sky.com")
+
+    //update bond amount
+    bondAmount = types.NewCoin("unch", types.NewInt(3000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "chatting|storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(bondAmount)).IsEqual(initAccount.Coins))
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 1)
+    require.True(t, nodes[0].Bond.IsEqual(bondAmount))
+    require.True(t, nodes[0].ServiceType == 3)
+    require.True(t, nodes[0].Moniker == "sky")
+    require.True(t, nodes[0].ServerEndPoint == "sky")
+    require.True(t, nodes[0].Details == "sky")
+    require.True(t, nodes[0].Website == "sky")
+
+    //test for unbond
+    bondAmount = types.NewCoin("unch", types.NewInt(2000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(types.NewCoin("unch", types.NewInt(3000000)))).IsEqual(initAccount.Coins))
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 1)
+    require.True(t, nodes[0].Bond.IsEqual(bondAmount))
+
+    tests.WaitForNextNBlocksTM(4, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(bondAmount)).IsEqual(initAccount.Coins), tmpAccount.String())
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 1)
+    require.True(t, nodes[0].Bond.IsEqual(bondAmount))
+
+    //test for unbond
+    bondAmount = types.NewCoin("unch", types.NewInt(20000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(types.NewCoin("unch", types.NewInt(2000000)))).IsEqual(initAccount.Coins))
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 0)
+
+    tests.WaitForNextNBlocksTM(4, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.IsEqual(initAccount.Coins), tmpAccount.String())
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 0)
+
+    //TODO fix fail
+    bondAmount = types.NewCoin("unch", types.NewInt(1000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    time.Sleep(1000)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(10000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    time.Sleep(1000)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(2000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(10000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(3000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(10000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+    tests.WaitForNextNBlocksTM(1, port)
+
+    bondAmount = types.NewCoin("unch", types.NewInt(3000000))
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    require.True(t, r)
+
+    tests.WaitForNextNBlocksTM(2, port)
+    tmpAccount = executeGetAccount(t, cmdGetAccount)
+    require.True(t, tmpAccount.Coins.Add(types.NewCoins(types.NewCoin("unch", types.NewInt(3000000)))).IsEqual(initAccount.Coins), tmpAccount.Coins.String())
+    nodes = executeGetServiceNodes(t, aipalQueryCmd(nchcliHome, port))
+    require.True(t, len(nodes) == 1)
 }
