@@ -6,13 +6,13 @@ import (
     "github.com/NetCloth/netcloth-chain/codec"
     "github.com/NetCloth/netcloth-chain/modules/auth"
     "github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
 )
 
-func IPALACmd(cdc *codec.Codec) *cobra.Command {
+func AIPALCmd(cdc *codec.Codec) *cobra.Command {
     txCmd := &cobra.Command{
         Use:   types.ModuleName,
         Short: "IPAL transaction subcommands",

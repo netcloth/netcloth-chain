@@ -1,8 +1,8 @@
-package ipala
+package aipal
 
 import (
-    "github.com/NetCloth/netcloth-chain/modules/ipala/keeper"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/keeper"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
 )
 
 const (

@@ -8,14 +8,14 @@ import (
 
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/version"
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
     ipalQueryCmd := &cobra.Command {
         Use:                        types.ModuleName,
-        Short:                      "Querying commands for ipala",
+        Short:                      "Querying commands for aipal",
         DisableFlagParsing:         true,
         SuggestionsMinimumDistance: 2,
         RunE:                       client.ValidateCmd,
@@ -35,9 +35,9 @@ func GetCmdQueryParams(storeName string, cdc *codec.Codec) *cobra.Command {
         Use: "params",
         Args: cobra.NoArgs,
         Short: "Query the current ipal parameters",
-        Long: strings.TrimSpace(fmt.Sprintf(`Query values set as ipala parameters.
+        Long: strings.TrimSpace(fmt.Sprintf(`Query values set as aipal parameters.
 Example:
-$ %s query ipala params`, version.ClientName,)),
+$ %s query aipal params`, version.ClientName,)),
 
         RunE: func(cmd *cobra.Command, args []string) error {
             cliCtx := context.NewCLIContext().WithCodec(cdc)

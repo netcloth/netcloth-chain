@@ -7,7 +7,7 @@ import (
 )
 
 const (
-    ModuleName = "ipala"
+    ModuleName = "aipal"
     StoreKey = ModuleName
     RouterKey = ModuleName
     QuerierRoute = ModuleName

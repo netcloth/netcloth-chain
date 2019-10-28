@@ -2,7 +2,7 @@ package keeper
 
 import (
     "github.com/NetCloth/netcloth-chain/codec"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     abci "github.com/tendermint/tendermint/abci/types"
 )

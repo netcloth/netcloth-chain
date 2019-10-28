@@ -1,7 +1,7 @@
-package ipala
+package aipal
 
 import (
-    "github.com/NetCloth/netcloth-chain/modules/ipala/keeper"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/keeper"
     sdk "github.com/NetCloth/netcloth-chain/types"
     abci "github.com/tendermint/tendermint/abci/types"
 )

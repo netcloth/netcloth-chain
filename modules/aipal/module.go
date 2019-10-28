@@ -1,12 +1,12 @@
-package ipala
+package aipal
 
 import (
     "encoding/json"
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/client/cli"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/client/rest"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/client/cli"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/client/rest"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     "github.com/NetCloth/netcloth-chain/types/module"
     "github.com/gorilla/mux"

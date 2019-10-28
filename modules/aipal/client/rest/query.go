@@ -4,7 +4,7 @@ import (
     "net/http"
     "github.com/gorilla/mux"
     "github.com/NetCloth/netcloth-chain/client/context"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/types/rest"
 )
 
