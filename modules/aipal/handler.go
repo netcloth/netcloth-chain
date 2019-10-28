@@ -46,7 +46,7 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
     matureUnstakings := k.DequeueAllMatureUnBondingQueue(ctx, ctx.BlockHeader().Time)
     for _, matureUnstaking := range matureUnstakings {
-        k.DoUnBond(ctx, matureUnstaking)
+        k.DoUnbond(ctx, matureUnstaking)
     }
     return []abci.ValidatorUpdate{}
 }

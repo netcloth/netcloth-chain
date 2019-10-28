@@ -1,9 +1,10 @@
 package keeper
 
 import (
-    "time"
+    "fmt"
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
+    "time"
 )
 
 func (k Keeper) GetUnBondingQueueTimeSlice(ctx sdk.Context, timestamp time.Time) (unBondings types.UnBondings) {
@@ -34,22 +35,47 @@ func (k Keeper) UnBondingQueueIterator(ctx sdk.Context, endTime time.Time) sdk.I
 }
 
 func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Time) (matureUnBondings []types.UnBonding) {
-    store := ctx.KVStore(k.storeKey)
+    moduleFunds := k.supplyKeeper.GetModuleAccount(ctx, types.ModuleName).GetCoins().AmountOf("unch")
+    unbondingAmount := sdk.NewInt(0)
+    moduleFundsErr := false
 
+    store := ctx.KVStore(k.storeKey)
     itr := k.UnBondingQueueIterator(ctx, ctx.BlockHeader().Time)
     for ; itr.Valid(); itr.Next() {
         tMatureUnBondings := types.UnBondings{}
         v := itr.Value()
         k.cdc.MustUnmarshalBinaryLengthPrefixed(v, &tMatureUnBondings)
+        for _, v := range tMatureUnBondings {
+            if unbondingAmount.LT(moduleFunds) {
+                unbondingAmount = unbondingAmount.Add(v.Amount.Amount)
+            } else {
+                moduleFundsErr = true
+                break
+            }
+        }
+
+        if moduleFundsErr == true {
+            ctx.Logger().Error(fmt.Sprintf("module[%s] funds[%v] unch insufficient", types.ModuleName, moduleFunds.String()))
+            break
+        }
+
         matureUnBondings = append(matureUnBondings, tMatureUnBondings...)
-        //TODO check tMatureUnBondings.clear()????????
         store.Delete(itr.Key())
     }
 
     return matureUnBondings
 }
 
-func (k Keeper) DoUnBond(ctx sdk.Context, unBonding types.UnBonding) sdk.Error {
-    //TODO check
-    return k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, unBonding.AccountAddress, sdk.NewCoins(unBonding.Amount))
+func (k Keeper) DoUnbond(ctx sdk.Context, unBonding types.UnBonding) sdk.Error {
+    err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, unBonding.AccountAddress, sdk.NewCoins(unBonding.Amount))
+    if err != nil {
+        ctx.Logger().Error(fmt.Sprintf("DoUnbond failed, err:", err.Error()))
+    }
+    return err
+}
+
+func (k Keeper) toUnbondingQueue(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) {
+    endTime := ctx.BlockHeader().Time.Add(k.GetUnbondingTime(ctx))
+    unBonding := types.NewUnBonding(aa, amt, endTime)
+    k.InsertUnBondingQueue(ctx, unBonding, endTime)
 }

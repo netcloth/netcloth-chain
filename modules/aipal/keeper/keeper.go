@@ -100,21 +100,16 @@ func (k Keeper) deleteServiceNode(ctx sdk.Context, n types.ServiceNode) {
     k.delServiceNodeByBond(ctx, n)
 }
 
-func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) {
-    k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
+func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) sdk.Error {
+    return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
-func (k Keeper) unBond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) {
-    endTime := ctx.BlockHeader().Time.Add(k.GetUnbondingTime(ctx))
-    unBonding := types.NewUnBonding(aa, amt, endTime)
-    k.InsertUnBondingQueue(ctx, unBonding, endTime)
-}
 
 /*
 founded {
     bond >= minBond {
         bond > currentBond {
-            Bond(bond - currentBond)
+            ensure Bond(bond - currentBond)
         } else (bond < currentBond) {
             UnBond(currentBond - bond)
         } else {
@@ -127,8 +122,8 @@ founded {
 } else {
     bond >= minBond {
         ensure moniker uniq
+        ensure Bond
         createServiceNode
-        Bond
     } else {
         return err
     }
@@ -140,14 +135,17 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
     if found {
         if m.Bond.IsGTE(minBond) {
             if n.Bond.IsLT(m.Bond) {
-                k.bond(ctx, m.OperatorAddress, m.Bond.Sub(n.Bond))
+                err := k.bond(ctx, m.OperatorAddress, m.Bond.Sub(n.Bond))
+                if err != nil {
+                    return err
+                }
             } else if m.Bond.IsLT(n.Bond) {
-                k.unBond(ctx, m.OperatorAddress, n.Bond.Sub(m.Bond))
+                k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond.Sub(m.Bond))
             } else {
             }
             k.updateServiceNode(ctx, n, m)
         } else {
-            k.unBond(ctx, m.OperatorAddress, n.Bond)
+            k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
             k.deleteServiceNode(ctx, n)
         }
     } else {
@@ -156,8 +154,12 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
                 return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker))
             }
 
+            err := k.bond(ctx, m.OperatorAddress, m.Bond)
+            if err != nil  {
+                return err
+            }
+
             k.createServiceNode(ctx, m)
-            k.bond(ctx, m.OperatorAddress, m.Bond)
         } else {
             return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, catual req bond: %s", minBond.String(), m.Bond.String()))
         }
