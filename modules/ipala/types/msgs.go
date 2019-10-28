@@ -9,6 +9,7 @@ import (
 const (
     maxMonikerLength                = 64
     maxWebsiteLength                = 64
+    maxServiceTypeLength            = 512
     maxServerEndPointLength         = 64
     maxDetailsLength                = 1024
 )
@@ -18,22 +19,24 @@ var (
 )
 
 type MsgServiceNodeClaim struct {
-    OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
-    Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
-    Website         string         `json:"website" yaml:"website"`                   // optional website link
-    ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
-    Details         string         `json:"details" yaml:"details"`                   // optional details
-    Bond            sdk.Coin       `json:"bond" yaml:"bond"`
+    OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+    Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
+    Website         string          `json:"website" yaml:"website"`                   // optional website link
+    ServiceType     string          `json:"service_type" yaml:"service_type"`
+    ServerEndPoint  string          `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
+    Details         string          `json:"details" yaml:"details"`                   // optional details
+    Bond            sdk.Coin        `json:"bond" yaml:"bond"`
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serverEndPoint, details string, Bond sdk.Coin) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serviceType, serverEndPoint, details string, Bond sdk.Coin) MsgServiceNodeClaim {
     return MsgServiceNodeClaim {
-        OperatorAddress: operator,
-        Moniker:         moniker,
-        Website:         website,
-        ServerEndPoint:  serverEndPoint,
-        Details:         details,
-        Bond:            Bond,
+        OperatorAddress:    operator,
+        Moniker:            moniker,
+        Website:            website,
+        ServiceType:        serviceType,
+        ServerEndPoint:     serverEndPoint,
+        Details:            details,
+        Bond:               Bond,
     }
 }
 
@@ -72,6 +75,10 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 
     if len(msg.Website) > maxWebsiteLength {
         return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
+    }
+
+    if len(msg.Website) > maxServiceTypeLength {
+        return ErrStringTooLong(fmt.Sprintf("service type too long, max length: %v", maxServiceTypeLength))
     }
 
     if len(msg.ServerEndPoint) > maxServerEndPointLength {

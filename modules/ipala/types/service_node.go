@@ -9,13 +9,38 @@ import (
     sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
+type ServiceType uint64
+
+const (
+    Chatting ServiceType = 1 << iota
+    Storage
+)
+
+func ServiceTypeFromString(s string) ServiceType {
+    var v ServiceType
+
+    s = strings.Replace(s, " ", "", -1)
+    types := strings.Split(s, "|")
+    for _, t := range types {
+        if t == "chatting" {
+            v |= Chatting
+        }
+
+        if t == "storage" {
+            v |= Storage
+        }
+    }
+    return v
+}
+
 type ServiceNode struct {
-    OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
-    Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
-    Website         string         `json:"website" yaml:"website"`                   // optional website link
-    ServerEndPoint  string         `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
-    Details         string         `json:"details" yaml:"details"`                   // optional details
-    Bond            sdk.Coin       `json:"bond" yaml:"bond"`
+    OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+    Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
+    Website         string          `json:"website" yaml:"website"`                   // optional website link
+    ServiceType     ServiceType     `json:"service_type" yaml:"service_type"`
+    ServerEndPoint  string          `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
+    Details         string          `json:"details" yaml:"details"`                   // optional details
+    Bond            sdk.Coin        `json:"bond" yaml:"bond"`
 }
 
 type ServiceNodes []ServiceNode
@@ -27,11 +52,12 @@ func (v ServiceNodes) String() (out string) {
     return strings.TrimSpace(out)
 }
 
-func NewServiceNode(operator sdk.AccAddress, moniker, website, serverEndPoint, details string, amount sdk.Coin) ServiceNode {
+func NewServiceNode(operator sdk.AccAddress, moniker, website string, serviceType ServiceType, serverEndPoint, details string, amount sdk.Coin) ServiceNode {
     return ServiceNode {
         OperatorAddress:    operator,
         Moniker:            moniker,
         Website:            website,
+        ServiceType:        serviceType,
         ServerEndPoint:     serverEndPoint,
         Details:            details,
         Bond:               amount,

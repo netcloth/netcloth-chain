@@ -79,13 +79,13 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 }
 
 func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
-    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.ServerEndPoint, m.Details, m.Bond)
+    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, types.ServiceTypeFromString(m.ServiceType), m.ServerEndPoint, m.Details, m.Bond)
     k.setServiceNode(ctx, n)
     k.setServiceNodeByBond(ctx, n)
 }
 
 func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
-    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.ServerEndPoint, new.Details, new.Bond)
+    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, types.ServiceTypeFromString(new.ServiceType), new.ServerEndPoint, new.Details, new.Bond)
     k.setServiceNode(ctx, u)
 
     k.delServiceNodeByBond(ctx, old)
@@ -126,6 +126,7 @@ founded {
     }
 } else {
     bond >= minBond {
+        ensure moniker uniq
         createServiceNode
         Bond
     } else {
@@ -151,6 +152,10 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
         }
     } else {
         if m.Bond.IsGTE(minBond) {
+            if k.ServiceNodeMonikerExist(ctx, m.Moniker) {
+                return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker))
+            }
+
             k.createServiceNode(ctx, m)
             k.bond(ctx, m.OperatorAddress, m.Bond)
         } else {

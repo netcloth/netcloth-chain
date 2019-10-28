@@ -1,9 +1,7 @@
 package ipala
 
 import (
-    "fmt"
     "github.com/NetCloth/netcloth-chain/modules/ipala/keeper"
-    "github.com/NetCloth/netcloth-chain/modules/ipala/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -28,10 +26,6 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) 
     err := m.ValidateBasic()
     if err != nil {
         return err.Result()
-    }
-
-    if k.ServiceNodeMonikerExist(ctx, m.Moniker) {
-        return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker)).Result()
     }
 
     err = k.DoServiceNodeClaim(ctx, m)
