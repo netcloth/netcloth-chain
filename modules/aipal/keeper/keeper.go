@@ -161,7 +161,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 
             k.createServiceNode(ctx, m)
         } else {
-            return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, catual req bond: %s", minBond.String(), m.Bond.String()))
+            return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String()))
         }
     }
 
