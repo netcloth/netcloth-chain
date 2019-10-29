@@ -5,6 +5,5 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
-
+func RegisterQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 }

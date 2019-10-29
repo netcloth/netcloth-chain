@@ -1,18 +1,19 @@
-package types
+package nch
 
 import (
 	"github.com/NetCloth/netcloth-chain/codec"
 )
 
+// RegisterCodec registers concrete types on the Amino codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgIPALClaim{}, "nch/IPALCLaim", nil)
+	cdc.RegisterConcrete(MsgSend{}, "nch/MsgSend", nil)
 }
 
+// module codec
 var ModuleCdc *codec.Codec
 
 func init() {
 	ModuleCdc = codec.New()
 	RegisterCodec(ModuleCdc)
-	codec.RegisterCrypto(ModuleCdc)
 	ModuleCdc.Seal()
 }

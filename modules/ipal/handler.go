@@ -1,7 +1,9 @@
 package ipal
 
 import (
+	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
 	sdk "github.com/NetCloth/netcloth-chain/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
@@ -11,8 +13,6 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgIPALClaim:
 			return handleMsgIPALClaim(ctx, k, msg)
-		case MsgServiceNodeClaim:
-			return handleMsgServerNodeClaim(ctx, k, msg)
 		default:
 			errMsg := "Unrecognized Msg type: %s" + msg.Type()
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -27,7 +27,7 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	}
 
 	// check to see if the userAddress and serverIP has been registered before
-	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServerIP)
+	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress)
 	if found {
 		// update ipal object
 		obj.ServerIP = msg.UserRequest.Params.ServerIP
@@ -48,26 +48,6 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, msg MsgServiceNodeClaim) sdk.Result {
-	obj, found := k.GetServerNodeObject(ctx, msg.OperatorAddress)
-	if found {
-		// update
-		obj.Moniker = msg.Moniker
-		obj.Website = msg.Website
-		obj.ServerEndPoint = msg.ServerEndPoint
-		obj.Details = msg.Details
-		k.SetServerNodeObject(ctx, obj)
-	} else {
-		// create
-		obj = NewServerNodeObject(msg.OperatorAddress, msg.Moniker, msg.Website, msg.ServerEndPoint, msg.Details)
-		k.SetServerNodeObject(ctx, obj)
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
-		),
-	)
-	return sdk.Result{}
+func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }

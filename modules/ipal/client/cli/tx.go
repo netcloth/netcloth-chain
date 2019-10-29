@@ -15,7 +15,6 @@ import (
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
-// GetTxCmd returns the transaction commands for this module
 func IPALCmd(cdc *codec.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   types.ModuleName,
@@ -23,7 +22,6 @@ func IPALCmd(cdc *codec.Codec) *cobra.Command {
 	}
 	txCmd.AddCommand(
 		IPALClaimCmd(cdc),
-		ServerNodeClaimCmd(cdc),
 	)
 	return txCmd
 }
@@ -32,7 +30,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim  --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
+		Example: "nchcli ipal claim --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
@@ -79,42 +77,6 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.MarkFlagRequired(flagServerIP)
 	cmd.MarkFlagRequired(flagUser)
 	cmd.MarkFlagRequired(flagProxy)
-
-	cmd = client.PostCommands(cmd)[0]
-
-	return cmd
-}
-
-func ServerNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "server-node-claim",
-		Short:   "Create and sign a ServerNodeClaim tx",
-		Example: "nchcli ipal server-node-claim  --from=<user key name> --moniker=<name> --website=<website> --server=<server_endpoint> --details=<details>",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			moniker := viper.GetString(flagMoniker)
-			website := viper.GetString(flagWebsite)
-			serverEndPoint := viper.GetString(flagServerEndPoint)
-			details := viper.GetString(flagDetails)
-
-			// build and sign the transaction, then broadcast to Tendermint
-			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(),moniker, website, serverEndPoint, details)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-		},
-	}
-
-	cmd.Flags().String(flagMoniker, "", "server node moniker")
-	cmd.Flags().String(flagWebsite, "", "server node website")
-	cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
-	cmd.Flags().String(flagDetails, "", "server node details")
-
-	cmd.MarkFlagRequired(flagMoniker)
-	cmd.MarkFlagRequired(flagServerEndPoint)
 
 	cmd = client.PostCommands(cmd)[0]
 

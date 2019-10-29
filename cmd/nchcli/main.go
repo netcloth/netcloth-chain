@@ -20,6 +20,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	bankcmd "github.com/NetCloth/netcloth-chain/modules/bank/client/cli"
 	ipalcli "github.com/NetCloth/netcloth-chain/modules/ipal/client/cli"
+	aipalcli "github.com/NetCloth/netcloth-chain/modules/aipal/client/cli"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
 )
@@ -60,6 +61,7 @@ func main() {
 	rootCmd.AddCommand(
 		bankcmd.SendTxCmd(cdc),
 		ipalcli.IPALCmd(cdc),
+		aipalcli.AIPALCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),
@@ -100,8 +102,6 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.BlockCommand(),
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
-		ipalcli.GetQueryCmd(cdc),
-		ipalcli.GetServerNodeCmd(cdc),
 		client.LineBreak,
 	)
 	// add modules' query commands
