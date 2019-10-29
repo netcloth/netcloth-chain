@@ -75,8 +75,6 @@ func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, 
 	fooPubkey := executeGetAccAddress(t, fmt.Sprintf("nchd tendermint show-validator --home=%s", nchdHome)) //TODO refact executeGetAccAddress
 	executeWrite(t, fmt.Sprintf("nchd gentx --amount 1000000unch --commission-rate 0.10 --commission-max-rate 0.20 --commission-max-change-rate 0.10 --pubkey %s --name foo --home=%s --home-client=%s", fooPubkey, nchdHome, nchcliHome), DefaultKeyPass)
 	tests.ExecuteT(t, fmt.Sprintf("nchd collect-gentxs --home=%s", nchdHome), "")
-	//genFile := filepath.Join(nchdHome, "config", "genesis.json")
-	//genDoc := readGenesisFile(t, genFile)
 
 	servAddr, port, err := server.FreeTCPAddr()
 	require.NoError(t, err)

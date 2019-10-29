@@ -8,8 +8,7 @@ import (
 )
 
 const (
-    //DefaultUnbondingTime = time.Minute * 1
-    DefaultUnbondingTime = time.Second * 10
+    DefaultUnbondingTime = time.Hour * 24 * 7
 )
 
 var (
