@@ -35,7 +35,7 @@ func (k Keeper) UnBondingQueueIterator(ctx sdk.Context, endTime time.Time) sdk.I
 }
 
 func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Time) (matureUnBondings []types.UnBonding) {
-    moduleFunds := k.supplyKeeper.GetModuleAccount(ctx, types.ModuleName).GetCoins().AmountOf("unch")
+    moduleFunds := k.supplyKeeper.GetModuleAccount(ctx, types.ModuleName).GetCoins().AmountOf(sdk.NativeTokenName)
     unbondingAmount := sdk.NewInt(0)
     moduleFundsErr := false
 
@@ -56,7 +56,7 @@ func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Tim
         }
 
         if moduleFundsErr == true {
-            ctx.Logger().Error(fmt.Sprintf("module[%s] funds[%v] unch insufficient", types.ModuleName, moduleFunds.String()))
+            ctx.Logger().Error(fmt.Sprintf("module[%s] funds[%v] insufficient", types.ModuleName, moduleFunds.String()))
             break
         }
 
