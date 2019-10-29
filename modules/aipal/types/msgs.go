@@ -9,7 +9,6 @@ import (
 const (
     maxMonikerLength                = 64
     maxWebsiteLength                = 64
-    maxServiceTypeLength            = 512
     maxServerEndPointLength         = 64
     maxDetailsLength                = 1024
 )
@@ -52,7 +51,6 @@ func (msg *MsgServiceNodeClaim) TrimSpace() {
 }
 
 func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
-
     if msg.OperatorAddress.Empty() {
         return sdk.ErrInvalidAddress("missing operator address")
     }
@@ -65,6 +63,10 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
         return ErrEmptyInputs("server empty")
     }
 
+    if msg.Bond.Denom != sdk.NativeTokenName {
+       return ErrBadDenom(fmt.Sprintf("bond denom must be %s", sdk.NativeTokenName))
+    }
+
     if msg.Bond.IsNegative() {
         return ErrEmptyInputs("stake amount must > 0 ")
     }
@@ -75,10 +77,6 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 
     if len(msg.Website) > maxWebsiteLength {
         return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
-    }
-
-    if len(msg.Website) > maxServiceTypeLength {
-        return ErrStringTooLong(fmt.Sprintf("service type too long, max length: %v", maxServiceTypeLength))
     }
 
     if len(msg.ServerEndPoint) > maxServerEndPointLength {
