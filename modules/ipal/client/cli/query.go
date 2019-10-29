@@ -30,7 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use: "cipal",
+		Use: "ipal",
 		Short: "Querying commands for ipal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about an individual ipal object.

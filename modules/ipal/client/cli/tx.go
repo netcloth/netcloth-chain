@@ -30,7 +30,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim  --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
+		Example: "nchcli ipal claim --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)

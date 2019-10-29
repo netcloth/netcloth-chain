@@ -27,7 +27,7 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 	}
 
 	// check to see if the userAddress and serverIP has been registered before
-	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServerIP)
+	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress)
 	if found {
 		// update ipal object
 		obj.ServerIP = msg.UserRequest.Params.ServerIP

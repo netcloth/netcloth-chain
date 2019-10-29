@@ -34,7 +34,7 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
 
-func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress, serverIP string) (obj types.IPALObject, found bool) {
+func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress string) (obj types.IPALObject, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.GetIPALObjectKey(userAddress))
 	ctx.Logger().Info(string(types.GetIPALObjectKey(userAddress)))
