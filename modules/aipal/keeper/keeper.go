@@ -79,13 +79,13 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 }
 
 func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
-    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, types.ServiceTypeFromString(m.ServiceType), m.ServerEndPoint, m.Details, m.Bond)
+    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, types.ServiceType(m.ServiceType), m.ServerEndPoint, m.Details, m.Bond)
     k.setServiceNode(ctx, n)
     k.setServiceNodeByBond(ctx, n)
 }
 
 func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
-    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, types.ServiceTypeFromString(new.ServiceType), new.ServerEndPoint, new.Details, new.Bond)
+    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, types.ServiceType(new.ServiceType), new.ServerEndPoint, new.Details, new.Bond)
     k.setServiceNode(ctx, u)
 
     k.delServiceNodeByBond(ctx, old)

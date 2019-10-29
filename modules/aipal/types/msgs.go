@@ -22,13 +22,13 @@ type MsgServiceNodeClaim struct {
     OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
     Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
     Website         string          `json:"website" yaml:"website"`                   // optional website link
-    ServiceType     string          `json:"service_type" yaml:"service_type"`
+    ServiceType     uint64          `json:"service_type" yaml:"service_type"`
     ServerEndPoint  string          `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
     Details         string          `json:"details" yaml:"details"`                   // optional details
     Bond            sdk.Coin        `json:"bond" yaml:"bond"`
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, serviceType, serverEndPoint, details string, Bond sdk.Coin) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website string, serviceType uint64, serverEndPoint, details string, Bond sdk.Coin) MsgServiceNodeClaim {
     return MsgServiceNodeClaim {
         OperatorAddress:    operator,
         Moniker:            moniker,

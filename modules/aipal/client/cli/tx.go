@@ -35,7 +35,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
             moniker := viper.GetString(flagMoniker)
             website := viper.GetString(flagWebsite)
             serverEndPoint := viper.GetString(flagServerEndPoint)
-            serviceType := viper.GetString(flagServiceType)
+            serviceType := viper.GetUint64(flagServiceType)
             details := viper.GetString(flagDetails)
             stakeAmount := viper.GetString(flagBond)
 
@@ -55,7 +55,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
     cmd.Flags().String(flagMoniker, "", "server node moniker")
     cmd.Flags().String(flagWebsite, "", "server node website")
     cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
-    cmd.Flags().String(flagServiceType, "chatting", "service type[chatting|storage], eg: chatting/storage/chatting|storage")
+    cmd.Flags().String(flagServiceType, "1", "service type, 64 bits control 64 kind of service types, bit1:control chatting service, bit2 control storage service")
     cmd.Flags().String(flagDetails, "", "server node details")
     cmd.Flags().String(flagBond, "", "stake amount")
 

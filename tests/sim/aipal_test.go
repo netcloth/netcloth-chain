@@ -63,7 +63,7 @@ func Test_aipal(t *testing.T) {
     require.True(t, initAccount.Coins.IsEqual(types.NewCoins(types.NewCoin("unch", types.NewInt(10000000)))))
 
     //failed for amount insufficient
-    r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "chatting", "100000unch", nchcliHome, port), DefaultKeyPass)
+    r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "1", "100000unch", nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount := executeGetAccount(t, cmdGetAccount)
@@ -71,7 +71,7 @@ func Test_aipal(t *testing.T) {
 
     //succ to claim aipal
     bondAmount := types.NewCoin("unch", types.NewInt(2000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky.com", "skygood", "chatting", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky.com", "skygood", "1", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -87,7 +87,7 @@ func Test_aipal(t *testing.T) {
 
     //update bond amount
     bondAmount = types.NewCoin("unch", types.NewInt(3000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "chatting|storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "3", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -103,7 +103,7 @@ func Test_aipal(t *testing.T) {
 
     //test for unbond
     bondAmount = types.NewCoin("unch", types.NewInt(2000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -121,7 +121,7 @@ func Test_aipal(t *testing.T) {
 
     //test for unbond
     bondAmount = types.NewCoin("unch", types.NewInt(20000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -153,7 +153,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, initAccount.Coins.IsEqual(types.NewCoins(types.NewCoin("unch", types.NewInt(10000000)))))
 
     bondAmount := types.NewCoin("unch", types.NewInt(1000000))
-    r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount := executeGetAccount(t, cmdGetAccount)
@@ -162,7 +162,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 1)
 
     bondAmount = types.NewCoin("unch", types.NewInt(10000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -171,7 +171,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 0)
 
     bondAmount = types.NewCoin("unch", types.NewInt(2000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -180,7 +180,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 1)
 
     bondAmount = types.NewCoin("unch", types.NewInt(10000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -189,7 +189,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 0)
 
     bondAmount = types.NewCoin("unch", types.NewInt(3000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -198,7 +198,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 1)
 
     bondAmount = types.NewCoin("unch", types.NewInt(10000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)
@@ -207,7 +207,7 @@ func Test_unbond(t *testing.T) {
     require.True(t, len(nodes) == 0)
 
     bondAmount = types.NewCoin("unch", types.NewInt(3000000))
-    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "storage", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
+    r = executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "2", bondAmount.String(), nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
     tmpAccount = executeGetAccount(t, cmdGetAccount)

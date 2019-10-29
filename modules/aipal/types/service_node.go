@@ -16,23 +16,6 @@ const (
     Storage
 )
 
-func ServiceTypeFromString(s string) ServiceType {
-    var v ServiceType
-
-    s = strings.Replace(s, " ", "", -1)
-    types := strings.Split(s, "|")
-    for _, t := range types {
-        if t == "chatting" {
-            v |= Chatting
-        }
-
-        if t == "storage" {
-            v |= Storage
-        }
-    }
-    return v
-}
-
 type ServiceNode struct {
     OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
     Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
