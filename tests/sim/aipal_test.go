@@ -13,7 +13,7 @@ import (
 PS important
 test prepare:
 1. must set modules/aipal/types/params.go: DefaultUnbondingTime = time.Minute * 1
-2. after step1, must recompile and install nchd and nchcli in testting host
+2. after step1, must recompile and install nchd and nchcli on testting host
 
 otherwise test cases may fail
  */
@@ -62,7 +62,7 @@ func Test_aipal(t *testing.T) {
     //foo Account's init unch is 10000000unch
     require.True(t, initAccount.Coins.IsEqual(types.NewCoins(types.NewCoin("unch", types.NewInt(10000000)))))
 
-    //failed for amount insufficient
+    //failed for bond insufficient
     r := executeWrite(t, aipalClaimCmd("sky", "sky", "sky", "sky", "1", "100000unch", nchcliHome, port), DefaultKeyPass)
     require.True(t, r)
     tests.WaitForNextNBlocksTM(1, port)
