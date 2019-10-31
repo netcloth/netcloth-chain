@@ -27,7 +27,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
     cmd := &cobra.Command{
         Use:     "claim",
         Short:   "Create and sign a ServiceNodeClaim tx",
-        Example: "nchcli aipal claim --from=<user key name> --moniker=<name> --website=<website> --server=<server_endpoint> --details=<details>",
+        Example: "nchcli aipal claim --from=<user key name> --moniker=<name> --website=<website> --service_type=<service_type> --server=<server_endpoint> --details=<details> --bond=<bond>",
         RunE: func(cmd *cobra.Command, args []string) error {
             txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
             cliCtx := context.NewCLIContext().WithCodec(cdc)
