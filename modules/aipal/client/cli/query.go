@@ -71,8 +71,10 @@ $ %s query aipal servicenodes`, version.ClientName,)),
             }
 
             var serverNodes types.ServiceNodes
-            for _, kv := range resKVs {
-                serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cdc, kv.Value))
+            if len(resKVs) > 0 {
+                for i:=len(resKVs) - 1; i>=0; i-- {
+                    serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cdc, resKVs[i].Value))
+                }
             }
 
             return cliCtx.PrintOutput(serverNodes)
