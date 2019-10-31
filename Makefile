@@ -57,7 +57,8 @@ endif
 build-linux: go.sum
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
-install: go.sum
+install: go.sum update-swagger-docs
+	make update-swagger-docs
 	go install $(BUILD_FLAGS) ./cmd/nchd
 	go install $(BUILD_FLAGS) ./cmd/nchcli
 
