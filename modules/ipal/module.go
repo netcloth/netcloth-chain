@@ -37,7 +37,7 @@ func (a AppModuleBasic) ValidateGenesis(value json.RawMessage) (err error) {
 }
 
 func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterQueryRoutes(ctx, rtr)
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
