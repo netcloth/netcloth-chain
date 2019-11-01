@@ -2,6 +2,11 @@ package aipal
 
 import (
     "encoding/json"
+
+    "github.com/gorilla/mux"
+    "github.com/spf13/cobra"
+    abci "github.com/tendermint/tendermint/abci/types"
+
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
     "github.com/NetCloth/netcloth-chain/modules/aipal/client/cli"
@@ -9,17 +14,14 @@ import (
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     "github.com/NetCloth/netcloth-chain/types/module"
-    "github.com/gorilla/mux"
-    "github.com/spf13/cobra"
-    abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
-    _ module.AppModule = AppModule{}
+    _ module.AppModule      = AppModule{}
     _ module.AppModuleBasic = AppModuleBasic{}
 )
 
-type AppModuleBasic struct {}
+type AppModuleBasic struct{}
 
 func (a AppModuleBasic) Name() string {
     return ModuleName
@@ -57,8 +59,8 @@ type AppModule struct {
     k Keeper
 }
 
-func NewAppModule(keeper Keeper) AppModule{
-    return AppModule{k:keeper}
+func NewAppModule(keeper Keeper) AppModule {
+    return AppModule{k: keeper}
 }
 
 func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {

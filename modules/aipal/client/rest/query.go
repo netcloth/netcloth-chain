@@ -2,10 +2,11 @@ package rest
 
 import (
     "net/http"
-    "github.com/gorilla/mux"
+
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/types/rest"
+    "github.com/gorilla/mux"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
@@ -30,7 +31,7 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
         var serverNodes types.ServiceNodes
         if len(resKVs) > 0 {
-            for i:=len(resKVs) - 1; i>=0; i-- {
+            for i := len(resKVs) - 1; i >= 0; i-- {
                 serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cliCtx.Codec, resKVs[i].Value))
             }
         }

@@ -2,14 +2,15 @@ package types
 
 import (
     "encoding/binary"
-    sdk "github.com/NetCloth/netcloth-chain/types"
     "time"
+
+    sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 const (
-    ModuleName = "aipal"
-    StoreKey = ModuleName
-    RouterKey = ModuleName
+    ModuleName   = "aipal"
+    StoreKey     = ModuleName
+    RouterKey    = ModuleName
     QuerierRoute = ModuleName
 )
 

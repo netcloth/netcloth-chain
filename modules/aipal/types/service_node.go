@@ -46,12 +46,12 @@ func EndpointsFromString(s string) (r Endpoints, e sdk.Error) {
 }
 
 type ServiceNode struct {
-    OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
-    Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
-    Website         string          `json:"website" yaml:"website"`                   // optional website link
-    Details         string          `json:"details" yaml:"details"`                   // optional details
-    Endpoints       Endpoints       `json:"endpoints" yaml:"endpoints"`
-    Bond            sdk.Coin        `json:"bond" yaml:"bond"`
+    OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+    Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
+    Website         string         `json:"website" yaml:"website"`                   // optional website link
+    Details         string         `json:"details" yaml:"details"`                   // optional details
+    Endpoints       Endpoints      `json:"endpoints" yaml:"endpoints"`
+    Bond            sdk.Coin       `json:"bond" yaml:"bond"`
 }
 
 type ServiceNodes []ServiceNode
@@ -64,13 +64,13 @@ func (v ServiceNodes) String() (out string) {
 }
 
 func NewServiceNode(operator sdk.AccAddress, moniker, website string, details string, endpoints Endpoints, amount sdk.Coin) ServiceNode {
-    return ServiceNode {
-        OperatorAddress:    operator,
-        Moniker:            moniker,
-        Website:            website,
-        Details:            details,
-        Endpoints:          endpoints,
-        Bond:               amount,
+    return ServiceNode{
+        OperatorAddress: operator,
+        Moniker:         moniker,
+        Website:         website,
+        Details:         details,
+        Endpoints:       endpoints,
+        Bond:            amount,
     }
 }
 
@@ -83,12 +83,12 @@ func (obj ServiceNode) MarshalYAML() (interface{}, error) {
         Details         string
         Bond            sdk.Coin
     }{
-        OperatorAddress:    obj.OperatorAddress,
-        Moniker:            obj.Moniker,
-        Website:            obj.Website,
-        Endpoints:          obj.Endpoints,
-        Details:            obj.Details,
-        Bond:               obj.Bond,
+        OperatorAddress: obj.OperatorAddress,
+        Moniker:         obj.Moniker,
+        Website:         obj.Website,
+        Endpoints:       obj.Endpoints,
+        Details:         obj.Details,
+        Bond:            obj.Bond,
     })
 
     if err != nil {

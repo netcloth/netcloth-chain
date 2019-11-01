@@ -2,8 +2,9 @@ package types
 
 import (
     "fmt"
-    sdk "github.com/NetCloth/netcloth-chain/types"
     "strings"
+
+    sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
 var (
@@ -11,13 +12,13 @@ var (
 )
 
 type Endpoint struct {
-    Type        uint64      `json:"type" yaml:"type"`
-    Endpoint    string      `json:"endpoint" yaml:"endpoint"`
+    Type     uint64 `json:"type" yaml:"type"`
+    Endpoint string `json:"endpoint" yaml:"endpoint"`
 }
 
 func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
-    return Endpoint {
-        Type: endpointType,
+    return Endpoint{
+        Type:     endpointType,
         Endpoint: endpoint,
     }
 }
@@ -29,22 +30,22 @@ func (e Endpoints) String() string {
 }
 
 type MsgServiceNodeClaim struct {
-    OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"`   // address of the ServiceNode's operator
-    Moniker         string          `json:"moniker" yaml:"moniker"`                     // name
-    Website         string          `json:"website" yaml:"website"`                     // optional website link
-    Details         string          `json:"details" yaml:"details"`                     // optional details
-    Endpoints       Endpoints       `json:"endpoints" yaml:"endpoints"`                 // server endpoint for app client
-    Bond            sdk.Coin        `json:"bond" yaml:"bond"`
+    OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+    Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
+    Website         string         `json:"website" yaml:"website"`                   // optional website link
+    Details         string         `json:"details" yaml:"details"`                   // optional details
+    Endpoints       Endpoints      `json:"endpoints" yaml:"endpoints"`               // server endpoint for app client
+    Bond            sdk.Coin       `json:"bond" yaml:"bond"`
 }
 
 func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details string, endpoints Endpoints, Bond sdk.Coin) MsgServiceNodeClaim {
-    return MsgServiceNodeClaim {
-        OperatorAddress:    operator,
-        Moniker:            moniker,
-        Website:            website,
-        Details:            details,
-        Endpoints:          endpoints,
-        Bond:               Bond,
+    return MsgServiceNodeClaim{
+        OperatorAddress: operator,
+        Moniker:         moniker,
+        Website:         website,
+        Details:         details,
+        Endpoints:       endpoints,
+        Bond:            Bond,
     }
 }
 
@@ -68,7 +69,7 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
     }
 
     if msg.Bond.Denom != sdk.NativeTokenName {
-       return ErrBadDenom(fmt.Sprintf("bond denom must be %s", sdk.NativeTokenName))
+        return ErrBadDenom(fmt.Sprintf("bond denom must be %s", sdk.NativeTokenName))
     }
 
     if msg.Bond.IsNegative() {

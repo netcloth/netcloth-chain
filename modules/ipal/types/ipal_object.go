@@ -1,57 +1,59 @@
 package types
 
 import (
-	"fmt"
-	"github.com/NetCloth/netcloth-chain/codec"
-	"gopkg.in/yaml.v2"
+    "fmt"
+
+    "gopkg.in/yaml.v2"
+
+    "github.com/NetCloth/netcloth-chain/codec"
 )
 
 type IPALObject struct {
-	UserAddress string `json:"user_address" yaml:"user_address"`
-	ServerIP    string `json:"server_ip" yaml:"server_ip"`
+    UserAddress string `json:"user_address" yaml:"user_address"`
+    ServerIP    string `json:"server_ip" yaml:"server_ip"`
 }
 
 func NewIPALObject(userAddress string, serverIP string) IPALObject {
-	return IPALObject {
-		userAddress,
-		serverIP,
-	}
+    return IPALObject{
+        userAddress,
+        serverIP,
+    }
 }
 
 func (obj IPALObject) MarshalYAML() (interface{}, error) {
-	bs, err := yaml.Marshal(struct {
-		UserAddress string
-		ServerIP    string
-	}{
-		UserAddress: obj.UserAddress,
-		ServerIP:    obj.ServerIP,
-	})
+    bs, err := yaml.Marshal(struct {
+        UserAddress string
+        ServerIP    string
+    }{
+        UserAddress: obj.UserAddress,
+        ServerIP:    obj.ServerIP,
+    })
 
-	if err != nil {
-		return nil, err
-	}
-	return string(bs), nil
+    if err != nil {
+        return nil, err
+    }
+    return string(bs), nil
 }
 
 func MustMarshalIPALObject(cdc *codec.Codec, obj IPALObject) []byte {
-	return cdc.MustMarshalBinaryLengthPrefixed(obj)
+    return cdc.MustMarshalBinaryLengthPrefixed(obj)
 }
 
 func MustUnmarshalIPALObject(cdc *codec.Codec, value []byte) IPALObject {
-	validator, err := UnmarshalIPALObject(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-	return validator
+    validator, err := UnmarshalIPALObject(cdc, value)
+    if err != nil {
+        panic(err)
+    }
+    return validator
 }
 
 func UnmarshalIPALObject(cdc *codec.Codec, value []byte) (obj IPALObject, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
-	return obj, err
+    err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
+    return obj, err
 }
 
 func (obj IPALObject) String() string {
-	return fmt.Sprintf(`IPALObject
+    return fmt.Sprintf(`IPALObject
 User Address:			%s
 Server IP:				%s`, obj.UserAddress, obj.ServerIP)
 }

@@ -2,10 +2,12 @@ package aipal
 
 import (
     "fmt"
+
+    abci "github.com/tendermint/tendermint/abci/types"
+
     "github.com/NetCloth/netcloth-chain/modules/aipal/keeper"
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
-    abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {

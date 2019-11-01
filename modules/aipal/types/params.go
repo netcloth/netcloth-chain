@@ -2,9 +2,10 @@ package types
 
 import (
     "fmt"
+    "time"
+
     "github.com/NetCloth/netcloth-chain/modules/params"
     sdk "github.com/NetCloth/netcloth-chain/types"
-    "time"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 )
 
 var (
-    DefaultMinBond = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(1000000 * 1))
+    DefaultMinBond = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(1000000*1))
 )
 
 var (
@@ -28,14 +29,14 @@ type Params struct {
 var _ params.ParamSet = (*Params)(nil)
 
 func NewParams(unbondingTime time.Duration, minBond sdk.Coin) Params {
-    return Params {
+    return Params{
         UnbondingTime: unbondingTime,
         MinBond:       minBond,
     }
 }
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
-    return params.ParamSetPairs {
+    return params.ParamSetPairs{
         {KeyUnbondingTime, &p.UnbondingTime},
         {KeyMinBond, &p.MinBond},
     }

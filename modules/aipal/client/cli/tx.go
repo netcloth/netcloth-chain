@@ -1,6 +1,9 @@
 package cli
 
 import (
+    "github.com/spf13/cobra"
+    "github.com/spf13/viper"
+
     "github.com/NetCloth/netcloth-chain/client"
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
@@ -8,8 +11,6 @@ import (
     "github.com/NetCloth/netcloth-chain/modules/auth"
     "github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
     sdk "github.com/NetCloth/netcloth-chain/types"
-    "github.com/spf13/cobra"
-    "github.com/spf13/viper"
 )
 
 func AIPALCmd(cdc *codec.Codec) *cobra.Command {

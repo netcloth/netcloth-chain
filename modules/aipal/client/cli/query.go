@@ -2,10 +2,11 @@ package cli
 
 import (
     "fmt"
-    "github.com/NetCloth/netcloth-chain/client"
-    "github.com/spf13/cobra"
     "strings"
 
+    "github.com/spf13/cobra"
+
+    "github.com/NetCloth/netcloth-chain/client"
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
@@ -13,7 +14,7 @@ import (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-    ipalQueryCmd := &cobra.Command {
+    ipalQueryCmd := &cobra.Command{
         Use:                        types.ModuleName,
         Short:                      "Querying commands for aipal",
         DisableFlagParsing:         true,
@@ -31,13 +32,13 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 func GetCmdQueryParams(storeName string, cdc *codec.Codec) *cobra.Command {
-    return &cobra.Command {
-        Use: "params",
-        Args: cobra.NoArgs,
+    return &cobra.Command{
+        Use:   "params",
+        Args:  cobra.NoArgs,
         Short: "Query the current ipal parameters",
         Long: strings.TrimSpace(fmt.Sprintf(`Query values set as aipal parameters.
 Example:
-$ %s query aipal params`, version.ClientName,)),
+$ %s query aipal params`, version.ClientName, )),
 
         RunE: func(cmd *cobra.Command, args []string) error {
             cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -56,12 +57,12 @@ $ %s query aipal params`, version.ClientName,)),
 }
 
 func GetCmdQueryServerNode(cdc *codec.Codec) *cobra.Command {
-    return &cobra.Command {
-        Use: "servicenodes",
+    return &cobra.Command{
+        Use:   "servicenodes",
         Short: "Querying commands for ServiceNodes",
         Long: strings.TrimSpace(fmt.Sprintf(`List all ServiceNodes.
 Example:
-$ %s query aipal servicenodes`, version.ClientName,)),
+$ %s query aipal servicenodes`, version.ClientName, )),
 
         RunE: func(cmd *cobra.Command, args []string) error {
             cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -72,7 +73,7 @@ $ %s query aipal servicenodes`, version.ClientName,)),
 
             var serverNodes types.ServiceNodes
             if len(resKVs) > 0 {
-                for i:=len(resKVs) - 1; i>=0; i-- {
+                for i := len(resKVs) - 1; i >= 0; i-- {
                     serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cdc, resKVs[i].Value))
                 }
             }

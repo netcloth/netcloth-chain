@@ -1,5 +1,5 @@
 package types
 
 const (
-	QueryIPAL = "ipal"
+    QueryIPAL = "ipal"
 )

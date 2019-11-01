@@ -4,4 +4,3 @@ const (
     QueryServerNode = "servicenodes"
     QueryParameters = "params"
 )
-

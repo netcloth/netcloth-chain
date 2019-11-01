@@ -7,15 +7,14 @@ import (
 const (
     DefaultCodespace sdk.CodespaceType = ModuleName
 
-    CodeEmptyInputs         sdk.CodeType = 100
-    CodeStringTooLong       sdk.CodeType = 101
-    CodeEndpointsFormatErr  sdk.CodeType = 102
-    CodeEndpointsEmptyErr   sdk.CodeType = 103
+    CodeEmptyInputs        sdk.CodeType = 100
+    CodeEndpointsFormatErr sdk.CodeType = 102
+    CodeEndpointsEmptyErr  sdk.CodeType = 103
 
-    CodeBadDenom            sdk.CodeType = 111
-    CodeBondInsufficient    sdk.CodeType = 112
+    CodeBadDenom         sdk.CodeType = 111
+    CodeBondInsufficient sdk.CodeType = 112
 
-    CodeMonikerExist        sdk.CodeType = 113
+    CodeMonikerExist sdk.CodeType = 113
 )
 
 func ErrEmptyInputs(msg string) sdk.Error {

@@ -2,6 +2,7 @@ package keeper
 
 import (
     "fmt"
+
     "github.com/NetCloth/netcloth-chain/codec"
     "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/modules/params"
@@ -9,11 +10,11 @@ import (
 )
 
 type Keeper struct {
-    storeKey        sdk.StoreKey
-    cdc             *codec.Codec
-    supplyKeeper    types.SupplyKeeper
-    paramstore      params.Subspace
-    codespace       sdk.CodespaceType
+    storeKey     sdk.StoreKey
+    cdc          *codec.Codec
+    supplyKeeper types.SupplyKeeper
+    paramstore   params.Subspace
+    codespace    sdk.CodespaceType
 }
 
 func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
@@ -21,7 +22,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.Suppl
         panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
     }
 
-    return Keeper {
+    return Keeper{
         storeKey:     storeKey,
         cdc:          cdc,
         supplyKeeper: supplyKeeper,
@@ -107,31 +108,6 @@ func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) sdk.Error
     return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
-
-/*
-founded {
-    bond >= minBond {
-        bond > currentBond {
-            ensure Bond(bond - currentBond)
-        } else (bond < currentBond) {
-            UnBond(currentBond - bond)
-        } else {
-        }
-        updateServiceNode
-    } else {
-        UnBond
-        deleteServiceNode
-    }
-} else {
-    bond >= minBond {
-        ensure moniker uniq
-        ensure Bond
-        createServiceNode
-    } else {
-        return err
-    }
-}
-*/
 func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err sdk.Error) {
     minBond := k.GetMinBond(ctx)
     n, found := k.GetServiceNode(ctx, m.OperatorAddress)
@@ -154,7 +130,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
     } else {
         if m.Bond.IsGTE(minBond) {
             err := k.bond(ctx, m.OperatorAddress, m.Bond)
-            if err != nil  {
+            if err != nil {
                 return err
             }
 
