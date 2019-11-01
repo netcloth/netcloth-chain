@@ -22,10 +22,6 @@ func ErrEmptyInputs(msg string) sdk.Error {
     return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
 }
 
-func ErrStringTooLong(msg string) sdk.Error {
-    return sdk.NewError(DefaultCodespace, CodeStringTooLong, msg)
-}
-
 func ErrBadDenom(msg string) sdk.Error {
     return sdk.NewError(DefaultCodespace, CodeBadDenom, msg)
 }

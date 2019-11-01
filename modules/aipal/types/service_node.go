@@ -17,23 +17,10 @@ const (
     Storage
 )
 
-func IsVisible(s string) bool {
-    for _, c := range s {
-        if !strconv.IsPrint(c) {
-            return false
-        }
-    }
-
-    return true
-}
-
 func EndpointsFromString(s string) (r Endpoints, e sdk.Error) {
-    if !IsVisible(s) || s == " "{
-        return nil, ErrEndpointsFormat()
-    }
-
     ss := strings.Split(s, ",")
     for _, v := range ss {
+        v = strings.ReplaceAll(v, " ", "")
         if len(v) > 0 {
             es := strings.Split(v, "|")
             if len(es) != 2 {

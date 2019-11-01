@@ -52,6 +52,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
             if err := msg.ValidateBasic(); err != nil {
                 return err
             }
+
             return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
         },
     }

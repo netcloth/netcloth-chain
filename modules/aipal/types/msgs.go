@@ -6,13 +6,6 @@ import (
     "strings"
 )
 
-const (
-    maxMonikerLength   = 64
-    maxWebsiteLength   = 64
-    maxEndpointsLength = 1024
-    maxDetailsLength   = 1024
-)
-
 var (
     _ sdk.Msg = MsgServiceNodeClaim{}
 )
@@ -79,23 +72,7 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
     }
 
     if msg.Bond.IsNegative() {
-        return ErrEmptyInputs("stake amount must > 0 ")
-    }
-
-    if len(msg.Moniker) > maxMonikerLength {
-        return ErrStringTooLong(fmt.Sprintf("moniker too long, max length: %v", maxMonikerLength))
-    }
-
-    if len(msg.Website) > maxWebsiteLength {
-        return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
-    }
-
-    if len(msg.Details) > maxDetailsLength {
-        return ErrStringTooLong(fmt.Sprintf("details too long, max length: %v", maxDetailsLength))
-    }
-
-    if len(msg.Endpoints) > maxEndpointsLength {
-        return ErrStringTooLong(fmt.Sprintf("endpoints too long, max length: %v", maxEndpointsLength))
+        return ErrEmptyInputs("bond amount must > 0 ")
     }
 
     if len(msg.Endpoints) <= 0 {

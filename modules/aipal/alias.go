@@ -21,7 +21,6 @@ var (
     NewServerNodeObject         = types.NewServiceNode
     NewMsgServiceNodeClaim      = types.NewMsgServiceNodeClaim
     ErrEmptyInputs              = types.ErrEmptyInputs
-    ErrStringTooLong            = types.ErrStringTooLong
     ModuleCdc                   = types.ModuleCdc
     AttributeValueCategory      = types.AttributeValueCategory
 )
