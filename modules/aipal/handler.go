@@ -1,7 +1,9 @@
 package aipal
 
 import (
+    "fmt"
     "github.com/NetCloth/netcloth-chain/modules/aipal/keeper"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -26,6 +28,11 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) 
     err := m.ValidateBasic()
     if err != nil {
         return err.Result()
+    }
+
+    acc, monikerExist := k.GetServiceNodeAddByMoniker(ctx, m.Moniker)
+    if monikerExist && !acc.Equals(m.OperatorAddress) {
+        return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker)).Result()
     }
 
     err = k.DoServiceNodeClaim(ctx, m)

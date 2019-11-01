@@ -68,7 +68,7 @@ func (k Keeper) setServiceNodeByMonikerIndex(ctx sdk.Context, obj types.ServiceN
     store.Set(types.GetServiceNodeByMonikerKey(obj.Moniker), obj.OperatorAddress)
 }
 
-func (k Keeper) getServiceNodeAddByMoniker(ctx sdk.Context, moniker string) (acc sdk.AccAddress, exist bool) {
+func (k Keeper) GetServiceNodeAddByMoniker(ctx sdk.Context, moniker string) (acc sdk.AccAddress, exist bool) {
     store := ctx.KVStore(k.storeKey)
     v := store.Get(types.GetServiceNodeByMonikerKey(moniker))
     return v, v != nil
@@ -80,14 +80,14 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 }
 
 func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
-    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, types.ServiceType(m.ServiceType), m.ServerEndPoint, m.Details, m.Bond)
+    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
     k.setServiceNode(ctx, n)
     k.setServiceNodeByBond(ctx, n)
     k.setServiceNodeByMonikerIndex(ctx, n)
 }
 
 func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
-    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, types.ServiceType(new.ServiceType), new.ServerEndPoint, new.Details, new.Bond)
+    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.Details, new.Endpoints, new.Bond)
     k.setServiceNode(ctx, u)
 
     k.delServiceNodeByBond(ctx, old)
@@ -133,11 +133,6 @@ founded {
 }
 */
 func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err sdk.Error) {
-    acc, monikerExist := k.getServiceNodeAddByMoniker(ctx, m.Moniker)
-    if monikerExist && !acc.Equals(m.OperatorAddress) {
-        return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker))
-    }
-
     minBond := k.GetMinBond(ctx)
     n, found := k.GetServiceNode(ctx, m.OperatorAddress)
     if found {
