@@ -1,5 +1,5 @@
 package types
 
 var (
-    AttributeValueCategory = ModuleName
+	AttributeValueCategory = ModuleName
 )

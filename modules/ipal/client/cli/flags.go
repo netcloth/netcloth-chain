@@ -1,7 +1,7 @@
 package cli
 
 const (
-    flagUser     = "user"
-    flagProxy    = "proxy"
-    flagServerIP = "ip"
+	flagUser     = "user"
+	flagProxy    = "proxy"
+	flagServerIP = "ip"
 )

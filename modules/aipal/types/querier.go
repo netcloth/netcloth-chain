@@ -1,6 +1,6 @@
 package types
 
 const (
-    QueryServerNode = "servicenodes"
-    QueryParameters = "params"
+	QueryServerNode = "servicenodes"
+	QueryParameters = "params"
 )
