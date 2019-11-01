@@ -79,15 +79,15 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
     store.Delete(types.GetServiceNodeByMonikerKey(moniker))
 }
 
-func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim, endpoints types.Endpoints) {
-    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, endpoints, m.Bond)
+func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
+    n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
     k.setServiceNode(ctx, n)
     k.setServiceNodeByBond(ctx, n)
     k.setServiceNodeByMonikerIndex(ctx, n)
 }
 
-func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim, endpoints types.Endpoints) {
-    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.Details, endpoints, new.Bond)
+func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
+    u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.Details, new.Endpoints, new.Bond)
     k.setServiceNode(ctx, u)
 
     k.delServiceNodeByBond(ctx, old)
@@ -132,7 +132,7 @@ founded {
     }
 }
 */
-func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim, endpoints types.Endpoints) (err sdk.Error) {
+func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err sdk.Error) {
     minBond := k.GetMinBond(ctx)
     n, found := k.GetServiceNode(ctx, m.OperatorAddress)
     if found {
@@ -146,7 +146,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim,
                 k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond.Sub(m.Bond))
             } else {
             }
-            k.updateServiceNode(ctx, n, m, endpoints)
+            k.updateServiceNode(ctx, n, m)
         } else {
             k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
             k.deleteServiceNode(ctx, n)
@@ -158,7 +158,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim,
                 return err
             }
 
-            k.createServiceNode(ctx, m, endpoints)
+            k.createServiceNode(ctx, m)
         } else {
             return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String()))
         }

@@ -35,12 +35,7 @@ func handleMsgServerNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) 
         return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker)).Result()
     }
 
-    endpoints, err := types.NewEndpointsFromString(m.Endpoints)
-    if err != nil {
-        return err.Result()
-    }
-
-    err = k.DoServiceNodeClaim(ctx, m, endpoints)
+    err = k.DoServiceNodeClaim(ctx, m)
     if err != nil {
         return err.Result()
     }

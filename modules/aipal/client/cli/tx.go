@@ -34,7 +34,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 
             moniker := viper.GetString(flagMoniker)
             website := viper.GetString(flagWebsite)
-            endpoints := viper.GetString(flagEndPoints)
+            endpointsStr := viper.GetString(flagEndPoints)
             details := viper.GetString(flagDetails)
             stakeAmount := viper.GetString(flagBond)
 
@@ -43,7 +43,12 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
                 return err
             }
 
-            msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, endpoints, details, coin)
+            endpoints, err := types.EndpointsFromString(endpointsStr)
+            if err != nil {
+                return err
+            }
+
+            msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, endpoints, coin)
             if err := msg.ValidateBasic(); err != nil {
                 return err
             }

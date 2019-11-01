@@ -17,41 +17,41 @@ const (
     Storage
 )
 
-type Endpoint struct {
-    Type        uint64      `json:"type" yaml:"type"`
-    Endpoint    string      `json:"endpoint" yaml:"endpoint"`
-}
-
-func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
-    return Endpoint {
-        Type: endpointType,
-        Endpoint: endpoint,
+func IsVisible(s string) bool {
+    for _, c := range s {
+        if !strconv.IsPrint(c) {
+            return false
+        }
     }
+
+    return true
 }
 
-type Endpoints []Endpoint
+func EndpointsFromString(s string) (r Endpoints, e sdk.Error) {
+    if !IsVisible(s) || s == " "{
+        return nil, ErrEndpointsFormat()
+    }
 
-func NewEndpointsFromString(s string) (r Endpoints, e sdk.Error) {
     ss := strings.Split(s, ",")
     for _, v := range ss {
         if len(v) > 0 {
             es := strings.Split(v, "|")
             if len(es) != 2 {
-                return nil, ErrEndpointsFormatErr()
+                return nil, ErrEndpointsFormat()
             }
 
             if len(es[0]) == 0 || len(es[1]) == 0 {
-                return nil, ErrEndpointsFormatErr()
+                return nil, ErrEndpointsFormat()
             }
 
             Type, err := strconv.Atoi(es[0])
             if err != nil {
-                return nil, ErrEndpointsFormatErr()
+                return nil, ErrEndpointsFormat()
             }
 
             r = append(r, NewEndpoint(uint64(Type), es[1]))
         } else {
-            return nil, ErrEndpointsFormatErr()
+            return nil, ErrEndpointsFormat()
         }
     }
 
@@ -126,10 +126,6 @@ func MustUnmarshalServerNodeObject(cdc *codec.Codec, value []byte) ServiceNode {
 func UnmarshalServerNodeObject(cdc *codec.Codec, value []byte) (obj ServiceNode, err error) {
     err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
     return obj, err
-}
-
-func (e Endpoints) String() string {
-    return fmt.Sprintf("%v", e)
 }
 
 func (obj ServiceNode) String() string {

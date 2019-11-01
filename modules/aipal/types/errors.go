@@ -10,6 +10,7 @@ const (
     CodeEmptyInputs         sdk.CodeType = 100
     CodeStringTooLong       sdk.CodeType = 101
     CodeEndpointsFormatErr  sdk.CodeType = 102
+    CodeEndpointsEmptyErr   sdk.CodeType = 103
 
     CodeBadDenom            sdk.CodeType = 111
     CodeBondInsufficient    sdk.CodeType = 112
@@ -37,6 +38,10 @@ func ErrMonikerExist(msg string) sdk.Error {
     return sdk.NewError(DefaultCodespace, CodeMonikerExist, msg)
 }
 
-func ErrEndpointsFormatErr() sdk.Error {
+func ErrEndpointsFormat() sdk.Error {
     return sdk.NewError(DefaultCodespace, CodeEndpointsFormatErr, "endpoints format err, should be in format: serviceType|endpoint,serviceType|endpoint, serviceType is a number, endpoint is a string")
+}
+
+func ErrEndpointsEmpty() sdk.Error {
+    return sdk.NewError(DefaultCodespace, CodeEndpointsEmptyErr, "no endpoints")
 }

@@ -9,7 +9,7 @@ import (
 const (
     maxMonikerLength   = 64
     maxWebsiteLength   = 64
-    maxEndPointsLength = 1024
+    maxEndpointsLength = 1024
     maxDetailsLength   = 1024
 )
 
@@ -17,22 +17,40 @@ var (
     _ sdk.Msg = MsgServiceNodeClaim{}
 )
 
+type Endpoint struct {
+    Type        uint64      `json:"type" yaml:"type"`
+    Endpoint    string      `json:"endpoint" yaml:"endpoint"`
+}
+
+func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
+    return Endpoint {
+        Type: endpointType,
+        Endpoint: endpoint,
+    }
+}
+
+type Endpoints []Endpoint
+
+func (e Endpoints) String() string {
+    return fmt.Sprintf("%v", e)
+}
+
 type MsgServiceNodeClaim struct {
     OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"`   // address of the ServiceNode's operator
     Moniker         string          `json:"moniker" yaml:"moniker"`                     // name
     Website         string          `json:"website" yaml:"website"`                     // optional website link
-    Endpoints       string          `json:"endpoints" yaml:"endpoints"`                 // server endpoint for app client
     Details         string          `json:"details" yaml:"details"`                     // optional details
+    Endpoints       Endpoints       `json:"endpoints" yaml:"endpoints"`                 // server endpoint for app client
     Bond            sdk.Coin        `json:"bond" yaml:"bond"`
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, endpoints, details string, Bond sdk.Coin) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details string, endpoints Endpoints, Bond sdk.Coin) MsgServiceNodeClaim {
     return MsgServiceNodeClaim {
         OperatorAddress:    operator,
         Moniker:            moniker,
         Website:            website,
-        Endpoints:          endpoints,
         Details:            details,
+        Endpoints:          endpoints,
         Bond:               Bond,
     }
 }
@@ -45,7 +63,6 @@ func (msg *MsgServiceNodeClaim) TrimSpace() {
     msg.Moniker = strings.TrimSpace(msg.Moniker)
     msg.Website = strings.TrimSpace(msg.Website)
     msg.Details = strings.TrimSpace(msg.Details)
-    msg.Endpoints = strings.ReplaceAll(msg.Endpoints, " ", "")
 }
 
 func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
@@ -55,10 +72,6 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 
     if msg.Moniker == "" {
         return ErrEmptyInputs("moniker empty")
-    }
-
-    if msg.Endpoints == "" {
-        return ErrEmptyInputs("server empty")
     }
 
     if msg.Bond.Denom != sdk.NativeTokenName {
@@ -77,16 +90,16 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
         return ErrStringTooLong(fmt.Sprintf("website too long, max length: %v", maxWebsiteLength))
     }
 
-    if len(msg.Endpoints) > maxEndPointsLength {
-        return ErrStringTooLong(fmt.Sprintf("endpoints too long, max length: %v", maxEndPointsLength))
-    }
-
     if len(msg.Details) > maxDetailsLength {
         return ErrStringTooLong(fmt.Sprintf("details too long, max length: %v", maxDetailsLength))
     }
 
-    if !strings.Contains(msg.Endpoints, "|") {
-        return ErrEndpointsFormatErr()
+    if len(msg.Endpoints) > maxEndpointsLength {
+        return ErrStringTooLong(fmt.Sprintf("endpoints too long, max length: %v", maxEndpointsLength))
+    }
+
+    if len(msg.Endpoints) <= 0 {
+        return ErrEndpointsEmpty()
     }
 
     return nil
