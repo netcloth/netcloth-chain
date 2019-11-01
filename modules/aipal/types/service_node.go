@@ -3,6 +3,7 @@ package types
 import (
     "fmt"
     "gopkg.in/yaml.v2"
+    "strconv"
     "strings"
 
     "github.com/NetCloth/netcloth-chain/codec"
@@ -12,17 +13,57 @@ import (
 type ServiceType uint64
 
 const (
-    Chatting ServiceType = 1 << iota
+    Chatting ServiceType = 1
     Storage
 )
+
+type Endpoint struct {
+    Type        uint64      `json:"type" yaml:"type"`
+    Endpoint    string      `json:"endpoint" yaml:"endpoint"`
+}
+
+func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
+    return Endpoint {
+        Type: endpointType,
+        Endpoint: endpoint,
+    }
+}
+
+type Endpoints []Endpoint
+
+func NewEndpointsFromString(s string) (r Endpoints, e sdk.Error) {
+    ss := strings.Split(s, ",")
+    for _, v := range ss {
+        if len(v) > 0 {
+            es := strings.Split(v, "|")
+            if len(es) != 2 {
+                return nil, ErrEndpointsFormatErr()
+            }
+
+            if len(es[0]) == 0 || len(es[1]) == 0 {
+                return nil, ErrEndpointsFormatErr()
+            }
+
+            Type, err := strconv.Atoi(es[0])
+            if err != nil {
+                return nil, ErrEndpointsFormatErr()
+            }
+
+            r = append(r, NewEndpoint(uint64(Type), es[1]))
+        } else {
+            return nil, ErrEndpointsFormatErr()
+        }
+    }
+
+    return r, nil
+}
 
 type ServiceNode struct {
     OperatorAddress sdk.AccAddress  `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
     Moniker         string          `json:"moniker" yaml:"moniker"`                   // name
     Website         string          `json:"website" yaml:"website"`                   // optional website link
-    ServiceType     ServiceType     `json:"service_type" yaml:"service_type"`
-    ServerEndPoint  string          `json:"server_endpoint" yaml:"server_endpoint"`   // server endpoint for app client
     Details         string          `json:"details" yaml:"details"`                   // optional details
+    Endpoints       Endpoints       `json:"endpoints" yaml:"endpoints"`
     Bond            sdk.Coin        `json:"bond" yaml:"bond"`
 }
 
@@ -35,14 +76,13 @@ func (v ServiceNodes) String() (out string) {
     return strings.TrimSpace(out)
 }
 
-func NewServiceNode(operator sdk.AccAddress, moniker, website string, serviceType ServiceType, serverEndPoint, details string, amount sdk.Coin) ServiceNode {
+func NewServiceNode(operator sdk.AccAddress, moniker, website string, details string, endpoints Endpoints, amount sdk.Coin) ServiceNode {
     return ServiceNode {
         OperatorAddress:    operator,
         Moniker:            moniker,
         Website:            website,
-        ServiceType:        serviceType,
-        ServerEndPoint:     serverEndPoint,
         Details:            details,
+        Endpoints:          endpoints,
         Bond:               amount,
     }
 }
@@ -52,14 +92,14 @@ func (obj ServiceNode) MarshalYAML() (interface{}, error) {
         OperatorAddress sdk.AccAddress
         Moniker         string
         Website         string
-        ServerEndPoint  string
+        Endpoints       Endpoints
         Details         string
-        Bond     sdk.Coin
+        Bond            sdk.Coin
     }{
         OperatorAddress:    obj.OperatorAddress,
         Moniker:            obj.Moniker,
         Website:            obj.Website,
-        ServerEndPoint:     obj.ServerEndPoint,
+        Endpoints:          obj.Endpoints,
         Details:            obj.Details,
         Bond:               obj.Bond,
     })
@@ -88,12 +128,16 @@ func UnmarshalServerNodeObject(cdc *codec.Codec, value []byte) (obj ServiceNode,
     return obj, err
 }
 
+func (e Endpoints) String() string {
+    return fmt.Sprintf("%v", e)
+}
+
 func (obj ServiceNode) String() string {
     return fmt.Sprintf(`ServerNodeObject
-Operator Address:		%s
-Moniker:				%s
-Website: 				%s
-ServerEndPoint:			%s
-Details:				%s
-Bond: 			        %s`, obj.OperatorAddress, obj.Moniker, obj.Website, obj.ServerEndPoint, obj.Details, obj.Bond)
+Operator Address:       %s
+Moniker:                %s
+Website:                %s
+Endpoints:              %s
+Details:                %s
+Bond:                   %s`, obj.OperatorAddress, obj.Moniker, obj.Website, obj.Endpoints.String(), obj.Details, obj.Bond)
 }

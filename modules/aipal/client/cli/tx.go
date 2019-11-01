@@ -4,9 +4,9 @@ import (
     "github.com/NetCloth/netcloth-chain/client"
     "github.com/NetCloth/netcloth-chain/client/context"
     "github.com/NetCloth/netcloth-chain/codec"
+    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     "github.com/NetCloth/netcloth-chain/modules/auth"
     "github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-    "github.com/NetCloth/netcloth-chain/modules/aipal/types"
     sdk "github.com/NetCloth/netcloth-chain/types"
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
@@ -27,15 +27,14 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
     cmd := &cobra.Command{
         Use:     "claim",
         Short:   "Create and sign a ServiceNodeClaim tx",
-        Example: "nchcli aipal claim --from=<user key name> --moniker=<name> --website=<website> --service_type=<service_type> --server=<server_endpoint> --details=<details> --bond=<bond>",
+        Example: "nchcli aipal claim --from=<user key name> --moniker=<name> --website=<website> --endpoints=<endpoints> --details=<details> --bond=<bond>",
         RunE: func(cmd *cobra.Command, args []string) error {
             txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
             cliCtx := context.NewCLIContext().WithCodec(cdc)
 
             moniker := viper.GetString(flagMoniker)
             website := viper.GetString(flagWebsite)
-            serverEndPoint := viper.GetString(flagServerEndPoint)
-            serviceType := viper.GetUint64(flagServiceType)
+            endpoints := viper.GetString(flagEndPoints)
             details := viper.GetString(flagDetails)
             stakeAmount := viper.GetString(flagBond)
 
@@ -44,7 +43,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
                 return err
             }
 
-            msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, serviceType, serverEndPoint, details, coin)
+            msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, endpoints, details, coin)
             if err := msg.ValidateBasic(); err != nil {
                 return err
             }
@@ -54,13 +53,12 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 
     cmd.Flags().String(flagMoniker, "", "server node moniker")
     cmd.Flags().String(flagWebsite, "", "server node website")
-    cmd.Flags().String(flagServerEndPoint, "", "server node endpoint")
-    cmd.Flags().String(flagServiceType, "1", "service type, 64 bits control 64 kind of service types, bit1:control chatting service, bit2 control storage service")
+    cmd.Flags().String(flagEndPoints, "", "server node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
     cmd.Flags().String(flagDetails, "", "server node details")
     cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000unch)")
 
     cmd.MarkFlagRequired(flagMoniker)
-    cmd.MarkFlagRequired(flagServerEndPoint)
+    cmd.MarkFlagRequired(flagEndPoints)
     cmd.MarkFlagRequired(flagBond)
 
     cmd = client.PostCommands(cmd)[0]
