@@ -99,19 +99,19 @@ func (obj ServiceNode) MarshalYAML() (interface{}, error) {
 	return string(bs), nil
 }
 
-func MustMarshalServerNodeObject(cdc *codec.Codec, obj ServiceNode) []byte {
+func MustMarshalServiceNode(cdc *codec.Codec, obj ServiceNode) []byte {
 	return cdc.MustMarshalBinaryLengthPrefixed(obj)
 }
 
-func MustUnmarshalServerNodeObject(cdc *codec.Codec, value []byte) ServiceNode {
-	obj, err := UnmarshalServerNodeObject(cdc, value)
+func MustUnmarshalServiceNode(cdc *codec.Codec, value []byte) ServiceNode {
+	obj, err := UnmarshalServiceNode(cdc, value)
 	if err != nil {
 		panic(err)
 	}
 	return obj
 }
 
-func UnmarshalServerNodeObject(cdc *codec.Codec, value []byte) (obj ServiceNode, err error) {
+func UnmarshalServiceNode(cdc *codec.Codec, value []byte) (obj ServiceNode, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
 	return obj, err
 }

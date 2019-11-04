@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
@@ -12,8 +14,10 @@ func NewQuerier(k Keeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
-		case types.QueryServerNode:
-			return queryServerNode(ctx, k)
+		case types.QueryServiceNodeList:
+			return queryServiceNodeList(ctx, k)
+		case types.QueryServiceNode:
+			return queryServiceNode(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
 		}
@@ -30,11 +34,32 @@ func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-func queryServerNode(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
-	serverNodes := k.GetAllServerNodes(ctx)
-	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serverNodes)
+func queryServiceNodeList(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+	serviceNodes := k.GetAllServiceNodes(ctx)
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNodes)
 	if err != nil {
 		return []byte{}, sdk.ErrInternal(err.Error())
 	}
 	return bz, nil
+}
+
+func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var queryParams types.QueryServiceNodeParams
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+	}
+
+	serviceNode, found := k.GetServiceNode(ctx, queryParams.AccAddr)
+	if found {
+		ctx.Logger().Error("found")
+		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNode)
+		if err != nil {
+			return []byte{}, sdk.ErrInternal(err.Error())
+		}
+		return bz, nil
+	}
+
+	return nil, sdk.ErrInternal("not found")
 }
