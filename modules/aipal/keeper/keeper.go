@@ -38,13 +38,13 @@ func (k Keeper) GetServiceNode(ctx sdk.Context, operator sdk.AccAddress) (obj ty
 		return obj, false
 	}
 
-	obj = types.MustUnmarshalServerNodeObject(k.cdc, value)
+	obj = types.MustUnmarshalServiceNode(k.cdc, value)
 	return obj, true
 }
 
 func (k Keeper) setServiceNode(ctx sdk.Context, obj types.ServiceNode) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalServerNodeObject(k.cdc, obj)
+	bz := types.MustMarshalServiceNode(k.cdc, obj)
 	store.Set(types.GetServiceNodeKey(obj.OperatorAddress), bz)
 }
 
@@ -55,7 +55,7 @@ func (k Keeper) delServiceNode(ctx sdk.Context, accAddress sdk.AccAddress) {
 
 func (k Keeper) setServiceNodeByBond(ctx sdk.Context, obj types.ServiceNode) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalServerNodeObject(k.cdc, obj)
+	bz := types.MustMarshalServiceNode(k.cdc, obj)
 	store.Set(types.GetServiceNodeByBondKey(obj), bz)
 }
 
@@ -143,14 +143,14 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 	return nil
 }
 
-func (k Keeper) GetAllServerNodes(ctx sdk.Context) (serverNodes types.ServiceNodes) {
+func (k Keeper) GetAllServiceNodes(ctx sdk.Context) (serviceNodes types.ServiceNodes) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.ServiceNodeByBondKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalServerNodeObject(k.cdc, iterator.Value())
-		serverNodes = append(serverNodes, validator)
+		n := types.MustUnmarshalServiceNode(k.cdc, iterator.Value())
+		serviceNodes = append(serviceNodes, n)
 	}
-	return serverNodes
+	return serviceNodes
 }

@@ -1,18 +1,26 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/rest"
-	"github.com/gorilla/mux"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
 		"/aipal/list",
 		listHandlerFn(cliCtx),
+	).Methods("GET")
+
+	r.HandleFunc(
+		"/aipal/node/{accAddr}",
+		nodeHandlerFn(cliCtx),
 	).Methods("GET")
 }
 
@@ -32,7 +40,7 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		var serverNodes types.ServiceNodes
 		if len(resKVs) > 0 {
 			for i := len(resKVs) - 1; i >= 0; i-- {
-				serverNodes = append(serverNodes, types.MustUnmarshalServerNodeObject(cliCtx.Codec, resKVs[i].Value))
+				serverNodes = append(serverNodes, types.MustUnmarshalServiceNode(cliCtx.Codec, resKVs[i].Value))
 			}
 		}
 
@@ -41,4 +49,43 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
+}
+
+func queryNode(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		bech32accAddr := vars["accAddr"]
+
+		accAddr, err := sdk.AccAddressFromBech32(bech32accAddr)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		params := types.NewQueryServiceNodeParams(accAddr)
+
+		bz, err := cliCtx.Codec.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(endpoint, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func nodeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return queryNode(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryServiceNode))
 }
