@@ -1,12 +1,12 @@
-package aipal
+package ipal
 
 import (
 	"fmt"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/modules/aipal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 

@@ -7,19 +7,19 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
-		"/aipal/list",
+		"/ipal/list",
 		listHandlerFn(cliCtx),
 	).Methods("GET")
 
 	r.HandleFunc(
-		"/aipal/node/{accAddr}",
+		"/ipal/node/{accAddr}",
 		nodeHandlerFn(cliCtx),
 	).Methods("GET")
 }

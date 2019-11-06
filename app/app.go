@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/NetCloth/netcloth-chain/modules/aipal"
+	"github.com/NetCloth/netcloth-chain/modules/ipal"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -61,7 +61,7 @@ var (
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		cipal.AppModuleBasic{},
-		aipal.AppModuleBasic{},
+		ipal.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -72,7 +72,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner},
-		aipal.ModuleName:          {supply.Staking},
+		ipal.ModuleName:           {supply.Staking},
 	}
 )
 
@@ -110,7 +110,7 @@ type NCHApp struct {
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
 	ipalKeeper     cipal.Keeper
-	aipalKeeper    aipal.Keeper
+	aipalKeeper    ipal.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -138,7 +138,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		gov.StoreKey,
 		params.StoreKey,
 		cipal.StoreKey,
-		aipal.StoreKey,
+		ipal.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -164,7 +164,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	aipalSubspace := app.paramsKeeper.Subspace(aipal.DefaultParamspace)
+	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -188,12 +188,12 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		ipalSubspace,
 		cipal.DefaultCodespace)
 
-	app.aipalKeeper = aipal.NewKeeper(
-		keys[aipal.StoreKey],
+	app.aipalKeeper = ipal.NewKeeper(
+		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
 		aipalSubspace,
-		aipal.DefaultCodespace)
+		ipal.DefaultCodespace)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -234,7 +234,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 		cipal.NewAppModule(app.ipalKeeper),
-		aipal.NewAppModule(app.aipalKeeper),
+		ipal.NewAppModule(app.aipalKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -242,7 +242,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, aipal.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -258,7 +258,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		supply.ModuleName,
 		crisis.ModuleName,
 		genutil.ModuleName,
-		aipal.ModuleName,
+		ipal.ModuleName,
 	)
 
 	//app.mm.RegisterInvariants(&app.crisisKeeper)

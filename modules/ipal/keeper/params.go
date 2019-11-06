@@ -3,7 +3,7 @@ package keeper
 import (
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )

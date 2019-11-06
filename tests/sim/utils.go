@@ -9,13 +9,13 @@ import (
 	"testing"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/aipal"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	"github.com/NetCloth/netcloth-chain/modules/cipal"
 	"github.com/NetCloth/netcloth-chain/modules/crisis"
 	"github.com/NetCloth/netcloth-chain/modules/distribution"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
+	"github.com/NetCloth/netcloth-chain/modules/ipal"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
@@ -195,7 +195,7 @@ func MakeCodec() *codec.Codec {
 	distribution.RegisterCodec(cdc)
 	gov.RegisterCodec(cdc)
 	cipal.RegisterCodec(cdc)
-	aipal.RegisterCodec(cdc)
+	ipal.RegisterCodec(cdc)
 	slashing.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)

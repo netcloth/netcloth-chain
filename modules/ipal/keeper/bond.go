@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 

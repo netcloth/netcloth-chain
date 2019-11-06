@@ -9,7 +9,7 @@ import (
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/aipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
 )
@@ -17,7 +17,7 @@ import (
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	ipalQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for aipal",
+		Short:                      "Querying commands for ipal",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -37,10 +37,10 @@ func GetCmdQueryParams(storeName string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "params",
 		Args:  cobra.NoArgs,
-		Short: "Query the current cipal parameters",
-		Long: strings.TrimSpace(fmt.Sprintf(`Query values set as aipal parameters.
+		Short: "Query the current ipal parameters",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query values set as ipal parameters.
 Example:
-$ %s query aipal params`, version.ClientName)),
+$ %s query ipal params`, version.ClientName)),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -64,7 +64,7 @@ func GetCmdQueryServiceNodeList(cdc *codec.Codec) *cobra.Command {
 		Short: "Querying commands for ServiceNodes",
 		Long: strings.TrimSpace(fmt.Sprintf(`List all ServiceNodes.
 Example:
-$ %s query aipal servicenodes`, version.ClientName)),
+$ %s query ipal servicenodes`, version.ClientName)),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -91,7 +91,7 @@ func GetCmdQueryServiceNode(cdc *codec.Codec) *cobra.Command {
 		Short: "Querying commands for ServiceNode",
 		Long: strings.TrimSpace(fmt.Sprintf(`Query ServiceNode by accAddr.
 Example:
-$ %s query aipal node`, version.ClientName)),
+$ %s query ipal node`, version.ClientName)),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 
