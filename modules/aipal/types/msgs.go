@@ -80,6 +80,10 @@ func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
 		return ErrEndpointsEmpty()
 	}
 
+	if err := EndpointsDupCheck(msg.Endpoints); err != nil {
+		return err
+	}
+
 	return nil
 }
 
