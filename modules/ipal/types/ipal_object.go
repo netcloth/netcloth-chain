@@ -9,24 +9,27 @@ import (
 )
 
 type IPALObject struct {
-	UserAddress string `json:"user_address" yaml:"user_address"`
-	ServerIP    string `json:"server_ip" yaml:"server_ip"`
+	UserAddress  string        `json:"user_address" yaml:"user_address"`
+	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos`
 }
 
-func NewIPALObject(userAddress string, serverIP string) IPALObject {
+func NewIPALObject(userAddress string, serviceAddress string, serviceType uint64) IPALObject {
+	si := ServiceInfo{serviceType, serviceAddress}
+	sis := make([]ServiceInfo, 0)
+	sis = append(sis, si)
 	return IPALObject{
-		userAddress,
-		serverIP,
+		UserAddress:  userAddress,
+		ServiceInfos: sis,
 	}
 }
 
 func (obj IPALObject) MarshalYAML() (interface{}, error) {
 	bs, err := yaml.Marshal(struct {
-		UserAddress string
-		ServerIP    string
+		UserAddress  string
+		ServiceInfos []ServiceInfo
 	}{
-		UserAddress: obj.UserAddress,
-		ServerIP:    obj.ServerIP,
+		UserAddress:  obj.UserAddress,
+		ServiceInfos: obj.ServiceInfos,
 	})
 
 	if err != nil {
@@ -52,8 +55,17 @@ func UnmarshalIPALObject(cdc *codec.Codec, value []byte) (obj IPALObject, err er
 	return obj, err
 }
 
+func getServiceInfosString(infos []ServiceInfo) string {
+	var s string
+	for _, v := range infos {
+		s = s + v.String() + "\n"
+	}
+
+	return s
+}
+
 func (obj IPALObject) String() string {
 	return fmt.Sprintf(`IPALObject
 User Address:			%s
-Server IP:				%s`, obj.UserAddress, obj.ServerIP)
+Service Infos:		    %s`, getServiceInfosString(obj.ServiceInfos))
 }

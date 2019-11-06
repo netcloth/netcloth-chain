@@ -43,6 +43,10 @@ func EndpointsFromString(s string) (r Endpoints, e sdk.Error) {
 		}
 	}
 
+	if err := EndpointsDupCheck(r); err != nil {
+		return nil, err
+	}
+
 	return r, nil
 }
 

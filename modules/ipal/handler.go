@@ -1,6 +1,7 @@
 package ipal
 
 import (
+	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
@@ -22,20 +23,33 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
-	// check user request expiration
 	if ctx.BlockHeader().Time.After(msg.UserRequest.Params.Expiration) {
 		return ErrIPALClaimUserRequestExpired("user request expired").Result()
 	}
 
-	// check to see if the userAddress and serverIP has been registered before
 	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress)
 	if found {
-		// update ipal object
-		obj.ServerIP = msg.UserRequest.Params.ServerIP
+		updateIndex := -1
+		var si types.ServiceInfo
+		for i, v := range obj.ServiceInfos {
+			if v.Type == msg.UserRequest.Params.ServiceInfo.Type {
+				updateIndex = i
+				si = v
+				break
+			}
+		}
+
+		if updateIndex != -1 {
+			if si.Address != msg.UserRequest.Params.ServiceInfo.Address {
+				obj.ServiceInfos[updateIndex].Address = msg.UserRequest.Params.ServiceInfo.Address
+			}
+		} else {
+			obj.ServiceInfos = append(obj.ServiceInfos, msg.UserRequest.Params.ServiceInfo)
+		}
+
 		k.SetIPALObject(ctx, obj)
 	} else {
-		// create new ipal object
-		obj = NewIPALObject(msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServerIP)
+		obj = NewIPALObject(msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServiceInfo.Address, msg.UserRequest.Params.ServiceInfo.Type)
 		k.SetIPALObject(ctx, obj)
 	}
 

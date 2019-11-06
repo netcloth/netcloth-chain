@@ -31,7 +31,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim --user=<user key name> --proxy=<proxy key name> --ip=<server ip>",
+		Example: "nchcli ipal claim --user=<user key name> --proxy=<proxy key name> --service_address=<service address> --service_type=<service type>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
@@ -42,10 +42,10 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 			}
 			userAddress := info.GetAddress().String()
 
-			// build user request signature
-			serverIP := viper.GetString(flagServerIP)
+			serviceAddress := viper.GetString(flagServiceAddress)
+			serviceType := viper.GetUint64(flagServiceType)
 			expiration := time.Now().UTC().AddDate(0, 0, 1)
-			adMsg := types.NewADParam(userAddress, serverIP, expiration)
+			adMsg := types.NewADParam(userAddress, serviceAddress, serviceType, expiration)
 
 			// build msg
 			passphrase, err := keys.GetPassphrase(cliCtxUser.GetFromName())
@@ -64,7 +64,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 
 			// build and sign the transaction, then broadcast to Tendermint
 			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
-			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serverIP, expiration, stdSig)
+			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serviceAddress, serviceType, expiration, stdSig)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -72,12 +72,15 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flagServerIP, "", "server ip")
 	cmd.Flags().String(flagUser, "", "user account")
 	cmd.Flags().String(flagProxy, "", "proxy account")
-	cmd.MarkFlagRequired(flagServerIP)
+	cmd.Flags().String(flagServiceAddress, "", "service address")
+	cmd.Flags().String(flagServiceType, "", "service type. 1:chatting, 2:storage...")
+
 	cmd.MarkFlagRequired(flagUser)
 	cmd.MarkFlagRequired(flagProxy)
+	cmd.MarkFlagRequired(flagServiceAddress)
+	cmd.MarkFlagRequired(flagServiceType)
 
 	cmd = client.PostCommands(cmd)[0]
 
