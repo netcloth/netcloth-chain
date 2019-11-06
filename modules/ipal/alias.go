@@ -18,6 +18,8 @@ var (
 	RegisterCodec                  = types.RegisterCodec
 	NewIPALObject                  = types.NewIPALObject
 	NewQuerier                     = keeper.NewQuerier
+	NewADParam                     = types.NewADParam
+	NewIPALUserRequest             = types.NewIPALUserRequest
 	NewMsgIPALClaim                = types.NewMsgIPALClaim
 	NewKeeper                      = keeper.NewKeeper
 	ErrEmptyInputs                 = types.ErrEmptyInputs
@@ -29,6 +31,8 @@ var (
 )
 
 type (
-	Keeper       = keeper.Keeper
-	MsgIPALClaim = types.MsgIPALClaim
+	Keeper          = keeper.Keeper
+	MsgIPALClaim    = types.MsgIPALClaim
+	IPALUserRequest = types.IPALUserRequest
+	ADParam         = types.ADParam
 )
