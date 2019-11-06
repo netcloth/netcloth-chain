@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/NetCloth/netcloth-chain/modules/auth"
@@ -9,18 +10,23 @@ import (
 )
 
 const (
-	maxUserAddressLength = 64
-	maxServerIPLength    = 64
+	maxUserAddressLength   = 256
+	maxServerAddressLength = 256
 )
 
 var (
 	_ sdk.Msg = MsgIPALClaim{}
 )
 
+type ServiceInfo struct {
+	Type    uint64 `json:"type" yaml:"type"`
+	Address string `json:"address" yaml:"address"`
+}
+
 type ADParam struct {
-	UserAddress string    `json:"user_address" yaml:"user_address"`
-	ServerIP    string    `json:"server_ip" yaml:"server_ip"`
-	Expiration  time.Time `json:"expiration"`
+	UserAddress string      `json:"user_address" yaml:"user_address"`
+	ServiceInfo ServiceInfo `json:"service_info" yaml:"service_info"`
+	Expiration  time.Time   `json:"expiration"`
 }
 
 type IPALUserRequest struct {
@@ -28,10 +34,25 @@ type IPALUserRequest struct {
 	Sig    auth.StdSignature `json:"signature" yaml:"signature`
 }
 
-// MsgIPALClaim defines an ipal claim message
 type MsgIPALClaim struct {
 	From        sdk.AccAddress  `json:"from" yaml:"from`
 	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
+}
+
+func (i ServiceInfo) Validate() sdk.Error {
+	if i.Address == "" {
+		return ErrEmptyInputs("server address empty")
+	}
+
+	if len(i.Address) > maxServerAddressLength {
+		return ErrStringTooLong("server address too long")
+	}
+
+	return nil
+}
+
+func (i ServiceInfo) String() string {
+	return fmt.Sprintf(`ServiceInfo{Type:%s,Address:%s`, i.Type, i.Address)
 }
 
 func (p ADParam) GetSignBytes() []byte {
@@ -47,40 +68,32 @@ func (p ADParam) Validate() sdk.Error {
 		return ErrEmptyInputs("user address empty")
 	}
 
-	if p.ServerIP == "" {
-		return ErrEmptyInputs("server ip empty")
-	}
-
 	if len(p.UserAddress) > maxUserAddressLength {
 		return ErrStringTooLong("user address too long")
 	}
 
-	if len(p.ServerIP) > maxServerIPLength {
-		return ErrStringTooLong("server ip too long")
-	}
-
-	return nil
+	return p.ServiceInfo.Validate()
 }
 
-func NewADParam(userAddress string, serverIP string, expiration time.Time) ADParam {
+func NewADParam(userAddress string, serviceAddress string, serviceType uint64, expiration time.Time) ADParam {
 	return ADParam{
 		UserAddress: userAddress,
-		ServerIP:    serverIP,
+		ServiceInfo: ServiceInfo{Type: serviceType, Address: serviceAddress},
 		Expiration:  expiration,
 	}
 }
 
-func NewIPALUserRequest(userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) IPALUserRequest {
+func NewIPALUserRequest(userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) IPALUserRequest {
 	return IPALUserRequest{
-		Params: NewADParam(userAddress, serverIP, expiration),
+		Params: NewADParam(userAddress, serviceAddress, serviceType, expiration),
 		Sig:    sig,
 	}
 }
 
-func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serverIP string, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
+func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
 	return MsgIPALClaim{
 		from,
-		NewIPALUserRequest(userAddress, serverIP, expiration, sig),
+		NewIPALUserRequest(userAddress, serviceAddress, serviceType, expiration, sig),
 	}
 }
 
