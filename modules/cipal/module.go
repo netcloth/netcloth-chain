@@ -1,4 +1,4 @@
-package ipal
+package cipal
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/client/cli"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/client/rest"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/client/cli"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/client/rest"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/types/module"
 )

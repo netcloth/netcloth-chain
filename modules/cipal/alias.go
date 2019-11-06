@@ -1,8 +1,8 @@
-package ipal
+package cipal
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/keeper"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 )
 
 const (
@@ -16,11 +16,11 @@ const (
 
 var (
 	RegisterCodec                  = types.RegisterCodec
-	NewIPALObject                  = types.NewIPALObject
+	NewIPALObject                  = types.NewCIPALObject
 	NewQuerier                     = keeper.NewQuerier
 	NewADParam                     = types.NewADParam
-	NewIPALUserRequest             = types.NewIPALUserRequest
-	NewMsgIPALClaim                = types.NewMsgIPALClaim
+	NewIPALUserRequest             = types.NewCIPALUserRequest
+	NewMsgIPALClaim                = types.NewMsgCIPALClaim
 	NewKeeper                      = keeper.NewKeeper
 	ErrEmptyInputs                 = types.ErrEmptyInputs
 	ErrStringTooLong               = types.ErrStringTooLong
@@ -32,7 +32,7 @@ var (
 
 type (
 	Keeper          = keeper.Keeper
-	MsgIPALClaim    = types.MsgIPALClaim
-	IPALUserRequest = types.IPALUserRequest
+	MsgIPALClaim    = types.MsgCIPALClaim
+	IPALUserRequest = types.CIPALUserRequest
 	ADParam         = types.ADParam
 )

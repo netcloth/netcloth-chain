@@ -1,4 +1,4 @@
-package ipal
+package cipal
 
 import (
 	"strings"

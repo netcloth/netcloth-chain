@@ -3,14 +3,19 @@ package sim
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/aipal"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
+	"github.com/NetCloth/netcloth-chain/modules/cipal"
 	"github.com/NetCloth/netcloth-chain/modules/crisis"
 	"github.com/NetCloth/netcloth-chain/modules/distribution"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
-	"github.com/NetCloth/netcloth-chain/modules/ipal"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	"github.com/NetCloth/netcloth-chain/modules/slashing"
 	"github.com/NetCloth/netcloth-chain/modules/staking"
@@ -18,10 +23,6 @@ import (
 	"github.com/NetCloth/netcloth-chain/server"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/types"
-	"io/ioutil"
-	"os"
-	"strings"
-	"testing"
 
 	"github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/NetCloth/netcloth-chain/tests"
@@ -35,8 +36,8 @@ const (
 )
 
 type KeyOutput struct {
-	Name	string `json:"name"`
-	Type	string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
 	Address string `json:"address"`
 	PubKey  string `json:"pubkey"`
 	Seed    string `json:"seed,omitempty"`
@@ -193,7 +194,7 @@ func MakeCodec() *codec.Codec {
 	crisis.RegisterCodec(cdc)
 	distribution.RegisterCodec(cdc)
 	gov.RegisterCodec(cdc)
-	ipal.RegisterCodec(cdc)
+	cipal.RegisterCodec(cdc)
 	aipal.RegisterCodec(cdc)
 	slashing.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)

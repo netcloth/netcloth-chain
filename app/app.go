@@ -1,9 +1,10 @@
 package app
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/aipal"
 	"io"
 	"os"
+
+	"github.com/NetCloth/netcloth-chain/modules/aipal"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -14,12 +15,12 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
+	"github.com/NetCloth/netcloth-chain/modules/cipal"
 	"github.com/NetCloth/netcloth-chain/modules/crisis"
 	distr "github.com/NetCloth/netcloth-chain/modules/distribution"
 	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
 	"github.com/NetCloth/netcloth-chain/modules/genutil"
 	"github.com/NetCloth/netcloth-chain/modules/gov"
-	"github.com/NetCloth/netcloth-chain/modules/ipal"
 	"github.com/NetCloth/netcloth-chain/modules/mint"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	paramsclient "github.com/NetCloth/netcloth-chain/modules/params/client"
@@ -59,7 +60,7 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		ipal.AppModuleBasic{},
+		cipal.AppModuleBasic{},
 		aipal.AppModuleBasic{},
 	)
 
@@ -108,7 +109,7 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-	ipalKeeper     ipal.Keeper
+	ipalKeeper     cipal.Keeper
 	aipalKeeper    aipal.Keeper
 
 	// the module manager
@@ -136,7 +137,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		slashing.StoreKey,
 		gov.StoreKey,
 		params.StoreKey,
-		ipal.StoreKey,
+		cipal.StoreKey,
 		aipal.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
@@ -162,7 +163,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
 	aipalSubspace := app.paramsKeeper.Subspace(aipal.DefaultParamspace)
 
 	// add keepers
@@ -181,11 +182,11 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
-	app.ipalKeeper = ipal.NewKeeper(
-		keys[ipal.StoreKey],
+	app.ipalKeeper = cipal.NewKeeper(
+		keys[cipal.StoreKey],
 		app.cdc,
 		ipalSubspace,
-		ipal.DefaultCodespace)
+		cipal.DefaultCodespace)
 
 	app.aipalKeeper = aipal.NewKeeper(
 		keys[aipal.StoreKey],
@@ -232,7 +233,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		ipal.NewAppModule(app.ipalKeeper),
+		cipal.NewAppModule(app.ipalKeeper),
 		aipal.NewAppModule(app.aipalKeeper),
 	)
 

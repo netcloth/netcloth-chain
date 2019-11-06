@@ -9,34 +9,34 @@ import (
 	"github.com/NetCloth/netcloth-chain/client"
 	"github.com/NetCloth/netcloth-chain/client/context"
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	"github.com/NetCloth/netcloth-chain/version"
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	ipalQueryCmd := &cobra.Command{
+	cipalQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for ipal",
+		Short:                      "Querying commands for cipal",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 
-	ipalQueryCmd.AddCommand(client.GetCommands(
+	cipalQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryCIPAL(queryRoute, cdc),
 	)...)
 
-	return ipalQueryCmd
+	return cipalQueryCmd
 }
 
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "ipal",
-		Short: "Querying commands for ipal",
+		Use:   "cipal",
+		Short: "Querying commands for cipal",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details about an individual ipal object.
+			fmt.Sprintf(`Query details about an individual cipal object.
 	Example:
-	$ %s query ipal <user-address>
+	$ %s query cipal <user-address>
 	`,
 				version.ClientName,
 			),
@@ -48,16 +48,16 @@ func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			addr := args[0]
 
-			res, _, err := cliCtx.QueryStore(types.GetIPALObjectKey(addr), types.StoreKey)
+			res, _, err := cliCtx.QueryStore(types.GetCIPALObjectKey(addr), types.StoreKey)
 			if err != nil {
 				return err
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No ipal object found with address %s", addr)
+				return fmt.Errorf("No cipal object found with address %s", addr)
 			}
 
-			return cliCtx.PrintOutput(types.MustUnmarshalIPALObject(cdc, res))
+			return cliCtx.PrintOutput(types.MustUnmarshalCIPALObject(cdc, res))
 		},
 	}
 }

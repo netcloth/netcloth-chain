@@ -19,7 +19,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryServiceNode:
 			return queryServiceNode(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdk.ErrUnknownRequest("unknown cipal query endpoint")
 		}
 	}
 }

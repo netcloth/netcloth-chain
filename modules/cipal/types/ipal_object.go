@@ -8,22 +8,22 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 )
 
-type IPALObject struct {
+type CIPALObject struct {
 	UserAddress  string        `json:"user_address" yaml:"user_address"`
 	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos`
 }
 
-func NewIPALObject(userAddress string, serviceAddress string, serviceType uint64) IPALObject {
+func NewCIPALObject(userAddress string, serviceAddress string, serviceType uint64) CIPALObject {
 	si := ServiceInfo{serviceType, serviceAddress}
 	sis := make([]ServiceInfo, 0)
 	sis = append(sis, si)
-	return IPALObject{
+	return CIPALObject{
 		UserAddress:  userAddress,
 		ServiceInfos: sis,
 	}
 }
 
-func (obj IPALObject) MarshalYAML() (interface{}, error) {
+func (obj CIPALObject) MarshalYAML() (interface{}, error) {
 	bs, err := yaml.Marshal(struct {
 		UserAddress  string
 		ServiceInfos []ServiceInfo
@@ -38,11 +38,11 @@ func (obj IPALObject) MarshalYAML() (interface{}, error) {
 	return string(bs), nil
 }
 
-func MustMarshalIPALObject(cdc *codec.Codec, obj IPALObject) []byte {
+func MustMarshalCIPALObject(cdc *codec.Codec, obj CIPALObject) []byte {
 	return cdc.MustMarshalBinaryLengthPrefixed(obj)
 }
 
-func MustUnmarshalIPALObject(cdc *codec.Codec, value []byte) IPALObject {
+func MustUnmarshalCIPALObject(cdc *codec.Codec, value []byte) CIPALObject {
 	validator, err := UnmarshalIPALObject(cdc, value)
 	if err != nil {
 		panic(err)
@@ -50,7 +50,7 @@ func MustUnmarshalIPALObject(cdc *codec.Codec, value []byte) IPALObject {
 	return validator
 }
 
-func UnmarshalIPALObject(cdc *codec.Codec, value []byte) (obj IPALObject, err error) {
+func UnmarshalIPALObject(cdc *codec.Codec, value []byte) (obj CIPALObject, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
 	return obj, err
 }
@@ -64,8 +64,8 @@ func getServiceInfosString(infos []ServiceInfo) string {
 	return s
 }
 
-func (obj IPALObject) String() string {
-	return fmt.Sprintf(`IPALObject
+func (obj CIPALObject) String() string {
+	return fmt.Sprintf(`CIPALObject
 User Address:			%s
 Service Infos:		    %s`, getServiceInfosString(obj.ServiceInfos))
 }

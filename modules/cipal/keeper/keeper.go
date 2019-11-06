@@ -6,7 +6,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
@@ -35,21 +35,21 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
 
-func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress string) (obj types.IPALObject, found bool) {
+func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress string) (obj types.CIPALObject, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.GetIPALObjectKey(userAddress))
-	ctx.Logger().Info(string(types.GetIPALObjectKey(userAddress)))
+	value := store.Get(types.GetCIPALObjectKey(userAddress))
+	ctx.Logger().Info(string(types.GetCIPALObjectKey(userAddress)))
 	if value == nil {
 		return obj, false
 	}
 
-	obj = types.MustUnmarshalIPALObject(k.cdc, value)
+	obj = types.MustUnmarshalCIPALObject(k.cdc, value)
 	return obj, true
 }
 
-func (k Keeper) SetIPALObject(ctx sdk.Context, obj types.IPALObject) {
+func (k Keeper) SetIPALObject(ctx sdk.Context, obj types.CIPALObject) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalIPALObject(k.cdc, obj)
-	store.Set(types.GetIPALObjectKey(obj.UserAddress), bz)
-	ctx.Logger().Info(string(types.GetIPALObjectKey(obj.UserAddress)))
+	bz := types.MustMarshalCIPALObject(k.cdc, obj)
+	store.Set(types.GetCIPALObjectKey(obj.UserAddress), bz)
+	ctx.Logger().Info(string(types.GetCIPALObjectKey(obj.UserAddress)))
 }

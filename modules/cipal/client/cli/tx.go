@@ -12,26 +12,26 @@ import (
 	"github.com/NetCloth/netcloth-chain/codec"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
-func IPALCmd(cdc *codec.Codec) *cobra.Command {
+func CIPALCmd(cdc *codec.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   types.ModuleName,
-		Short: "IPAL transaction subcommands",
+		Short: "CIPAL transaction subcommands",
 	}
 	txCmd.AddCommand(
-		IPALClaimCmd(cdc),
+		CIPALClaimCmd(cdc),
 	)
 	return txCmd
 }
 
-func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
+func CIPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
-		Short:   "Create and sign a IPALClaim tx",
-		Example: "nchcli ipal claim --user=<user key name> --proxy=<proxy key name> --service_address=<service address> --service_type=<service type>",
+		Short:   "Create and sign a CIPALClaim tx",
+		Example: "nchcli cipal claim --user=<user key name> --proxy=<proxy key name> --service_address=<service address> --service_type=<service type>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtxUser := context.NewCLIContextWithFrom(viper.GetString(flagUser)).WithCodec(cdc)
@@ -64,7 +64,7 @@ func IPALClaimCmd(cdc *codec.Codec) *cobra.Command {
 
 			// build and sign the transaction, then broadcast to Tendermint
 			cliCtxProxy := context.NewCLIContextWithFrom(viper.GetString(flagProxy)).WithCodec(cdc)
-			msg := types.NewMsgIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serviceAddress, serviceType, expiration, stdSig)
+			msg := types.NewMsgCIPALClaim(cliCtxProxy.GetFromAddress(), userAddress, serviceAddress, serviceType, expiration, stdSig)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

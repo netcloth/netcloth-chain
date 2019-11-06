@@ -37,7 +37,7 @@ func GetCmdQueryParams(storeName string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "params",
 		Args:  cobra.NoArgs,
-		Short: "Query the current ipal parameters",
+		Short: "Query the current cipal parameters",
 		Long: strings.TrimSpace(fmt.Sprintf(`Query values set as aipal parameters.
 Example:
 $ %s query aipal params`, version.ClientName)),

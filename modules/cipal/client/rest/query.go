@@ -7,18 +7,18 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	"github.com/NetCloth/netcloth-chain/types/rest"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
-		"/ipal/ipal/{accAddress}",
-		IPALFn(cliCtx),
+		"/cipal/cipal/{accAddress}",
+		CIPALFn(cliCtx),
 	).Methods("GET")
 }
 
-func queryIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
+func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		addr := vars["accAddress"]
@@ -28,7 +28,7 @@ func queryIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 			return
 		}
 
-		params := types.NewQueryIPALParams(addr)
+		params := types.NewQueryCIPALParams(addr)
 
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
@@ -47,6 +47,6 @@ func queryIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	}
 }
 
-func IPALFn(cliCtx context.CLIContext) http.HandlerFunc {
-	return queryIPAL(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryIPAL))
+func CIPALFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return queryCIPAL(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryIPAL))
 }

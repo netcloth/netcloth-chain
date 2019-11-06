@@ -6,7 +6,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 )
 
@@ -16,13 +16,13 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryIPAL:
 			return queryIPAL(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdk.ErrUnknownRequest("unknown cipal query endpoint")
 		}
 	}
 }
 
 func queryIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var queryParams types.QueryIPALParams
+	var queryParams types.QueryCIPALParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
 	if err != nil {

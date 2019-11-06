@@ -14,13 +14,13 @@ import (
 	"github.com/NetCloth/netcloth-chain/client/keys"
 	"github.com/NetCloth/netcloth-chain/client/lcd"
 	"github.com/NetCloth/netcloth-chain/client/rpc"
+	aipalcli "github.com/NetCloth/netcloth-chain/modules/aipal/client/cli"
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	authcmd "github.com/NetCloth/netcloth-chain/modules/auth/client/cli"
 	authrest "github.com/NetCloth/netcloth-chain/modules/auth/client/rest"
 	"github.com/NetCloth/netcloth-chain/modules/bank"
 	bankcmd "github.com/NetCloth/netcloth-chain/modules/bank/client/cli"
-	ipalcli "github.com/NetCloth/netcloth-chain/modules/ipal/client/cli"
-	aipalcli "github.com/NetCloth/netcloth-chain/modules/aipal/client/cli"
+	ipalcli "github.com/NetCloth/netcloth-chain/modules/cipal/client/cli"
 	sdk "github.com/NetCloth/netcloth-chain/types"
 	"github.com/NetCloth/netcloth-chain/version"
 )
@@ -60,7 +60,7 @@ func main() {
 	// Construct Root Command
 	rootCmd.AddCommand(
 		bankcmd.SendTxCmd(cdc),
-		ipalcli.IPALCmd(cdc),
+		ipalcli.CIPALCmd(cdc),
 		aipalcli.AIPALCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),

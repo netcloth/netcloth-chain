@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	_ sdk.Msg = MsgIPALClaim{}
+	_ sdk.Msg = MsgCIPALClaim{}
 )
 
 type ServiceInfo struct {
@@ -29,14 +29,14 @@ type ADParam struct {
 	Expiration  time.Time   `json:"expiration"`
 }
 
-type IPALUserRequest struct {
+type CIPALUserRequest struct {
 	Params ADParam           `json:"params" yaml:"params"`
 	Sig    auth.StdSignature `json:"signature" yaml:"signature`
 }
 
-type MsgIPALClaim struct {
-	From        sdk.AccAddress  `json:"from" yaml:"from`
-	UserRequest IPALUserRequest `json:"user_request" yaml:"user_request"`
+type MsgCIPALClaim struct {
+	From        sdk.AccAddress   `json:"from" yaml:"from`
+	UserRequest CIPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
 func (i ServiceInfo) Validate() sdk.Error {
@@ -83,25 +83,25 @@ func NewADParam(userAddress string, serviceAddress string, serviceType uint64, e
 	}
 }
 
-func NewIPALUserRequest(userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) IPALUserRequest {
-	return IPALUserRequest{
+func NewCIPALUserRequest(userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) CIPALUserRequest {
+	return CIPALUserRequest{
 		Params: NewADParam(userAddress, serviceAddress, serviceType, expiration),
 		Sig:    sig,
 	}
 }
 
-func NewMsgIPALClaim(from sdk.AccAddress, userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) MsgIPALClaim {
-	return MsgIPALClaim{
+func NewMsgCIPALClaim(from sdk.AccAddress, userAddress string, serviceAddress string, serviceType uint64, expiration time.Time, sig auth.StdSignature) MsgCIPALClaim {
+	return MsgCIPALClaim{
 		from,
-		NewIPALUserRequest(userAddress, serviceAddress, serviceType, expiration, sig),
+		NewCIPALUserRequest(userAddress, serviceAddress, serviceType, expiration, sig),
 	}
 }
 
-func (msg MsgIPALClaim) Route() string { return RouterKey }
+func (msg MsgCIPALClaim) Route() string { return RouterKey }
 
-func (msg MsgIPALClaim) Type() string { return "ipal_claim" }
+func (msg MsgCIPALClaim) Type() string { return "cipal_claim" }
 
-func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
+func (msg MsgCIPALClaim) ValidateBasic() sdk.Error {
 	if msg.From.Empty() {
 		return sdk.ErrInvalidAddress("missing sender address")
 	}
@@ -120,7 +120,7 @@ func (msg MsgIPALClaim) ValidateBasic() sdk.Error {
 	return nil
 }
 
-func (msg MsgIPALClaim) GetSignBytes() []byte {
+func (msg MsgCIPALClaim) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -128,6 +128,6 @@ func (msg MsgIPALClaim) GetSignBytes() []byte {
 	return sdk.MustSortJSON(b)
 }
 
-func (msg MsgIPALClaim) GetSigners() []sdk.AccAddress {
+func (msg MsgCIPALClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
 }

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	"github.com/NetCloth/netcloth-chain/modules/params"
 )
 
