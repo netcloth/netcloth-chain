@@ -31,12 +31,12 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "cipal",
+		Use:   "query_cipal",
 		Short: "Querying commands for cipal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details about an individual cipal object.
 	Example:
-	$ %s query cipal <user-address>
+	$ %s query cipal query_cipal <user-address>
 	`,
 				version.ClientName,
 			),

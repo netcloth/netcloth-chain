@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -13,7 +14,7 @@ import (
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
-		"/cipal/cipal/{accAddress}",
+		"/cipal/query/{accAddress}",
 		CIPALFn(cliCtx),
 	).Methods("GET")
 }
@@ -37,7 +38,7 @@ func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		}
 
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "not found") {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}

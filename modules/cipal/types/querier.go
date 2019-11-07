@@ -1,7 +1,7 @@
 package types
 
 const (
-	QueryIPAL = "cipal"
+	QueryIPAL = "query"
 )
 
 type QueryCIPALParams struct {
