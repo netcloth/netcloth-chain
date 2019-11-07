@@ -64,7 +64,7 @@ func GetCmdQueryServiceNodeList(cdc *codec.Codec) *cobra.Command {
 		Short: "Querying commands for ServiceNodes",
 		Long: strings.TrimSpace(fmt.Sprintf(`List all ServiceNodes.
 Example:
-$ %s query ipal servicenodes`, version.ClientName)),
+$ %s query ipal list`, version.ClientName)),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
