@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -76,7 +77,7 @@ func queryNode(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		}
 
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "not found") {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
