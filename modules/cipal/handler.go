@@ -27,6 +27,11 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 		return ErrIPALClaimUserRequestExpired("user request expired").Result()
 	}
 
+	sigVerifyPass := msg.UserRequest.Sig.VerifyBytes(msg.UserRequest.Params.GetSignBytes(), msg.UserRequest.Sig.Signature)
+	if !sigVerifyPass {
+		return ErrCIPALClaimUserRequestSigVerify("user signature verify failed").Result()
+	}
+
 	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress)
 	if found {
 		updateIndex := -1
