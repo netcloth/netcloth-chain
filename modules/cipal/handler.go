@@ -1,6 +1,11 @@
 package cipal
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/tendermint/tendermint/crypto"
+
 	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -27,6 +32,16 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 		return ErrIPALClaimUserRequestExpired("user request expired").Result()
 	}
 
+	fmt.Fprintf(os.Stderr, "++++++++++++++++++++++++++++++++++\n")
+	d, _ := msg.UserRequest.Sig.MarshalYAML()
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("params = %s\n", msg.UserRequest.Params.GetSignBytes()))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("params hex = %x\n", msg.UserRequest.Params.GetSignBytes()))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("params hex sha256 = %x\n", crypto.Sha256(msg.UserRequest.Params.GetSignBytes())))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig = %s\n", d))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig.pubkey = %v\n", msg.UserRequest.Sig.PubKey))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("user addr = %x\n", msg.UserRequest.Sig.PubKey.Address()))
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig hex = %x\n", msg.UserRequest.Sig.Signature))
+	fmt.Fprintf(os.Stderr, "----------------------------------\n")
 	sigVerifyPass := msg.UserRequest.Sig.VerifyBytes(msg.UserRequest.Params.GetSignBytes(), msg.UserRequest.Sig.Signature)
 	if !sigVerifyPass {
 		return ErrCIPALClaimUserRequestSigVerify("user signature verify failed").Result()
