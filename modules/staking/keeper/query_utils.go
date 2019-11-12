@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Return all validators that a delegator is bonded to. If maxRetrieve is supplied, the respective amount will be returned.

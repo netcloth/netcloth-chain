@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/gov/types"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 )

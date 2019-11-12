@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/ipal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func (k Keeper) GetUnBondingQueueTimeSlice(ctx sdk.Context, timestamp time.Time) (unBondings types.UnBondings) {

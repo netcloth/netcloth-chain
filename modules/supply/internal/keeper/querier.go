@@ -5,9 +5,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
-	"github.com/NetCloth/netcloth-chain/client"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
+	"github.com/netcloth/netcloth-chain/client"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // NewQuerier creates a querier for supply REST endpoints

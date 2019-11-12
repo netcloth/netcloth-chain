@@ -1,7 +1,7 @@
 package keys
 
 import (
-	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/spf13/cobra"
 )
 

@@ -5,9 +5,9 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/store/cachekv"
-	"github.com/NetCloth/netcloth-chain/store/tracekv"
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/cachekv"
+	"github.com/netcloth/netcloth-chain/store/tracekv"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 // Wrapper type for dbm.Db with implementation of KVStore

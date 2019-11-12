@@ -11,7 +11,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type (

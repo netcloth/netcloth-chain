@@ -13,9 +13,9 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/types"
 )
 
 type mockResponseWriter struct{}

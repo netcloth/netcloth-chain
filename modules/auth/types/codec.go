@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
 )
 
 // RegisterCodec registers concrete types on the codec

@@ -10,9 +10,9 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/mintkey"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	"github.com/netcloth/netcloth-chain/crypto/keys/mintkey"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func init() {

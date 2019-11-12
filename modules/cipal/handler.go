@@ -1,11 +1,11 @@
 package cipal
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
+	"github.com/netcloth/netcloth-chain/modules/cipal/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/modules/cipal/keeper"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/cipal/keeper"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {

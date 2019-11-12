@@ -5,9 +5,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
 )
 
 // AllocateTokens handles distribution of the collected fees

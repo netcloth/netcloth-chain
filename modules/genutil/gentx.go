@@ -8,12 +8,12 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	authexported "github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	authtypes "github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/modules/genutil/types"
-	stakingtypes "github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/modules/genutil/types"
+	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // SetGenTxsInAppGenesisState - sets the genesis transactions in the app genesis state

@@ -41,7 +41,7 @@ go version
 
 ```bash
 # get source code
-git clone https://github.com/NetCloth/netcloth-chain.git
+git clone https://github.com/netcloth/netcloth-chain.git
 cd netcloth-chain && git checkout v1.0.0
 
 # Install the app into your $GOBIN

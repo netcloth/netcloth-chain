@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/NetCloth/netcloth-chain/client/input"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
 
 	"github.com/spf13/cobra"
 )

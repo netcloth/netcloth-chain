@@ -4,7 +4,7 @@
 package genutil
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/genutil/types"
+	"github.com/netcloth/netcloth-chain/modules/genutil/types"
 )
 
 const (

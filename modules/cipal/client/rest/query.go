@@ -7,9 +7,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
-	"github.com/NetCloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/cipal/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {

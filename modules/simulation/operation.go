@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/baseapp"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/baseapp"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Operation runs a state machine transition, and ensures the transition

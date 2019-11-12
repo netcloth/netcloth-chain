@@ -3,7 +3,7 @@ package types
 import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 // nolint - reexport

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"io/ioutil"
 
-	"github.com/NetCloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/client/input"
 	"github.com/spf13/cobra"
 )
 

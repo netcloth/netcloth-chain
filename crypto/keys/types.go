@@ -6,8 +6,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/multisig"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	"github.com/netcloth/netcloth-chain/types"
 )
 
 // Keybase exposes operations on a generic keystore

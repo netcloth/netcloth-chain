@@ -3,8 +3,8 @@ package keys
 import (
 	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
 )
 
 var cdc *codec.Codec

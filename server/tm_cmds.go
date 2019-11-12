@@ -15,8 +15,8 @@ import (
 	pvm "github.com/tendermint/tendermint/privval"
 	tversion "github.com/tendermint/tendermint/version"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // ShowNodeIDCmd - ported from Tendermint, dump node ID to stdout

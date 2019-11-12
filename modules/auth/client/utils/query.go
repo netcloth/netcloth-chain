@@ -8,10 +8,10 @@ import (
 
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // QueryTxsByEvents performs a search for transactions for a given set of events

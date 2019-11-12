@@ -1,10 +1,10 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/staking"
-	stakingexported "github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	supplyexported "github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/staking"
+	stakingexported "github.com/netcloth/netcloth-chain/modules/staking/exported"
+	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // StakingKeeper expected staking keeper (noalias)

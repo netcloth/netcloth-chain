@@ -3,9 +3,9 @@ package types
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	nchtypes "github.com/NetCloth/netcloth-chain/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	nchtypes "github.com/netcloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Parameter store keys

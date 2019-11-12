@@ -5,7 +5,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func NewTestMsg(addrs ...sdk.AccAddress) *sdk.TestMsg {

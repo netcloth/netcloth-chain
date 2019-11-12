@@ -1,8 +1,8 @@
 package types
 
 import (
-	supplyexported "github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type SupplyKeeper interface {

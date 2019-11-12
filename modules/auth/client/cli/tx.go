@@ -3,9 +3,9 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

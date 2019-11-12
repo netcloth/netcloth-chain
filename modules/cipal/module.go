@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/cipal/client/cli"
-	"github.com/NetCloth/netcloth-chain/modules/cipal/client/rest"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
+	"github.com/netcloth/netcloth-chain/modules/cipal/client/rest"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 var (

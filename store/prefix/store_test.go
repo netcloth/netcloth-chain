@@ -4,11 +4,11 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/NetCloth/netcloth-chain/store/dbadapter"
-	"github.com/NetCloth/netcloth-chain/store/gaskv"
-	"github.com/NetCloth/netcloth-chain/store/iavl"
-	"github.com/NetCloth/netcloth-chain/store/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/store/dbadapter"
+	"github.com/netcloth/netcloth-chain/store/gaskv"
+	"github.com/netcloth/netcloth-chain/store/iavl"
+	"github.com/netcloth/netcloth-chain/store/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 
 	"github.com/stretchr/testify/require"
 

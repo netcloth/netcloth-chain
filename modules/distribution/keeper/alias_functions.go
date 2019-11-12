@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // get outstanding rewards

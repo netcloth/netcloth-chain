@@ -3,9 +3,9 @@ package bank
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // NewHandler returns a handler for "bank" type messages.

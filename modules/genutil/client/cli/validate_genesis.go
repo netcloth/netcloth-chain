@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/server"
-	"github.com/NetCloth/netcloth-chain/types/module"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/server"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 // Validate genesis command takes

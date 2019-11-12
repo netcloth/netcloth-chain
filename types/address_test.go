@@ -13,7 +13,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types"
 )
 
 var invalidStrs = []string{

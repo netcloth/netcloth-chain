@@ -6,9 +6,9 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/NetCloth/netcloth-chain/modules/crisis/internal/types"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/crisis/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Keeper - crisis keeper

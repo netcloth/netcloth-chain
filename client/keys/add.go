@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/client/input"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
+	sdk "github.com/netcloth/netcloth-chain/types"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

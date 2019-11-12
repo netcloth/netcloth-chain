@@ -11,9 +11,9 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // nolint

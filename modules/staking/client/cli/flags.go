@@ -3,7 +3,7 @@ package cli
 import (
 	flag "github.com/spf13/pflag"
 
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
 )
 
 // nolint

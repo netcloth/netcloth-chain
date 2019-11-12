@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/crisis/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/crisis/internal/types"
 )
 
 // GetConstantFee get's the constant fee from the paramSpace

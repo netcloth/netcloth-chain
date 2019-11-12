@@ -8,8 +8,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/NetCloth/netcloth-chain/store/gaskv"
-	stypes "github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/gaskv"
+	stypes "github.com/netcloth/netcloth-chain/store/types"
 )
 
 /*

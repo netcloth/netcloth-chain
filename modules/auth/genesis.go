@@ -1,7 +1,7 @@
 package auth
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis - Init store state from genesis data

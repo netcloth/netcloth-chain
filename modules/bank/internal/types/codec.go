@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // Register concrete types on codec codec

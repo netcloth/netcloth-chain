@@ -10,10 +10,10 @@ import (
 
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
-	"github.com/NetCloth/netcloth-chain/tests"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/tests"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func Test_runAddCmdLedger(t *testing.T) {

@@ -8,9 +8,9 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/modules/staking/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/keeper"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

@@ -10,10 +10,10 @@ import (
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
-	"github.com/NetCloth/netcloth-chain/tests"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/tests"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func Test_multiSigKey_Properties(t *testing.T) {

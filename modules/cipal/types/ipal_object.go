@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 type CIPALObject struct {

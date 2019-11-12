@@ -1,7 +1,7 @@
 package bank
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GenesisState is the bank state that must be provided at genesis.

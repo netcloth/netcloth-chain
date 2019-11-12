@@ -5,10 +5,10 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/mint/internal/types"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/mint/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Keeper of the mint store

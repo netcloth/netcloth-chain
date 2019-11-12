@@ -5,9 +5,9 @@
 package staking
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	"github.com/NetCloth/netcloth-chain/modules/staking/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
+	"github.com/netcloth/netcloth-chain/modules/staking/keeper"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
 )
 
 const (

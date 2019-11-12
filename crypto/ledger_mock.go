@@ -14,9 +14,9 @@ import (
 
 	bip39 "github.com/cosmos/go-bip39"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	"github.com/NetCloth/netcloth-chain/tests"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	"github.com/netcloth/netcloth-chain/tests"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // If ledger support (build tag) has been enabled, which implies a CGO dependency,

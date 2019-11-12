@@ -7,10 +7,10 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/client/keys"
-	crkeys "github.com/NetCloth/netcloth-chain/crypto/keys"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/keys"
+	crkeys "github.com/netcloth/netcloth-chain/crypto/keys"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // TxBuilder implements a transaction context created in SDK modules.

@@ -1,8 +1,8 @@
 package ipal
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/ipal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
+	"github.com/netcloth/netcloth-chain/modules/ipal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/ipal/types"
 )
 
 const (

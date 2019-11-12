@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	nchtypes "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/gov/types"
+	nchtypes "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/gov/types"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (

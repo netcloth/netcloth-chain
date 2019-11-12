@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // RegisterInvariants registers the bank module invariants

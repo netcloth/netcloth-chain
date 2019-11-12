@@ -14,14 +14,14 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/codec"
-	keybase "github.com/NetCloth/netcloth-chain/crypto/keys"
-	"github.com/NetCloth/netcloth-chain/server"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/codec"
+	keybase "github.com/netcloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/server"
 
 	// unnamed import of statik for swagger UI support
-	_ "github.com/NetCloth/netcloth-chain/client/lcd/statik"
+	_ "github.com/netcloth/netcloth-chain/client/lcd/statik"
 )
 
 // RestServer represents the Light Client Rest server

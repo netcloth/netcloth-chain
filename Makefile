@@ -28,15 +28,15 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/NetCloth/netcloth-chain/version.Name=nch \
-		  -X github.com/NetCloth/netcloth-chain/version.ServerName=nchd \
-		  -X github.com/NetCloth/netcloth-chain/version.ClientName=nchcli \
-		  -X github.com/NetCloth/netcloth-chain/version.Version=$(VERSION) \
-		  -X github.com/NetCloth/netcloth-chain/version.Commit=$(COMMIT) \
-		  -X "github.com/NetCloth/netcloth-chain/version.BuildTags=$(build_tags_comma_sep)"
+ldflags = -X github.com/netcloth/netcloth-chain/version.Name=nch \
+		  -X github.com/netcloth/netcloth-chain/version.ServerName=nchd \
+		  -X github.com/netcloth/netcloth-chain/version.ClientName=nchcli \
+		  -X github.com/netcloth/netcloth-chain/version.Version=$(VERSION) \
+		  -X github.com/netcloth/netcloth-chain/version.Commit=$(COMMIT) \
+		  -X "github.com/netcloth/netcloth-chain/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
-  ldflags += -X github.com/NetCloth/netcloth-chain/types.DBBackend=cleveldb
+  ldflags += -X github.com/netcloth/netcloth-chain/types.DBBackend=cleveldb
 endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))

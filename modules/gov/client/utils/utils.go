@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/NetCloth/netcloth-chain/modules/gov/types"
+import "github.com/netcloth/netcloth-chain/modules/gov/types"
 
 // NormalizeVoteOption - normalize user specified vote option
 func NormalizeVoteOption(option string) string {

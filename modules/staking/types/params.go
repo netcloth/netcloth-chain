@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	nchtypes "github.com/NetCloth/netcloth-chain/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	nchtypes "github.com/netcloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
 

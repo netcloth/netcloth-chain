@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types"
 
 	bip39 "github.com/cosmos/go-bip39"
 	"github.com/stretchr/testify/assert"

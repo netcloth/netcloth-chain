@@ -1,7 +1,7 @@
 package keys
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // KeyOutput defines a structure wrapping around an Info object used for output

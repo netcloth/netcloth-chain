@@ -10,9 +10,9 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	"gopkg.in/yaml.v2"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/client/input"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
 )
 
 // available output formats.

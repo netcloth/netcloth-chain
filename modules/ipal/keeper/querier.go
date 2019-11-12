@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/ipal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/ipal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

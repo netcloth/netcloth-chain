@@ -13,8 +13,8 @@ import (
 
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/store"
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/store"
+	"github.com/netcloth/netcloth-chain/types"
 )
 
 type MockLogger struct {

@@ -1,7 +1,7 @@
 package types
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // RouterKey is they name of the bank module

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
 // RegisterRoutes registers staking-related REST handlers to a router

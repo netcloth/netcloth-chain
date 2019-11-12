@@ -4,9 +4,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
 // BroadcastReq defines a tx broadcasting request.

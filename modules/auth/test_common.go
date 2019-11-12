@@ -7,12 +7,12 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/modules/params/subspace"
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	"github.com/NetCloth/netcloth-chain/store"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/modules/params/subspace"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	"github.com/netcloth/netcloth-chain/store"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type testInput struct {

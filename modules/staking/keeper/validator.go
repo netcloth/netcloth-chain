@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Cache the amino decoding of validators, as it can be the case that repeated slashing calls

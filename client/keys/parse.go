@@ -13,8 +13,8 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var bech32Prefixes = []string{

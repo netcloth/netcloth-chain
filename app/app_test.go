@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tm-db"
+	db "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/simapp"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -20,7 +20,7 @@ func TestExport(t *testing.T) {
 	setGenesis(app)
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	newApp := NewNCHApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil,true, 0)
+	newApp := NewNCHApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	_, _, err := newApp.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }

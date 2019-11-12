@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // generic sealed codec to be used throughout this module

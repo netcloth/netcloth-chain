@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
-	"github.com/NetCloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/cipal/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
 )
 
 const (

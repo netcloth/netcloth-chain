@@ -21,10 +21,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	pvm "github.com/tendermint/tendermint/privval"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/server/config"
-	"github.com/NetCloth/netcloth-chain/version"
-	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/server/config"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 // server context

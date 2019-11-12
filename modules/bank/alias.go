@@ -4,8 +4,8 @@
 package bank
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
 )
 
 const (

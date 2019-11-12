@@ -3,14 +3,14 @@ package rest
 import (
 	"net/http"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	paramscutils "github.com/NetCloth/netcloth-chain/modules/params/client/utils"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/rest"
-	"github.com/NetCloth/netcloth-chain/modules/gov"
-	govrest "github.com/NetCloth/netcloth-chain/modules/gov/client/rest"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	paramscutils "github.com/netcloth/netcloth-chain/modules/params/client/utils"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/modules/gov"
+	govrest "github.com/netcloth/netcloth-chain/modules/gov/client/rest"
 )
 
 // ProposalRESTHandler returns a ProposalRESTHandler that exposes the param

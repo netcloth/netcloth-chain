@@ -9,11 +9,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/NetCloth/netcloth-chain/crypto"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/keyerror"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/mintkey"
-	"github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	"github.com/netcloth/netcloth-chain/crypto/keys/keyerror"
+	"github.com/netcloth/netcloth-chain/crypto/keys/mintkey"
+	"github.com/netcloth/netcloth-chain/types"
 
 	bip39 "github.com/cosmos/go-bip39"
 

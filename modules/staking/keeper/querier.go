@@ -6,10 +6,10 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
-	"github.com/NetCloth/netcloth-chain/client"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/client"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // creates a querier for staking REST endpoints

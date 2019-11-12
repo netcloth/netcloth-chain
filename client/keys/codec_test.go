@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
 )
 
 type testCases struct {

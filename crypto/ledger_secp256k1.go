@@ -11,8 +11,8 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	tmsecp256k1 "github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var (

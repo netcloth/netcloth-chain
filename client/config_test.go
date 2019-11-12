@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/flags"
 )
 
 func Test_runConfigCmdTwiceWithShorterNodeValue(t *testing.T) {

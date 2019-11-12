@@ -5,11 +5,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/NetCloth/netcloth-chain/modules/bank/internal/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application

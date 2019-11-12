@@ -8,14 +8,14 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/gov/client"
-	"github.com/NetCloth/netcloth-chain/modules/gov/client/cli"
-	"github.com/NetCloth/netcloth-chain/modules/gov/client/rest"
-	"github.com/NetCloth/netcloth-chain/modules/gov/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/module"
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/gov/client"
+	"github.com/netcloth/netcloth-chain/modules/gov/client/cli"
+	"github.com/netcloth/netcloth-chain/modules/gov/client/rest"
+	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 var (

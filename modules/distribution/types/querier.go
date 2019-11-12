@@ -1,6 +1,6 @@
 package types
 
-import sdk "github.com/NetCloth/netcloth-chain/types"
+import sdk "github.com/netcloth/netcloth-chain/types"
 
 // querier keys
 const (

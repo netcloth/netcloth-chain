@@ -6,11 +6,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/rest"
-	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {

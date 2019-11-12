@@ -1,7 +1,7 @@
 package mint
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GenesisState - minter state

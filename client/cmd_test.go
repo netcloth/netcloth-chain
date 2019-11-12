@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client"
 )
 
 func TestValidateCmd(t *testing.T) {

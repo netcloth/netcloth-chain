@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	store "github.com/NetCloth/netcloth-chain/store/types"
+	store "github.com/netcloth/netcloth-chain/store/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,8 +16,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var (

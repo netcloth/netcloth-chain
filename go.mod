@@ -1,4 +1,4 @@
-module github.com/NetCloth/netcloth-chain
+module github.com/netcloth/netcloth-chain
 
 go 1.12
 

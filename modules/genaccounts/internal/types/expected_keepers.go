@@ -1,8 +1,8 @@
 package types
 
 import (
-	authexported "github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // AccountKeeper defines the expected account keeper (noalias)

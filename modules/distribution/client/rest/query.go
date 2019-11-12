@@ -6,12 +6,12 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/modules/distribution/client/common"
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/client/common"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/types/rest"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router, queryRoute string) {

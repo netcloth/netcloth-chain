@@ -3,10 +3,10 @@ package server
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
 
-	clkeys "github.com/NetCloth/netcloth-chain/client/keys"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	clkeys "github.com/netcloth/netcloth-chain/client/keys"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GenerateCoinKey returns the address of a public key, along with the secret

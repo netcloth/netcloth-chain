@@ -7,10 +7,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/slashing"
-	"github.com/NetCloth/netcloth-chain/modules/staking"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/slashing"
+	"github.com/netcloth/netcloth-chain/modules/staking"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // export the state of nchd for a genesis file

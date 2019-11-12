@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // RegisterInvariants register all supply invariants

@@ -1,9 +1,9 @@
 package client
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/params/client/cli"
-	"github.com/NetCloth/netcloth-chain/modules/params/client/rest"
-	govclient "github.com/NetCloth/netcloth-chain/modules/gov/client"
+	"github.com/netcloth/netcloth-chain/modules/params/client/cli"
+	"github.com/netcloth/netcloth-chain/modules/params/client/rest"
+	govclient "github.com/netcloth/netcloth-chain/modules/gov/client"
 )
 
 // param change proposal handler

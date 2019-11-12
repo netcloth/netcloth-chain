@@ -3,8 +3,8 @@ package gov
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/gov/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // AddVote Adds a vote on a specific proposal

@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
 )
 
 // DefaultCodespace from the supply module

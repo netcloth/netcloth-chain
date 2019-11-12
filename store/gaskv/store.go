@@ -3,7 +3,7 @@ package gaskv
 import (
 	"io"
 
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 var _ types.KVStore = &Store{}

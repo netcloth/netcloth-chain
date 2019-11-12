@@ -1,8 +1,8 @@
 package types // noalias
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // StakingKeeper defines the expected staking keeper

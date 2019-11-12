@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // HandleCommunityPoolSpendProposal is a handler for executing a passed community spend proposal

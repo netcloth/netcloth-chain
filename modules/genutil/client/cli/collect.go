@@ -9,11 +9,11 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/client"
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/genutil"
-	"github.com/NetCloth/netcloth-chain/modules/genutil/types"
-	"github.com/NetCloth/netcloth-chain/server"
+	"github.com/netcloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/genutil"
+	"github.com/netcloth/netcloth-chain/modules/genutil/types"
+	"github.com/netcloth/netcloth-chain/server"
 )
 
 const flagGenTxDir = "gentx-dir"

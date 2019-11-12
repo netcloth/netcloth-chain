@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/params"
 )
 
 const (

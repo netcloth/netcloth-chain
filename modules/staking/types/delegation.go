@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // DVPair is struct that just has a delegator-validator pair with no other data.

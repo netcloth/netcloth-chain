@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GetModuleAddress returns an address based on the module name

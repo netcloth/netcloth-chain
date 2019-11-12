@@ -1,8 +1,8 @@
 package cipal
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/cipal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/cipal/types"
+	"github.com/netcloth/netcloth-chain/modules/cipal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/cipal/types"
 )
 
 const (

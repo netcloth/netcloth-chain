@@ -1,8 +1,8 @@
 package exported
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // ModuleAccountI defines an account interface for modules that hold tokens in an escrow

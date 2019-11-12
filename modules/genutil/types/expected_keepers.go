@@ -5,9 +5,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	authexported "github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // StakingKeeper defines the expected staking keeper (noalias)

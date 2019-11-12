@@ -6,15 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	"github.com/NetCloth/netcloth-chain/modules/auth/client/utils"
-	paramscutils "github.com/NetCloth/netcloth-chain/modules/params/client/utils"
-	"github.com/NetCloth/netcloth-chain/modules/params/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/version"
-	"github.com/NetCloth/netcloth-chain/modules/gov"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
+	paramscutils "github.com/netcloth/netcloth-chain/modules/params/client/utils"
+	"github.com/netcloth/netcloth-chain/modules/params/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/version"
+	"github.com/netcloth/netcloth-chain/modules/gov"
 )
 
 // GetCmdSubmitProposal implements a command handler for submitting a parameter

@@ -3,7 +3,7 @@ package rest
 import (
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/context"
 )
 
 // RegisterRoutes registers staking-related REST handlers to a router

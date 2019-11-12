@@ -1,10 +1,10 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
-	authtypes "github.com/NetCloth/netcloth-chain/modules/auth/types"
-	stakingtypes "github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
+	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // ModuleCdc defines a generic sealed codec to be used throughout this module

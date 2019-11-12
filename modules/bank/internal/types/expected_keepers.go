@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // AccountKeeper defines the account contract that must be fulfilled when

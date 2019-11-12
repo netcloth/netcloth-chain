@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client"
 )
 
 func TestPaginate(t *testing.T) {

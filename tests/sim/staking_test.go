@@ -2,7 +2,7 @@ package sim
 
 import (
 	"fmt"
-	"github.com/NetCloth/netcloth-chain/tests"
+	"github.com/netcloth/netcloth-chain/tests"
 	"testing"
 )
 

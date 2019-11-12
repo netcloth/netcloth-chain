@@ -4,10 +4,10 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	sdk "github.com/netcloth/netcloth-chain/types"
 
-	"github.com/NetCloth/netcloth-chain/store/prefix"
+	"github.com/netcloth/netcloth-chain/store/prefix"
 )
 
 const (

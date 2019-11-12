@@ -5,8 +5,8 @@
 package params
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/params/subspace"
-	"github.com/NetCloth/netcloth-chain/modules/params/types"
+	"github.com/netcloth/netcloth-chain/modules/params/subspace"
+	"github.com/netcloth/netcloth-chain/modules/params/types"
 )
 
 const (

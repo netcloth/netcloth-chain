@@ -3,7 +3,7 @@ package rpc
 import (
 	"github.com/gorilla/mux"
 
-	"github.com/NetCloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/context"
 )
 
 // Register REST endpoints

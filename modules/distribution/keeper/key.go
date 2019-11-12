@@ -3,8 +3,8 @@ package keeper
 import (
 	"encoding/binary"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 )
 
 const (

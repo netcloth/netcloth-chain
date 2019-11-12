@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/flags"
 )
 
 const (

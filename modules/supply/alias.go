@@ -5,8 +5,8 @@
 package supply
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
 )
 
 const (

@@ -1,9 +1,9 @@
 package slashing
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/slashing/types"
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis initialize default parameters

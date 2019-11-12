@@ -7,8 +7,8 @@ import (
 	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
-	"github.com/NetCloth/netcloth-chain/crypto/keys/mintkey"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
+	"github.com/netcloth/netcloth-chain/crypto/keys/mintkey"
 )
 
 func TestArmorUnarmorPrivKey(t *testing.T) {

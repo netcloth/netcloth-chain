@@ -8,7 +8,7 @@ import (
 	bip39 "github.com/bartekn/go-bip39"
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/client/input"
 )
 
 const (

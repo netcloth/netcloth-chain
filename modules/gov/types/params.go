@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	params "github.com/NetCloth/netcloth-chain/modules/params/subspace"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	params "github.com/netcloth/netcloth-chain/modules/params/subspace"
 )
 
 // Parameter store key

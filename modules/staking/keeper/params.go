@@ -3,9 +3,9 @@ package keeper
 import (
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	"github.com/NetCloth/netcloth-chain/modules/staking/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/staking/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Default parameter namespace

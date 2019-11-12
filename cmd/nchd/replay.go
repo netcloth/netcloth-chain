@@ -16,9 +16,9 @@ import (
 	tmstore "github.com/tendermint/tendermint/store"
 	tm "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/app"
-	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/app"
+	"github.com/netcloth/netcloth-chain/server"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func replayCmd() *cobra.Command {

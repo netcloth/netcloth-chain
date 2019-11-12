@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	govutils "github.com/NetCloth/netcloth-chain/modules/gov/client/utils"
+	govutils "github.com/netcloth/netcloth-chain/modules/gov/client/utils"
 )
 
 func parseSubmitProposalFlags() (*proposal, error) {

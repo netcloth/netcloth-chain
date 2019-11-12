@@ -12,15 +12,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	"github.com/NetCloth/netcloth-chain/modules/bank"
-	"github.com/NetCloth/netcloth-chain/modules/mint/internal/types"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	"github.com/NetCloth/netcloth-chain/modules/staking"
-	"github.com/NetCloth/netcloth-chain/modules/supply"
-	"github.com/NetCloth/netcloth-chain/store"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/bank"
+	"github.com/netcloth/netcloth-chain/modules/mint/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/staking"
+	"github.com/netcloth/netcloth-chain/modules/supply"
+	"github.com/netcloth/netcloth-chain/store"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type testInput struct {

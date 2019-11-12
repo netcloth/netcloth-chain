@@ -4,7 +4,7 @@
 package gov
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/gov/types"
+	"github.com/netcloth/netcloth-chain/modules/gov/types"
 )
 
 const (

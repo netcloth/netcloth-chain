@@ -4,8 +4,8 @@
 package auth
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	"github.com/NetCloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
 )
 
 const (

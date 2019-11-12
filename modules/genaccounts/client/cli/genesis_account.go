@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/genaccounts"
-	"github.com/NetCloth/netcloth-chain/modules/genutil"
-	"github.com/NetCloth/netcloth-chain/client/keys"
-	"github.com/NetCloth/netcloth-chain/server"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/genaccounts"
+	"github.com/netcloth/netcloth-chain/modules/genutil"
+	"github.com/netcloth/netcloth-chain/client/keys"
+	"github.com/netcloth/netcloth-chain/server"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (

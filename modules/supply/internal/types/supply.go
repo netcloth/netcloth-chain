@@ -5,8 +5,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Implements Delegation interface

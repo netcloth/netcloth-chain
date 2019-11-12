@@ -3,9 +3,9 @@ package common
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	"github.com/NetCloth/netcloth-chain/client/context"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/client/context"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // QueryParams actually queries distribution params.

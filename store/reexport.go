@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/NetCloth/netcloth-chain/store/types"
-	stypes "github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/types"
+	stypes "github.com/netcloth/netcloth-chain/store/types"
 )
 
 // Import cosmos-sdk/types/store.go for convenience.

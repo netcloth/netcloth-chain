@@ -8,8 +8,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 //-----------------------------------------------------------------------------

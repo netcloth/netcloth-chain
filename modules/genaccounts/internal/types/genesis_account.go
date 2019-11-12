@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	authexported "github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	"github.com/NetCloth/netcloth-chain/modules/supply"
-	supplyexported "github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/supply"
+	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GenesisAccount is a struct for account initialization used exclusively during genesis

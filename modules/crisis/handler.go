@@ -3,9 +3,9 @@ package crisis
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/crisis/internal/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/crisis/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/crisis/internal/keeper"
+	"github.com/netcloth/netcloth-chain/modules/crisis/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // RouterKey

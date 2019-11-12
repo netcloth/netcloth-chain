@@ -3,7 +3,7 @@ package keys
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/client/flags"
 )
 
 // Commands registers a sub-tree of commands to interact with

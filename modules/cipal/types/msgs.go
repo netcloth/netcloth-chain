@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (

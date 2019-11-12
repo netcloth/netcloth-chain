@@ -3,8 +3,8 @@ package types
 import (
 	"fmt"
 
-	nchtypes "github.com/NetCloth/netcloth-chain/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	nchtypes "github.com/netcloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GenesisState - crisis genesis state

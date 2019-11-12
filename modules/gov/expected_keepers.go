@@ -1,9 +1,9 @@
 package gov
 
 import (
-	sdk "github.com/NetCloth/netcloth-chain/types"
-	stakingexported "github.com/NetCloth/netcloth-chain/modules/staking/exported"
-	supplyexported "github.com/NetCloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	stakingexported "github.com/netcloth/netcloth-chain/modules/staking/exported"
+	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
 )
 
 // SupplyKeeper defines the supply Keeper for module accounts

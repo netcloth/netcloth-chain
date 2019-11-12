@@ -3,10 +3,10 @@ package keeper
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	"github.com/NetCloth/netcloth-chain/modules/staking/exported"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/modules/staking/exported"
 )
 
 // initialize rewards for a new validator

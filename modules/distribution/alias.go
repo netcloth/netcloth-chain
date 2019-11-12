@@ -5,9 +5,9 @@
 package distribution
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/distribution/client"
-	"github.com/NetCloth/netcloth-chain/modules/distribution/keeper"
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/client"
+	"github.com/netcloth/netcloth-chain/modules/distribution/keeper"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 )
 
 const (

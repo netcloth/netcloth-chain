@@ -1,8 +1,8 @@
 package rootmulti
 
 import (
-	"github.com/NetCloth/netcloth-chain/store/dbadapter"
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/dbadapter"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 var commithash = []byte("FAKE_HASH")

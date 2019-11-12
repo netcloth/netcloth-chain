@@ -4,7 +4,7 @@
 package genaccounts
 
 import (
-	"github.com/NetCloth/netcloth-chain/modules/genaccounts/internal/types"
+	"github.com/netcloth/netcloth-chain/modules/genaccounts/internal/types"
 )
 
 const (

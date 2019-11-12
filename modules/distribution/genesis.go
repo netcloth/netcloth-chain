@@ -3,8 +3,8 @@ package distribution
 import (
 	"fmt"
 
-	"github.com/NetCloth/netcloth-chain/modules/distribution/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis sets distribution information for genesis

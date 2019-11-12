@@ -8,8 +8,8 @@ import (
 
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/tests"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/tests"
 )
 
 func Test_runAddCmdBasic(t *testing.T) {

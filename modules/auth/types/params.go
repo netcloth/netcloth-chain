@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/NetCloth/netcloth-chain/modules/params/subspace"
+	"github.com/netcloth/netcloth-chain/modules/params/subspace"
 )
 
 // DefaultParamspace defines the default auth module parameter subspace

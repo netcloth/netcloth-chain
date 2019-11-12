@@ -8,9 +8,9 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	authtypes "github.com/NetCloth/netcloth-chain/modules/auth/types"
-	stakingtypes "github.com/NetCloth/netcloth-chain/modules/staking/types"
-	"github.com/NetCloth/netcloth-chain/codec"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
+	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // GenesisState defines the raw genesis transaction in JSON

@@ -1,17 +1,17 @@
 package keeper_test
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
-	"github.com/NetCloth/netcloth-chain/modules/auth"
-	"github.com/NetCloth/netcloth-chain/modules/bank"
-	"github.com/NetCloth/netcloth-chain/modules/gov"
-	"github.com/NetCloth/netcloth-chain/modules/mint"
-	"github.com/NetCloth/netcloth-chain/modules/params"
-	"github.com/NetCloth/netcloth-chain/modules/staking"
-	stakingtypes "github.com/NetCloth/netcloth-chain/modules/staking/types"
-	"github.com/NetCloth/netcloth-chain/modules/supply"
-	"github.com/NetCloth/netcloth-chain/store"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/bank"
+	"github.com/netcloth/netcloth-chain/modules/gov"
+	"github.com/netcloth/netcloth-chain/modules/mint"
+	"github.com/netcloth/netcloth-chain/modules/params"
+	"github.com/netcloth/netcloth-chain/modules/staking"
+	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
+	"github.com/netcloth/netcloth-chain/modules/supply"
+	"github.com/netcloth/netcloth-chain/store"
+	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	distr "github.com/NetCloth/netcloth-chain/modules/distribution"
+	distr "github.com/netcloth/netcloth-chain/modules/distribution"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

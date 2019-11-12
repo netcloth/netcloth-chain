@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/NetCloth/netcloth-chain/client/input"
+	"github.com/netcloth/netcloth-chain/client/input"
 )
 
 func exportKeyCommand() *cobra.Command {

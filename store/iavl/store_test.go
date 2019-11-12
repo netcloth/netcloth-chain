@@ -11,8 +11,8 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/store/errors"
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/errors"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 var (

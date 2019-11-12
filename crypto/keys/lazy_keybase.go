@@ -6,8 +6,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	cmn "github.com/tendermint/tendermint/libs/common"
 
-	"github.com/NetCloth/netcloth-chain/crypto/keys/hd"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var _ Keybase = lazyKeybase{}

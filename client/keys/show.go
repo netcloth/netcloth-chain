@@ -11,10 +11,10 @@ import (
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/NetCloth/netcloth-chain/client/flags"
-	"github.com/NetCloth/netcloth-chain/crypto"
-	"github.com/NetCloth/netcloth-chain/crypto/keys"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/crypto"
+	"github.com/netcloth/netcloth-chain/crypto/keys"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (

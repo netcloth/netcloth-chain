@@ -1,10 +1,10 @@
 package genaccounts
 
 import (
-	"github.com/NetCloth/netcloth-chain/codec"
-	authexported "github.com/NetCloth/netcloth-chain/modules/auth/exported"
-	"github.com/NetCloth/netcloth-chain/modules/genaccounts/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/codec"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/genaccounts/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis initializes accounts and deliver genesis transactions

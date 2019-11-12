@@ -7,9 +7,9 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	authtypes "github.com/NetCloth/netcloth-chain/modules/auth/types"
-	"github.com/NetCloth/netcloth-chain/modules/supply/exported"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
+	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var _ exported.ModuleAccountI = (*ModuleAccount)(nil)

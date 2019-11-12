@@ -15,7 +15,7 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
 
-	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // Wait for the next tendermint block from the Tendermint RPC

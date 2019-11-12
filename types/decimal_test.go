@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/NetCloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // create a decimal from a decimal string (ex. "1234.5678")

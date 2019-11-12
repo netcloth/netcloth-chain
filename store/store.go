@@ -3,8 +3,8 @@ package store
 import (
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/NetCloth/netcloth-chain/store/rootmulti"
-	"github.com/NetCloth/netcloth-chain/store/types"
+	"github.com/netcloth/netcloth-chain/store/rootmulti"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 func NewCommitMultiStore(db dbm.DB) types.CommitMultiStore {

@@ -1,9 +1,9 @@
 package supply
 
 import (
-	autypes "github.com/NetCloth/netcloth-chain/modules/auth"
-	"github.com/NetCloth/netcloth-chain/modules/supply/internal/types"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	autypes "github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis sets supply information for genesis.

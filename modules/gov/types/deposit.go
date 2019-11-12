@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Deposit

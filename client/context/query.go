@@ -14,8 +14,8 @@ import (
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/NetCloth/netcloth-chain/store/rootmulti"
-	sdk "github.com/NetCloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/store/rootmulti"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GetNode returns an RPC client. If the context's client is not defined, an
