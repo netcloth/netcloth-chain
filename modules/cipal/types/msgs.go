@@ -3,10 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
-
-	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/NetCloth/netcloth-chain/modules/auth"
 	sdk "github.com/NetCloth/netcloth-chain/types"
@@ -114,16 +111,6 @@ func (msg MsgCIPALClaim) ValidateBasic() sdk.Error {
 		return err
 	}
 
-	fmt.Fprintf(os.Stderr, "++++++++++++++++++++++++++++++++++\n")
-	d, _ := msg.UserRequest.Sig.MarshalYAML()
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("params = %s\n", msg.UserRequest.Params.GetSignBytes()))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("params hex = %x\n", msg.UserRequest.Params.GetSignBytes()))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("params hex sha256 = %x\n", crypto.Sha256(msg.UserRequest.Params.GetSignBytes())))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig = %s\n", d))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig.pubkey = %v\n", msg.UserRequest.Sig.PubKey))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("user addr = %x\n", msg.UserRequest.Sig.PubKey.Address()))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("user sig hex = %x\n", msg.UserRequest.Sig.Signature))
-	fmt.Fprintf(os.Stderr, "----------------------------------\n")
 	pubKey := msg.UserRequest.Sig.PubKey
 	signBytes := msg.UserRequest.Params.GetSignBytes()
 	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
