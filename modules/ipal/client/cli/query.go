@@ -88,11 +88,11 @@ $ %s query ipal list`, version.ClientName)),
 func GetCmdQueryServiceNode(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "node",
-		Short: "Querying commands for ServiceNode",
-		Long: strings.TrimSpace(fmt.Sprintf(`Query ServiceNode by accAddr.
+		Short: "Querying commands for ipal ServiceNode",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query ipal  ServiceNode by accAddr.
 Example:
-$ %s query ipal node`, version.ClientName)),
-
+$ %s query ipal node [address]`, version.ClientName)),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
