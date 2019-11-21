@@ -18,6 +18,8 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryServiceNodeList(ctx, k)
 		case types.QueryServiceNode:
 			return queryServiceNode(ctx, req, k)
+		case types.QueryServiceNodes:
+			return queryServiceNodes(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
 		}
@@ -53,7 +55,6 @@ func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 
 	serviceNode, found := k.GetServiceNode(ctx, queryParams.AccAddr)
 	if found {
-		ctx.Logger().Error("found")
 		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNode)
 		if err != nil {
 			return []byte{}, sdk.ErrInternal(err.Error())
@@ -62,4 +63,27 @@ func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 	}
 
 	return nil, sdk.ErrInternal("not found")
+}
+
+func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryServiceNodesParams
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+	}
+
+	servcieNodes := types.ServiceNodes{}
+	for _, accAddr := range params.AccAddrs {
+		serviceNode, found := k.GetServiceNode(ctx, accAddr)
+		if found {
+			servcieNodes = append(servcieNodes, serviceNode)
+		}
+	}
+
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, servcieNodes)
+	if err != nil {
+		return []byte{}, sdk.ErrInternal(err.Error())
+	}
+	return bz, nil
 }

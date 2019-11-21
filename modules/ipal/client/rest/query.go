@@ -23,6 +23,11 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 		"/ipal/node/{accAddr}",
 		nodeHandlerFn(cliCtx),
 	).Methods("GET")
+
+	r.HandleFunc(
+		"/ipal/nodes",
+		nodesHandlerFn(cliCtx),
+	).Methods("GET")
 }
 
 func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -87,6 +92,36 @@ func queryNode(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	}
 }
 
+func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var params types.QueryServiceNodesParams
+
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
+			return
+		}
+
+		bz, err := cliCtx.Codec.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(endpoint, bz)
+		if err != nil && !strings.Contains(err.Error(), "not found") {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
 func nodeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return queryNode(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryServiceNode))
+}
+
+func nodesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return queryNodes(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryServiceNodes))
 }

@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -121,6 +122,7 @@ func (br BaseReq) ValidateBasic(w http.ResponseWriter) bool {
 // Writes an error response to ResponseWriter and returns true if errors occurred.
 func ReadRESTReq(w http.ResponseWriter, r *http.Request, cdc *codec.Codec, req interface{}) bool {
 	body, err := ioutil.ReadAll(r.Body)
+	fmt.Fprint(os.Stderr, fmt.Sprintf("body = %s\n", string(body)))
 	if err != nil {
 		WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 		return false
