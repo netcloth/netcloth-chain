@@ -517,5 +517,5 @@ var stringToOp = map[string]OpCode{
 
 // StringToOp finds the opcode whose name is stored in `str`.
 func StringToOp(str string) OpCode {
-	return StringToOp[str]
+	return stringToOp[str]
 }
