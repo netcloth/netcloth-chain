@@ -1,8 +1,6 @@
 package types
 
 import (
-	"encoding/json"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

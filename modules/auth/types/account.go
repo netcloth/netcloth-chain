@@ -27,6 +27,9 @@ type BaseAccount struct {
 	PubKey        crypto.PubKey  `json:"public_key" yaml:"public_key"`
 	AccountNumber uint64         `json:"account_number" yaml:"account_number"`
 	Sequence      uint64         `json:"sequence" yaml:"sequence"`
+
+	// contract code hash
+	CodeHash []byte
 }
 
 // NewBaseAccount creates a new BaseAccount object
