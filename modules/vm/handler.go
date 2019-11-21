@@ -2,12 +2,6 @@ package vm
 
 import (
 	"fmt"
-	"time"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/common"
-	tmtypes "github.com/tendermint/tendermint/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -22,7 +16,7 @@ func NewHandler(k Keeper) sdk.Handler {
 		case MsgContractCall:
 			return handleMsgContractCall(ctx, msg, k)
 		default:
-			errMsg := fmt.Sprintf("unrecognized staking message type: %T", msg)
+			errMsg := fmt.Sprintf("Unrecognized Msg type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}
