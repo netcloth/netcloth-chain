@@ -1,7 +1,6 @@
 package vm
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"math/big"
 )
@@ -21,12 +20,15 @@ func (ar AccountRef) Address() sdk.AccAddress {
 
 // Contract implements ContractRef
 type Contract struct {
+	// CallerAddress is the result of the caller which initialised this
+	// contract. However when the "call method" is delegated this value
+	// needs to be initialised to that of the caller's caller.
 	CallerAddress sdk.AccAddress
 	caller        ContractRef
 	self          ContractRef
 
-	//jumpdests map[common.Hash]bitvec // Aggregated result of JUMPDEST analysis.
-	//analysis  bitvec                 // Locally cached result of JUMPDEST analysis
+	jumpdests map[sdk.Hash]bitvec // Aggregated result of JUMPDEST analysis.
+	analysis  bitvec              // Locally cached result of JUMPDEST analysis
 
 	Code     []byte
 	CodeHash sdk.Hash
@@ -37,17 +39,64 @@ type Contract struct {
 	value *big.Int
 }
 
-func NetContract(caller ContractRef, object ContractRef, value *big.Int, gas uint64) *ContractRef {
+func NetContract(caller ContractRef, object ContractRef, value *big.Int, gas uint64) *Contract {
 	c := &Contract{CallerAddress: caller.Address(), caller: caller, self: object}
 
-	// TODO
+	if parent, ok := caller.(*Contract); ok {
+		c.jumpdests = parent.jumpdests
+	} else {
+		c.jumpdests = make(map[sdk.Hash]bitvec)
+	}
 
 	c.Gas = gas
 	c.value = value
+
+	return c
 }
 
 func (c *Contract) validJumpdest(dest *big.Int) bool {
-	return false
+	udest := dest.Uint64()
+	// PC cannot go beyond len(code) and certainly can't be bigger than 63bits.
+	// Don't bother checking for JUMPDEST in that case.
+	if dest.BitLen() >= 63 || udest >= uint64(len(c.Code)) {
+		return false
+	}
+	// Only JUMPDESTs allowed for destinations
+	if OpCode(c.Code[udest]) != JUMPDEST {
+		return false
+	}
+	// Do we have a contract hash already ?
+	if c.CodeHash != (sdk.Hash{}) {
+		analysis, exist := c.jumpdests[c.CodeHash]
+		if !exist {
+			analysis = codeBitmap(c.Code)
+			c.jumpdests[c.CodeHash] = analysis
+		}
+		return analysis.codeSegment(udest)
+	}
+
+	// We don't have the code hash, most likely a piece of initcode not already
+	// in state trie. In that case, we do an analysis, and save it locally, so
+	// we don't have to recalculate it for every JUMP instruction in the execution
+	// However, we don't save it within the parent context
+	if c.analysis == nil {
+		c.analysis = codeBitmap(c.Code)
+	}
+	return c.analysis.codeSegment(udest)
+}
+
+func (c *Contract) AsDelegate() *Contract {
+	// NOTE: caller must, at all times be a contract.
+	parent := c.caller.(*Contract)
+	c.CallerAddress = parent.CallerAddress
+	c.value = parent.value
+
+	return c
+}
+
+// GetOp returns the n'th element in the contract's byte array
+func (c *Contract) GetOp(n uint64) OpCode {
+	return OpCode(c.GetByte(n))
 }
 
 // GetByte returns the n'th byte in the contract's byte array
