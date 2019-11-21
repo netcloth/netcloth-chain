@@ -32,7 +32,7 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 		return ErrCIPALClaimUserRequestSigVerify("user signature verify failed").Result()
 	}
 
-	obj, found := k.GetIPALObject(ctx, msg.UserRequest.Params.UserAddress)
+	obj, found := k.GetCIPALObject(ctx, msg.UserRequest.Params.UserAddress)
 	if found {
 		updateIndex := -1
 		var si types.ServiceInfo
@@ -52,10 +52,10 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 			obj.ServiceInfos = append(obj.ServiceInfos, msg.UserRequest.Params.ServiceInfo)
 		}
 
-		k.SetIPALObject(ctx, obj)
+		k.SetCIPALObject(ctx, obj)
 	} else {
 		obj = NewIPALObject(msg.UserRequest.Params.UserAddress, msg.UserRequest.Params.ServiceInfo.Address, msg.UserRequest.Params.ServiceInfo.Type)
-		k.SetIPALObject(ctx, obj)
+		k.SetCIPALObject(ctx, obj)
 	}
 
 	ctx.EventManager().EmitEvent(

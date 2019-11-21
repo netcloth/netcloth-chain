@@ -13,6 +13,8 @@ type CIPALObject struct {
 	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos`
 }
 
+type CIPALObjects []CIPALObject
+
 func NewCIPALObject(userAddress string, serviceAddress string, serviceType uint64) CIPALObject {
 	si := ServiceInfo{serviceType, serviceAddress}
 	sis := make([]ServiceInfo, 0)

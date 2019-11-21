@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -27,7 +28,7 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
 		"/ipal/nodes",
 		nodesHandlerFn(cliCtx),
-	).Methods("GET")
+	).Methods("POST") //TODO should be GET, but go-sdk use lib[github.com/parnurzeal/gorequest] which can not use GET method to send body
 }
 
 func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -98,6 +99,7 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		var params types.QueryServiceNodesParams
 
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
+			fmt.Fprint(os.Stderr, fmt.Sprintf("params = %v\n", params))
 			return
 		}
 

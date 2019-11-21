@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -13,15 +14,17 @@ import (
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case types.QueryIPAL:
-			return queryIPAL(ctx, req, k)
+		case types.QueryCIPAL:
+			return queryCIPAL(ctx, req, k)
+		case types.QueryCIPALs:
+			return queryCIPALs(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown cipal query endpoint")
 		}
 	}
 }
 
-func queryIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryCIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var queryParams types.QueryCIPALParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
@@ -29,15 +32,41 @@ func queryIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
 	}
 
-	ipal, found := k.GetIPALObject(ctx, queryParams.AccAddr)
+	cipal, found := k.GetCIPALObject(ctx, queryParams.AccAddr)
 	if found {
-		ctx.Logger().Error("found")
-		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, ipal)
+		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, cipal)
 		if err != nil {
 			return []byte{}, sdk.ErrInternal(err.Error())
 		}
 		return bz, nil
 	}
+
+	return nil, sdk.ErrInternal("not found")
+}
+
+func queryCIPALs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryCIPALsParams
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+	}
+
+	cipals := types.CIPALObjects{}
+	for _, addr := range params.AccAddrs {
+		cipal, found := k.GetCIPALObject(ctx, addr)
+		if found {
+			cipals = append(cipals, cipal)
+		}
+	}
+
+	fmt.Fprint(os.Stderr, fmt.Sprintf("%v\n", cipals))
+
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, cipals)
+	if err != nil {
+		return []byte{}, sdk.ErrInternal(err.Error())
+	}
+	return bz, nil
 
 	return nil, sdk.ErrInternal("not found")
 }

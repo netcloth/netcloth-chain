@@ -35,7 +35,7 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
 
-func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress string) (obj types.CIPALObject, found bool) {
+func (k Keeper) GetCIPALObject(ctx sdk.Context, userAddress string) (obj types.CIPALObject, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.GetCIPALObjectKey(userAddress))
 	ctx.Logger().Info(string(types.GetCIPALObjectKey(userAddress)))
@@ -47,7 +47,7 @@ func (k Keeper) GetIPALObject(ctx sdk.Context, userAddress string) (obj types.CI
 	return obj, true
 }
 
-func (k Keeper) SetIPALObject(ctx sdk.Context, obj types.CIPALObject) {
+func (k Keeper) SetCIPALObject(ctx sdk.Context, obj types.CIPALObject) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalCIPALObject(k.cdc, obj)
 	store.Set(types.GetCIPALObjectKey(obj.UserAddress), bz)
