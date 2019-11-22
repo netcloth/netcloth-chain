@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -49,7 +48,7 @@ func queryCIPALs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddrs: %s", err))
 	}
 
 	cipals := types.CIPALObjects{}
@@ -60,13 +59,9 @@ func queryCIPALs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.
 		}
 	}
 
-	fmt.Fprint(os.Stderr, fmt.Sprintf("%v\n", cipals))
-
 	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, cipals)
 	if err != nil {
 		return []byte{}, sdk.ErrInternal(err.Error())
 	}
 	return bz, nil
-
-	return nil, sdk.ErrInternal("not found")
 }

@@ -3,7 +3,6 @@ package rest
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -27,16 +26,7 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 
 func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		addr := vars["accAddress"]
-
-		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
-		if !ok {
-			return
-		}
-
-		params := types.NewQueryCIPALParams(addr)
-
+		params := types.NewQueryCIPALParams(mux.Vars(r)["accAddress"])
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -57,9 +47,7 @@ func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 func queryCIPALs(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var params types.QueryCIPALsParams
-
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
-			fmt.Fprint(os.Stderr, fmt.Sprintf("params = %v\n", params))
 			return
 		}
 
@@ -70,7 +58,7 @@ func queryCIPALs(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		}
 
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
-		if err != nil && !strings.Contains(err.Error(), "not found") {
+		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
