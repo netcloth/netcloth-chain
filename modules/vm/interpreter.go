@@ -1,5 +1,10 @@
 package vm
 
+import (
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"hash"
+)
+
 type Config struct {
 	Debug bool // Enables debugging
 	//Tracer                  Tracer // Opcode logger
@@ -12,10 +17,18 @@ type Config struct {
 	EVMInterpreter   string // External EVM interpreter options
 }
 
+type hashState interface {
+	hash.Hash
+	Read([]byte) (int, error)
+}
+
 // EVMInterpreter represents an EVM interpreter
 type EVMInterpreter struct {
+	evm     *EVM
 	intPool *intPool
 
-	readOnly bool // whether to throw on stateful modifications
-	return Data []byte // last CALL's return data for subsequent reuse
+	hasher     hashState
+	hasherBuf  sdk.Hash
+	readOnly   bool   // whether to throw on stateful modifications
+	returnData []byte // last CALL's return data for subsequent reuse
 }
