@@ -11,3 +11,11 @@ type Config struct {
 	EWASMInterpreter string // External EWASM interpreter options
 	EVMInterpreter   string // External EVM interpreter options
 }
+
+// EVMInterpreter represents an EVM interpreter
+type EVMInterpreter struct {
+	intPool *intPool
+
+	readOnly bool // whether to throw on stateful modifications
+	return Data []byte // last CALL's return data for subsequent reuse
+}

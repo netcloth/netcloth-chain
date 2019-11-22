@@ -2,12 +2,26 @@ package math
 
 import "math/big"
 
+// Various big integer limit values.
+var (
+	tt255 = BigPow(2, 255)
+	tt256 = BigPow(2, 256)
+
+	tt256m1 = new(big.Int).Sub(tt256, big.NewInt(1))
+)
+
 const (
 	// number of bits in a big.Word
 	wordBits = 32 << (uint64(^big.Word(0)) >> 63)
 	// number of bytes in a big.Word
 	wordBytes = wordBits / 8
 )
+
+// BigPow returns a ** b as a big integer.
+func BigPow(a, b int64) *big.Int {
+	r := big.NewInt(a)
+	return r.Exp(r, big.NewInt(b), nil)
+}
 
 // ReadBits encodes the absolute value of bigint as big-endian bytes. Callers must ensure
 // that buf has enough space. If buf is too short the result will be incomplete.
@@ -20,4 +34,38 @@ func ReadBits(bigint *big.Int, buf []byte) {
 			d >>= 8
 		}
 	}
+}
+
+// U256 encodes as a 256 bit two's complement number. This operation is destructive
+func U256(x *big.Int) *big.Int {
+	return x.And(x, tt256m1)
+}
+
+// S256 interprets x as a tow's  complement number
+// x must not exceed 256 bits (the result is undefined if it does) and is not modified.
+//
+//   S256(0)        = 0
+//   S256(1)        = 1
+//   S256(2**255)   = -2**255
+//   S256(2**256-1) = -1
+func S256(x *big.Int) *big.Int {
+	if x.Cmp(tt255) < 0 {
+		return x
+	}
+	return new(big.Int).Sub(x, tt256)
+}
+
+func Exp(base, exponent *big.Int) *big.Int {
+	result := big.NewInt(1)
+
+	for _, word := range exponent.Bits() {
+		for i := 0; i < wordBits; i++ {
+			if word&1 == 1 {
+				U256(result.Mul(result, base))
+			}
+			U256(base.Mul(base, base))
+			word >>= 1
+		}
+	}
+	return result
 }
