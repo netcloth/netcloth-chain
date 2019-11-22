@@ -14,8 +14,8 @@ type CommitStateDB struct {
 	storageKey sdk.StoreKey
 	codeKey    sdk.StoreKey
 
-	stateObjects      map[sdk.AccAddress]*stateObject
-	stateObjectsDirty map[sdk.AccAddress]struct{}
+	//stateObjects      map[sdk.AccAddress]*stateObject
+	//stateObjectsDirty map[sdk.AccAddress]struct{}
 
 	refund uint64
 
