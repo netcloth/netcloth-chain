@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/crypto/sha3"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/math"
+	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 )
 
 var (
@@ -513,7 +513,7 @@ func opCoinbase(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	// TODO
 }
 
-func opTimeStam(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+func opTimestamp(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	stack.push(math.U256(interpreter.intPool.get().Set(interpreter.evm.Time)))
 	return nil, nil
 }
@@ -523,7 +523,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	return nil, nil
 }
 
-func opGaslimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+func opGasLimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit())))
 	return nil, nil
 }
@@ -725,4 +725,17 @@ func makeSwap(size int64) executionFunc {
 		stack.swap(int(size))
 		return nil, nil
 	}
+}
+
+func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	balance := interpreter.intPool.get().Set(interpreter.evm.StateDB.GetBalance(contract.Address()))
+	stack.push(balance)
+	return nil, nil
+}
+
+// opChainID implements CHAINID opcode
+func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	//chainId := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
+	//stack.push(chainId)
+	return nil, nil
 }

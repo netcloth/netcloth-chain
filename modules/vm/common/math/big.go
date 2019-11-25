@@ -70,12 +70,6 @@ func Exp(base, exponent *big.Int) *big.Int {
 	return result
 }
 
-// BigPow returns a ** b as a big integer.
-func BigPow(a, b int64) *big.Int {
-	r := big.NewInt(a)
-	return r.Exp(r, big.NewInt(b), nil)
-}
-
 // BigMax returns the larger of x or y.
 func BigMax(x, y *big.Int) *big.Int {
 	if x.Cmp(y) < 0 {

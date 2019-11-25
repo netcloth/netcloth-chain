@@ -61,8 +61,19 @@ type EVM struct {
 	// depth is the current call stack
 	depth int
 
+	chainConfig *ChainConfig
+
 	// virtual machine configuration options used to initialise the vm
 	vmConfig Config
+
+	// abort is used to abort the EVM calling operations
+	// NOTE: must be set atomically
+	abort int32
+
+	// callGasTemp holds the gas available for the current call. This is needed because the
+	// available gas is calculated in gasCall* according to the 63/64 rule and later
+	// applied in opCall*.
+	callGasTemp uint64
 }
 
 // Create creates a new contract using code as deployment code

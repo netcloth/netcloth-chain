@@ -83,6 +83,8 @@ const (
 	NUMBER
 	DIFFICULTY
 	GASLIMIT
+	CHAINID     = 0x46
+	SELFBALANCE = 0x47
 )
 
 // 0x50 range - 'storage' and execution.

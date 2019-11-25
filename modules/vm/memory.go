@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/math"
+	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 )
 
 type Memory struct {
