@@ -5,7 +5,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/modules/ipal/types"
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {

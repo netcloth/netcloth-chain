@@ -12,8 +12,16 @@ var (
 // MsgContractCreate - struct for contract create
 type MsgContractCreate struct {
 	From   sdk.AccAddress `json:"from" yaml:"from"`
-	Amount sdk.Coins      `json:"amount" yaml:"amount"`
+	Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	Code   []byte         `json:"code" yaml:"code"`
+}
+
+func NewMsgContractCreate(From sdk.AccAddress, Amount sdk.Coin, Code []byte) MsgContractCreate {
+	return MsgContractCreate{
+		From:   From,
+		Amount: Amount,
+		Code:   Code,
+	}
 }
 
 // MsgContractCall - struct for contract call
