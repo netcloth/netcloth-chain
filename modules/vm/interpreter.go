@@ -1,8 +1,9 @@
 package vm
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"hash"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type Config struct {

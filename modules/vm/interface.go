@@ -1,8 +1,9 @@
 package vm
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"math/big"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type StateDB interface {

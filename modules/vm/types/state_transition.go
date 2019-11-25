@@ -1,7 +1,10 @@
 package types
 
-import "math/big"
-import sdk "github.com/netcloth/netcloth-chain/types"
+import (
+	"math/big"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
+)
 
 // StateTransition defines data to transitionDB in vm
 type StateTransition struct {
