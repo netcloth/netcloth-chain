@@ -47,11 +47,11 @@ const poolDefaultCap = 25
 
 type intPoolPool struct {
 	pools []*intPool
-	lock sync.Mutex
+	lock  sync.Mutex
 }
 
 var poolOfIntPools = &intPoolPool{
-	pools: make([]*intPool, 0, poolDefaultCap)
+	pools: make([]*intPool, 0, poolDefaultCap),
 }
 
 func (ipp *intPoolPool) get() *intPool {
@@ -61,7 +61,7 @@ func (ipp *intPoolPool) get() *intPool {
 	if len(poolOfIntPools.pools) > 0 {
 		ip := ipp.pools[len(ipp.pools)-1]
 		ipp.pools = ipp.pools[:len(ipp.pools)-1]
-		return ipp
+		return ip
 	}
 	return newIntPool()
 }

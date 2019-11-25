@@ -1,8 +1,9 @@
 package vm
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"math/big"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Storage represents a contrat's storage
@@ -86,7 +87,7 @@ type StructLogger struct {
 // NewStructLogger returns a new logger
 func NewStructLogger(cfg *LogConfig) *StructLogger {
 	logger := &StructLogger{
-		changedValues: make(map[sdk.Address]Storage)
+		changedValues: make(map[sdk.Address]Storage),
 	}
 
 	if cfg != nil {

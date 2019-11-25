@@ -1,5 +1,5 @@
 package vm
 
-const verifyPool = false
+//const verifyPool = false
 
-func verifyIntegerPool(ip *intPool) {}
+//func verifyIntegerPool(ip *intPool) {}

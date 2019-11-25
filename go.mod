@@ -31,5 +31,7 @@ require (
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.5
 	github.com/tendermint/tm-db v0.2.0
+	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
+	google.golang.org/grpc v1.23.1
 	gopkg.in/yaml.v2 v2.2.2
 )

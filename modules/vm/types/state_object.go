@@ -68,7 +68,7 @@ func newObject(accProto authexported.Account) *stateObject {
 	}
 
 	if acc.CodeHash == nil {
-		acc.CodeHash = emptyCodeHash
+		acc.CodeHash = emptyCodeHash.Bytes()
 	}
 
 	return &stateObject{
@@ -85,12 +85,14 @@ func newObject(accProto authexported.Account) *stateObject {
 
 // SetCode
 func (so *stateObject) SetCode(codeHash sdk.Hash, code []byte) {
-	prevCode := so.Code(nil)
+	//prevCode := so.Code(nil)
 }
 
 // CodeHash returns the state object's code hash
 func (so *stateObject) CodeHash() sdk.Hash {
-	return so.account.CodeHash
+	hash := sdk.Hash{}
+	hash.SetBytes(so.account.CodeHash)
+	return hash
 }
 
 // setError remembers the first non-nil error it is called with.
@@ -106,16 +108,16 @@ func (so *stateObject) Code() []byte {
 		return so.code
 	}
 
-	if bytes.Equal(so.CodeHash(), emptyCodeHash) {
+	if bytes.Equal(so.CodeHash().Bytes(), emptyCodeHash.Bytes()) {
 		return nil
 	}
 
 	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
-	code := store.Get(so.CodeHash())
+	code := store.Get(so.CodeHash().Bytes())
 
 	if len(code) == 0 {
-		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.Address()))
+		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
 	}
 
 	so.code = code
