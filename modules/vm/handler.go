@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

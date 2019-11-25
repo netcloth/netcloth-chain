@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
+
 	"golang.org/x/crypto/sha3"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/math"
@@ -657,4 +659,70 @@ func opRevert(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 
 func opStop(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	return nil, nil
+}
+
+func opSuicide(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	// TODO
+}
+
+// make log instruction function
+func makeLog(size int) executionFunc {
+	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	}
+}
+
+// opPush1 is a specialized version of pushN
+func opPush1(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	var (
+		codeLen = uint64(len(contract.Code))
+		integer = interpreter.intPool.get()
+	)
+
+	*pc += 1
+	if *pc < codeLen {
+		stack.push(integer.SetUint64(uint64(contract.Code[*pc])))
+	} else {
+		stack.push(integer.SetUint64(0))
+	}
+	return nil, nil
+}
+
+// make push instruction function
+func makePush(size uint64, pushByteSize int) executionFunc {
+	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+		codeLen := len(contract.Code)
+
+		startMin := codeLen
+		if int(*pc+1) < startMin {
+			startMin = int(*pc + 1)
+		}
+
+		endMin := codeLen
+		if startMin+pushByteSize < endMin {
+			endMin = startMin + pushByteSize
+		}
+
+		integer := interpreter.intPool.get()
+		stack.push(integer.SetBytes(common.RightPadBytes(contract.Code[startMin:endMin], pushByteSize)))
+
+		*pc += size
+		return nil, nil
+	}
+}
+
+// make dup instruction function
+func makeDup(size int64) executionFunc {
+	return func(pc *uint64, interpreter *EVMInterpreter, contracdt *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+		stack.dup(interpreter.intPool, int(size))
+		return nil, nil
+	}
+}
+
+// make swap instruction function
+func makeSwap(size int64) executionFunc {
+	size++
+	return func(pc *uint64, interpreter *EVMInterpreter, contracdt *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+		stack.swap(int(size))
+		return nil, nil
+	}
 }

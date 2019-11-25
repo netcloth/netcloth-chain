@@ -2,9 +2,10 @@ package types
 
 import (
 	"crypto"
+	"sync"
+
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"sync"
 )
 
 type CommitStateDB struct {
