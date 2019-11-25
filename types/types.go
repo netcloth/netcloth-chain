@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
 )
 
 const (
@@ -15,6 +16,9 @@ type Hash [HashLength]byte
 
 // Bytes gets the byte representation of the underlying hash
 func (h Hash) Bytes() []byte { return h[:] }
+
+// Big converts a hash to a big integer.
+func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
 
 // Hex converts a hash to a hex string.
 func (h Hash) Hex() string {

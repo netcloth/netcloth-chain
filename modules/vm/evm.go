@@ -63,3 +63,8 @@ type EVM struct {
 	// virtual machine configuration options used to initialise the vm
 	vmConfig Config
 }
+
+// Create creates a new contract using code as deployment code
+func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.Address, leftOverGas uint64, err error) {
+	// TODO
+}
