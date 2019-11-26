@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	//_ StateObject = *((*stateObject)(nil))
+	//_ StateObject = (*stateObject(nil))
 
 	emptyCodeHash = common.Hash{}
 )
@@ -35,7 +35,7 @@ type (
 		SetBalance(amount *big.Int)
 
 		Balance() *big.Int
-		ReturnGas(gas *big.Int)
+		//ReturnGas(gas *big.Int)
 		Address() sdk.AccAddress
 	}
 
