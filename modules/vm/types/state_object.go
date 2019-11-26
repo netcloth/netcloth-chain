@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	_ StateObject = (*stateObject()(nil))
+	_ StateObject = (*stateObject(nil))
 
 	emptyCodeHash = common.Hash{}
 )
@@ -35,7 +35,7 @@ type (
 		SetBalance(amount *big.Int)
 
 		Balance() *big.Int
-		ReturnGas(gas *big.Int)
+		//ReturnGas(gas *big.Int)
 		Address() sdk.AccAddress
 	}
 
@@ -73,7 +73,7 @@ func newObject(accProto authexported.Account) *stateObject {
 	}
 
 	if acc.CodeHash == nil {
-		acc.CodeHash = emptyCodeHash
+		acc.CodeHash = emptyCodeHash.Bytes()
 	}
 
 	return &stateObject{
@@ -207,16 +207,16 @@ func (so *stateObject) Code() []byte {
 		return so.code
 	}
 
-	if bytes.Equal(so.CodeHash(), emptyCodeHash) {
+	if bytes.Equal(so.CodeHash().Bytes(), emptyCodeHash.Bytes()) {
 		return nil
 	}
 
 	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
-	code := store.Get(so.CodeHash())
+	code := store.Get(so.CodeHash().Bytes())
 
 	if len(code) == 0 {
-		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.Address()))
+		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
 	}
 
 	so.code = code

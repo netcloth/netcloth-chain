@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -12,9 +13,10 @@ import (
 
 // keeper of the staking store
 type Keeper struct {
-	storeKey  sdk.StoreKey
-	storeTKey sdk.StoreKey
-	cdc       *codec.Codec
+	storeKey   sdk.StoreKey
+	storeTKey  sdk.StoreKey
+	cdc        *codec.Codec
+	paramstore params.Subspace
 
 	// codespace
 	codespace sdk.CodespaceType
@@ -22,13 +24,14 @@ type Keeper struct {
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
-	codespace sdk.CodespaceType) Keeper {
+	codespace sdk.CodespaceType, paramstore params.Subspace) Keeper {
 
 	return Keeper{
-		storeKey:  key,
-		storeTKey: tkey,
-		cdc:       cdc,
-		codespace: codespace,
+		storeKey:   key,
+		storeTKey:  tkey,
+		cdc:        cdc,
+		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
+		codespace:  codespace,
 	}
 }
 
