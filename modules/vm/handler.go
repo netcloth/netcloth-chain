@@ -2,6 +2,9 @@ package vm
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/netcloth/netcloth-chain/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -14,8 +17,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		case MsgContractCreate:
-			return handleMMsgContractCreate(ctx, msg, k)
-
+			return handleMsgContractCreate(ctx, msg, k)
 		case MsgContractCall:
 			return handleMsgContractCall(ctx, msg, k)
 		default:
@@ -25,8 +27,29 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func handleMMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
-	ctx.Logger().Info("handleMMsgContractCreate ...")
+func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
+	ctx.Logger().Info("handleMsgContractCreate ...")
+
+	acc := k.GetAccount(ctx, msg.From)
+	if acc == nil {
+		return sdk.ErrInvalidAddress("account not found").Result()
+	}
+
+	//generate contract address
+	contractAddr := crypto.CreateAddress(msg.From, acc.GetSequence())
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v, acc.GetSequence() = %v\n", contractAddr.String(), acc.GetSequence()))
+
+	//check account's balance >= amount
+
+	//check recur deep < 1024
+
+	//from account seq += 1
+
+	//crate contract account
+
+	//transfer
+
+	//create contract object
 
 	st := StateTransition{}
 	_, res := st.TransitionCSDB(ctx)
