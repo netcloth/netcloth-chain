@@ -30,7 +30,7 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
 		storeKey:   key,
 		storeTKey:  tkey,
 		cdc:        cdc,
-		paramstore: paramstore,
+		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:  codespace,
 	}
 }
