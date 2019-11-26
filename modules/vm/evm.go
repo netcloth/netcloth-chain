@@ -5,6 +5,7 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -15,16 +16,16 @@ type (
 	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int)
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
-	GetHashFunc func(uint64) sdk.Hash
+	GetHashFunc func(uint64) common.Hash
 )
 
 type codeAndHash struct {
 	code []byte
-	hash sdk.Hash
+	hash common.Hash
 }
 
-func (c *codeAndHash) Hash() sdk.Hash {
-	if c.hash == (sdk.Hash{}) {
+func (c *codeAndHash) Hash() common.Hash {
+	if c.hash == (common.Hash{}) {
 		copy(c.hash[:], crypto.Sha256(c.code))
 	}
 	return c.hash

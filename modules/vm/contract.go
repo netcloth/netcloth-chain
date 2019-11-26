@@ -3,6 +3,7 @@ package vm
 import (
 	"math/big"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -28,11 +29,11 @@ type Contract struct {
 	caller        ContractRef
 	self          ContractRef
 
-	jumpdests map[sdk.Hash]bitvec // Aggregated result of JUMPDEST analysis.
-	analysis  bitvec              // Locally cached result of JUMPDEST analysis
+	jumpdests map[common.Hash]bitvec // Aggregated result of JUMPDEST analysis.
+	analysis  bitvec                 // Locally cached result of JUMPDEST analysis
 
 	Code     []byte
-	CodeHash sdk.Hash
+	CodeHash common.Hash
 	CodeAddr *sdk.AccAddress
 	Input    []byte
 
@@ -46,7 +47,7 @@ func NetContract(caller ContractRef, object ContractRef, value *big.Int, gas uin
 	if parent, ok := caller.(*Contract); ok {
 		c.jumpdests = parent.jumpdests
 	} else {
-		c.jumpdests = make(map[sdk.Hash]bitvec)
+		c.jumpdests = make(map[common.Hash]bitvec)
 	}
 
 	c.Gas = gas
@@ -67,7 +68,7 @@ func (c *Contract) validJumpdest(dest *big.Int) bool {
 		return false
 	}
 	// Do we have a contract hash already ?
-	if c.CodeHash != (sdk.Hash{}) {
+	if c.CodeHash != (common.Hash{}) {
 		analysis, exist := c.jumpdests[c.CodeHash]
 		if !exist {
 			analysis = codeBitmap(c.Code)
@@ -137,7 +138,7 @@ func (c *Contract) Value() *big.Int {
 
 // SetCallCode sets the code of the contract and address of the backing data
 // object
-func (c *Contract) SetCallCode(addr *sdk.AccAddress, hash sdk.Hash, code []byte) {
+func (c *Contract) SetCallCode(addr *sdk.AccAddress, hash common.Hash, code []byte) {
 	c.Code = code
 	c.CodeHash = hash
 	c.CodeAddr = addr

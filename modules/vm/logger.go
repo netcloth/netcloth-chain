@@ -1,12 +1,15 @@
 package vm
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"math/big"
+
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
+	sdk "github.com/netcloth/netcloth-chain/types"
+
 )
 
 // Storage represents a contrat's storage
-type Storage map[sdk.Hash]sdk.Hash
+type Storage map[common.Hash]common.Hash
 
 // Copy duplicates the current storage
 func (s Storage) Copy() Storage {
@@ -37,7 +40,7 @@ type StructLog struct {
 	Memory        []byte                `json:"memory"`
 	MemorySize    int                   `json:"memSize"`
 	Stack         []*big.Int            `json:"stack"`
-	Storage       map[sdk.Hash]sdk.Hash `json:"-"`
+	Storage       map[common.Hash]common.Hash `json:"-"`
 	Depth         int                   `json:"depth"`
 	RefundCounter uint64                `json:"refund"`
 	Err           error                 `json:"-"`

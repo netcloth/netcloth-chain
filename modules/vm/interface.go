@@ -3,6 +3,7 @@ package vm
 import (
 	"math/big"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -11,5 +12,5 @@ type StateDB interface {
 	AddBalance(sdk.AccAddress, *big.Int)
 	GetBalance(sdk.AccAddress) *big.Int
 
-	AddPreimage(sdk.Hash, []byte)
+	AddPreimage(common.Hash, []byte)
 }

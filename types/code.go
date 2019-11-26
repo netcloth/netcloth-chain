@@ -1,13 +1,17 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
+)
 
 // Code & Storage
 type (
 	Code []byte
 
 	// Storage is account storage type alias
-	Storage map[Hash]Hash
+	Storage map[common.Hash]common.Hash
 )
 
 func (c Code) String() string {
