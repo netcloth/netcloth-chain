@@ -37,11 +37,12 @@ func (msg MsgContractCreate) Route() string { return RouterKey }
 func (msg MsgContractCreate) Type() string  { return "create_contract" }
 
 func (msg MsgContractCreate) GetSigners() []sdk.AccAddress {
-	return nil
+	return []sdk.AccAddress{msg.From}
 }
 
 func (msg MsgContractCreate) GetSignBytes() []byte {
-	return nil
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }
 
 func (msg MsgContractCreate) ValidateBasic() sdk.Error {
