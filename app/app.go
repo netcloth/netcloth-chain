@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/netcloth/netcloth-chain/modules/vm"
+
 	"github.com/netcloth/netcloth-chain/modules/ipal"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -62,6 +64,7 @@ var (
 		supply.AppModuleBasic{},
 		cipal.AppModuleBasic{},
 		ipal.AppModuleBasic{},
+		vm.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -111,6 +114,7 @@ type NCHApp struct {
 	paramsKeeper   params.Keeper
 	ipalKeeper     cipal.Keeper
 	aipalKeeper    ipal.Keeper
+	vmKeeper       vm.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -139,8 +143,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		params.StoreKey,
 		cipal.StoreKey,
 		ipal.StoreKey,
+		vm.StoreKey,
 	)
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey, vm.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
@@ -165,6 +170,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
 	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -194,6 +200,12 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.supplyKeeper,
 		aipalSubspace,
 		ipal.DefaultCodespace)
+
+	app.vmKeeper = vm.NewKeeper(
+		app.cdc, keys[vm.StoreKey],
+		tkeys[vm.TStoreKey],
+		vm.DefaultCodespace,
+		vmSubspace)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -235,6 +247,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
 		cipal.NewAppModule(app.ipalKeeper),
 		ipal.NewAppModule(app.aipalKeeper),
+		vm.NewAppModule(app.vmKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -259,6 +272,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		crisis.ModuleName,
 		genutil.ModuleName,
 		ipal.ModuleName,
+		vm.ModuleName,
 	)
 
 	//app.mm.RegisterInvariants(&app.crisisKeeper)

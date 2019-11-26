@@ -381,7 +381,7 @@ func opSha3(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 
 	evm := interpreter.evm
 	if evm.vmConfig.EnablePreimageRecording {
-		evm.StateDB.AddPreimage(interpreter.hasherBuf, data)
+		//evm.StateDB.AddPreimage(interpreter.hasherBuf, data)//TODO fixme
 	}
 	stack.push(interpreter.intPool.get().SetBytes(interpreter.hasherBuf[:]))
 
@@ -396,7 +396,9 @@ func opAddress(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 
 // TODO
 func opBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	slot := stack.peek()
+	//slot := stack.peek()
+	stack.peek()
+	return nil, nil
 }
 
 func opOrigin(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
@@ -460,6 +462,10 @@ func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 }
 
 func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	slot := stack.peek()
+	//slot.SetUint64(uint64(interpreter.evm.StateDB.GetCodeSize()))
+	slot.SetUint64(uint64(1000))
+	return nil, nil
 	// TODO
 }
 
@@ -483,10 +489,12 @@ func opCodeCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 }
 
 func opExtCodeCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	return nil, nil
 	// TODO
 }
 
 func opExtCodeHash(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	return nil, nil
 	// TODO
 }
 
@@ -511,6 +519,8 @@ func opBlockhash(pc *uint64, interpreter *EVMInterpreter, contract *Contract, me
 
 func opCoinbase(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+
+	return nil, nil
 }
 
 func opTimestamp(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
@@ -524,7 +534,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 }
 
 func opGasLimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit())))
+	//stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit())))
 	return nil, nil
 }
 
@@ -558,10 +568,14 @@ func opMstore8(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 
 func opSload(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+
+	return nil, nil
 }
 
 func opSstore(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+
+	return nil, nil
 }
 
 func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
@@ -585,6 +599,8 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory
 	} else {
 		*pc++
 	}
+
+	return nil, nil
 }
 
 func opJumpdest(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
@@ -592,12 +608,12 @@ func opJumpdest(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 }
 
 func opPc(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	stack.push(interpreter.intPool.get().SetInt64(*pc))
+	stack.push(interpreter.intPool.get().SetInt64(int64(*pc)))
 	return nil, nil
 }
 
 func opMsize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	stack.push(interpreter.intPool.get().SetUint64(memory.Len()))
+	stack.push(interpreter.intPool.get().SetUint64(uint64(memory.Len())))
 	return nil, nil
 }
 
@@ -607,42 +623,48 @@ func opGas(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 }
 
 func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	var (
-		value        = stack.pop()
-		offset, size = stack.pop(), stack.pop()
-		input        = memory.GetCopy(offset.Int64(), size.Int64())
-		gas          = contract.Gas
-	)
-	gas -= gas / 64
+	//var (
+	//	value        = stack.pop()
+	//	offset, size = stack.pop(), stack.pop()
+	//	input        = memory.GetCopy(offset.Int64(), size.Int64())
+	//	gas          = contract.Gas
+	//)
+	//gas -= gas / 64
 
-	contract.UseGas()
-	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
+	//contract.UseGas()
+	//res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
 	// TODO
+	return nil, nil
 }
 
 func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 func opCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 func opCallCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 func opStaticCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 func opReturn(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	offset, size := stack.pop(), stack.pop()
-	ret := memory.GetPtr(offset.Int64(), size.Int64())
+	memory.GetPtr(offset.Int64(), size.Int64())
 
 	interpreter.intPool.put(offset, size)
 	return nil, nil
@@ -663,11 +685,13 @@ func opStop(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 
 func opSuicide(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	// TODO
+	return nil, nil
 }
 
 // make log instruction function
 func makeLog(size int) executionFunc {
 	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+		return nil, nil
 	}
 }
 

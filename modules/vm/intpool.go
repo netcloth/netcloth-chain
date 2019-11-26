@@ -61,7 +61,7 @@ func (ipp *intPoolPool) get() *intPool {
 	if len(poolOfIntPools.pools) > 0 {
 		ip := ipp.pools[len(ipp.pools)-1]
 		ipp.pools = ipp.pools[:len(ipp.pools)-1]
-		return ipp
+		return ip
 	}
 	return newIntPool()
 }

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	_ StateObject = (*stateObject()(nil))
+	//_ StateObject = *((*stateObject)(nil))
 
 	emptyCodeHash = common.Hash{}
 )
@@ -73,7 +73,7 @@ func newObject(accProto authexported.Account) *stateObject {
 	}
 
 	if acc.CodeHash == nil {
-		acc.CodeHash = emptyCodeHash
+		acc.CodeHash = emptyCodeHash.Bytes()
 	}
 
 	return &stateObject{
@@ -207,7 +207,7 @@ func (so *stateObject) Code() []byte {
 		return so.code
 	}
 
-	if bytes.Equal(so.CodeHash(), emptyCodeHash) {
+	if bytes.Equal(so.CodeHash(), emptyCodeHash.Bytes()) {
 		return nil
 	}
 
@@ -216,7 +216,7 @@ func (so *stateObject) Code() []byte {
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
-		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.Address()))
+		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
 	}
 
 	so.code = code
@@ -269,7 +269,7 @@ func (so *stateObject) GetCommittedState(key common.Hash) common.Hash {
 func (so *stateObject) empty() bool {
 	return so.account.Sequence == 0 &&
 		so.account.Balance().Sign() == 0 &&
-		bytes.Equal(so.account.CodeHash, emptyCodeHash)
+		bytes.Equal(so.account.CodeHash, emptyCodeHash.Bytes())
 }
 
 func (so *stateObject) touch() {
@@ -284,5 +284,7 @@ func (so stateObject) GetStorageByAddressKey(key []byte) common.Hash {
 	copy(compositeKey, prefix)
 	copy(compositeKey[len(prefix):], key)
 
-	return crypto.Sha256(compositeKey)
+	h := common.Hash{}
+	h.SetBytes(crypto.Sha256(compositeKey))
+	return h
 }

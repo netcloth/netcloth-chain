@@ -206,13 +206,13 @@ func gasExpEIP158(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memor
 
 func gasCall(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
 	// TODO
-	gas := 0
+	gas := uint64(0)
 	return gas, nil
 }
 
 func gasCallCode(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
 	// TODO
-	gas := 0
+	gas := uint64(0)
 	return gas, nil
 }
 
@@ -250,6 +250,6 @@ func gasStaticCall(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memo
 
 func gasSelfdestruct(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
 	// TODO
-	gas := 0
+	gas := uint64(0)
 	return gas, nil
 }

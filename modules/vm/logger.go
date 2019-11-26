@@ -5,7 +5,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
-
 )
 
 // Storage represents a contrat's storage
@@ -33,17 +32,17 @@ type LogConfig struct {
 // StructLog is emitted to the VM each cycle and lists information about the current internal state
 // prior to the execution of the statement.
 type StructLog struct {
-	Pc            uint64                `json:"pc"`
-	Op            OpCode                `json:"op"`
-	Gas           uint64                `json:"gas"`
-	GasCost       uint64                `json:"gasCost"`
-	Memory        []byte                `json:"memory"`
-	MemorySize    int                   `json:"memSize"`
-	Stack         []*big.Int            `json:"stack"`
+	Pc            uint64                      `json:"pc"`
+	Op            OpCode                      `json:"op"`
+	Gas           uint64                      `json:"gas"`
+	GasCost       uint64                      `json:"gasCost"`
+	Memory        []byte                      `json:"memory"`
+	MemorySize    int                         `json:"memSize"`
+	Stack         []*big.Int                  `json:"stack"`
 	Storage       map[common.Hash]common.Hash `json:"-"`
-	Depth         int                   `json:"depth"`
-	RefundCounter uint64                `json:"refund"`
-	Err           error                 `json:"-"`
+	Depth         int                         `json:"depth"`
+	RefundCounter uint64                      `json:"refund"`
+	Err           error                       `json:"-"`
 }
 
 // OpName formats the operand name in a human-readable format
@@ -89,7 +88,7 @@ type StructLogger struct {
 // NewStructLogger returns a new logger
 func NewStructLogger(cfg *LogConfig) *StructLogger {
 	logger := &StructLogger{
-		changedValues: make(map[sdk.Address]Storage)
+		changedValues: make(map[sdk.Address]Storage),
 	}
 
 	if cfg != nil {

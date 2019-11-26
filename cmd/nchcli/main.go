@@ -21,6 +21,7 @@ import (
 	bankcmd "github.com/netcloth/netcloth-chain/modules/bank/client/cli"
 	ipalcli "github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
 	aipalcli "github.com/netcloth/netcloth-chain/modules/ipal/client/cli"
+	vmcli "github.com/netcloth/netcloth-chain/modules/vm/client/cli"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
@@ -62,6 +63,7 @@ func main() {
 		bankcmd.SendTxCmd(cdc),
 		ipalcli.CIPALCmd(cdc),
 		aipalcli.IPALCmd(cdc),
+		vmcli.VMCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),

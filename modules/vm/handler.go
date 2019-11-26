@@ -3,7 +3,9 @@ package vm
 import (
 	"fmt"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
@@ -37,4 +39,8 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 	st := StateTransition{}
 	_, res := st.TransitionCSDB(ctx)
 	return res
+}
+
+func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }
