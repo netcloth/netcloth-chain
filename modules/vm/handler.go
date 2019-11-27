@@ -35,21 +35,30 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		return sdk.ErrInvalidAddress("account not found").Result()
 	}
 
-	//generate contract address
-	contractAddr := crypto.CreateAddress(msg.From, acc.GetSequence())
+	// generate contract address
+	contractAddr := crypto.CreateAddress(msg.From, acc.GetSequence()) // TODO check 2 contractCreate req have save acc.sequence
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v, acc.GetSequence() = %v\n", contractAddr.String(), acc.GetSequence()))
 
-	//check account's balance >= amount
+	// check account's balance >= amount
+	balanceEnough := false
+	coins := acc.GetCoins()
+	for _, coin := range coins {
+		if coin.Denom == msg.Amount.Denom && coin.IsGTE(msg.Amount) {
+			balanceEnough = true
+		}
+	}
 
-	//check recur deep < 1024
+	if balanceEnough == false {
+		return sdk.ErrInsufficientCoins(fmt.Sprintf("balace not enouth, amount=%v, account'balance=%v", msg.Amount, acc.GetCoins())).Result()
+	}
 
-	//from account seq += 1
+	// transfer && crate contract account
+	// TODO: how to create account when no transfer coin to contract?
+	k.Transfer(ctx, msg.From, contractAddr.Bytes(), sdk.NewCoins(msg.Amount))
 
-	//crate contract account
+	// check recur deep < 1024
 
-	//transfer
-
-	//create contract object
+	// create contract object
 
 	st := StateTransition{}
 	_, res := st.TransitionCSDB(ctx)

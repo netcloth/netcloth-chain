@@ -20,6 +20,7 @@ type Keeper struct {
 	cdc        *codec.Codec
 	paramstore params.Subspace
 	ak         types.AccountKeeper
+	bk         types.BankKeeper
 
 	// codespace
 	codespace sdk.CodespaceType
@@ -27,7 +28,7 @@ type Keeper struct {
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
-	codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper) Keeper {
+	codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper, bk types.BankKeeper) Keeper {
 
 	return Keeper{
 		storeKey:   key,
@@ -36,6 +37,7 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:  codespace,
 		ak:         ak,
+		bk:         bk,
 	}
 }
 
@@ -46,4 +48,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetAccount(ctx sdk.Context, address sdk.AccAddress) exported.Account {
 	return k.ak.GetAccount(ctx, address)
+}
+
+func (k Keeper) Transfer(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amount sdk.Coins) {
+	k.bk.SendCoins(ctx, fromAddr, toAddr, amount)
 }
