@@ -17,6 +17,8 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryCIPAL(ctx, req, k)
 		case types.QueryCIPALs:
 			return queryCIPALs(ctx, req, k)
+		case types.QueryCIPALCount:
+			return queryCIPALCount(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown cipal query endpoint")
 		}
@@ -41,6 +43,34 @@ func queryCIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 	}
 
 	return nil, sdk.ErrInternal("not found")
+}
+
+type CIPALCount struct {
+	count int `json:"count" yaml:"count"`
+}
+
+func NewCIPALCount(c int) CIPALCount {
+	return CIPALCount{
+		count: c,
+	}
+}
+
+func queryCIPALCount(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryCIPALsParams
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddrs: %s", err))
+	}
+
+	count := k.GetCIPALObjectCount(ctx)
+	res := NewCIPALCount(count)
+
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, res)
+	if err != nil {
+		return []byte{}, sdk.ErrInternal(err.Error())
+	}
+	return bz, nil
 }
 
 func queryCIPALs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {

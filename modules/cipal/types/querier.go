@@ -1,8 +1,9 @@
 package types
 
 const (
-	QueryCIPAL  = "query"
-	QueryCIPALs = "batch_query"
+	QueryCIPAL      = "query"
+	QueryCIPALCount = "count"
+	QueryCIPALs     = "batch_query"
 )
 
 type QueryCIPALParams struct {

@@ -24,9 +24,35 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 	cipalQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryCIPAL(queryRoute, cdc),
+		GetCmdCountCIPAL(queryRoute, cdc),
 	)...)
 
 	return cipalQueryCmd
+}
+
+func GetCmdCountCIPAL(queryRouter string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "count",
+		Short: "Querying CIPAL count",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query total count of CIPAL object.
+	Example:
+	$ %s query cipal query_cipal count
+	`,
+				version.ClientName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			resKVs, _, err := cliCtx.QuerySubspace(types.CIPALObjectKey, types.StoreKey)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(len(resKVs))
+			return nil
+		},
+	}
 }
 
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
