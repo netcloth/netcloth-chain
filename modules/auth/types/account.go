@@ -133,6 +133,30 @@ func (acc *BaseAccount) SetSequence(seq uint64) error {
 	return nil
 }
 
+// GetCodeHash - Implements sdk.Account.
+func (acc *BaseAccount) GetCodeHash() []byte {
+	return acc.CodeHash
+}
+
+// SetCodeHash - Implements sdk.Account.
+func (acc *BaseAccount) SetCodeHash(codeHash []byte) {
+	acc.CodeHash = codeHash
+}
+
+// GetCode - Implements sdk.Account.
+func (acc *BaseAccount) GetCode() []byte {
+	//TODO get code from storage
+	return nil
+}
+
+// SetCode - Implements sdk.Account.
+func (acc *BaseAccount) SetCode(code []byte) {
+	codeHash := crypto.Sha256(code)
+	acc.SetCodeHash(codeHash)
+
+	//TODO save code to storage
+}
+
 // SpendableCoins returns the total set of spendable coins. For a base account,
 // this is simply the base coins.
 func (acc *BaseAccount) SpendableCoins(_ time.Time) sdk.Coins {
