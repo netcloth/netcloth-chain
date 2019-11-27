@@ -2,6 +2,8 @@ package cli
 
 import (
 	"errors"
+	"io/ioutil"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -31,7 +33,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create a contract",
-		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code=<code>",
+		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code_file=<code file>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -45,12 +47,22 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			code := viper.GetString(flagCode)
+			codeFile := viper.GetString(flagCodeFile)
+			codeFile, err = filepath.Abs(codeFile)
+			if 0 == len(codeFile) {
+				return errors.New("code_file can not be empty")
+			}
+
+			code, err := ioutil.ReadFile(codeFile)
+			if err != nil {
+				return err
+			}
+
 			if 0 == len(code) {
 				return errors.New("code can not be empty")
 			}
 
-			msg := types.NewMsgContractCreate(cliCtx.GetFromAddress(), coin, []byte(code))
+			msg := types.NewMsgContractCreate(cliCtx.GetFromAddress(), coin, code)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -59,10 +71,10 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flagCode, "", "contract code")
+	cmd.Flags().String(flagCodeFile, "", "contract code file")
 	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
 
-	cmd.MarkFlagRequired(flagCode)
+	cmd.MarkFlagRequired(flagCodeFile)
 
 	cmd = client.PostCommands(cmd)[0]
 

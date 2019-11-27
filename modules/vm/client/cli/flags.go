@@ -1,6 +1,6 @@
 package cli
 
 const (
-	flagCode   = "code"
-	flagAmount = "amount"
+	flagCodeFile = "code_file"
+	flagAmount   = "amount"
 )
