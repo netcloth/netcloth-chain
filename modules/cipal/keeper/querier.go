@@ -46,23 +46,16 @@ func queryCIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 }
 
 type CIPALCount struct {
-	count int `json:"count" yaml:"count"`
+	Count int `json:"count" yaml:"count"`
 }
 
 func NewCIPALCount(c int) CIPALCount {
 	return CIPALCount{
-		count: c,
+		Count: c,
 	}
 }
 
 func queryCIPALCount(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryCIPALsParams
-
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddrs: %s", err))
-	}
-
 	count := k.GetCIPALObjectCount(ctx)
 	res := NewCIPALCount(count)
 
@@ -70,6 +63,7 @@ func queryCIPALCount(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, 
 	if err != nil {
 		return []byte{}, sdk.ErrInternal(err.Error())
 	}
+
 	return bz, nil
 }
 
