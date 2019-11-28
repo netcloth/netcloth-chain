@@ -30,8 +30,8 @@ type Account interface {
 	GetCodeHash() []byte
 	SetCodeHash(codeHash []byte)
 
-	GetCode() []byte
-	SetCode(codeHash []byte)
+	//GetCode() []byte
+	//SetCode(codeHash []byte)
 
 	GetCoins() sdk.Coins
 	SetCoins(sdk.Coins) error

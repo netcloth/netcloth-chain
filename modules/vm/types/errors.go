@@ -7,9 +7,14 @@ import (
 const (
 	DefaultCodespace sdk.CodespaceType = ModuleName
 
-	CodeEmptyInputs sdk.CodeType = 100
+	CodeEmptyInputs   sdk.CodeType = 100
+	CodeContractExist sdk.CodeType = 101
 )
 
 func ErrEmptyInputs(msg string) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
+}
+
+func ErrContractExist(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeContractExist, msg)
 }

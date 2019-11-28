@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/crypto"
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
+
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/tendermint/tendermint/libs/log"
@@ -47,14 +49,31 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
 }
 
+func (k Keeper) GetContractCode(ctx sdk.Context, contractAddr, codeHash []byte) (code []byte, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	code = store.Get(types.GetContractCodeKey(contractAddr, codeHash))
+	return code, code != nil
+}
+
+func (k Keeper) setContractCode(ctx sdk.Context, contractAddr, codeHash, code []byte) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetContractCodeKey(contractAddr, codeHash), code)
+}
+
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {
 		return sdk.ErrInvalidAddress(fmt.Sprintf("account %s does not exist", msg.From.String()))
 	}
 
-	contractAddr := crypto.CreateAddress(msg.From, acc.GetSequence())
+	contractAddr := common.CreateAddress(msg.From, acc.GetSequence())
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v\n", contractAddr.String()))
+
+	codeHash := tmcrypto.Sha256(msg.Code)
+	_, found := k.GetContractCode(ctx, contractAddr.Bytes(), codeHash)
+	if found {
+		return types.ErrContractExist("contract already exist")
+	}
 
 	balanceEnough := false
 	coins := acc.GetCoins()
@@ -70,11 +89,14 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 
 	// create account
 	contractAcc := k.ak.NewAccountWithAddress(ctx, contractAddr.Bytes())
-	contractAcc.SetCode(msg.Code)
+	contractAcc.SetCodeHash(codeHash)
 	k.ak.SetAccount(ctx, contractAcc)
 
 	// transfer
 	k.bk.SendCoins(ctx, msg.From, contractAddr.Bytes(), sdk.NewCoins(msg.Amount))
+
+	// store code
+	k.setContractCode(ctx, contractAddr.Bytes(), codeHash, msg.Code)
 
 	return nil
 }

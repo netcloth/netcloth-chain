@@ -37,7 +37,6 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 	}
 
 	// check recur deep < 1024
-	// create contract object
 
 	st := StateTransition{}
 	_, res := st.TransitionCSDB(ctx)
