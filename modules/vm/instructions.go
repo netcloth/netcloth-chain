@@ -4,10 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
-
 	"golang.org/x/crypto/sha3"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 )
 
@@ -381,7 +380,7 @@ func opSha3(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 
 	evm := interpreter.evm
 	if evm.vmConfig.EnablePreimageRecording {
-		//evm.StateDB.AddPreimage(interpreter.hasherBuf, data)//TODO fixme
+		// evm.StateDB.AddPreimage(interpreter.hasherBuf, data) //TODO fixme
 	}
 	stack.push(interpreter.intPool.get().SetBytes(interpreter.hasherBuf[:]))
 
@@ -394,10 +393,9 @@ func opAddress(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	return nil, nil
 }
 
-// TODO
 func opBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//slot := stack.peek()
-	stack.peek()
+	slot := stack.peek()
+	slot.Set(interpreter.evm.StateDB.GetBalance(common.BigToAddress(slot)))
 	return nil, nil
 }
 
@@ -463,10 +461,8 @@ func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 
 func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	slot := stack.peek()
-	//slot.SetUint64(uint64(interpreter.evm.StateDB.GetCodeSize()))
-	slot.SetUint64(uint64(1000))
+	//slot.SetUint64(uint64(interpreter.evm.StateDB.GetCodeSize(common.BigToAddress(slot))))
 	return nil, nil
-	// TODO
 }
 
 func opCodeSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
@@ -518,8 +514,7 @@ func opBlockhash(pc *uint64, interpreter *EVMInterpreter, contract *Contract, me
 }
 
 func opCoinbase(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	// TODO
-
+	stack.push(interpreter.intPool.get().SetBytes(interpreter.evm.CoinBase.Bytes()))
 	return nil, nil
 }
 
@@ -534,7 +529,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 }
 
 func opGasLimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit())))
+	stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit)))
 	return nil, nil
 }
 
@@ -566,9 +561,11 @@ func opMstore8(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	return nil, nil
 }
 
+// TODO
 func opSload(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	// TODO
-
+	loc := common.BigToAddress(stack.pop())
+	val := stack.pop()
+	//interpreter.evm.StateDB.SetState(contract.Address(), loc, common.BigToHash(val)
 	return nil, nil
 }
 
