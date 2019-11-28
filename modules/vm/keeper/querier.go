@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -13,8 +15,10 @@ func NewQuerier(k Keeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
+		case types.QueryContractCode:
+			return queryCode(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
 		}
 	}
 }
@@ -27,4 +31,25 @@ func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
 	return res, nil
+}
+
+func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var queryParams types.QueryCodeParams
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+	}
+
+	acc := k.ak.GetAccount(ctx, queryParams.AccAddr)
+	if acc == nil {
+		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", queryParams.AccAddr.String()))
+	}
+
+	code, found := k.GetContractCode(ctx, acc.GetCodeHash())
+	if !found {
+		return nil, types.ErrNoCodeExist(fmt.Sprintf("codeHash %s does not have code", acc.GetCodeHash()))
+	}
+
+	return code, nil
 }

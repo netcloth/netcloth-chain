@@ -20,7 +20,6 @@ var (
 	ContractCodeKey = []byte{0x10}
 )
 
-func GetContractCodeKey(contracAddr, codeHash []byte) []byte {
-	v := append(ContractCodeKey, contracAddr...)
-	return append(v, codeHash[:30]...)
+func GetContractCodeKey(codeHash []byte) []byte {
+	return append(ContractCodeKey, codeHash...)
 }

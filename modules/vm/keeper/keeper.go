@@ -49,18 +49,19 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
 }
 
-func (k Keeper) GetContractCode(ctx sdk.Context, contractAddr, codeHash []byte) (code []byte, found bool) {
+func (k Keeper) GetContractCode(ctx sdk.Context, codeHash []byte) (code []byte, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	code = store.Get(types.GetContractCodeKey(contractAddr, codeHash))
+	code = store.Get(types.GetContractCodeKey(codeHash))
 	return code, code != nil
 }
 
-func (k Keeper) setContractCode(ctx sdk.Context, contractAddr, codeHash, code []byte) {
+func (k Keeper) setContractCode(ctx sdk.Context, codeHash, code []byte) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetContractCodeKey(contractAddr, codeHash), code)
+	store.Set(types.GetContractCodeKey(codeHash), code)
 }
 
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
+
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {
 		return sdk.ErrInvalidAddress(fmt.Sprintf("account %s does not exist", msg.From.String()))
@@ -68,12 +69,7 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 
 	contractAddr := common.CreateAddress(msg.From, acc.GetSequence())
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v\n", contractAddr.String()))
-
-	codeHash := tmcrypto.Sha256(msg.Code)
-	_, found := k.GetContractCode(ctx, contractAddr.Bytes(), codeHash)
-	if found {
-		return types.ErrContractExist("contract already exist")
-	}
+	//TODO check contract Addr confiction
 
 	balanceEnough := false
 	coins := acc.GetCoins()
@@ -87,6 +83,8 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 		return sdk.ErrInsufficientCoins(fmt.Sprintf("balace not enouth, amount=%v, account'balance=%v", msg.Amount, acc.GetCoins()))
 	}
 
+	codeHash := tmcrypto.Sha256(msg.Code)
+
 	// create account
 	contractAcc := k.ak.NewAccountWithAddress(ctx, contractAddr.Bytes())
 	contractAcc.SetCodeHash(codeHash)
@@ -96,7 +94,10 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 	k.bk.SendCoins(ctx, msg.From, contractAddr.Bytes(), sdk.NewCoins(msg.Amount))
 
 	// store code
-	k.setContractCode(ctx, contractAddr.Bytes(), codeHash, msg.Code)
+	_, found := k.GetContractCode(ctx, codeHash)
+	if !found {
+		k.setContractCode(ctx, codeHash, msg.Code)
+	}
 
 	return nil
 }

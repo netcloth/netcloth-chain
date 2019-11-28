@@ -21,6 +21,7 @@ const (
 
 	CodeEmptyInputs   sdk.CodeType = 100
 	CodeContractExist sdk.CodeType = 101
+	CodeNoCodeExist   sdk.CodeType = 102
 )
 
 func ErrEmptyInputs(msg string) sdk.Error {
@@ -29,4 +30,8 @@ func ErrEmptyInputs(msg string) sdk.Error {
 
 func ErrContractExist(msg string) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeContractExist, msg)
+}
+
+func ErrNoCodeExist(msg string) sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeNoCodeExist, msg)
 }
