@@ -61,7 +61,6 @@ func (k Keeper) setContractCode(ctx sdk.Context, codeHash, code []byte) {
 }
 
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
-
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {
 		return sdk.ErrInvalidAddress(fmt.Sprintf("account %s does not exist", msg.From.String()))
@@ -69,7 +68,10 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 
 	contractAddr := common.CreateAddress(msg.From, acc.GetSequence())
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v\n", contractAddr.String()))
-	//TODO check contract Addr confiction
+	contractAcc := k.ak.GetAccount(ctx, contractAddr)
+	if contractAcc != nil {
+		return types.ErrContractAddressCollision(fmt.Sprintf("contract %s existed", contractAddr.String()))
+	}
 
 	balanceEnough := false
 	coins := acc.GetCoins()
@@ -86,7 +88,7 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 	codeHash := tmcrypto.Sha256(msg.Code)
 
 	// create account
-	contractAcc := k.ak.NewAccountWithAddress(ctx, contractAddr.Bytes())
+	contractAcc = k.ak.NewAccountWithAddress(ctx, contractAddr.Bytes())
 	contractAcc.SetCodeHash(codeHash)
 	k.ak.SetAccount(ctx, contractAcc)
 

@@ -7,13 +7,12 @@ import (
 )
 
 var (
-	ErrOutOfGas                 = errors.New("out of gas")
-	ErrCodeStoreOutOfGas        = errors.New("contract creation code storage out of gas")
-	ErrDepth                    = errors.New("max call depth exceeded")
-	ErrTraceLimitReached        = errors.New("the number of logs reached the specified limit")
-	ErrInsufficientBalance      = errors.New("insufficient balance for transfer")
-	ErrContractAddressCollision = errors.New("contract address collision")
-	ErrNoCompatibleInterpreter  = errors.New("no compatible interpreter")
+	ErrOutOfGas                = errors.New("out of gas")
+	ErrCodeStoreOutOfGas       = errors.New("contract creation code storage out of gas")
+	ErrDepth                   = errors.New("max call depth exceeded")
+	ErrTraceLimitReached       = errors.New("the number of logs reached the specified limit")
+	ErrInsufficientBalance     = errors.New("insufficient balance for transfer")
+	ErrNoCompatibleInterpreter = errors.New("no compatible interpreter")
 )
 
 const (
@@ -28,7 +27,7 @@ func ErrEmptyInputs(msg string) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
 }
 
-func ErrContractExist(msg string) sdk.Error {
+func ErrContractAddressCollision(msg string) sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeContractExist, msg)
 }
 

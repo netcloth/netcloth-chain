@@ -7,7 +7,7 @@ import (
 
 type AccountKeeper interface {
 	NewAccountWithAddress(ctx sdk.Context, addr sdk.AccAddress) exported.Account
-	GetAccount(ctx sdk.Context, addr sdk.AccAddress) exported.Account
+	GetAccount(ctx sdk.Context, addr sdk.Address) exported.Account
 	SetAccount(ctx sdk.Context, acc exported.Account)
 }
 
