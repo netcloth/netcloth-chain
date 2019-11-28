@@ -380,7 +380,7 @@ func opSha3(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 
 	evm := interpreter.evm
 	if evm.vmConfig.EnablePreimageRecording {
-		// evm.StateDB.AddPreimage(interpreter.hasherBuf, data) //TODO fixme
+		//evm.StateDB.AddPreimage(interpreter.hasherBuf, data) //TODO fixme
 	}
 	stack.push(interpreter.intPool.get().SetBytes(interpreter.hasherBuf[:]))
 
@@ -576,17 +576,19 @@ func opMstore8(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	return nil, nil
 }
 
-// TODO
 func opSload(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 	loc := common.BigToAddress(stack.pop())
 	val := stack.pop()
-	//interpreter.evm.StateDB.SetState(contract.Address(), loc, common.BigToHash(val)
+	interpreter.evm.StateDB.SetState(contract.Address(), loc, common.BigToHash(val)
 	return nil, nil
 }
 
 func opSstore(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	// TODO
+	loc := common.BigToHash(stack.pop())
+	val := stack.pop()
+	interpreter.evm.StateDB.SetState(contract.Address(), loc, common.BigToHash(val))
 
+	interpreter.intPool.put(val)
 	return nil, nil
 }
 
@@ -696,12 +698,16 @@ func opStop(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 }
 
 func opSuicide(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	// TODO
+	balance := interpreter.evm.StateDB.GetBalance(contract.Address())
+	interpreter.evm.StateDB.AddBalance(common.BigToAddress(stack.pop()), balance)
+
+	interpreter.evm.StateDB.Suicide(contract.Address())
 	return nil, nil
 }
 
 // make log instruction function
 func makeLog(size int) executionFunc {
+	//TODO
 	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
 		return nil, nil
 	}
@@ -771,6 +777,7 @@ func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, 
 
 // opChainID implements CHAINID opcode
 func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	//TODO: chain-id is a string type
 	//chainId := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
 	//stack.push(chainId)
 	return nil, nil
