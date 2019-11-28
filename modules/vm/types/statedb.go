@@ -108,6 +108,19 @@ func (csdb *CommitStateDB) SetCode(addr sdk.AccAddress, code []byte) {
 	}
 }
 
+func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
+	so := csdb.getStateObject(addr)
+	if so == nil {
+		return false
+	}
+
+	so.markSuicided()
+	//TODO: set balance 0
+	so.account.Coins = sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, 0)}
+
+	return true
+}
+
 func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject {
 	so := csdb.getStateObject(addr)
 	if so == nil || so.deleted {
