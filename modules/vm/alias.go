@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 )
@@ -28,6 +29,8 @@ type (
 
 var (
 	NewKeeper = keeper.NewKeeper
+
+	CreateAddress = common.CreateAddress
 
 	ErrOutOfGas                 = types.ErrOutOfGas
 	ErrCodeStoreOutOfGas        = types.ErrCodeStoreOutOfGas

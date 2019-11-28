@@ -674,7 +674,6 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 		gas          = contract.Gas
 	)
 
-	// Apply EIP150
 	gas -= gas / 64
 	contract.UseGas(gas)
 	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt)

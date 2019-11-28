@@ -8,6 +8,11 @@ import (
 
 const (
 	DefaultMaxCodeSize = 1024 * 1024
+
+	CallCreateDepth uint64 = 1024 // Maximum depth of call/create stack.
+
+	CreateAccountGas uint64 = 200 //
+
 )
 
 var (

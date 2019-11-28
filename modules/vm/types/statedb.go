@@ -174,6 +174,23 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 	return so
 }
 
+// CreateAccount explicitly creates a state object. If a state object with the address
+// already exists the balance is carried over to the new account.
+//
+// CreateAccount is called during the EVM CREATE operation. The situation might arise that
+// a contract does the following:
+//
+//   1. sends funds to sha(account ++ (nonce + 1))
+//   2. tx_create(sha(account ++ nonce)) (note that this gets the address of 1)
+//
+// Carrying over the balance ensures that Ether doesn't disappear.
+func (csdb *CommitStateDB) CreateAccount(addr sdk.AccAddress) {
+	newObj, prev := csdb.createObject(addr)
+	if prev != nil {
+		newObj.setBalance(prev.account.Balance())
+	}
+}
+
 // WithContext returns a Database with an updated sdk context
 func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 	csdb.ctx = ctx
