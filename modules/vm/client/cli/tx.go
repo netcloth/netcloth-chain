@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"bytes"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -53,13 +56,24 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return errors.New("code_file can not be empty")
 			}
 
-			code, err := ioutil.ReadFile(codeFile)
+			hexcode, err := ioutil.ReadFile(codeFile)
 			if err != nil {
 				return err
 			}
 
-			if 0 == len(code) {
+			hexcode = bytes.TrimSpace(hexcode)
+
+			if 0 == len(hexcode) {
 				return errors.New("code can not be empty")
+			}
+
+			if len(hexcode)%2 != 0 {
+				return errors.New(fmt.Sprintf("Invalid input length for hex data (%d)\n", len(hexcode)))
+			}
+
+			code, err := hex.DecodeString(string(hexcode))
+			if err != nil {
+				return err
 			}
 
 			msg := types.NewMsgContractCreate(cliCtx.GetFromAddress(), coin, code)
