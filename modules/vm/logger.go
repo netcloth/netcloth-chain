@@ -3,12 +3,11 @@ package vm
 import (
 	"math/big"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // Storage represents a contract's storage
-type Storage map[common.Hash]common.Hash
+type Storage map[sdk.Hash]sdk.Hash
 
 // Copy duplicates the current storage
 func (s Storage) Copy() Storage {
@@ -32,17 +31,17 @@ type LogConfig struct {
 // StructLog is emitted to the VM each cycle and lists information about the current internal state
 // prior to the execution of the statement.
 type StructLog struct {
-	Pc            uint64                      `json:"pc"`
-	Op            OpCode                      `json:"op"`
-	Gas           uint64                      `json:"gas"`
-	GasCost       uint64                      `json:"gasCost"`
-	Memory        []byte                      `json:"memory"`
-	MemorySize    int                         `json:"memSize"`
-	Stack         []*big.Int                  `json:"stack"`
-	Storage       map[common.Hash]common.Hash `json:"-"`
-	Depth         int                         `json:"depth"`
-	RefundCounter uint64                      `json:"refund"`
-	Err           error                       `json:"-"`
+	Pc            uint64                `json:"pc"`
+	Op            OpCode                `json:"op"`
+	Gas           uint64                `json:"gas"`
+	GasCost       uint64                `json:"gasCost"`
+	Memory        []byte                `json:"memory"`
+	MemorySize    int                   `json:"memSize"`
+	Stack         []*big.Int            `json:"stack"`
+	Storage       map[sdk.Hash]sdk.Hash `json:"-"`
+	Depth         int                   `json:"depth"`
+	RefundCounter uint64                `json:"refund"`
+	Err           error                 `json:"-"`
 }
 
 // OpName formats the operand name in a human-readable format

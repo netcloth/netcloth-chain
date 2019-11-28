@@ -8,7 +8,6 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/auth"
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -31,11 +30,11 @@ type CommitStateDB struct {
 	// The refund counter, also used by state transitioning.
 	refund uint64
 
-	thash, bhash common.Hash
+	thash, bhash sdk.Hash
 	txIndex      int
 	// logs
 	logSize   uint
-	preimages map[common.Hash][]byte
+	preimages map[sdk.Hash][]byte
 
 	// DB error.
 	// State objects are used by the consensus core and VM which are
@@ -60,7 +59,7 @@ func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKe
 		codeKey:           codeKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
-		preimages:         make(map[common.Hash][]byte),
+		preimages:         make(map[sdk.Hash][]byte),
 	}
 }
 
@@ -93,7 +92,7 @@ func (csdb *CommitStateDB) SetNonce(addr sdk.AccAddress, nonce uint64) {
 
 }
 
-func (csdb *CommitStateDB) SetState(addr sdk.AccAddress, key, value common.Hash) {
+func (csdb *CommitStateDB) SetState(addr sdk.AccAddress, key, value sdk.Hash) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
 		so.SetState(key, value)
@@ -103,7 +102,7 @@ func (csdb *CommitStateDB) SetState(addr sdk.AccAddress, key, value common.Hash)
 func (csdb *CommitStateDB) SetCode(addr sdk.AccAddress, code []byte) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
-		codeHash := common.BytesToHash(crypto.Sha256(code))
+		codeHash := sdk.BytesToHash(crypto.Sha256(code))
 		so.SetCode(codeHash, code)
 	}
 }
@@ -116,7 +115,7 @@ func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
 
 	so.markSuicided()
 	//TODO: set balance 0
-	so.account.Coins = sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, 0)}
+	so.account.Coins = sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))}
 
 	return true
 }
@@ -238,13 +237,13 @@ func (csdb *CommitStateDB) GetCodeSize(addr sdk.AccAddress) int {
 	return len(so.Code())
 }
 
-func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) common.Hash {
+func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	so := csdb.getStateObject(addr)
 	if so == nil {
-		return common.Hash{}
+		return sdk.Hash{}
 	}
 
-	return common.BytesToHash(so.CodeHash())
+	return sdk.BytesToHash(so.CodeHash())
 }
 
 ///////////////////

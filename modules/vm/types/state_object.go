@@ -9,25 +9,24 @@ import (
 
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var (
 	_ StateObject = (*stateObject)(nil)
 
-	emptyCodeHash = common.Hash{}
+	emptyCodeHash = sdk.Hash{}
 )
 
 type (
 	// StateObject interface for interacting with state object
 	StateObject interface {
-		GetCommittedState(key common.Hash) common.Hash
-		GetState(key common.Hash) common.Hash
-		SetState(key, value common.Hash)
+		GetCommittedState(key sdk.Hash) sdk.Hash
+		GetState(key sdk.Hash) sdk.Hash
+		SetState(key, value sdk.Hash)
 
 		Code() []byte
-		SetCode(codeHash common.Hash, code []byte)
+		SetCode(codeHash sdk.Hash, code []byte)
 		CodeHash() []byte // codeHash = crypto.Sha256(Code)
 
 		AddBalance(amount *big.Int)
@@ -93,7 +92,7 @@ func newObject(accProto authexported.Account) *stateObject {
 
 // SetState updates a value in account storage. Note, the key will be prefixed
 // with the address of the state object.
-func (so *stateObject) SetState(key, value common.Hash) {
+func (so *stateObject) SetState(key, value sdk.Hash) {
 	prev := so.GetState(key)
 	if prev == value {
 		return
@@ -104,16 +103,16 @@ func (so *stateObject) SetState(key, value common.Hash) {
 	so.SetState(prefixKey, value)
 }
 
-func (so *stateObject) setState(key, value common.Hash) {
+func (so *stateObject) setState(key, value sdk.Hash) {
 	so.dirtyStorage[key] = value
 }
 
 // SetCode
-func (so *stateObject) SetCode(codeHash common.Hash, code []byte) {
+func (so *stateObject) SetCode(codeHash sdk.Hash, code []byte) {
 	so.setCode(codeHash, code)
 }
 
-func (so *stateObject) setCode(codeHash common.Hash, code []byte) {
+func (so *stateObject) setCode(codeHash sdk.Hash, code []byte) {
 	so.code = code
 	so.account.CodeHash = codeHash.Bytes()
 	so.dirtyCode = true
@@ -227,7 +226,7 @@ func (so *stateObject) Code() []byte {
 }
 
 // GetState retrieves a value from the account storage trie. Note, the key will be prefixed with the address of the state object
-func (so *stateObject) GetState(key common.Hash) common.Hash {
+func (so *stateObject) GetState(key sdk.Hash) sdk.Hash {
 	prefixKey := so.GetStorageByAddressKey(key.Bytes())
 
 	// if we have a dirty value for this state entry, return it
@@ -242,7 +241,7 @@ func (so *stateObject) GetState(key common.Hash) common.Hash {
 
 // GetCommittedState retrieves a value from the committed account storage trie.
 // Note, the key will be prefixed with the address of the state object.
-func (so *stateObject) GetCommittedState(key common.Hash) common.Hash {
+func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 	prefixKey := so.GetStorageByAddressKey(key.Bytes())
 
 	// if we have the original value cached, return that
@@ -280,14 +279,14 @@ func (so *stateObject) touch() {
 
 // GetStorageByAddressKey returns a hash of the composite key for a state
 // object's storage prefixed with it's address.
-func (so stateObject) GetStorageByAddressKey(key []byte) common.Hash {
+func (so stateObject) GetStorageByAddressKey(key []byte) sdk.Hash {
 	prefix := so.Address().Bytes()
 	compositeKey := make([]byte, len(prefix)+len(key))
 
 	copy(compositeKey, prefix)
 	copy(compositeKey[len(prefix):], key)
 
-	h := common.Hash{}
+	h := sdk.Hash{}
 	h.SetBytes(crypto.Sha256(compositeKey))
 	return h
 }

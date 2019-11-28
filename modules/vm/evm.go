@@ -5,7 +5,6 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -16,16 +15,16 @@ type (
 	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int)
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
-	GetHashFunc func(uint64) common.Hash
+	GetHashFunc func(uint64) sdk.Hash
 )
 
 type codeAndHash struct {
 	code []byte
-	hash common.Hash
+	hash sdk.Hash
 }
 
-func (c *codeAndHash) Hash() common.Hash {
-	if c.hash == (common.Hash{}) {
+func (c *codeAndHash) Hash() sdk.Hash {
+	if c.hash == (sdk.Hash{}) {
 		copy(c.hash[:], crypto.Sha256(c.code))
 	}
 	return c.hash
@@ -78,12 +77,15 @@ type EVM struct {
 }
 
 func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64, value *big.Int, address sdk.AccAddress) ([]byte, sdk.AccAddress, uint64, error) {
+	//TODO
+	return nil, nil, 0, nil
 }
 
 // Create creates a new contract using code as deployment code
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.Address, leftOverGas uint64, err error) {
 	//contractAddr = CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
 	//return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
+	return nil, nil, 0, nil
 }
 
 // Create2 creates a new contract using code as deployment code.
