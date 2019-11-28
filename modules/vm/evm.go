@@ -57,7 +57,7 @@ type EVM struct {
 	Context
 
 	// StateDB gives access to the underlying state
-	StateDB StateDB
+	StateDB *CommitStateDB
 
 	// depth is the current call stack
 	depth int

@@ -22,6 +22,8 @@ type (
 
 	MsgContractCreate = types.MsgContractCreate
 	MsgContractCall   = types.MsgContractCall
+
+	CommitStateDB = types.CommitStateDB
 )
 
 var (

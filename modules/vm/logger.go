@@ -7,7 +7,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-// Storage represents a contrat's storage
+// Storage represents a contract's storage
 type Storage map[common.Hash]common.Hash
 
 // Copy duplicates the current storage

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	//_ StateObject = (*stateObject(nil))
+	_ StateObject = (*stateObject)(nil)
 
 	emptyCodeHash = common.Hash{}
 )
@@ -23,7 +23,7 @@ type (
 	// StateObject interface for interacting with state object
 	StateObject interface {
 		GetCommittedState(key common.Hash) common.Hash
-		GetState(key common.Hash)
+		GetState(key common.Hash) common.Hash
 		SetState(key, value common.Hash)
 
 		Code() []byte
@@ -37,6 +37,9 @@ type (
 		Balance() *big.Int
 		//ReturnGas(gas *big.Int)
 		Address() sdk.AccAddress
+
+		SetNonce(nonce uint64)
+		Nonce() uint64
 	}
 
 	// stateObject represents an NCH account which is being modified

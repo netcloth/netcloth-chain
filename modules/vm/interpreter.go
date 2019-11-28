@@ -3,7 +3,7 @@ package vm
 import (
 	"hash"
 
-	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 )
 
 type Config struct {
@@ -29,7 +29,7 @@ type EVMInterpreter struct {
 	intPool *intPool
 
 	hasher     hashState
-	hasherBuf  sdk.Hash
+	hasherBuf  common.Hash
 	readOnly   bool   // whether to throw on stateful modifications
 	returnData []byte // last CALL's return data for subsequent reuse
 }
