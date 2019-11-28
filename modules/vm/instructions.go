@@ -2,6 +2,7 @@ package vm
 
 import (
 	"errors"
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -637,22 +638,57 @@ func opGas(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 }
 
 func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//var (
-	//	value        = stack.pop()
-	//	offset, size = stack.pop(), stack.pop()
-	//	input        = memory.GetCopy(offset.Int64(), size.Int64())
-	//	gas          = contract.Gas
-	//)
-	//gas -= gas / 64
+	var (
+		value        = stack.pop()
+		offset, size = stack.pop(), stack.pop()
+		input        = memory.GetCopy(offset.Int64(), size.Int64())
+		gas          = contract.Gas
+	)
+	gas -= gas / 64
 
-	//contract.UseGas()
-	//res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
-	// TODO
+	contract.UseGas()
+	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
+	if suberr == ErrCodeStoreOutOfGas {
+		stack.push(interpreter.intPool.getZero())
+	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {
+		stack.push(interpreter.intPool.getZero())
+	} else {
+		stack.push(interpreter.intPool.get().SetBytes(addr.Bytes()))
+	}
+	contract.Gas += returnGas
+	interpreter.intPool.put(value, offset, size)
+
+	if suberr == errExecutionReverted {
+		return res, nil
+	}
 	return nil, nil
 }
 
 func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	// TODO
+	var (
+		endowment    = stack.pop()
+		offset, size = stack.pop(), stack.pop()
+		salt         = stack.pop()
+		input        = memory.GetCopy(offset.Int64(), size.Int64())
+		gas          = contract.Gas
+	)
+
+	// Apply EIP150
+	gas -= gas / 64
+	contract.UseGas(gas)
+	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt)
+	// Push item on the stack based on the returned error.
+	if suberr != nil {
+		stack.push(interpreter.intPool.getZero())
+	} else {
+		stack.push(interpreter.intPool.get().SetBytes(addr.Bytes()))
+	}
+	contract.Gas += returnGas
+	interpreter.intPool.put(endowment, offset, size, salt)
+
+	if suberr == errExecutionReverted {
+		return res, nil
+	}
 	return nil, nil
 }
 

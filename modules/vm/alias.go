@@ -28,4 +28,12 @@ type (
 
 var (
 	NewKeeper = keeper.NewKeeper
+
+	ErrOutOfGas                 = types.ErrOutOfGas
+	ErrCodeStoreOutOfGas        = types.ErrCodeStoreOutOfGas
+	ErrDepth                    = types.ErrDepth
+	ErrTraceLimitReached        = types.ErrTraceLimitReached
+	ErrInsufficientBalance      = types.ErrInsufficientBalance
+	ErrContractAddressCollision = types.ErrContractAddressCollision
+	ErrNoCompatibleInterpreter  = types.ErrNoCompatibleInterpreter
 )
