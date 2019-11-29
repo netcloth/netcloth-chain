@@ -18,6 +18,8 @@ var (
 	emptyCodeHash = sdk.Hash{}
 )
 
+var ripemd = sdk.HexToAddress("0000000000000000000000000000000000000003")
+
 type (
 	// StateObject interface for interacting with state object
 	StateObject interface {
@@ -275,6 +277,13 @@ func (so *stateObject) empty() bool {
 }
 
 func (so *stateObject) touch() {
+	so.stateDB.journal.append(touchChange{
+		account: &so.address,
+	})
+
+	if so.address.Equals(ripemd) {
+		so.stateDB.journal.dirty(so.address)
+	}
 }
 
 // GetStorageByAddressKey returns a hash of the composite key for a state

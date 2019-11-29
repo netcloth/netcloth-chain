@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/auth"
@@ -14,6 +15,11 @@ import (
 var (
 	zeroBalance = sdk.ZeroInt().BigInt()
 )
+
+type revision struct {
+	id           int
+	journalIndex int
+}
 
 type CommitStateDB struct {
 	ctx sdk.Context
@@ -32,9 +38,9 @@ type CommitStateDB struct {
 
 	thash, bhash sdk.Hash
 	txIndex      int
-	// logs
-	logSize   uint
-	preimages map[sdk.Hash][]byte
+	logs         map[sdk.Hash][]*types.Log
+	logSize      uint
+	preimages    map[sdk.Hash][]byte
 
 	// DB error.
 	// State objects are used by the consensus core and VM which are
@@ -42,6 +48,12 @@ type CommitStateDB struct {
 	// during a database read is memo-ized here and will eventually be returned
 	// by StateDB.Commit.
 	dbErr error
+
+	// Journal of state modifications. This is the backbone of
+	// Snapshot and RevertToSnapshot.
+	journal        *journal
+	validRevisions []revision
+	nextRevisionID int
 
 	lock sync.Mutex
 }

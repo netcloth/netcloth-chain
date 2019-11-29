@@ -127,7 +127,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 	// Ensure there's no existing contract already at the designated address
 	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
-	//if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{})) {
+	//if evm.StateDB.GetNonce(address) != 0 || (contractHash != (sdk.Hash{})) {
 	//	return nil, sdk.AccAddress{}, 0, ErrContractAddressCollision
 	//}
 
