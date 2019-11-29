@@ -2,7 +2,11 @@ package vm
 
 import (
 	"math/big"
+	"time"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
+
+	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -19,7 +23,7 @@ func (s Storage) Copy() Storage {
 	return cpy
 }
 
-// LogConfig are the configuration options for structured logger the VM
+// LogConfig are the configuration options for structured logger the EVM
 type LogConfig struct {
 	DisableMemory  bool // disable memory capture
 	DisableStack   bool // disable stack capture
@@ -28,7 +32,7 @@ type LogConfig struct {
 	Limit          int  // maximum length of output, but zero means unlimited
 }
 
-// StructLog is emitted to the VM each cycle and lists information about the current internal state
+// StructLog is emitted to the EVM each cycle and lists information about the current internal state
 // prior to the execution of the statement.
 type StructLog struct {
 	Pc            uint64                `json:"pc"`
@@ -42,6 +46,15 @@ type StructLog struct {
 	Depth         int                   `json:"depth"`
 	RefundCounter uint64                `json:"refund"`
 	Err           error                 `json:"-"`
+}
+
+type structLogMarshaling struct {
+	Stack       []*math.HexOrDecimal256
+	Gas         math.HexOrDecimal64
+	GasCost     math.HexOrDecimal64
+	Memory      hexutil.Bytes
+	OpName      string `json:"opName"` // adds call to OpName() in MarshalJSON
+	ErrorString string `json:"error"`  // adds call to ErrorString() in MarshalJSON
 }
 
 // OpName formats the operand name in a human-readable format
@@ -64,10 +77,10 @@ func (s *StructLog) ErrorString() string {
 // Note that reference types are actual VM data structures; make copies
 // if you need to retain them beyond the current call.
 type Tracer interface {
-	//CaptureStart(from sdk.AccAddress, to sdk.AccAddress, call bool, input []byte, gas uint64, value *big.Int) error
-	//CaptureState(env *VM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
-	//CaptureFault(env *VM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
-	//CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error
+	CaptureStart(from sdk.AccAddress, to sdk.AccAddress, call bool, input []byte, gas uint64, value *big.Int) error
+	CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
+	CaptureFault(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
+	CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error
 }
 
 // StructLogger is an VM state logger and implements Tracer.
@@ -95,4 +108,9 @@ func NewStructLogger(cfg *LogConfig) *StructLogger {
 	}
 
 	return logger
+}
+
+// CaptureStart implements the Tracer interface to initialize the tracing operation.
+func (l *StructLogger) CaptureStart(from sdk.AccAddress, to sdk.AccAddress, create bool, input []byte, gas uint64, value *big.Int) error {
+	return nil
 }

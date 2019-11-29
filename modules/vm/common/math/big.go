@@ -1,6 +1,9 @@
 package math
 
-import "math/big"
+import (
+	"fmt"
+	"math/big"
+)
 
 // Various big integer limit values.
 var (
@@ -16,6 +19,53 @@ const (
 	// number of bytes in a big.Word
 	wordBytes = wordBits / 8
 )
+
+// HexOrDecimal256 marshals big.Int as hex or decimal.
+type HexOrDecimal256 big.Int
+
+// NewHexOrDecimal256 creates a new HexOrDecimal256
+func NewHexOrDecimal256(x int64) *HexOrDecimal256 {
+	b := big.NewInt(x)
+	h := HexOrDecimal256(*b)
+	return &h
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (i *HexOrDecimal256) UnmarshalText(input []byte) error {
+	bigint, ok := ParseBig256(string(input))
+	if !ok {
+		return fmt.Errorf("invalid hex or decimal integer %q", input)
+	}
+	*i = HexOrDecimal256(*bigint)
+	return nil
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (i *HexOrDecimal256) MarshalText() ([]byte, error) {
+	if i == nil {
+		return []byte("0x0"), nil
+	}
+	return []byte(fmt.Sprintf("%#x", (*big.Int)(i))), nil
+}
+
+// ParseBig256 parses s as a 256 bit integer in decimal or hexadecimal syntax.
+// Leading zeros are accepted. The empty string parses as zero.
+func ParseBig256(s string) (*big.Int, bool) {
+	if s == "" {
+		return new(big.Int), true
+	}
+	var bigint *big.Int
+	var ok bool
+	if len(s) >= 2 && (s[:2] == "0x" || s[:2] == "0X") {
+		bigint, ok = new(big.Int).SetString(s[2:], 16)
+	} else {
+		bigint, ok = new(big.Int).SetString(s, 10)
+	}
+	if ok && bigint.BitLen() > 256 {
+		bigint, ok = nil, false
+	}
+	return bigint, ok
+}
 
 // BigPow returns a ** b as a big integer.
 func BigPow(a, b int64) *big.Int {
