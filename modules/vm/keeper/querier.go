@@ -34,16 +34,14 @@ func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 }
 
 func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var queryParams types.QueryCodeParams
-
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+	if len(req.Data) != 20 {
+		return nil, sdk.ErrInvalidAddress("address invalid")
 	}
 
-	acc := k.ak.GetAccount(ctx, queryParams.AccAddr)
+	accAddr := sdk.AccAddress(req.Data)
+	acc := k.ak.GetAccount(ctx, accAddr)
 	if acc == nil {
-		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", queryParams.AccAddr.String()))
+		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", accAddr))
 	}
 
 	code, found := k.GetContractCode(ctx, acc.GetCodeHash())
