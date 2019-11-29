@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"math/big"
+	"sort"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -72,8 +73,19 @@ func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKe
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		preimages:         make(map[sdk.Hash][]byte),
+		journal:           newJournal(),
 	}
 }
+
+// WithContext returns a Database with an updated sdk context
+func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
+	csdb.ctx = ctx
+	return csdb
+}
+
+// ----------------------------------------------------------------------------
+// Setters
+// ----------------------------------------------------------------------------
 
 func (csdb *CommitStateDB) SetBalance(addr sdk.AccAddress, amount *big.Int) {
 	so := csdb.GetOrNewStateObject(addr)
@@ -119,11 +131,32 @@ func (csdb *CommitStateDB) SetCode(addr sdk.AccAddress, code []byte) {
 	}
 }
 
+func (csdb *CommitStateDB) AddPreimage(hash sdk.Hash, preimage []byte) {
+	if _, ok := csdb.preimages[hash]; !ok {
+		csdb.journal.append(addPreimageChange{hash: hash})
+
+		pi := make([]byte, len(preimage))
+		copy(pi, preimage)
+		csdb.preimages[hash] = pi
+	}
+}
+
+func (csdb *CommitStateDB) AddRefund(gas uint64) {
+	csdb.journal.append(refundChange{prev: csdb.refund})
+	csdb.refund += gas
+}
+
 func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
 	so := csdb.getStateObject(addr)
 	if so == nil {
 		return false
 	}
+
+	csdb.journal.append(suicideChange{
+		account:     &addr,
+		prev:        so.suicided,
+		prevBalance: sdk.NewIntFromBigInt(so.Balance()),
+	})
 
 	so.markSuicided()
 	//TODO: set balance 0
@@ -203,12 +236,6 @@ func (csdb *CommitStateDB) CreateAccount(addr sdk.AccAddress) {
 	}
 }
 
-// WithContext returns a Database with an updated sdk context
-func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
-	csdb.ctx = ctx
-	return csdb
-}
-
 func (csdb *CommitStateDB) setStateObject(so *stateObject) {
 	csdb.stateObjects[so.Address().String()] = so
 }
@@ -275,7 +302,129 @@ func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	return sdk.BytesToHash(so.CodeHash())
 }
 
-///////////////////
+func (csdb *CommitStateDB) GetCommittedState(addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
+	so := csdb.getStateObject(addr)
+	if so != nil {
+		return so.GetCommittedState(hash)
+	}
+
+	return sdk.Hash{}
+}
+
+func (csdb *CommitStateDB) GetRefund() uint64 {
+	return csdb.refund
+}
+
+func (csdb *CommitStateDB) Preimages() map[sdk.Hash][]byte {
+	return csdb.preimages
+}
+
+func (csdb *CommitStateDB) HasSuicide(addr sdk.AccAddress) bool {
+	so := csdb.getStateObject(addr)
+	if so != nil {
+		return so.suicided
+	}
+
+	return false
+}
+
+// ----------------------------------------------------------------------------
+// Persistence
+// ----------------------------------------------------------------------------
+
+func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err error) {
+	defer csdb.clearJournalAndRefund()
+
+	// remove dirty state object entries based on the journal
+	for addr := range csdb.journal.dirties {
+		csdb.stateObjectsDirty[addr] = struct{}{}
+	}
+
+	// set the state objects
+	for addr, so := range csdb.stateObjects {
+		_, isDrity := csdb.stateObjectsDirty[addr]
+
+		switch {
+		case so.suicided || (isDrity && deleteEmptyObjects && so.empty()):
+			csdb.deleteStateObject(so)
+
+		case isDrity:
+			if so.code != nil && so.dirtyCode {
+				so.commitCode()
+				so.dirtyCode = false
+			}
+
+			// update the object in the KVStore
+			csdb.updateStateObject(so)
+		}
+		delete(csdb.stateObjectsDirty, addr)
+	}
+
+	return
+}
+
+// ClearStateObjects clears cache of state objects to handle account changes outside of the EVM
+func (csdb *CommitStateDB) ClearStateObjects() {
+	csdb.stateObjects = make(map[string]*stateObject)
+	csdb.stateObjectsDirty = make(map[string]struct{})
+}
+
+func (csdb *CommitStateDB) updateStateObject(so *stateObject) {
+	csdb.ak.SetAccount(csdb.ctx, so.account)
+}
+
+func (csdb *CommitStateDB) deleteStateObject(so *stateObject) {
+	so.deleted = true
+	csdb.ak.RemoveAccount(csdb.ctx, so.account)
+}
+
+func (csdb *CommitStateDB) clearJournalAndRefund() {
+	csdb.journal = newJournal()
+	csdb.validRevisions = csdb.validRevisions[:0]
+	csdb.refund = 0
+}
+
+// ----------------------------------------------------------------------------
+// Snapshotting
+// ----------------------------------------------------------------------------
+
+// Snapshot returns an identifier for the current revision of the state.
+func (csdb *CommitStateDB) Snapshot() int {
+	id := csdb.nextRevisionID
+	csdb.nextRevisionID++
+
+	csdb.validRevisions = append(
+		csdb.validRevisions,
+		revision{
+			id:           id,
+			journalIndex: csdb.journal.length(),
+		},
+	)
+
+	return id
+}
+
+// RevertToSnapshot reverts all state changes made since the given revision.
+func (csdb *CommitStateDB) RevertToSnapshot(revID int) {
+	idx := sort.Search(len(csdb.validRevisions), func(i int) bool {
+		return csdb.validRevisions[i].id >= revID
+	})
+
+	if idx == len(csdb.validRevisions) || csdb.validRevisions[idx].id != revID {
+		panic(fmt.Errorf("revision ID %v cannot be reverted", revID))
+	}
+
+	snapshot := csdb.validRevisions[idx].journalIndex
+
+	// replay the journal to undo changes and remove invalidated snapshots
+	csdb.journal.revert(csdb, snapshot)
+	csdb.validRevisions = csdb.validRevisions[:idx]
+}
+
+// ----------------------------------------------------------------------------
+// Auxiliary
+// ----------------------------------------------------------------------------
+
 func (csdb *CommitStateDB) Empty(addr sdk.AccAddress) bool {
 	so := csdb.getStateObject(addr)
 	return so == nil || so.empty()
@@ -283,4 +432,9 @@ func (csdb *CommitStateDB) Empty(addr sdk.AccAddress) bool {
 
 func (csdb *CommitStateDB) Exist(addr sdk.AccAddress) bool {
 	return csdb.getStateObject(addr) != nil
+}
+
+// Error returns the first non-nil error the StateDB encountered.
+func (csdb *CommitStateDB) Error() error {
+	return csdb.dbErr
 }

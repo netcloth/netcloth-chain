@@ -166,6 +166,6 @@ func (ch addPreimageChange) revert(s *CommitStateDB) {
 	delete(s.preimages, ch.hash)
 }
 
-func (ch addPreimageChange) dirtied() sdk.AccAddress {
+func (ch addPreimageChange) dirtied() *sdk.AccAddress {
 	return nil
 }

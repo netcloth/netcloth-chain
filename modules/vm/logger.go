@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -113,4 +114,91 @@ func NewStructLogger(cfg *LogConfig) *StructLogger {
 // CaptureStart implements the Tracer interface to initialize the tracing operation.
 func (l *StructLogger) CaptureStart(from sdk.AccAddress, to sdk.AccAddress, create bool, input []byte, gas uint64, value *big.Int) error {
 	return nil
+}
+
+// CaptureState logs a new structured log message and pushes it out to the environment
+//
+// CaptureState also tracks SSTORE ops to track dirty values.
+func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
+	// check if already accumulated the specified number of logs
+	if l.cfg.Limit != 0 && l.cfg.Limit <= len(l.logs) {
+		return ErrTraceLimitReached
+	}
+
+	// initialise new changed values storage container for this contract if not presend
+	if l.changedValues[contract.Address()] == nil {
+		l.changedValues[contract.Address()] = make(Storage)
+	}
+
+	// capture SSTORE opcodes and determine the changed value and store it in the local storage container
+	if op == SSTORE && stack.len() >= 2 {
+		var (
+			value   = sdk.BigToHash(stack.data[stack.len()-2])
+			address = sdk.BigToHash(stack.data[stack.len()-1])
+		)
+
+		l.changedValues[contract.Address()][address] = value
+	}
+
+	// copy a snapshot of the current memory state to a new buffer
+	var mem []byte
+	if !l.cfg.DisableMemory {
+		mem = make([]byte, len(memory.Data()))
+		copy(mem, memory.Data())
+	}
+
+	// copy a snapshot of the current stack state to a new buffer
+	var stck []*big.Int
+	if !l.cfg.DisableStack {
+		stck = make([]*big.Int, len(stack.Data()))
+		for i, item := range stack.Data() {
+			stck[i] = new(big.Int).Set(item)
+		}
+	}
+
+	// copy a snapshot of the current storage to a new buffer
+	var storage Storage
+	if !l.cfg.DisableStorage {
+		storage = l.changedValues[contract.Address()].Copy()
+	}
+
+	// create a new snapshot of the EVM
+	log := StructLog{pc, op, gas, cost, mem, memory.Len(), stck, storage, depth, env.StateDB.GetRefund(), err}
+
+	l.logs = append(l.logs, log)
+	return nil
+}
+
+// CaptureFault implements the Tracer interface to trace an execution fault
+// while running an opcode.
+func (l *StructLogger) CaptureFault(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
+	return nil
+}
+
+// CaptureEnd is called after the call finishes to finalize the tracing
+func (l *StructLogger) CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error {
+	l.output = output
+	l.err = err
+	if l.cfg.Debug {
+		fmt.Printf("0x%x\n", output)
+		if err != nil {
+			fmt.Printf("error: %v\n", err)
+		}
+	}
+	return nil
+}
+
+// StructLogs returns the captured log entries
+func (l *StructLogger) StructLogs() []StructLog {
+	return l.logs
+}
+
+// Error returns the VM error captured by the trace
+func (l *StructLogger) Error() error {
+	return l.err
+}
+
+// Output returns the VM return value captured by the trace
+func (l *StructLogger) Output() []byte {
+	return l.output
 }

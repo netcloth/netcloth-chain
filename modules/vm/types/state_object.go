@@ -180,6 +180,12 @@ func (so *stateObject) markSuicided() {
 	so.suicided = true
 }
 
+func (so *stateObject) commitCode() {
+	ctx := so.stateDB.ctx
+	store := ctx.KVStore(so.stateDB.codeKey)
+	store.Set(so.CodeHash(), so.code)
+}
+
 // ----------------------------------------------------------------------------
 // Getters
 // ----------------------------------------------------------------------------
