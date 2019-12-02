@@ -30,7 +30,8 @@ type (
 var (
 	NewKeeper = keeper.NewKeeper
 
-	CreateAddress = common.CreateAddress
+	CreateAddress  = common.CreateAddress
+	CreateAddress2 = common.CreateAddress2
 
 	ErrOutOfGas                 = types.ErrOutOfGas
 	ErrCodeStoreOutOfGas        = types.ErrCodeStoreOutOfGas

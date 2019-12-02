@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 
 	"github.com/tendermint/tendermint/crypto"
@@ -107,9 +109,9 @@ func (evm *EVM) Interpreter() Interpreter {
 }
 
 // Create creates a new contract using code as deployment code
-func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.Address, leftOverGas uint64, err error) {
-	//contractAddr = CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
-	//return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
+func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.AccAddress, leftOverGas uint64, err error) {
+	contractAddr = CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
+	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
 	return nil, nil, 0, nil
 }
 
@@ -184,8 +186,9 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 // The different between Create2 with Create is Create2 uses sha3(0xff ++ msg.sender ++ salt ++ sha3(init_code))[12:]
 // instead of the usual sender-and-nonce-hash as the address where the contract is initialized at.
 func (evm *EVM) Create2(caller ContractRef, code []byte, gas uint64, endowment *big.Int, salt *big.Int) (ret []byte, contractAddr sdk.AccAddress, leftOverGas uint64, err error) {
-	// TODO
-	return
+	codeAndHash := &codeAndHash{code: code}
+	contractAddr = CreateAddress2(caller.Address(), common.BigToHash(salt), codeAndHash.Hash().Bytes())
+	return evm.create(caller, codeAndHash, gas, endowment, contractAddr)
 }
 
 func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
