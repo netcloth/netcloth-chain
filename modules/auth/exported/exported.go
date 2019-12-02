@@ -27,6 +27,12 @@ type Account interface {
 	GetSequence() uint64
 	SetSequence(uint64) error
 
+	GetCodeHash() []byte
+	SetCodeHash(codeHash []byte)
+
+	//GetCode() []byte
+	//SetCode(codeHash []byte)
+
 	GetCoins() sdk.Coins
 	SetCoins(sdk.Coins) error
 

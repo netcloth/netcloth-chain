@@ -27,6 +27,9 @@ type BaseAccount struct {
 	PubKey        crypto.PubKey  `json:"public_key" yaml:"public_key"`
 	AccountNumber uint64         `json:"account_number" yaml:"account_number"`
 	Sequence      uint64         `json:"sequence" yaml:"sequence"`
+
+	// contract code hash
+	CodeHash []byte
 }
 
 // NewBaseAccount creates a new BaseAccount object
@@ -130,10 +133,56 @@ func (acc *BaseAccount) SetSequence(seq uint64) error {
 	return nil
 }
 
+// GetCodeHash - Implements sdk.Account.
+func (acc *BaseAccount) GetCodeHash() []byte {
+	return acc.CodeHash
+}
+
+// SetCodeHash - Implements sdk.Account.
+func (acc *BaseAccount) SetCodeHash(codeHash []byte) {
+	acc.CodeHash = codeHash
+}
+
+//// GetCode - Implements sdk.Account.
+//func (acc *BaseAccount) GetCode() []byte {
+//	//TODO get code from storage
+//	return nil
+//}
+//
+//// SetCode - Implements sdk.Account.
+//func (acc *BaseAccount) SetCode(code []byte) {
+//	codeHash := crypto.Sha256(code)
+//	acc.SetCodeHash(codeHash)
+//}
+
 // SpendableCoins returns the total set of spendable coins. For a base account,
 // this is simply the base coins.
 func (acc *BaseAccount) SpendableCoins(_ time.Time) sdk.Coins {
 	return acc.GetCoins()
+}
+
+// Balance returns the balance of an account
+func (acc *BaseAccount) Balance() sdk.Int {
+	return acc.GetCoins().AmountOf(sdk.NativeTokenName)
+}
+
+// SetBalance sets an account's balance of native token
+func (acc *BaseAccount) SetBalance(amt sdk.Int) {
+	coins := acc.GetCoins()
+	diff := amt.Sub(coins.AmountOf(sdk.NativeTokenName))
+	if diff.IsZero() {
+		return
+	} else if diff.IsPositive() {
+		// Increase coins to amount
+		coins = coins.Add(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff)})
+	} else {
+		// Decrease coin to amount
+		coins = coins.Sub(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff.Neg())})
+	}
+
+	if err := acc.SetCoins(coins); err != nil {
+		panic(fmt.Sprintf("Could not set coins for address %s", acc.GetAddress()))
+	}
 }
 
 // MarshalYAML returns the YAML representation of an account.
