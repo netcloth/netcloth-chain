@@ -2,6 +2,7 @@ package vm
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 
@@ -139,7 +140,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 	// Initialise a new contract and set the code that is to be used by the EVM.
 	// The contract is a scoped environment for this execution context only.
-	contract := NetContract(caller, AccountRef(address), value, gas)
+	contract := NewContract(caller, AccountRef(address), value, gas)
 	contract.SetCodeOptionalHash(&address, codeAndHash)
 
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
@@ -188,8 +189,57 @@ func (evm *EVM) Create2(caller ContractRef, code []byte, gas uint64, endowment *
 }
 
 func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
-	// TODO
-	return
+	if evm.vmConfig.NoRecursion && evm.depth > 0 {
+		return nil, gas, nil
+	}
+
+	if evm.depth > int(CallCreateDepth) {
+		return nil, gas, ErrDepth
+	}
+
+	if !evm.Context.CanTransfer(caller.Address(), value) {
+		return nil, gas, ErrInsufficientBalance
+	}
+
+	var (
+		to       = AccountRef(addr)
+		snapshot = evm.StateDB.Snapshot()
+	)
+	if !evm.StateDB.Exist(addr) {
+		precompiles := PrecompiledContractsIstanbul
+
+		if precompiles[addr.String()] == nil && value.Sign() == 0 {
+			// Calling a non existing account, don't do anything, but ping the tracer
+			if evm.vmConfig.Debug && evm.depth == 0 {
+				evm.vmConfig.Tracer.CaptureStart(caller.Address(), addr, false, input, gas, value)
+				evm.vmConfig.Tracer.CaptureEnd(ret, 0, 0, nil)
+			}
+			return nil, gas, nil
+		}
+		evm.StateDB.CreateAccount(addr)
+	}
+	evm.Transfer(caller.Address(), to.Address(), value)
+
+	contract := NewContract(caller, to, value, gas)
+	contract.SetCallCode(&addr, evm.StateDB.GetCodeHash(addr), evm.StateDB.GetCode(addr))
+
+	start := time.Now()
+	if evm.vmConfig.Debug && evm.depth == 0 {
+		evm.vmConfig.Tracer.CaptureStart(caller.Address(), addr, false, input, gas, value)
+
+		defer func() {
+			evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
+		}()
+	}
+	ret, err = run(evm, contract, input, false)
+
+	if err != nil {
+		evm.StateDB.RevertToSnapshot(snapshot)
+		if err != errExecutionReverted {
+			contract.UseGas(contract.Gas)
+		}
+	}
+	return ret, contract.Gas, err
 }
 
 func (evm *EVM) CallCode(caller ContractRef, addr sdk.AccAddress, input []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
