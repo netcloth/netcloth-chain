@@ -39,7 +39,7 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	}
 
 	accAddr := sdk.AccAddress(req.Data)
-	acc := k.ak.GetAccount(ctx, accAddr)
+	acc := k.AK.GetAccount(ctx, accAddr)
 	if acc == nil {
 		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", accAddr))
 	}

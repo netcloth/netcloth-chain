@@ -648,7 +648,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	gas -= gas / 64
 
 	contract.UseGas(0)
-	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
+	res, addr, returnGas, suberr := interpreter.evm.Create(contract.Address(), input, gas, value)
 	if suberr == ErrCodeStoreOutOfGas {
 		stack.push(interpreter.intPool.getZero())
 	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {

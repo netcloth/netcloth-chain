@@ -22,8 +22,8 @@ type Keeper struct {
 	storeTKey  sdk.StoreKey
 	cdc        *codec.Codec
 	paramstore params.Subspace
-	ak         types.AccountKeeper
-	bk         types.BankKeeper
+	AK         types.AccountKeeper
+	BK         types.BankKeeper
 
 	// codespace
 	codespace sdk.CodespaceType
@@ -39,8 +39,8 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
 		cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:  codespace,
-		ak:         ak,
-		bk:         bk,
+		AK:         ak,
+		BK:         bk,
 	}
 }
 
@@ -55,20 +55,20 @@ func (k Keeper) GetContractCode(ctx sdk.Context, codeHash []byte) (code []byte, 
 	return code, code != nil
 }
 
-func (k Keeper) setContractCode(ctx sdk.Context, codeHash, code []byte) {
+func (k Keeper) SetContractCode(ctx sdk.Context, codeHash, code []byte) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetContractCodeKey(codeHash), code)
 }
 
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
-	acc := k.ak.GetAccount(ctx, msg.From)
+	acc := k.AK.GetAccount(ctx, msg.From)
 	if acc == nil {
 		return sdk.ErrInvalidAddress(fmt.Sprintf("account %s does not exist", msg.From.String()))
 	}
 
 	contractAddr := common.CreateAddress(msg.From, acc.GetSequence())
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v\n", contractAddr.String()))
-	contractAcc := k.ak.GetAccount(ctx, contractAddr)
+	contractAcc := k.AK.GetAccount(ctx, contractAddr)
 	if contractAcc != nil {
 		return types.ErrContractAddressCollision(fmt.Sprintf("contract %s existed", contractAddr.String()))
 	}
@@ -88,17 +88,17 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 	codeHash := tmcrypto.Sha256(msg.Code)
 
 	// create account
-	contractAcc = k.ak.NewAccountWithAddress(ctx, contractAddr.Bytes())
+	contractAcc = k.AK.NewAccountWithAddress(ctx, contractAddr.Bytes())
 	contractAcc.SetCodeHash(codeHash)
-	k.ak.SetAccount(ctx, contractAcc)
+	k.AK.SetAccount(ctx, contractAcc)
 
 	// transfer
-	k.bk.SendCoins(ctx, msg.From, contractAddr.Bytes(), sdk.NewCoins(msg.Amount))
+	k.BK.SendCoins(ctx, msg.From, contractAddr.Bytes(), sdk.NewCoins(msg.Amount))
 
 	// store code
 	_, found := k.GetContractCode(ctx, codeHash)
 	if !found {
-		k.setContractCode(ctx, codeHash, msg.Code)
+		k.SetContractCode(ctx, codeHash, msg.Code)
 	}
 
 	return nil

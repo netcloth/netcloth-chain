@@ -147,12 +147,12 @@ func (ch refundChange) dirtied() *sdk.AccAddress {
 
 // addLogChange
 func (ch addLogChange) revert(s *CommitStateDB) {
-	logs := s.logs[ch.txhash]
-	if len(logs) == 1 {
-		delete(s.logs, ch.txhash)
-	} else {
-		s.logs[ch.txhash] = logs[:len(logs)-1]
-	}
+	//logs := s.logs[ch.txhash]
+	//if len(logs) == 1 {
+	//	delete(s.logs, ch.txhash)
+	//} else {
+	//	s.logs[ch.txhash] = logs[:len(logs)-1]
+	//}
 
 	s.logSize--
 }

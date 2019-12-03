@@ -98,6 +98,10 @@ var _ yaml.Marshaler = ConsAddress{}
 // When marshaled to a string or JSON, it uses Bech32.
 type AccAddress []byte
 
+func (ar AccAddress) Address() AccAddress {
+	return ar
+}
+
 // AccAddressFromHex creates an AccAddress from a hex string.
 func AccAddressFromHex(address string) (addr AccAddress, err error) {
 	if len(address) == 0 {

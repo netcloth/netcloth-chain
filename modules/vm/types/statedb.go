@@ -6,10 +6,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/netcloth/netcloth-chain/modules/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -25,9 +23,9 @@ type revision struct {
 type CommitStateDB struct {
 	ctx sdk.Context
 
-	ak         auth.AccountKeeper
-	storageKey sdk.StoreKey
-	codeKey    sdk.StoreKey
+	AK AccountKeeper
+	BK BankKeeper
+	VK VMKeeper
 
 	// maps that hold 'live' objects, which will get modified while processing a
 	// state transition
@@ -39,9 +37,9 @@ type CommitStateDB struct {
 
 	thash, bhash sdk.Hash
 	txIndex      int
-	logs         map[sdk.Hash][]*types.Log
-	logSize      uint
-	preimages    map[sdk.Hash][]byte
+	//logs         map[sdk.Hash][]*types.Log
+	logSize   uint
+	preimages map[sdk.Hash][]byte
 
 	// DB error.
 	// State objects are used by the consensus core and VM which are
@@ -64,12 +62,12 @@ type CommitStateDB struct {
 //
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
-func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ctx sdk.Context, ak AccountKeeper, bk BankKeeper, vk VMKeeper) *CommitStateDB {
 	return &CommitStateDB{
 		ctx:               ctx,
-		ak:                ak,
-		storageKey:        storageKey,
-		codeKey:           codeKey,
+		AK:                ak,
+		BK:                bk,
+		VK:                vk,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		preimages:         make(map[sdk.Hash][]byte),
@@ -179,7 +177,7 @@ func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject 
 func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
 	prevObj = csdb.getStateObject(addr)
 
-	acc := csdb.ak.NewAccountWithAddress(csdb.ctx, addr)
+	acc := csdb.AK.NewAccountWithAddress(csdb.ctx, addr)
 	newObj = newObject(acc)
 	newObj.SetNonce(0)
 
@@ -206,7 +204,7 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 	}
 
 	// otherwise, attempt to fetch the account from the account mapper
-	acc := csdb.ak.GetAccount(csdb.ctx, addr.Bytes())
+	acc := csdb.AK.GetAccount(csdb.ctx, addr.Bytes())
 	if acc == nil {
 		csdb.setError(fmt.Errorf("no account found for address: %s", addr.String()))
 		return nil
@@ -370,12 +368,12 @@ func (csdb *CommitStateDB) ClearStateObjects() {
 }
 
 func (csdb *CommitStateDB) updateStateObject(so *stateObject) {
-	csdb.ak.SetAccount(csdb.ctx, so.account)
+	csdb.AK.SetAccount(csdb.ctx, so.account)
 }
 
 func (csdb *CommitStateDB) deleteStateObject(so *stateObject) {
 	so.deleted = true
-	csdb.ak.RemoveAccount(csdb.ctx, so.account)
+	//csdb.ak.RemoveAccount(csdb.ctx, so.account)
 }
 
 func (csdb *CommitStateDB) clearJournalAndRefund() {

@@ -14,3 +14,8 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
 }
+
+type VMKeeper interface {
+	GetContractCode(ctx sdk.Context, codeHash []byte) (code []byte, found bool)
+	SetContractCode(ctx sdk.Context, codeHash, code []byte)
+}

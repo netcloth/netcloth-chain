@@ -181,9 +181,9 @@ func (so *stateObject) markSuicided() {
 }
 
 func (so *stateObject) commitCode() {
-	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
-	store.Set(so.CodeHash(), so.code)
+	//ctx := so.stateDB.ctx
+	//store := ctx.KVStore(so.stateDB.codeKey)
+	//store.Set(so.CodeHash(), so.code)
 }
 
 // ----------------------------------------------------------------------------
@@ -212,25 +212,27 @@ func (so *stateObject) Nonce() uint64 {
 
 // Code returns the contract code associated with this object
 func (so *stateObject) Code() []byte {
-	// TODO
-	if so.code != nil {
-		return so.code
-	}
-
-	if bytes.Equal(so.CodeHash(), emptyCodeHash.Bytes()) {
-		return nil
-	}
-
-	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
-	code := store.Get(so.CodeHash())
-
-	if len(code) == 0 {
-		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
-	}
-
-	so.code = code
+	code, _ := so.stateDB.VK.GetContractCode(so.stateDB.ctx, so.account.CodeHash)
 	return code
+	// TODO
+	//if so.code != nil {
+	//	return so.code
+	//}
+	//
+	//if bytes.Equal(so.CodeHash(), emptyCodeHash.Bytes()) {
+	//	return nil
+	//}
+	//
+	//ctx := so.stateDB.ctx
+	//store := ctx.KVStore(so.stateDB.codeKey)
+	//code := store.Get(so.CodeHash())
+	//
+	//if len(code) == 0 {
+	//	so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
+	//}
+	//
+	//so.code = code
+	//return code
 }
 
 // GetState retrieves a value from the account storage trie. Note, the key will be prefixed with the address of the state object
@@ -250,25 +252,26 @@ func (so *stateObject) GetState(key sdk.Hash) sdk.Hash {
 // GetCommittedState retrieves a value from the committed account storage trie.
 // Note, the key will be prefixed with the address of the state object.
 func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
-	prefixKey := so.GetStorageByAddressKey(key.Bytes())
-
-	// if we have the original value cached, return that
-	value, cached := so.originStorage[prefixKey]
-	if cached {
-		return value
-	}
-
-	// otherwise load the value from KVStore
-	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
-	rawValue := store.Get(prefixKey.Bytes())
-
-	if len(rawValue) > 0 {
-		value.SetBytes(rawValue)
-	}
-
-	so.originStorage[prefixKey] = value
-	return value
+	//prefixKey := so.GetStorageByAddressKey(key.Bytes())
+	//
+	//// if we have the original value cached, return that
+	//value, cached := so.originStorage[prefixKey]
+	//if cached {
+	//	return value
+	//}
+	//
+	//// otherwise load the value from KVStore
+	//ctx := so.stateDB.ctx
+	//store := ctx.KVStore(so.stateDB.storageKey)
+	//rawValue := store.Get(prefixKey.Bytes())
+	//
+	//if len(rawValue) > 0 {
+	//	value.SetBytes(rawValue)
+	//}
+	//
+	//so.originStorage[prefixKey] = value
+	//return value
+	return sdk.Hash{}
 }
 
 // ----------------------------------------------------------------------------
