@@ -30,7 +30,8 @@ type (
 var (
 	NewKeeper = keeper.NewKeeper
 
-	CreateAddress = common.CreateAddress
+	CreateAddress  = common.CreateAddress
+	CreateAddress2 = common.CreateAddress2
 
 	ErrOutOfGas                 = types.ErrOutOfGas
 	ErrCodeStoreOutOfGas        = types.ErrCodeStoreOutOfGas
@@ -39,4 +40,12 @@ var (
 	ErrInsufficientBalance      = types.ErrInsufficientBalance
 	ErrContractAddressCollision = types.ErrContractAddressCollision
 	ErrNoCompatibleInterpreter  = types.ErrNoCompatibleInterpreter
+	ErrEmptyInputs              = types.ErrEmptyInputs
+	ErrNoCodeExist              = types.ErrNoCodeExist
+	ErrMaxCodeSizeExceeded      = types.ErrMaxCodeSizeExceeded
+	ErrWriteProtection          = types.ErrWriteProtection
+	ErrReturnDataOutOfBounds    = types.ErrReturnDataOutOfBounds
+	ErrExecutionReverted        = types.ErrExecutionReverted
+	ErrInvalidJump              = types.ErrInvalidJump
+	ErrGasUintOverflow          = types.ErrGasUintOverflow
 )

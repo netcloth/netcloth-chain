@@ -70,7 +70,7 @@ func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("contractAddr = %v\n", contractAddr.String()))
 	contractAcc := k.ak.GetAccount(ctx, contractAddr)
 	if contractAcc != nil {
-		return types.ErrContractAddressCollision(fmt.Sprintf("contract %s existed", contractAddr.String()))
+		return types.ErrContractAddressCollision()
 	}
 
 	balanceEnough := false

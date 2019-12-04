@@ -122,7 +122,7 @@ func (l *StructLogger) CaptureStart(from sdk.AccAddress, to sdk.AccAddress, crea
 func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
 	// check if already accumulated the specified number of logs
 	if l.cfg.Limit != 0 && l.cfg.Limit <= len(l.logs) {
-		return ErrTraceLimitReached
+		return ErrTraceLimitReached()
 	}
 
 	// initialise new changed values storage container for this contract if not presend

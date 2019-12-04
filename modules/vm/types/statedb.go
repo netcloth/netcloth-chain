@@ -302,6 +302,14 @@ func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	return sdk.BytesToHash(so.CodeHash())
 }
 
+func (csdb *CommitStateDB) GetState(addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
+	so := csdb.getStateObject(addr)
+	if so != nil {
+		return so.GetState(hash)
+	}
+	return sdk.Hash{}
+}
+
 func (csdb *CommitStateDB) GetCommittedState(addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
 	so := csdb.getStateObject(addr)
 	if so != nil {
