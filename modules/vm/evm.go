@@ -23,6 +23,20 @@ type (
 )
 
 func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, sdk.Error) {
+	for _, interpreter := range evm.interpreters {
+		if interpreter.CanRun(contract.Code) {
+			if evm.interpreter != interpreter {
+				// Ensure that the interpreter pointer is set back
+				// to its current value upon return.
+				defer func(i Interpreter) {
+					evm.interpreter = i
+				}(evm.interpreter)
+				evm.interpreter = interpreter
+			}
+			return interpreter.Run(contract, input, readOnly)
+		}
+	}
+
 	return nil, ErrNoCompatibleInterpreter()
 }
 
@@ -69,7 +83,7 @@ type EVM struct {
 	// depth is the current call stack
 	depth int
 
-	chainConfig *ChainConfig
+	chainConfig ChainConfig
 
 	// virtual machine configuration options used to initialise the vm
 	vmConfig Config
@@ -109,7 +123,6 @@ func (evm *EVM) Interpreter() Interpreter {
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.AccAddress, leftOverGas uint64, err sdk.Error) {
 	contractAddr = CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
 	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
-	return nil, nil, 0, nil
 }
 
 func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64, value *big.Int, address sdk.AccAddress) ([]byte, sdk.AccAddress, uint64, sdk.Error) {

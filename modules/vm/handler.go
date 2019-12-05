@@ -39,6 +39,8 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: nil,
+		Price:     sdk.NewInt(1000000),
+		GasLimit:  sdk.NewInt(10000000),
 		Amount:    msg.Amount.Amount,
 		Payload:   msg.Code,
 		CSDB:      k.CSDB.WithContext(ctx),
