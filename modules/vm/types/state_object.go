@@ -181,7 +181,7 @@ func (so *stateObject) markSuicided() {
 }
 
 func (so *stateObject) commitCode() {
-	ctx := so.stateDB.ctx
+	ctx := so.stateDB.Ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
 	store.Set(so.CodeHash(), so.code)
 }
@@ -221,7 +221,7 @@ func (so *stateObject) Code() []byte {
 		return nil
 	}
 
-	ctx := so.stateDB.ctx
+	ctx := so.stateDB.Ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
@@ -259,7 +259,7 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 	}
 
 	// otherwise load the value from KVStore
-	ctx := so.stateDB.ctx
+	ctx := so.stateDB.Ctx
 	store := ctx.KVStore(so.stateDB.storageKey)
 	rawValue := store.Get(prefixKey.Bytes())
 

@@ -1,6 +1,8 @@
 package types
 
-import sdk "github.com/netcloth/netcloth-chain/types"
+import (
+	sdk "github.com/netcloth/netcloth-chain/types"
+)
 
 // journalEntry is a modification entry in the state change journal that can be reverted on demand
 type journalEntry interface {

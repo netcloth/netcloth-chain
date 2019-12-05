@@ -4,13 +4,12 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
+
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
-
-var emptyCodeHash = crypto.Sha256(nil)
 
 type (
 	// CanTransferFunc is the signature of a transfer guard function
@@ -19,6 +18,7 @@ type (
 	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int)
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
+	//GetHashFunc func(sdk.Context) sdk.Hash
 	GetHashFunc func(uint64) sdk.Hash
 )
 
@@ -42,7 +42,7 @@ func (c *codeAndHash) Hash() sdk.Hash {
 // Once provided it shouldn't be modified
 type Context struct {
 	// CanTransfer returns whether the account contains
-	// sufficient ether to transfer the value
+	// sufficient tolen to transfer the value
 	CanTransfer CanTransferFunc
 	// Transfer transfers ether from one account to the other
 	Transfer TransferFunc

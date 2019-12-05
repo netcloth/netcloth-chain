@@ -74,9 +74,10 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
+	minGasPrices := sdk.DecCoins{sdk.NewInt64DecCoin("unch", 1)}
 	return app.NewNCHApp(
 		logger, db, traceStore, true, invCheckPeriod,
-		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices.String()),
 	)
 }
 

@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"reflect"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
 )
 
 const (
@@ -107,7 +107,8 @@ func (h Hash) TerminalString() string {
 
 // UnmarshalText parses a hash in hex syntax.
 func (h *Hash) UnmarshalText(input []byte) error {
-	return hexutil.UnmarshalFixedText("Hash", input, h[:])
+	//return hexutil.UnmarshalFixedText("Hash", input, h[:])
+	return nil
 }
 
 //// UnmarshalJSON parses a hash in hex syntax.
@@ -117,7 +118,8 @@ func (h *Hash) UnmarshalText(input []byte) error {
 
 // MarshalText returns the hex representation of h.
 func (h Hash) MarshalText() ([]byte, error) {
-	return hexutil.Bytes(h[:]).MarshalText()
+	//return hexutil.Bytes(h[:]).MarshalText()
+	return nil, nil
 }
 
 //// SetBytes sets the hash to the value of b.

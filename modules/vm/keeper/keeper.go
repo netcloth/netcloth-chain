@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/common"
-
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -25,14 +24,14 @@ type Keeper struct {
 	ak         types.AccountKeeper
 	bk         types.BankKeeper
 
+	CSDB *types.CommitStateDB
+
 	// codespace
 	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
-	codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper, bk types.BankKeeper) Keeper {
-
+func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper, bk types.BankKeeper, csdb *types.CommitStateDB) Keeper {
 	return Keeper{
 		storeKey:   key,
 		storeTKey:  tkey,
@@ -41,6 +40,7 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey,
 		codespace:  codespace,
 		ak:         ak,
 		bk:         bk,
+		CSDB:       csdb,
 	}
 }
 

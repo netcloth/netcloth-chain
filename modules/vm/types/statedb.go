@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
+
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/netcloth/netcloth-chain/modules/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -23,9 +23,11 @@ type revision struct {
 }
 
 type CommitStateDB struct {
-	ctx sdk.Context
+	Ctx sdk.Context
 
-	ak         auth.AccountKeeper
+	AK AccountKeeper
+	BK BankKeeper
+
 	storageKey sdk.StoreKey
 	codeKey    sdk.StoreKey
 
@@ -64,10 +66,10 @@ type CommitStateDB struct {
 //
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
-func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak AccountKeeper, bk BankKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
-		ctx:               ctx,
-		ak:                ak,
+		AK:                ak,
+		BK:                bk,
 		storageKey:        storageKey,
 		codeKey:           codeKey,
 		stateObjects:      make(map[string]*stateObject),
@@ -79,7 +81,7 @@ func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKe
 
 // WithContext returns a Database with an updated sdk context
 func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
-	csdb.ctx = ctx
+	csdb.Ctx = ctx
 	return csdb
 }
 
@@ -179,7 +181,7 @@ func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject 
 func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
 	prevObj = csdb.getStateObject(addr)
 
-	acc := csdb.ak.NewAccountWithAddress(csdb.ctx, addr)
+	acc := csdb.AK.NewAccountWithAddress(csdb.Ctx, addr)
 	newObj = newObject(acc)
 	newObj.SetNonce(0)
 
@@ -206,7 +208,7 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 	}
 
 	// otherwise, attempt to fetch the account from the account mapper
-	acc := csdb.ak.GetAccount(csdb.ctx, addr.Bytes())
+	acc := csdb.AK.GetAccount(csdb.Ctx, addr.Bytes())
 	if acc == nil {
 		csdb.setError(fmt.Errorf("no account found for address: %s", addr.String()))
 		return nil
@@ -378,12 +380,12 @@ func (csdb *CommitStateDB) ClearStateObjects() {
 }
 
 func (csdb *CommitStateDB) updateStateObject(so *stateObject) {
-	csdb.ak.SetAccount(csdb.ctx, so.account)
+	csdb.AK.SetAccount(csdb.Ctx, so.account)
 }
 
 func (csdb *CommitStateDB) deleteStateObject(so *stateObject) {
 	so.deleted = true
-	csdb.ak.RemoveAccount(csdb.ctx, so.account)
+	csdb.AK.RemoveAccount(csdb.Ctx, so.account)
 }
 
 func (csdb *CommitStateDB) clearJournalAndRefund() {

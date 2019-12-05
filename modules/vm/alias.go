@@ -19,8 +19,6 @@ const (
 type (
 	Keeper = keeper.Keeper
 
-	StateTransition = types.StateTransition
-
 	MsgContractCreate = types.MsgContractCreate
 	MsgContractCall   = types.MsgContractCall
 

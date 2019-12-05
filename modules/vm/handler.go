@@ -31,14 +31,19 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		return err.Result()
 	}
 
-	err = k.DoContractCreate(ctx, msg)
-	if err != nil {
-		return err.Result()
+	//err = k.DoContractCreate(ctx, msg)
+	//if err != nil {
+	//	return err.Result()
+	//}
+
+	st := StateTransition{
+		Sender:    msg.From,
+		Recipient: nil,
+		Amount:    msg.Amount.Amount,
+		Payload:   msg.Code,
+		CSDB:      k.CSDB.WithContext(ctx),
 	}
 
-	// check recur deep < 1024
-
-	st := StateTransition{}
 	_, res := st.TransitionCSDB(ctx)
 	return res
 }

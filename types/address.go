@@ -147,6 +147,10 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	return AccAddress(bz), nil
 }
 
+func (ad AccAddress) Address() AccAddress {
+	return ad
+}
+
 // Returns boolean for whether two AccAddresses are Equal
 func (aa AccAddress) Equals(aa2 Address) bool {
 	if aa.Empty() && aa2.Empty() {
