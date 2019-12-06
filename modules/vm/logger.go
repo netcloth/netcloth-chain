@@ -93,7 +93,7 @@ type StructLogger struct {
 	cfg LogConfig
 
 	logs          []StructLog
-	changedValues map[sdk.Address]Storage
+	changedValues map[string]Storage
 	output        []byte
 	err           error
 }
@@ -101,7 +101,7 @@ type StructLogger struct {
 // NewStructLogger returns a new logger
 func NewStructLogger(cfg *LogConfig) *StructLogger {
 	logger := &StructLogger{
-		changedValues: make(map[sdk.Address]Storage),
+		changedValues: make(map[string]Storage),
 	}
 
 	if cfg != nil {
@@ -126,8 +126,9 @@ func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost ui
 	}
 
 	// initialise new changed values storage container for this contract if not presend
-	if l.changedValues[contract.Address()] == nil {
-		l.changedValues[contract.Address()] = make(Storage)
+	fmt.Println(contract.Address().String())
+	if l.changedValues[contract.Address().String()] == nil {
+		l.changedValues[contract.Address().String()] = make(Storage)
 	}
 
 	// capture SSTORE opcodes and determine the changed value and store it in the local storage container
@@ -137,7 +138,7 @@ func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost ui
 			address = sdk.BigToHash(stack.data[stack.len()-1])
 		)
 
-		l.changedValues[contract.Address()][address] = value
+		l.changedValues[contract.Address().String()][address] = value
 	}
 
 	// copy a snapshot of the current memory state to a new buffer
@@ -159,7 +160,7 @@ func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost ui
 	// copy a snapshot of the current storage to a new buffer
 	var storage Storage
 	if !l.cfg.DisableStorage {
-		storage = l.changedValues[contract.Address()].Copy()
+		storage = l.changedValues[contract.Address().String()].Copy()
 	}
 
 	// create a new snapshot of the EVM

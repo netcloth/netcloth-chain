@@ -53,11 +53,11 @@ func TestStoreCapture(t *testing.T) {
 	stack.push(big.NewInt(0))
 	var index sdk.Hash
 	logger.CaptureState(env, 0, SSTORE, 0, 0, mem, stack, contract, 0, nil)
-	if len(logger.changedValues[contract.Address()]) == 0 {
-		t.Fatalf("expected exactly 1 changed value on address %x, got %d", contract.Address(), len(logger.changedValues[contract.Address()]))
+	if len(logger.changedValues[contract.Address().String()]) == 0 {
+		t.Fatalf("expected exactly 1 changed value on address %s, got %d", contract.Address().String(), len(logger.changedValues[contract.Address().String()]))
 	}
 	exp := sdk.BigToHash(big.NewInt(1))
-	if logger.changedValues[contract.Address()][index] != exp {
-		t.Errorf("expected %x, got %x", exp, logger.changedValues[contract.Address()][index])
+	if logger.changedValues[contract.Address().String()][index] != exp {
+		t.Errorf("expected %x, got %x", exp, logger.changedValues[contract.Address().String()][index])
 	}
 }
