@@ -1,7 +1,9 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
@@ -122,6 +124,7 @@ func (evm *EVM) Interpreter() Interpreter {
 // Create creates a new contract using code as deployment code
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr sdk.AccAddress, leftOverGas uint64, err sdk.Error) {
 	contractAddr = CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
+	fmt.Fprint(os.Stderr, fmt.Sprintf("contract addr = %s\n", contractAddr.String()))
 	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
 }
 
