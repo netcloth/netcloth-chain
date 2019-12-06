@@ -46,7 +46,7 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 
 	code, found := k.GetContractCode(ctx, acc.GetCodeHash())
 	if !found {
-		return nil, types.ErrNoCodeExist(fmt.Sprintf("codeHash %s does not have code", acc.GetCodeHash()))
+		return nil, types.ErrNoCodeExist()
 	}
 
 	return code, nil

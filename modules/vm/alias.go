@@ -19,8 +19,6 @@ const (
 type (
 	Keeper = keeper.Keeper
 
-	StateTransition = types.StateTransition
-
 	MsgContractCreate = types.MsgContractCreate
 	MsgContractCall   = types.MsgContractCall
 
@@ -28,7 +26,8 @@ type (
 )
 
 var (
-	NewKeeper = keeper.NewKeeper
+	NewKeeper        = keeper.NewKeeper
+	NewCommitStateDB = types.NewCommitStateDB
 
 	CreateAddress  = common.CreateAddress
 	CreateAddress2 = common.CreateAddress2
@@ -40,4 +39,12 @@ var (
 	ErrInsufficientBalance      = types.ErrInsufficientBalance
 	ErrContractAddressCollision = types.ErrContractAddressCollision
 	ErrNoCompatibleInterpreter  = types.ErrNoCompatibleInterpreter
+	ErrEmptyInputs              = types.ErrEmptyInputs
+	ErrNoCodeExist              = types.ErrNoCodeExist
+	ErrMaxCodeSizeExceeded      = types.ErrMaxCodeSizeExceeded
+	ErrWriteProtection          = types.ErrWriteProtection
+	ErrReturnDataOutOfBounds    = types.ErrReturnDataOutOfBounds
+	ErrExecutionReverted        = types.ErrExecutionReverted
+	ErrInvalidJump              = types.ErrInvalidJump
+	ErrGasUintOverflow          = types.ErrGasUintOverflow
 )

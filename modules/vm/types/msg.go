@@ -4,6 +4,11 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+const (
+	TypeMsgContractCreate = "create_contract"
+	TypeMsgContractCall   = "call_contract"
+)
+
 var (
 	_ sdk.Msg = &MsgContractCreate{}
 	_ sdk.Msg = &MsgContractCall{}
@@ -34,7 +39,7 @@ type MsgContractCall struct {
 
 // MsgContractCreate
 func (msg MsgContractCreate) Route() string { return RouterKey }
-func (msg MsgContractCreate) Type() string  { return "create_contract" }
+func (msg MsgContractCreate) Type() string  { return TypeMsgContractCreate }
 
 func (msg MsgContractCreate) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.From}
@@ -51,7 +56,7 @@ func (msg MsgContractCreate) ValidateBasic() sdk.Error {
 
 // MsgContractCall
 func (msg MsgContractCall) Route() string { return RouterKey }
-func (msg MsgContractCall) Type() string  { return "call_contract" }
+func (msg MsgContractCall) Type() string  { return TypeMsgContractCall }
 
 func (msg MsgContractCall) GetSigners() []sdk.AccAddress {
 	return nil

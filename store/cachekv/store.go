@@ -10,9 +10,8 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/store/types"
-
 	"github.com/netcloth/netcloth-chain/store/tracekv"
+	"github.com/netcloth/netcloth-chain/store/types"
 )
 
 // If value is nil but deleted is false, it means the parent doesn't have the
