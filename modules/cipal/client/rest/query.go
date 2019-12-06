@@ -38,6 +38,11 @@ func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 			return
 		}
 
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
 		if err != nil && !strings.Contains(err.Error(), "not found") {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -62,6 +67,11 @@ func queryCIPALCount(cliCtx context.CLIContext, endpoint string) http.HandlerFun
 			return
 		}
 
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -83,6 +93,11 @@ func queryCIPALs(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
 			return
 		}
 
