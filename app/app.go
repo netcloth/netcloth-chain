@@ -4,10 +4,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/vm"
-
-	"github.com/netcloth/netcloth-chain/modules/ipal"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -23,12 +19,14 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/genaccounts"
 	"github.com/netcloth/netcloth-chain/modules/genutil"
 	"github.com/netcloth/netcloth-chain/modules/gov"
+	"github.com/netcloth/netcloth-chain/modules/ipal"
 	"github.com/netcloth/netcloth-chain/modules/mint"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	paramsclient "github.com/netcloth/netcloth-chain/modules/params/client"
 	"github.com/netcloth/netcloth-chain/modules/slashing"
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	"github.com/netcloth/netcloth-chain/modules/supply"
+	"github.com/netcloth/netcloth-chain/modules/vm"
 	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"

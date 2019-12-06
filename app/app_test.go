@@ -9,7 +9,6 @@ import (
 	db "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -26,7 +25,7 @@ func TestExport(t *testing.T) {
 }
 
 func setGenesis(app *NCHApp) error {
-	genesisState := simapp.NewDefaultGenesisState()
+	genesisState := NewDefaultGenesisState()
 
 	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
 	if err != nil {

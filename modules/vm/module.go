@@ -74,7 +74,7 @@ func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Val
 }
 
 func (a AppModule) ExportGenesis(sdk.Context) json.RawMessage {
-	panic("implement me")
+	return nil
 }
 
 func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {
