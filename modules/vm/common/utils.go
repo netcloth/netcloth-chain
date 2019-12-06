@@ -17,9 +17,9 @@ func CreateAddress(addr sdk.AccAddress, nonce uint64) sdk.AccAddress {
 
 func CreateAddress2(addr sdk.AccAddress, salt [32]byte, inithash []byte) sdk.AccAddress {
 	var bs []byte
-	bs = append(bs, crypto.Sha256([]byte{0xff})...)
+	bs = append(bs, []byte{0xff}...)
 	bs = append(bs, addr.Bytes()...)
 	bs = append(bs, salt[:]...)
 	bs = append(bs, inithash...)
-	return sdk.BytesToAddress(bs[12:])
+	return sdk.BytesToAddress(crypto.Sha256(bs)[12:])
 }
