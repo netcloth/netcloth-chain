@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,6 +14,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 var (
@@ -211,5 +213,337 @@ func TestJsonTestcases(t *testing.T) {
 		var testcases []TwoOperandTestcase
 		json.Unmarshal(data, &testcases)
 		testTwoOperandOp(t, testcases, twoOpMethods[name], name)
+	}
+}
+
+func opBenchmark(bench *testing.B, op func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error), args ...string) {
+	var (
+		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey), Config{})
+		stack          = newstack()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	// convert args
+	byteArgs := make([][]byte, len(args))
+	for i, arg := range args {
+		byteArgs[i] = common.Hex2Bytes(arg)
+	}
+	pc := uint64(0)
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		for _, arg := range byteArgs {
+			a := new(big.Int).SetBytes(arg)
+			stack.push(a)
+		}
+		op(&pc, evmInterpreter, nil, nil, stack)
+		stack.pop()
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func BenchmarkOpAdd64(b *testing.B) {
+	x := "ffffffff"
+	y := "fd37f3e2bba2c4f"
+
+	opBenchmark(b, opAdd, x, y)
+}
+
+func BenchmarkOpAdd128(b *testing.B) {
+	x := "ffffffffffffffff"
+	y := "f5470b43c6549b016288e9a65629687"
+
+	opBenchmark(b, opAdd, x, y)
+}
+
+func BenchmarkOpAdd256(b *testing.B) {
+	x := "0802431afcbce1fc194c9eaa417b2fb67dc75a95db0bc7ec6b1c8af11df6a1da9"
+	y := "a1f5aac137876480252e5dcac62c354ec0d42b76b0642b6181ed099849ea1d57"
+
+	opBenchmark(b, opAdd, x, y)
+}
+
+func BenchmarkOpSub64(b *testing.B) {
+	x := "51022b6317003a9d"
+	y := "a20456c62e00753a"
+
+	opBenchmark(b, opSub, x, y)
+}
+
+func BenchmarkOpSub128(b *testing.B) {
+	x := "4dde30faaacdc14d00327aac314e915d"
+	y := "9bbc61f5559b829a0064f558629d22ba"
+
+	opBenchmark(b, opSub, x, y)
+}
+
+func BenchmarkOpSub256(b *testing.B) {
+	x := "4bfcd8bb2ac462735b48a17580690283980aa2d679f091c64364594df113ea37"
+	y := "97f9b1765588c4e6b69142eb00d20507301545acf3e1238c86c8b29be227d46e"
+
+	opBenchmark(b, opSub, x, y)
+}
+
+func BenchmarkOpMul(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opMul, x, y)
+}
+
+func BenchmarkOpDiv256(b *testing.B) {
+	x := "ff3f9014f20db29ae04af2c2d265de17"
+	y := "fe7fb0d1f59dfe9492ffbf73683fd1e870eec79504c60144cc7f5fc2bad1e611"
+	opBenchmark(b, opDiv, x, y)
+}
+
+func BenchmarkOpDiv128(b *testing.B) {
+	x := "fdedc7f10142ff97"
+	y := "fbdfda0e2ce356173d1993d5f70a2b11"
+	opBenchmark(b, opDiv, x, y)
+}
+
+func BenchmarkOpDiv64(b *testing.B) {
+	x := "fcb34eb3"
+	y := "f97180878e839129"
+	opBenchmark(b, opDiv, x, y)
+}
+
+func BenchmarkOpSdiv(b *testing.B) {
+	x := "ff3f9014f20db29ae04af2c2d265de17"
+	y := "fe7fb0d1f59dfe9492ffbf73683fd1e870eec79504c60144cc7f5fc2bad1e611"
+
+	opBenchmark(b, opSdiv, x, y)
+}
+
+func BenchmarkOpMod(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opMod, x, y)
+}
+
+func BenchmarkOpSmod(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opSmod, x, y)
+}
+
+func BenchmarkOpExp(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opExp, x, y)
+}
+
+func BenchmarkOpSignExtend(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opSignExtend, x, y)
+}
+
+func BenchmarkOpLt(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opLt, x, y)
+}
+
+func BenchmarkOpGt(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opGt, x, y)
+}
+
+func BenchmarkOpSlt(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opSlt, x, y)
+}
+
+func BenchmarkOpSgt(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opSgt, x, y)
+}
+
+func BenchmarkOpEq(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opEq, x, y)
+}
+
+func BenchmarkOpEq2(b *testing.B) {
+	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	y := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201fffffffe"
+	opBenchmark(b, opEq, x, y)
+}
+
+func BenchmarkOpAnd(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opAnd, x, y)
+}
+
+func BenchmarkOpOr(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opOr, x, y)
+}
+
+func BenchmarkOpXor(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opXor, x, y)
+}
+
+func BenchmarkOpByte(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opByte, x, y)
+}
+
+func BenchmarkOpAddmod(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	z := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opAddmod, x, y, z)
+}
+
+func BenchmarkOpMulmod(b *testing.B) {
+	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	z := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+
+	opBenchmark(b, opMulmod, x, y, z)
+}
+
+func BenchmarkOpSHL(b *testing.B) {
+	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	y := "ff"
+
+	opBenchmark(b, opSHL, x, y)
+}
+
+func BenchmarkOpSHR(b *testing.B) {
+	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	y := "ff"
+
+	opBenchmark(b, opSHR, x, y)
+}
+
+func BenchmarkOpSAR(b *testing.B) {
+	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	y := "ff"
+
+	opBenchmark(b, opSAR, x, y)
+}
+
+func BenchmarkOpIsZero(b *testing.B) {
+	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	opBenchmark(b, opIszero, x)
+}
+
+func TestOpMstore(t *testing.T) {
+	var (
+		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey), Config{})
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(64)
+	pc := uint64(0)
+	v := "abcdef00000000000000abba000000000deaf000000c0de00100000000133700"
+	stack.pushN(new(big.Int).SetBytes(common.Hex2Bytes(v)), big.NewInt(0))
+	opMstore(&pc, evmInterpreter, nil, mem, stack)
+	if got := common.Bytes2Hex(mem.GetCopy(0, 32)); got != v {
+		t.Fatalf("Mstore fail, got %v, expected %v", got, v)
+	}
+	stack.pushN(big.NewInt(0x1), big.NewInt(0))
+	opMstore(&pc, evmInterpreter, nil, mem, stack)
+	if common.Bytes2Hex(mem.GetCopy(0, 32)) != "0000000000000000000000000000000000000000000000000000000000000001" {
+		t.Fatalf("Mstore failed to overwrite previous value")
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func TestCreateAddress2(t *testing.T) {
+	type testcase struct {
+		origin   string
+		salt     string
+		code     string
+		expected string
+	}
+
+	for i, tt := range []testcase{
+		{
+			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			salt:     "0x0000000000000000000000000000000000000000",
+			code:     "0x00",
+			expected: "nch1l2l35x4c06nzdemz4uy3grc0vk2gzphcdugdch",
+		},
+		{
+			origin:   "nch1l2l35x4c06nzdemz4uy3grc0vk2gzphcdugdch",
+			salt:     "0x0000000000000000000000000000000000000000",
+			code:     "0x00",
+			expected: "nch17tj3hmt5fdae3e7j2p3lw2xnt84aanr79f20uw",
+		},
+		{
+			origin:   "nch17tj3hmt5fdae3e7j2p3lw2xnt84aanr79f20uw",
+			salt:     "0xfeed000000000000000000000000000000000000",
+			code:     "0x00",
+			expected: "nch1y3rq2v0yy2ugcpkjyfsxh7p3jpfu08zphw82ze",
+		},
+		{
+			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			salt:     "0x0000000000000000000000000000000000000000",
+			code:     "0xdeadbeef",
+			expected: "nch1lxz5m0z5hyj4hgagthm5n4esghpazz8e2ajxxt",
+		},
+		{
+			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			salt:     "0xcafebabe",
+			code:     "0xdeadbeef",
+			expected: "nch1jh9ny6pmtm42aa2myl2k0mnq0dmrtag06fhm3t",
+		},
+		{
+			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			salt:     "0xcafebabe",
+			code:     "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+			expected: "nch1ed399kjapfxqqsea6dkk2uxrzepq8cjw5fxmql",
+		},
+		{
+			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			salt:     "0x0000000000000000000000000000000000000000",
+			code:     "0x",
+			expected: "nch1sv0mfghrpsp0usxcpc9eax8u2d9t4mx8qeglq8",
+		},
+	} {
+
+		origin, _ := sdk.AccAddressFromBech32(tt.origin)
+		salt := sdk.BytesToHash(common.FromHex(tt.salt))
+		codeHash := crypto.Sha256(common.FromHex(tt.code))
+		address := CreateAddress2(origin, salt, codeHash)
+
+		expected, _ := sdk.AccAddressFromBech32(tt.expected)
+		if !bytes.Equal(expected.Bytes(), address.Bytes()) {
+			t.Errorf("test %d: expected %s, got %s", i, expected.String(), address.String())
+		}
+
 	}
 }
