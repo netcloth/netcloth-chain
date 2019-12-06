@@ -162,7 +162,7 @@ func (so *stateObject) setBalance(amount sdk.Int) {
 
 // SetNonce sets the state object's nonce (sequence number).
 func (so *stateObject) SetNonce(nonce uint64) {
-	so.SetNonce(nonce)
+	so.setNonce(nonce)
 }
 
 func (so *stateObject) setNonce(nonce uint64) {
