@@ -1,6 +1,9 @@
 package vm
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"math/big"
 	"testing"
 
@@ -24,13 +27,24 @@ type TwoOperandTestcase struct {
 	Expected string
 }
 
+type twoOperandParams struct {
+	x string
+	y string
+}
+
+var commonParams []*twoOperandParams
+var twoOpMethods map[string]executionFunc
+
+var (
+	keyAcc        = sdk.NewKVStoreKey(auth.StoreKey)
+	keyParams     = sdk.NewKVStoreKey(params.StoreKey)
+	tkeyParams    = sdk.NewTransientStoreKey(params.TStoreKey)
+	paramsKeeper  = params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
+	accountKeeper = auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
+	bankKeeper    = bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
+)
+
 func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFunc, name string) {
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
-	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
 	var (
 		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey), Config{})
@@ -76,6 +90,7 @@ func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFu
 	poolOfIntPools.put(evmInterpreter.intPool)
 }
 
+// test opByte instruction
 func TestByteOp(t *testing.T) {
 	tests := []TwoOperandTestcase{
 		{"ABCDEF0908070605040302010000000000000000000000000000000000000000", "00", "AB"},
@@ -88,4 +103,113 @@ func TestByteOp(t *testing.T) {
 		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "FFFFFFFFFFFFFFFF", "00"},
 	}
 	testTwoOperandOp(t, tests, opByte, "byte")
+}
+
+// test opSHL instruction
+func TestSHL(t *testing.T) {
+	tests := []TwoOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000002"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "ff", "8000000000000000000000000000000000000000000000000000000000000000"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "0100", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "0101", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "00", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "01", "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "ff", "8000000000000000000000000000000000000000000000000000000000000000"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0100", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"0000000000000000000000000000000000000000000000000000000000000000", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "01", "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"},
+	}
+	testTwoOperandOp(t, tests, opSHL, "shl")
+}
+
+func TestSHR(t *testing.T) {
+	tests := []TwoOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000001", "00", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "01", "4000000000000000000000000000000000000000000000000000000000000000"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "ff", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "0100", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "0101", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "00", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "01", "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "ff", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0100", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"0000000000000000000000000000000000000000000000000000000000000000", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
+	}
+	testTwoOperandOp(t, tests, opSHR, "shr")
+}
+
+func TestSAR(t *testing.T) {
+	tests := []TwoOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000001", "00", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "01", "c000000000000000000000000000000000000000000000000000000000000000"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "ff", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "0100", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "0101", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "00", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "01", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "ff", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0100", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"0000000000000000000000000000000000000000000000000000000000000000", "01", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"4000000000000000000000000000000000000000000000000000000000000000", "fe", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "f8", "000000000000000000000000000000000000000000000000000000000000007f"},
+		{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "fe", "0000000000000000000000000000000000000000000000000000000000000001"},
+		{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "ff", "0000000000000000000000000000000000000000000000000000000000000000"},
+		{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0100", "0000000000000000000000000000000000000000000000000000000000000000"},
+	}
+
+	testTwoOperandOp(t, tests, opSAR, "sar")
+}
+
+// getResult is a convenience function to generate the expected values
+func getResult(args []*twoOperandParams, opFn executionFunc) []TwoOperandTestcase {
+	var (
+		env         = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey), Config{})
+		stack       = newstack()
+		pc          = uint64(0)
+		interpreter = env.interpreter.(*EVMInterpreter)
+	)
+	interpreter.intPool = poolOfIntPools.get()
+	result := make([]TwoOperandTestcase, len(args))
+	for i, param := range args {
+		x := new(big.Int).SetBytes(common.Hex2Bytes(param.x))
+		y := new(big.Int).SetBytes(common.Hex2Bytes(param.y))
+		stack.push(x)
+		stack.push(y)
+		opFn(&pc, interpreter, nil, nil, stack)
+		actual := stack.pop()
+		result[i] = TwoOperandTestcase{param.x, param.y, fmt.Sprintf("%064x", actual)}
+	}
+	return result
+}
+
+// utility function to fill the json-file with testcases
+// Enable this test to generate the 'testcases_xx.json' files
+func TestWriteExpectedValues(t *testing.T) {
+	t.Skip("Enable this test to create json test cases.")
+
+	for name, method := range twoOpMethods {
+		data, err := json.Marshal(getResult(commonParams, method))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = ioutil.WriteFile(fmt.Sprintf("testdata/testcases_%v.json", name), data, 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// TestJsonTestcases runs through all the testcases defined as json-files
+func TestJsonTestcases(t *testing.T) {
+	for name := range twoOpMethods {
+		data, err := ioutil.ReadFile(fmt.Sprintf("testdata/testcases_%v.json", name))
+		if err != nil {
+			t.Fatal("Failed to read file", err)
+		}
+		var testcases []TwoOperandTestcase
+		json.Unmarshal(data, &testcases)
+		testTwoOperandOp(t, testcases, twoOpMethods[name], name)
+	}
 }
