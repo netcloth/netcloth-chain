@@ -50,11 +50,8 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 	}
 
 	cfg := Config{}
-	evm := EVM{
-		Context:  evmCtx,
-		StateDB:  st.CSDB,
-		vmConfig: cfg,
-	}
+
+	evm := NewEVM(evmCtx, *st.CSDB, cfg)
 
 	d1, d2, d3, e := evm.Create(st.Sender, st.Payload, 100000000, sdk.NewInt(10000).BigInt())
 	fmt.Fprint(os.Stderr, fmt.Sprintf("d1 = %v, d2 = %v, d3 = %v, e = %v\n", d1, d2, d3, e))
