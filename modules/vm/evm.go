@@ -109,7 +109,7 @@ func NewEVM(ctx Context, statedb CommitStateDB, vmConfig Config) *EVM {
 		interpreters: make([]Interpreter, 0, 1),
 	}
 
-	//evm.interpreters = append(evm.interpreters, NewEVMInterpreter(evm, vmConfig))
+	evm.interpreters = append(evm.interpreters, NewEVMInterpreter(evm, vmConfig))
 	evm.interpreter = evm.interpreters[0]
 	return evm
 }

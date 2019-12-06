@@ -151,10 +151,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// Validate stack
 		if sLen := stack.len(); sLen < operation.minStack {
 			//return nil, fmt.Errorf("stack underflow (%d <=> %d)", sLen, operation.minStack)
-			return nil, sdk.ErrInternal(fmt.Sprint("stack underflow (%d <=> %d)", sLen, operation.minStack))
+			return nil, sdk.ErrInternal(fmt.Sprintf("stack underflow (%d <=> %d)", sLen, operation.minStack))
 		} else if sLen > operation.maxStack {
 			//return nil, fmt.Errorf("stack limit reached %d (%d)", sLen, operation.maxStack)
-			return nil, sdk.ErrInternal(fmt.Sprint("stack limit reached %d (%d)", sLen, operation.maxStack))
+			return nil, sdk.ErrInternal(fmt.Sprintf("stack limit reached %d (%d)", sLen, operation.maxStack))
 		}
 		// If the operation is valid, enforce and write restrictions
 		if in.readOnly {
@@ -251,6 +251,18 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 
 // CanRun tells if the contract, passed as an argument, can be
 // run by the current interpreter.
+func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
+	if !cfg.JumpTable[STOP].valid {
+		jt := istanbulInstructionSet
+		cfg.JumpTable = jt
+	}
+
+	return &EVMInterpreter{
+		evm: evm,
+		cfg: cfg,
+	}
+}
+
 func (in *EVMInterpreter) CanRun(code []byte) bool {
 	return true
 }

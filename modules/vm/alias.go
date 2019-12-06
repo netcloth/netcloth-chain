@@ -26,7 +26,8 @@ type (
 )
 
 var (
-	NewKeeper = keeper.NewKeeper
+	NewKeeper        = keeper.NewKeeper
+	NewCommitStateDB = types.NewCommitStateDB
 
 	CreateAddress  = common.CreateAddress
 	CreateAddress2 = common.CreateAddress2
