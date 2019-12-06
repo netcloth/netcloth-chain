@@ -498,16 +498,16 @@ func TestCreateAddress2(t *testing.T) {
 			expected: "nch1l2l35x4c06nzdemz4uy3grc0vk2gzphcdugdch",
 		},
 		{
-			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			origin:   "nch1l2l35x4c06nzdemz4uy3grc0vk2gzphcdugdch",
 			salt:     "0x0000000000000000000000000000000000000000",
 			code:     "0x00",
-			expected: "nch1l2l35x4c06nzdemz4uy3grc0vk2gzphcdugdch",
+			expected: "nch17tj3hmt5fdae3e7j2p3lw2xnt84aanr79f20uw",
 		},
 		{
-			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
+			origin:   "nch17tj3hmt5fdae3e7j2p3lw2xnt84aanr79f20uw",
 			salt:     "0xfeed000000000000000000000000000000000000",
 			code:     "0x00",
-			expected: "nch17x0v3kkyn5r0apmuxasegqhy820ggajcpytqpe",
+			expected: "nch1y3rq2v0yy2ugcpkjyfsxh7p3jpfu08zphw82ze",
 		},
 		{
 			origin:   "nch1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7hadyk",
