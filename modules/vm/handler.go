@@ -45,7 +45,6 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		Payload:   msg.Code,
 		CSDB:      k.CSDB.WithContext(ctx),
 	}
-
 	_, res := st.TransitionCSDB(ctx)
 	return res
 }

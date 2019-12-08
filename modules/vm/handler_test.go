@@ -9,12 +9,15 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
+	"github.com/netcloth/netcloth-chain/store"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -33,7 +36,6 @@ func TestInvalidMsg(t *testing.T) {
 }
 
 func TestMsgContractCreate(t *testing.T) {
-
 	var (
 		storeKey      = sdk.NewKVStoreKey("store")
 		tStoreKey     = sdk.NewTransientStoreKey("transient_store")
@@ -43,6 +45,9 @@ func TestMsgContractCreate(t *testing.T) {
 		paramsKeeper  = params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
 		accountKeeper = auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 		bankKeeper    = bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
+
+		db = dbm.NewMemDB()
+		ms = store.NewCommitMultiStore(db)
 	)
 
 	fromAddr := newSdkAddress()
@@ -57,9 +62,19 @@ func TestMsgContractCreate(t *testing.T) {
 	codec := codec.New()
 	k := NewKeeper(codec, storeKey, tStoreKey, types.DefaultCodespace, params.NewSubspace(codec, keyParams, tkeyParams, "param_subspace"), accountKeeper, bankKeeper, NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey))
 	h := NewHandler(k)
-	res := h(sdk.NewContext(nil, abci.Header{}, false, nil), msg)
+
+	ms.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tStoreKey, sdk.StoreTypeTransient, nil)
+	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	err := ms.LoadLatestVersion()
+	require.Nil(t, err)
+
+	res := h(sdk.NewContext(ms, abci.Header{}, false, log.NewNopLogger()), msg)
+
 	require.False(t, res.IsOK())
-	fmt.Println(res.Log)
+	fmt.Println("logs: ", res.Log)
 }
 
 func TestMsgContractCall(t *testing.T) {
