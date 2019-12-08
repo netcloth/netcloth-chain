@@ -35,8 +35,8 @@ var (
 // requires a deterministic gas count based on the input size of the Run method of the
 // contract.
 type PrecompiledContract interface {
-	RequiredGas(input []byte) uint64  // RequiredPrice calculates the contract gas use
-	Run(input []byte) ([]byte, error) // Run runs the precompiled contract
+	RequiredGas(input []byte) uint64      // RequiredPrice calculates the contract gas use
+	Run(input []byte) ([]byte, sdk.Error) // Run runs the precompiled contract
 }
 
 // PrecompiledContractsIstanbul contains the default set of pre-compiled Ethereum
@@ -46,11 +46,20 @@ var PrecompiledContractsIstanbul = map[string]PrecompiledContract{
 	(sdk.BytesToAddress([]byte{2})).String(): &sha256hash{},
 	(sdk.BytesToAddress([]byte{3})).String(): &ripemd160hash{},
 	(sdk.BytesToAddress([]byte{4})).String(): &dataCopy{},
-	//(sdk.BytesToAddress([]byte{5})).String(): &bigModExp{},
-	//(sdk.BytesToAddress([]byte{6})).String(): &bn256AddIstanbul{},
-	//(sdk.BytesToAddress([]byte{7})).String(): &bn256ScalarMulIstanbul{},
-	//(sdk.BytesToAddress([]byte{8})).String(): &bn256PairingIstanbul{},
-	//(sdk.BytesToAddress([]byte{9})).String(): &blake2F{},
+	(sdk.BytesToAddress([]byte{5})).String(): &bigModExp{},
+	//sdk.BytesToAddress([]byte{6}): &bn256AddIstanbul{},
+	//sdk.BytesToAddress([]byte{7}): &bn256ScalarMulIstanbul{},
+	//sdk.BytesToAddress([]byte{8}): &bn256PairingIstanbul{},
+	//sdk.BytesToAddress([]byte{9}): &blake2F{},
+}
+
+// RunPrecompiledContract runs and evaluates the output of a precompiled contract.
+func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err sdk.Error) {
+	gas := p.RequiredGas(input)
+	if contract.UseGas(gas) {
+		return p.Run(input)
+	}
+	return nil, ErrOutOfGas()
 }
 
 // ECRECOVER implemented as a native contract.
@@ -60,7 +69,7 @@ func (c *ecrecover) RequiredGas(input []byte) uint64 {
 	return EcrecoverGas
 }
 
-func (c *ecrecover) Run(input []byte) ([]byte, error) {
+func (c *ecrecover) Run(input []byte) ([]byte, sdk.Error) {
 	const ecRecoverInputLength = 128
 
 	//input = common.RightPadBytes(input, ecRecoverInputLength)
@@ -79,7 +88,7 @@ func (c *sha256hash) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*Sha256PerWordGas + Sha256BaseGas
 }
 
-func (c *sha256hash) Run(input []byte) ([]byte, error) {
+func (c *sha256hash) Run(input []byte) ([]byte, sdk.Error) {
 	h := sha256.Sum256(input)
 	return h[:], nil
 }
@@ -91,7 +100,7 @@ func (c *ripemd160hash) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*Ripemd160PerWordGas + Ripemd160BaseGas
 }
 
-func (c *ripemd160hash) Run(input []byte) ([]byte, error) {
+func (c *ripemd160hash) Run(input []byte) ([]byte, sdk.Error) {
 	ripemd := ripemd160.New()
 	ripemd.Write(input)
 	return common.LeftPadBytes(ripemd.Sum(nil), 32), nil
@@ -104,7 +113,7 @@ func (c *dataCopy) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*IdentityPerWordGas + IdentityBaseGas
 }
 
-func (c *dataCopy) Run(in []byte) ([]byte, error) {
+func (c *dataCopy) Run(in []byte) ([]byte, sdk.Error) {
 	return in, nil
 }
 
@@ -171,7 +180,7 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 	return gas.Uint64()
 }
 
-func (c *bigModExp) Run(input []byte) ([]byte, error) {
+func (c *bigModExp) Run(input []byte) ([]byte, sdk.Error) {
 	var (
 		baseLen = new(big.Int).SetBytes(getData(input, 0, 32)).Uint64()
 		expLen  = new(big.Int).SetBytes(getData(input, 32, 32)).Uint64()
