@@ -456,14 +456,15 @@ func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 }
 
 func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
-	//slot := stack.peek()
-	//slot.SetUint64(uint64(interpreter.evm.StateDB.GetCodeSize(sdk.BigToAddress(slot))))
+	slot := stack.peek()
+	slot.SetUint64(uint64(interpreter.evm.StateDB.GetCodeSize(sdk.BigToAddress(slot))))
 	return nil, nil
 }
 
 func opCodeSize(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	l := interpreter.intPool.get().SetInt64(int64(len(contract.Code)))
 	stack.push(l)
+
 	return nil, nil
 }
 
