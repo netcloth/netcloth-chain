@@ -186,9 +186,9 @@ func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *s
 	newObj.SetNonce(0)
 
 	if prevObj == nil {
-		// TODO
+		csdb.journal.append(createObjectChange{account: &addr})
 	} else {
-		// TODO
+		csdb.journal.append(resetObjectChange{prev: prevObj})
 	}
 	csdb.setStateObject(newObj)
 	return newObj, prevObj
