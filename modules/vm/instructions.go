@@ -610,6 +610,7 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory
 		*pc++
 	}
 
+	interpreter.intPool.put(pos, cond)
 	return nil, nil
 }
 
@@ -873,7 +874,7 @@ func makePush(size uint64, pushByteSize int) executionFunc {
 
 // make dup instruction function
 func makeDup(size int64) executionFunc {
-	return func(pc *uint64, interpreter *EVMInterpreter, contracdt *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
+	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 		stack.dup(interpreter.intPool, int(size))
 		return nil, nil
 	}
@@ -882,7 +883,7 @@ func makeDup(size int64) executionFunc {
 // make swap instruction function
 func makeSwap(size int64) executionFunc {
 	size++
-	return func(pc *uint64, interpreter *EVMInterpreter, contracdt *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
+	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 		stack.swap(int(size))
 		return nil, nil
 	}
