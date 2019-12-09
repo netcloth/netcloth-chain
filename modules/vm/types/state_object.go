@@ -70,7 +70,7 @@ type (
 	}
 )
 
-func newObject(accProto authexported.Account) *stateObject {
+func newObject(accProto authexported.Account, csdb *CommitStateDB) *stateObject {
 	acc, ok := accProto.(*types.BaseAccount)
 	if !ok {
 		panic(fmt.Sprintf("invalid account type for state object: %T", accProto))
@@ -81,6 +81,7 @@ func newObject(accProto authexported.Account) *stateObject {
 	}
 
 	return &stateObject{
+		stateDB:       csdb,
 		account:       acc,
 		address:       acc.Address,
 		originStorage: make(sdk.Storage),

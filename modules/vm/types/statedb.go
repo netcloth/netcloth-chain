@@ -182,7 +182,7 @@ func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *s
 	prevObj = csdb.getStateObject(addr)
 
 	acc := csdb.AK.NewAccountWithAddress(csdb.Ctx, addr)
-	newObj = newObject(acc)
+	newObj = newObject(acc, csdb)
 	newObj.SetNonce(0)
 
 	if prevObj == nil {
@@ -215,7 +215,7 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 	}
 
 	// insert the state object into the live set
-	so := newObject(acc)
+	so := newObject(acc, csdb)
 	csdb.setStateObject(so)
 
 	return so
