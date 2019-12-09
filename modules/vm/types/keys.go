@@ -1,5 +1,9 @@
 package types
 
+import (
+	sdk "github.com/netcloth/netcloth-chain/types"
+)
+
 const (
 	// ModuleName is the name of the vm module
 	ModuleName = "vm"
@@ -14,6 +18,12 @@ const (
 
 	// RouterKey is the msg router key for the vm module
 	RouterKey = ModuleName
+)
+
+var (
+	StorageKey = sdk.NewKVStoreKey("store")
+	CodeKey    = sdk.NewKVStoreKey("code")
+	AKStoreKey = sdk.NewKVStoreKey("auth_store")
 )
 
 var (

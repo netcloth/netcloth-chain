@@ -15,12 +15,6 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-var (
-	storageKey = sdk.NewKVStoreKey("store")
-	codeKey    = sdk.NewKVStoreKey("code")
-	akStoreKey = sdk.NewKVStoreKey("auth_store")
-)
-
 type TwoOperandTestcase struct {
 	X        string
 	Y        string
