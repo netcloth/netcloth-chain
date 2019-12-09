@@ -34,7 +34,6 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 }
 
 func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result) {
-	ctx.Logger().Info("TransitionCSDB ...")
 
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
