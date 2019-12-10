@@ -22,7 +22,7 @@ type StateTransition struct {
 }
 
 func (st StateTransition) CanTransfer(acc sdk.AccAddress, amount *big.Int) bool {
-	return true
+	return st.CSDB.GetBalance(acc).Cmp(amount) >= 0
 }
 
 func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
