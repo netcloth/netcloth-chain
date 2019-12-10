@@ -53,7 +53,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 	evm := NewEVM(evmCtx, *st.CSDB, cfg)
 
 	ret, contractAddr, leftOverGas, e := evm.Create(st.Sender, st.Payload, 100000000, sdk.NewInt(0).BigInt())
-	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %v, contractAddr = %v, leftOverGas = %v, err = %v\n", ret, contractAddr, leftOverGas, e))
+	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, \ncontractAddr = %s, leftOverGas = %v, err = %v\n", ret, contractAddr.String(), leftOverGas, e))
 	if e != nil {
 		return nil, sdk.ErrInternal("contract deploy err").Result()
 	}

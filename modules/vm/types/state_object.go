@@ -112,8 +112,6 @@ func (so *stateObject) setState(key, value sdk.Hash) {
 
 // SetCode
 func (so *stateObject) SetCode(codeHash sdk.Hash, code []byte) {
-	fmt.Println("codeHash: ", codeHash.String())
-	fmt.Println(fmt.Sprintf("code: %x", code))
 	so.setCode(codeHash, code)
 }
 
