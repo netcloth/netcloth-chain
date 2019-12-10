@@ -798,10 +798,10 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 
 func opReturn(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	offset, size := stack.pop(), stack.pop()
-	memory.GetPtr(offset.Int64(), size.Int64())
+	ret := memory.GetPtr(offset.Int64(), size.Int64())
 
 	interpreter.intPool.put(offset, size)
-	return nil, nil
+	return ret, nil
 }
 
 func opRevert(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
