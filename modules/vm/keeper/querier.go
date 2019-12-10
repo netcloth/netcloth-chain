@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -39,15 +37,7 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	}
 
 	accAddr := sdk.AccAddress(req.Data)
-	acc := k.ak.GetAccount(ctx, accAddr)
-	if acc == nil {
-		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", accAddr))
-	}
-
-	code, found := k.GetContractCode(ctx, acc.GetCodeHash())
-	if !found {
-		return nil, types.ErrNoCodeExist()
-	}
+	code := k.CSDB.GetCode(accAddr)
 
 	return code, nil
 }
