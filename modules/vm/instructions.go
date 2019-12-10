@@ -28,8 +28,7 @@ func opSub(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	x, y := stack.pop(), stack.peek()
 	math.U256(y.Sub(x, y))
 
-	interpreter.intPool.put(y)
-
+	interpreter.intPool.put(x)
 	return nil, nil
 }
 
@@ -551,7 +550,7 @@ func opPop(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 }
 
 func opMload(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
-	v := stack.pop()
+	v := stack.peek()
 	offset := v.Int64()
 	v.SetBytes(memory.GetPtr(offset, 32))
 	return nil, nil

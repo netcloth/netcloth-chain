@@ -97,10 +97,10 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		csdb)
 
 	for _, key := range keys {
-		ms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db) // db nil
+		ms.MountStoreWithDB(key, sdk.StoreTypeIAVL, nil) // db nil
 	}
 	for _, key := range tkeys {
-		ms.MountStoreWithDB(key, sdk.StoreTypeTransient, db) // db nil
+		ms.MountStoreWithDB(key, sdk.StoreTypeTransient, nil) // db nil
 	}
 	ms.LoadLatestVersion()
 

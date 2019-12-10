@@ -103,7 +103,7 @@ func (so *stateObject) SetState(key, value sdk.Hash) {
 
 	prefixKey := so.GetStorageByAddressKey(key.Bytes())
 
-	so.SetState(prefixKey, value)
+	so.setState(prefixKey, value)
 }
 
 func (so *stateObject) setState(key, value sdk.Hash) {
