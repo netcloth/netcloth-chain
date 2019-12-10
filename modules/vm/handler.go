@@ -25,7 +25,6 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
-	ctx.Logger().Info("handleMsgContractCreate ...")
 	err := msg.ValidateBasic()
 	if err != nil {
 		return err.Result()
