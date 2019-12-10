@@ -7,6 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/modules/cipal"
+	"github.com/netcloth/netcloth-chain/modules/ipal"
+	"github.com/netcloth/netcloth-chain/modules/slashing"
+
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -14,6 +18,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/bank"
@@ -39,7 +44,7 @@ var (
 	}
 )
 
-func moduleAccountAddrs() map[string]bool {
+func ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -47,37 +52,58 @@ func moduleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func setupTest() (keeper Keeper, ctx sdk.Context) {
+func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	cdc := codec.New()
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 
-	keys := sdk.NewKVStoreKeys(params.StoreKey, auth.StoreKey, supply.StoreKey, staking.StoreKey)
-	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey, staking.TStoreKey)
-
-	storageKey = sdk.NewKVStoreKey("store")
-	codeKey = sdk.NewKVStoreKey("code")
-	tStoreKey := sdk.NewTransientStoreKey("transient_store")
+	keys := sdk.NewKVStoreKeys(
+		bam.MainStoreKey,
+		auth.StoreKey,
+		staking.StoreKey,
+		supply.StoreKey,
+		mint.StoreKey,
+		distr.StoreKey,
+		slashing.StoreKey,
+		gov.StoreKey,
+		params.StoreKey,
+		cipal.StoreKey,
+		ipal.StoreKey,
+		StoreKey,
+		"csdb",
+		"csdbcode",
+	)
+	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey, TStoreKey)
 
 	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
-
 	authSubspace := paramsKeeper.Subspace(auth.DefaultParamspace)
 	bankSubspace := paramsKeeper.Subspace(bank.DefaultParamspace)
 
-	ms.MountStoreWithDB(keys[auth.StoreKey], sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeys[staking.TStoreKey], sdk.StoreTypeTransient, nil)
-	ms.MountStoreWithDB(keys[staking.StoreKey], sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keys[supply.StoreKey], sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keys[params.StoreKey], sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeys[params.TStoreKey], sdk.StoreTypeTransient, db)
+	vmSubspace := paramsKeeper.Subspace(DefaultParamspace)
 
+	// add keepers
+	accountKeeper := auth.NewAccountKeeper(cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, ModuleAccountAddrs())
+
+	csdb := NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey])
+	vmKeeper = NewKeeper(
+		cdc, keys[StoreKey],
+		tkeys[TStoreKey],
+		DefaultCodespace,
+		vmSubspace,
+		accountKeeper,
+		bankKeeper,
+		csdb)
+
+	for _, key := range keys {
+		ms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db) // db nil
+	}
+	for _, key := range tkeys {
+		ms.MountStoreWithDB(key, sdk.StoreTypeTransient, db) // db nil
+	}
 	ms.LoadLatestVersion()
 
-	accountKeeper := auth.NewAccountKeeper(cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, moduleAccountAddrs())
-
-	keeper = NewKeeper(cdc, storageKey, tStoreKey, types.DefaultCodespace, params.NewSubspace(cdc, keyParams, tkeyParams, "param_subspace"), accountKeeper, bankKeeper, NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey))
 	ctx = sdk.NewContext(ms, abci.Header{Time: time.Unix(0, 0)}, false, log.NewTMLogger(os.Stdout))
 
 	return
@@ -85,7 +111,7 @@ func setupTest() (keeper Keeper, ctx sdk.Context) {
 
 func newSdkAddress() sdk.AccAddress {
 	tmpKey := secp256k1.GenPrivKey().PubKey()
-	return sdk.AccAddress(tmpKey.Address().Bytes())
+	return sdk.BytesToAddress(tmpKey.Address().Bytes())
 }
 
 func TestInvalidMsg(t *testing.T) {

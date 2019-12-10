@@ -149,7 +149,7 @@ func opSignExtend(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 }
 
 func opNot(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
-	x := stack.pop()
+	x := stack.peek()
 	math.U256(x.Not(x))
 	return nil, nil
 }

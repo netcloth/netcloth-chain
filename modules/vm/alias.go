@@ -48,7 +48,6 @@ var (
 	ErrInvalidJump              = types.ErrInvalidJump
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
 
-	storageKey = types.StorageKey
-	codeKey    = types.CodeKey
-	akStoreKey = types.AKStoreKey
+	StorageKey = types.StorageKey
+	CodeKey    = types.CodeKey
 )

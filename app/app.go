@@ -143,8 +143,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		cipal.StoreKey,
 		ipal.StoreKey,
 		vm.StoreKey,
-		"csdb",
-		"csdbcode",
+		vm.StorageKey,
+		vm.CodeKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey, vm.TStoreKey)
 
@@ -202,7 +202,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		aipalSubspace,
 		ipal.DefaultCodespace)
 
-	csdb := types2.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys["csdb"], keys["csdbcode"])
+	csdb := types2.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc, keys[vm.StoreKey],
 		tkeys[vm.TStoreKey],

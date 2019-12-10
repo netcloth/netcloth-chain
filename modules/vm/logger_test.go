@@ -43,7 +43,8 @@ func TestStoreCapture(t *testing.T) {
 	bankKeeper := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
 	var (
-		env      = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, storageKey, codeKey), Config{})
+		keys     = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
+		env      = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
 		logger   = NewStructLogger(nil)
 		mem      = NewMemory()
 		stack    = newstack()

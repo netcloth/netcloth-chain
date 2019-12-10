@@ -1,9 +1,5 @@
 package types
 
-import (
-	sdk "github.com/netcloth/netcloth-chain/types"
-)
-
 const (
 	// ModuleName is the name of the vm module
 	ModuleName = "vm"
@@ -20,10 +16,9 @@ const (
 	RouterKey = ModuleName
 )
 
-var (
-	StorageKey = sdk.NewKVStoreKey("store")
-	CodeKey    = sdk.NewKVStoreKey("code")
-	AKStoreKey = sdk.NewKVStoreKey("auth_store")
+const (
+	StorageKey = "csdb"
+	CodeKey    = "csdbcode"
 )
 
 var (
