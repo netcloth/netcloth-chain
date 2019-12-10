@@ -104,9 +104,41 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{})
+			amount := viper.GetString(flagAmount)
+			if "" == amount {
+				amount = "0unch"
+			}
+			coin, err := sdk.ParseCoin(amount)
+			if err != nil {
+				return err
+			}
+
+			_ = viper.GetString(flagMethod)
+			_ = viper.GetStringSlice(flagArgs)
+			var payload []byte //TODO get payload by method and args
+
+			contractAddr, err := sdk.AccAddressFromBech32(viper.GetString(flagContractAddr))
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgContractCall(cliCtx.GetFromAddress(), contractAddr, coin, payload)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+
+	cmd.Flags().String(flagContractAddr, "", "contract bech32 addr")
+	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
+	cmd.Flags().String(flagMethod, "", "contract method")
+	cmd.Flags().String(flagArgs, "", "contract method arg list")
+
+	cmd.MarkFlagRequired(flagContractAddr)
+	cmd.MarkFlagRequired(flagMethod)
+	cmd.MarkFlagRequired(flagArgs)
 
 	cmd = client.PostCommands(cmd)[0]
 

@@ -31,11 +31,6 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		return err.Result()
 	}
 
-	//err = k.DoContractCreate(ctx, msg)
-	//if err != nil {
-	//	return err.Result()
-	//}
-
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: nil,
@@ -52,7 +47,15 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.Result {
 	ctx.Logger().Info("handleMsgContractCall ...")
 
-	st := StateTransition{}
+	st := StateTransition{
+		Sender:    msg.From,
+		Recipient: msg.Recipient,
+		Price:     sdk.NewInt(1000000),
+		GasLimit:  sdk.NewInt(10000000),
+		Payload:   msg.Payload,
+		Amount:    msg.Amount.Amount,
+		CSDB:      k.CSDB.WithContext(ctx),
+	}
 	_, res := st.TransitionCSDB(ctx)
 	return res
 }

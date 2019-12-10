@@ -6,4 +6,8 @@ const (
 	flagInput     = "input"
 	flagInputFile = "input_file"
 	flagAmount    = "amount"
+
+	flagArgs         = "args"
+	flagMethod       = "method"
+	flagContractAddr = "contract_addr"
 )

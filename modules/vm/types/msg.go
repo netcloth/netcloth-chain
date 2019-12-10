@@ -33,8 +33,17 @@ func NewMsgContractCreate(From sdk.AccAddress, Amount sdk.Coin, Code []byte) Msg
 type MsgContractCall struct {
 	From      sdk.AccAddress `json:"from" yaml:"from"`
 	Recipient sdk.AccAddress `json:"recipient" yaml:"recipient"`
-	Amount    sdk.Coins      `json:"amount" yaml:"amount"`
+	Amount    sdk.Coin       `json:"amount" yaml:"amount"`
 	Payload   []byte         `json:"payload" yaml:"payload"`
+}
+
+func NewMsgContractCall(From, to sdk.AccAddress, Amount sdk.Coin, args []byte) MsgContractCall {
+	return MsgContractCall{
+		From:      From,
+		Recipient: to,
+		Amount:    Amount,
+		Payload:   args,
+	}
 }
 
 // MsgContractCreate
@@ -59,11 +68,12 @@ func (msg MsgContractCall) Route() string { return RouterKey }
 func (msg MsgContractCall) Type() string  { return TypeMsgContractCall }
 
 func (msg MsgContractCall) GetSigners() []sdk.AccAddress {
-	return nil
+	return []sdk.AccAddress{msg.From}
 }
 
 func (msg MsgContractCall) GetSignBytes() []byte {
-	return nil
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }
 
 func (msg MsgContractCall) ValidateBasic() sdk.Error {
