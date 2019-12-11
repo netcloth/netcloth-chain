@@ -10,4 +10,6 @@ const (
 	flagArgs         = "args"
 	flagMethod       = "method"
 	flagContractAddr = "contract_addr"
+	flagAbiFile      = "abi_file"
+	flagAbi          = "abi"
 )

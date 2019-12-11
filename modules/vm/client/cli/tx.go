@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,6 +20,8 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 func VMCmd(cdc *codec.Codec) *cobra.Command {
@@ -99,7 +103,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "call",
 		Short:   "call a contract",
-		Example: "nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --amount=<amount> --method=<method> --args=<args>",
+		Example: "nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --amount=<amount> --abi_file=<abi_file> --method=<method> --args=<args>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -113,9 +117,28 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			_ = viper.GetString(flagMethod)
-			_ = viper.GetStringSlice(flagArgs)
-			var payload []byte //TODO get payload by method and args
+			abiFile := viper.GetString(flagAbiFile)
+			abiFile, err = filepath.Abs(abiFile)
+			if 0 == len(abiFile) {
+				return errors.New("abi_file can not be empty")
+			}
+
+			abiData, err := ioutil.ReadFile(abiFile)
+			abiObj, err := abi.JSON(strings.NewReader(string(abiData)))
+			if err != nil {
+				return err
+			}
+
+			method := viper.GetString(flagMethod)
+			methodArgs := viper.GetString(flagArgs)
+			payload, err := abiObj.Pack(method, methodArgs)
+			if err != nil {
+				return err
+			}
+
+			dump := make([]byte, len(payload)*2)
+			hex.Encode(dump[:], payload)
+			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
 
 			contractAddr, err := sdk.AccAddressFromBech32(viper.GetString(flagContractAddr))
 			if err != nil {
@@ -135,6 +158,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
 	cmd.Flags().String(flagMethod, "", "contract method")
 	cmd.Flags().String(flagArgs, "", "contract method arg list")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file")
 
 	cmd.MarkFlagRequired(flagContractAddr)
 	cmd.MarkFlagRequired(flagMethod)
