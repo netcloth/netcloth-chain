@@ -130,10 +130,30 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			method := viper.GetString(flagMethod)
-			methodArgs := viper.GetString(flagArgs)
-			payload, err := abiObj.Pack(method, methodArgs)
+			argsString := viper.GetString(flagArgs)
+			argsBinary, err := hex.DecodeString(argsString)
 			if err != nil {
 				return err
+			}
+
+			m, exist := abiObj.Methods[method]
+			var payload []byte
+			if exist {
+				if len(m.Inputs) != len(argsBinary)/32 {
+					return errors.New(fmt.Sprint("args count dismatch"))
+				}
+
+				readyArgs, err := m.Inputs.UnpackValues(argsBinary)
+				if err != nil {
+					return err
+				}
+
+				payload, err = abiObj.Pack(method, readyArgs...)
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
 			dump := make([]byte, len(payload)*2)
@@ -157,7 +177,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagContractAddr, "", "contract bech32 addr")
 	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
 	cmd.Flags().String(flagMethod, "", "contract method")
-	cmd.Flags().String(flagArgs, "", "contract method arg list")
+	cmd.Flags().String(flagArgs, "", "contract method arg list, e.g. [f(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
 	cmd.Flags().String(flagAbiFile, "", "contract abi file")
 
 	cmd.MarkFlagRequired(flagContractAddr)
