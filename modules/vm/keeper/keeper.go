@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
@@ -58,6 +60,18 @@ func (k Keeper) GetContractCode(ctx sdk.Context, codeHash []byte) (code []byte, 
 func (k Keeper) setContractCode(ctx sdk.Context, codeHash, code []byte) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetContractCodeKey(codeHash), code)
+}
+
+func (k Keeper) GetCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	acc := k.ak.GetAccount(ctx, addr)
+	if acc == nil {
+		return sdk.NewCoins()
+	}
+	return acc.GetCoins()
+}
+
+func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) exported.Account {
+	return k.ak.GetAccount(ctx, addr)
 }
 
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {

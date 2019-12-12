@@ -50,6 +50,13 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	}
 	require.NotNil(t, k.CSDB.GetCode(contractAddr))
 
+	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+	contractAcc := k.GetAccount(ctx, contractAddr)
+	if contractAcc != nil {
+		fmt.Println(contractAcc.GetCoins())
+	}
+	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
 	// test MsgContractCall
 	msgCall := types.NewMsgContractCall(fromAddr, contractAddr, sdk.NewInt64Coin(sdk.NativeTokenName, 0), common.FromHex("a17a9e660000000000000000000000000000000000000000000000000000000000000002"))
 	require.NotNil(t, msgCall)
