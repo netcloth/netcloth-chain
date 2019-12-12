@@ -827,8 +827,22 @@ func opSuicide(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 
 // make log instruction function
 func makeLog(size int) executionFunc {
-	//TODO
 	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
+		topics := make([]sdk.Hash, size)
+		mStart, mSize := stack.pop(), stack.pop()
+		for i := 0; i < size; i++ {
+			topics[i] = sdk.BigToHash(stack.pop())
+		}
+
+		d := memory.GetPtr(mStart.Int64(), mSize.Int64())
+		interpreter.evm.StateDB.AddLog(&Log{
+			Address:     contract.Address(),
+			Topics:      topics,
+			Data:        d,
+			BlockNumber: interpreter.evm.BlockNumber.Uint64(),
+		})
+
+		interpreter.intPool.put(mStart, mSize)
 		return nil, nil
 	}
 }

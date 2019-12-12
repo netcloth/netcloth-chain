@@ -14,7 +14,7 @@ import (
 type StateTransition struct {
 	Sender    sdk.AccAddress
 	Price     sdk.Int
-	GasLimit  sdk.Int
+	GasLimit  uint64
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
 	Payload   []byte
@@ -44,7 +44,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		GasPrice: st.Price.BigInt(),
 
 		CoinBase:    ctx.BlockHeader().ProposerAddress, // TODO: should be proposer account address
-		GasLimit:    uint64(st.GasLimit.Int64()),
+		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
@@ -52,17 +52,24 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	evm := NewEVM(evmCtx, *st.CSDB, cfg)
 
-	if st.Recipient == nil {
-		_, contractAddr, leftOverGas, e := evm.Create(st.Sender, st.Payload, 100000000, sdk.NewInt(0).BigInt())
-		fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s, leftOverGas = %v, err = %v\n", contractAddr, leftOverGas, e))
+	var (
+		ret         []byte
+		leftOverGas uint64
+		addr        sdk.AccAddress
+		err         sdk.Error
+	)
 
-		if e != nil {
+	if st.Recipient == nil {
+		ret, addr, leftOverGas, err = evm.Create(st.Sender, st.Payload, 100000000, sdk.NewInt(0).BigInt())
+		fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s, leftOverGas = %v, err = %v\n", addr, leftOverGas, err))
+
+		if err != nil {
 			return nil, sdk.ErrInternal("contract deploy err").Result()
 		}
 	} else {
-		ret, leftOverGas, e := evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, sdk.NewInt(0).BigInt())
-		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %v, leftOverGas = %v, err = %v\n", ret, leftOverGas, e))
+		ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, sdk.NewInt(0).BigInt())
+		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
 	}
 
-	return nil, sdk.Result{}
+	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
 }

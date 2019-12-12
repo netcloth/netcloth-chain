@@ -6,8 +6,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/core/types"
-
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -41,7 +39,7 @@ type CommitStateDB struct {
 
 	thash, bhash sdk.Hash
 	txIndex      int
-	logs         map[sdk.Hash][]*types.Log
+	logs         map[sdk.Hash][]*Log
 	logSize      uint
 	preimages    map[sdk.Hash][]byte
 
@@ -131,6 +129,29 @@ func (csdb *CommitStateDB) SetCode(addr sdk.AccAddress, code []byte) {
 		codeHash := sdk.BytesToHash(crypto.Sha256(code))
 		so.SetCode(codeHash, code)
 	}
+}
+
+func (csdb *CommitStateDB) AddLog(log *Log) {
+	csdb.journal.append(addLogChange{txhash: csdb.thash})
+
+	log.TxHash = csdb.thash
+	log.BlockHash = csdb.bhash
+	log.TxIndex = uint(csdb.txIndex)
+	log.Index = csdb.logSize
+	csdb.logs[csdb.thash] = append(csdb.logs[csdb.thash], log)
+	csdb.logSize++
+}
+
+func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) []*Log {
+	return csdb.logs[hash]
+}
+
+func (csdb *CommitStateDB) Logs() []*Log {
+	var logs []*Log
+	for _, lgs := range csdb.logs {
+		logs = append(logs, lgs...)
+	}
+	return logs
 }
 
 func (csdb *CommitStateDB) AddPreimage(hash sdk.Hash, preimage []byte) {

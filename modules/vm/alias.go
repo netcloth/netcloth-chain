@@ -23,6 +23,8 @@ type (
 	MsgContractCall   = types.MsgContractCall
 
 	CommitStateDB = types.CommitStateDB
+
+	Log = types.Log
 )
 
 var (
