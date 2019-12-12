@@ -72,6 +72,7 @@ func NewCommitStateDB(ak AccountKeeper, bk BankKeeper, storageKey, codeKey sdk.S
 		codeKey:           codeKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
+		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
 	}
