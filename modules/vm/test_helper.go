@@ -108,10 +108,6 @@ func newSdkAddress() sdk.AccAddress {
 	return sdk.BytesToAddress(tmpKey.Address().Bytes())
 }
 
-var (
-	keys = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
-)
-
 func newEVM() *EVM {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
@@ -121,7 +117,7 @@ func newEVM() *EVM {
 	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	bankKeeper := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
-	keys = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
+	keys := sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
 
 	return NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
 }
