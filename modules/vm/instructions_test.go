@@ -7,11 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	auth "github.com/netcloth/netcloth-chain/modules/auth"
-	"github.com/netcloth/netcloth-chain/modules/bank"
-	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
-	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -29,20 +25,10 @@ type twoOperandParams struct {
 var commonParams []*twoOperandParams
 var twoOpMethods map[string]executionFunc
 
-var (
-	keyAcc        = sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams     = sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams    = sdk.NewTransientStoreKey(params.TStoreKey)
-	paramsKeeper  = params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
-	accountKeeper = auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bankKeeper    = bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
-)
-
 func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFunc, name string) {
 
 	var (
-		keys           = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
-		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
+		env            = newEVM()
 		stack          = newstack()
 		pc             = uint64(0)
 		evmInterpreter = env.interpreter.(*EVMInterpreter)
@@ -160,8 +146,7 @@ func TestSAR(t *testing.T) {
 // getResult is a convenience function to generate the expected values
 func getResult(args []*twoOperandParams, opFn executionFunc) []TwoOperandTestcase {
 	var (
-		keys        = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
-		env         = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
+		env         = newEVM()
 		stack       = newstack()
 		pc          = uint64(0)
 		interpreter = env.interpreter.(*EVMInterpreter)
@@ -212,8 +197,7 @@ func TestJsonTestcases(t *testing.T) {
 
 func opBenchmark(bench *testing.B, op func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error), args ...string) {
 	var (
-		keys           = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
-		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
+		env            = newEVM()
 		stack          = newstack()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
 	)
@@ -453,8 +437,7 @@ func BenchmarkOpIsZero(b *testing.B) {
 
 func TestOpMstore(t *testing.T) {
 	var (
-		keys           = sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
-		env            = NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
+		env            = newEVM()
 		stack          = newstack()
 		mem            = NewMemory()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
