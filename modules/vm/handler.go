@@ -3,7 +3,6 @@ package vm
 import (
 	"fmt"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -59,6 +58,21 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 	return res
 }
 
-func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
+func EndBlocker(ctx sdk.Context, keeper Keeper) []abci.ValidatorUpdate {
+	// Gas costs are handled within msg handler so costs should be ignored
+	ebCtx := ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+
+	// Update account balances before committing other parts of state
+	keeper.CSDB.UpdateAccounts()
+
+	// Commit state objects to KV store
+	_, err := keeper.CSDB.WithContext(ebCtx).Commit(true)
+	if err != nil {
+		panic(err)
+	}
+
+	// Clear accounts cache after account data has been committed
+	keeper.CSDB.ClearStateObjects()
+
 	return []abci.ValidatorUpdate{}
 }

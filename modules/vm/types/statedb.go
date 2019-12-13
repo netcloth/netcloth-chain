@@ -189,6 +189,22 @@ func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
 	return true
 }
 
+func (csdb *CommitStateDB) UpdateAccounts() {
+	for key, so := range csdb.stateObjects {
+		addr, _ := sdk.AccAddressFromBech32(key)
+		curAcc := csdb.AK.GetAccount(csdb.Ctx, addr)
+		if curAcc != nil {
+			if so.Balance() != curAcc.GetCoins().AmountOf(sdk.NativeTokenName).BigInt() {
+				// TODO
+				// Set coins
+				fmt.Println("UpdateAccount, set coins ...")
+			}
+			if so.Nonce() != curAcc.GetSequence() {
+				so.account.SetSequence(curAcc.GetSequence())
+			}
+		}
+	}
+}
 func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject {
 	so := csdb.getStateObject(addr)
 	if so == nil || so.deleted {
