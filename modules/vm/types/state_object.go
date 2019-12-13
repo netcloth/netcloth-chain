@@ -187,6 +187,32 @@ func (so *stateObject) commitCode() {
 	store.Set(so.CodeHash(), so.code)
 }
 
+func (so *stateObject) commitState() {
+	ctx := so.stateDB.Ctx
+	store := ctx.KVStore(so.stateDB.storageKey)
+
+	for key, value := range so.dirtyStorage {
+		delete(so.dirtyStorage, key)
+
+		// skip no-op changes, persist actual changes
+		if value == so.originStorage[key] {
+			continue
+		}
+
+		so.originStorage[key] = value
+
+		// delete empty values
+		if (value == sdk.Hash{}) {
+			store.Delete(key.Bytes())
+			continue
+		}
+
+		store.Set(key.Bytes(), value.Bytes())
+	}
+
+	// TODO: Set the account (storage) root (but we probably don't need this)
+}
+
 // ----------------------------------------------------------------------------
 // Getters
 // ----------------------------------------------------------------------------
