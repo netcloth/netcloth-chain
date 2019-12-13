@@ -250,7 +250,15 @@ func gasStaticCall(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memo
 }
 
 func gasSelfdestruct(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
-	// TODO
-	gas := uint64(0)
+	var gas uint64
+	gas = SelfdestructGasEIP150
+	var address = sdk.BigToAddress(stack.Back(0))
+	if evm.StateDB.Empty(address) && evm.StateDB.GetBalance(contract.Address()).Sign() != 0 {
+		gas += CreateBySelfdestructGas
+	}
+
+	if !evm.StateDB.HasSuicide(contract.Address()) {
+		evm.StateDB.AddRefund(SelfdestructRefundGas)
+	}
 	return gas, nil
 }
