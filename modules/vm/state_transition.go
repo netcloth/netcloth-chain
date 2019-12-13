@@ -25,8 +25,8 @@ func (st StateTransition) CanTransfer(acc sdk.AccAddress, amount *big.Int) bool 
 	return st.CSDB.GetBalance(acc).Cmp(amount) >= 0
 }
 
-func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
-	//st.CSDB.BK.SendCoins(st.CSDB.Ctx, from, to, sdk.NewCoins(sdk.NewCoin("unch", sdk.NewInt(amount.Int64()))))
+func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) sdk.Error {
+	return st.CSDB.BK.SendCoins(st.CSDB.Ctx, from, to, sdk.NewCoins(sdk.NewCoin("unch", sdk.NewInt(amount.Int64()))))
 }
 
 func (st StateTransition) GetHash(uint64) sdk.Hash {
@@ -60,14 +60,14 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 	)
 
 	if st.Recipient == nil {
-		ret, addr, leftOverGas, err = evm.Create(st.Sender, st.Payload, 100000000, sdk.NewInt(0).BigInt())
+		ret, addr, leftOverGas, err = evm.Create(st.Sender, st.Payload, 100000000, st.Amount.BigInt())
 		fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s, leftOverGas = %v, err = %v\n", addr, leftOverGas, err))
 
 		if err != nil {
 			return nil, sdk.ErrInternal("contract deploy err").Result()
 		}
 	} else {
-		ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, sdk.NewInt(0).BigInt())
+		ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, st.Amount.BigInt())
 		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
 	}
 

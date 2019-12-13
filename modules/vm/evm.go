@@ -17,7 +17,7 @@ type (
 	// CanTransferFunc is the signature of a transfer guard function
 	CanTransferFunc func(sdk.AccAddress, *big.Int) bool
 	// TransferFunc is the signature of a transfer function
-	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int)
+	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int) sdk.Error
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
 	//GetHashFunc func(sdk.Context) sdk.Hash
@@ -158,7 +158,10 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	//snapshot := evm.StateDB.Snapshot()
 	evm.StateDB.CreateAccount(address)
 	evm.StateDB.SetNonce(address, 1)
-	evm.Transfer(caller.Address(), address, value)
+	err := evm.Transfer(caller.Address(), address, value)
+	if err != nil {
+		return nil, sdk.AccAddress{}, gas, err
+	}
 
 	// Initialise a new contract and set the code that is to be used by the EVM.
 	// The contract is a scoped environment for this execution context only.
@@ -241,7 +244,10 @@ func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas 
 		}
 		evm.StateDB.CreateAccount(addr)
 	}
-	evm.Transfer(caller.Address(), to.Address(), value)
+	err = evm.Transfer(caller.Address(), to.Address(), value)
+	if err != nil {
+		return nil, gas, err
+	}
 
 	contract := NewContract(caller, to, value, gas)
 	contract.SetCallCode(&addr, evm.StateDB.GetCodeHash(addr), evm.StateDB.GetCode(addr))
