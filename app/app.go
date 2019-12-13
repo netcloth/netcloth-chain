@@ -27,8 +27,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	"github.com/netcloth/netcloth-chain/modules/supply"
 	"github.com/netcloth/netcloth-chain/modules/vm"
-	types2 "github.com/netcloth/netcloth-chain/modules/vm/types"
-	"github.com/netcloth/netcloth-chain/types"
+	vmtypes "github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 	"github.com/netcloth/netcloth-chain/version"
@@ -202,7 +201,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		aipalSubspace,
 		ipal.DefaultCodespace)
 
-	csdb := types2.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
+	csdb := vmtypes.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc, keys[vm.StoreKey],
 		tkeys[vm.TStoreKey],
@@ -323,9 +322,9 @@ func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 }
 
 func SetBech32AddressPrefixes(config *sdk.Config) {
-	config.SetBech32PrefixForAccount(types.Bech32PrefixAccAddr, types.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 }
 
 // load a particular height

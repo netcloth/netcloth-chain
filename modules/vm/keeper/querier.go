@@ -37,7 +37,7 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	}
 
 	accAddr := sdk.AccAddress(req.Data)
-	code := k.CSDB.GetCode(accAddr)
+	code := k.CSDB.WithContext(ctx).GetCode(accAddr)
 
 	return code, nil
 }
