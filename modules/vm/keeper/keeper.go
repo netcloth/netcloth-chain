@@ -78,6 +78,11 @@ func (k Keeper) GetState(ctx sdk.Context, addr sdk.AccAddress, hash sdk.Hash) sd
 	return k.CSDB.WithContext(ctx).GetState(addr, hash)
 }
 
+// GetCode calls CommitStateDB.GetCode using the passed in context
+func (k *Keeper) GetCode(ctx sdk.Context, addr sdk.AccAddress) []byte {
+	return k.CSDB.WithContext(ctx).GetCode(addr)
+}
+
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {

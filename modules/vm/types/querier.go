@@ -1,8 +1,6 @@
 package types
 
 import (
-	"fmt"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -16,18 +14,26 @@ type QueryCodeParams struct {
 	AccAddr sdk.AccAddress
 }
 
+// QueryResCode is response type for code query
+type QueryResCode struct {
+	Value []byte `json:"value"`
+}
+
+func (q QueryResCode) String() string {
+	return string(q.Value)
+}
+
 // QueryResStorage is response type for storage query
 type QueryResStorage struct {
 	Value []byte `json:"value"`
+}
+
+func (q QueryResStorage) String() string {
+	return string(q.Value)
 }
 
 func NewQueryCodeParams(AccAddr sdk.AccAddress) QueryCodeParams {
 	return QueryCodeParams{
 		AccAddr: AccAddr,
 	}
-}
-
-func (p QueryResStorage) String() string {
-	return fmt.Sprintf(`storage:
-value   : %v`, p.Value)
 }
