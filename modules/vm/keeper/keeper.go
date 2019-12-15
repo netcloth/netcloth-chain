@@ -74,6 +74,10 @@ func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) exported.Accoun
 	return k.ak.GetAccount(ctx, addr)
 }
 
+func (k Keeper) GetState(ctx sdk.Context, addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
+	return k.CSDB.WithContext(ctx).GetState(addr, hash)
+}
+
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {

@@ -92,3 +92,35 @@ $ %s query vm code [address]`, version.ClientName)),
 		},
 	}
 }
+
+func GetCmdGetStorageAt(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "storage [account] [key",
+		Short: "Querying storage for an account at a given key",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by accAddr.
+Example:
+$ %s query vm code [address]`, version.ClientName)),
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			addr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			key := sdk.HexToHash(args[1]).Hex()
+
+			route := fmt.Sprintf("custom/vm/%s/%s", addr, key)
+			res, _, err := cliCtx.Query(route)
+			if err != nil {
+				return err
+			}
+
+			var out types.QueryResStorage
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
