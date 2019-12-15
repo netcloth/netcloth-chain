@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -40,7 +41,15 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		CSDB:      k.CSDB.WithContext(ctx),
 	}
 	_, res := st.TransitionCSDB(ctx)
-	return res
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
+
+	return sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}
 }
 
 func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.Result {
@@ -55,8 +64,17 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 		Amount:    msg.Amount.Amount,
 		CSDB:      k.CSDB.WithContext(ctx),
 	}
+
 	_, res := st.TransitionCSDB(ctx)
-	return res
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+		),
+	)
+
+	return sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {

@@ -28,6 +28,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryParams(cdc),
 		GetCmdQueryCode(cdc),
+		GetCmdGetStorageAt(cdc),
 	)...)
 	return vmQueryCmd
 }
