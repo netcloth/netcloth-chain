@@ -256,12 +256,12 @@ func gasCallCode(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memory
 		overflow bool
 	)
 	if stack.Back(2).Sign() != 0 {
-		gas ++ CallValueTransferGas
+		gas += CallValueTransferGas
 	}
-	if gas, overflow =math.SafeAdd(gas, memoryGas); overflow {
+	if gas, overflow = math.SafeAdd(gas, memoryGas); overflow {
 		return 0, ErrGasUintOverflow()
 	}
-	evm.callGasTemp , err = callGas(contract.Gas, gas, stack.Back(0))
+	evm.callGasTemp, err = callGas(contract.Gas, gas, stack.Back(0))
 	if err != nil {
 		return 0, err
 	}
