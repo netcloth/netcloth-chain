@@ -111,9 +111,7 @@ $ %s query vm code [address]`, version.ClientName)),
 				return err
 			}
 
-			key := sdk.HexToHash(args[1]).Hex()
-
-			route := fmt.Sprintf("custom/vm/%s/%s", addr, key)
+			route := fmt.Sprintf("custom/vm/%s/%s/%s", types.QueryStorage, addr, args[1])
 			res, _, err := cliCtx.Query(route)
 			if err != nil {
 				return err
