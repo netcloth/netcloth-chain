@@ -117,19 +117,6 @@ func gasSStore(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySi
 	return SstoreDirtyGasEIP2200, nil // dirty update (2.2)
 }
 
-func gasExpFrontier(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
-	expByteLen := uint64((stack.data[stack.len()-2].BitLen() + 7) / 8)
-
-	var (
-		gas      = expByteLen * ExpByteEIP158 // no overflow check required. Max is 256 * ExpByte gas
-		overflow bool
-	)
-	if gas, overflow = math.SafeAdd(gas, ExpGas); overflow {
-		return 0, ErrGasUintOverflow()
-	}
-	return gas, nil
-}
-
 func gasSha3(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
 	gas, err := memoryGasCost(mem, memorySize)
 	if err != nil {
@@ -212,11 +199,11 @@ func makeGasLog(n uint64) gasFunc {
 	}
 }
 
-func gasExpEIP158(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
+func gasExp(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
 	expByteLen := uint64((stack.data[stack.len()-2].BitLen() + 7) / 8)
 
 	var (
-		gas      = expByteLen * ExpByteEIP158 // no overflow check required. Max is 256 * ExpByte gas
+		gas      = expByteLen * ExpByte // no overflow check required. Max is 256 * ExpByte gas
 		overflow bool
 	)
 	if gas, overflow = math.SafeAdd(gas, ExpGas); overflow {
@@ -226,14 +213,61 @@ func gasExpEIP158(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memor
 }
 
 func gasCall(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
-	// TODO
-	gas := uint64(0)
+	var (
+		gas            uint64
+		transfersValue = stack.Back(2).Sign() != 0
+		address        = sdk.BigToAddress(stack.Back(1))
+	)
+
+	if transfersValue && evm.StateDB.Empty(address) {
+		gas += CallNewAccountGas
+	}
+	if transfersValue {
+		gas += CallValueTransferGas
+	}
+
+	memoryGas, err := memoryGasCost(mem, memorySize)
+	if err != nil {
+		return 0, err
+	}
+	var overflow bool
+	if gas, overflow = math.SafeAdd(gas, memoryGas); overflow {
+		return 0, ErrGasUintOverflow()
+	}
+
+	evm.callGasTemp, err = callGas(contract.Gas, gas, stack.Back(0))
+	if err != nil {
+		return 0, err
+	}
+	if gas, overflow = math.SafeAdd(gas, evm.callGasTemp); overflow {
+		return 0, ErrGasUintOverflow()
+	}
 	return gas, nil
 }
 
 func gasCallCode(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
-	// TODO
-	gas := uint64(0)
+	memoryGas, err := memoryGasCost(mem, memorySize)
+	if err != nil {
+		return 0, err
+	}
+
+	var (
+		gas      uint64
+		overflow bool
+	)
+	if stack.Back(2).Sign() != 0 {
+		gas ++ CallValueTransferGas
+	}
+	if gas, overflow =math.SafeAdd(gas, memoryGas); overflow {
+		return 0, ErrGasUintOverflow()
+	}
+	evm.callGasTemp , err = callGas(contract.Gas, gas, stack.Back(0))
+	if err != nil {
+		return 0, err
+	}
+	if gas, overflow = math.SafeAdd(gas, evm.callGasTemp); overflow {
+		return 0, ErrGasUintOverflow()
+	}
 	return gas, nil
 }
 
@@ -271,7 +305,7 @@ func gasStaticCall(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memo
 
 func gasSelfdestruct(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
 	var gas uint64
-	gas = SelfdestructGasEIP150
+	gas = SelfdestructGas
 	var address = sdk.BigToAddress(stack.Back(0))
 	if evm.StateDB.Empty(address) && evm.StateDB.GetBalance(contract.Address()).Sign() != 0 {
 		gas += CreateBySelfdestructGas
