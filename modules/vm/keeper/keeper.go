@@ -83,6 +83,10 @@ func (k *Keeper) GetCode(ctx sdk.Context, addr sdk.AccAddress) []byte {
 	return k.CSDB.WithContext(ctx).GetCode(addr)
 }
 
+func (k *Keeper) GetLogs(ctx sdk.Context, hash sdk.Hash) []*types.Log {
+	return k.CSDB.WithContext(ctx).GetLogs(hash)
+}
+
 func (k Keeper) DoContractCreate(ctx sdk.Context, msg types.MsgContractCreate) (err sdk.Error) {
 	acc := k.ak.GetAccount(ctx, msg.From)
 	if acc == nil {

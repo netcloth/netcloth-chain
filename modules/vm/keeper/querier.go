@@ -17,6 +17,8 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryCode(ctx, req, k)
 		case types.QueryStorage:
 			return queryStorage(ctx, path, k)
+		case types.QueryTxLogs:
+			return queryTxLogs(ctx, path, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
 		}
@@ -53,5 +55,18 @@ func queryStorage(ctx sdk.Context, path []string, keeper Keeper) ([]byte, sdk.Er
 	if err != nil {
 		panic("could not marshal result to JSON: " + err.Error())
 	}
+	return res, nil
+}
+
+func queryTxLogs(ctx sdk.Context, path []string, keeper Keeper) ([]byte, sdk.Error) {
+	txHash := sdk.HexToHash(path[1])
+	logs := keeper.GetLogs(ctx, txHash)
+
+	bRes := types.QueryLogs{Logs: logs}
+	res, err := codec.MarshalJSONIndent(keeper.cdc, bRes)
+	if err != nil {
+		panic("could not marshal result to JSON: " + err.Error())
+	}
+
 	return res, nil
 }

@@ -29,6 +29,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdQueryParams(cdc),
 		GetCmdQueryCode(cdc),
 		GetCmdGetStorageAt(cdc),
+		GetCmdGetLogs(cdc),
 	)...)
 	return vmQueryCmd
 }
@@ -118,6 +119,30 @@ $ %s query vm code [address]`, version.ClientName)),
 			}
 
 			var out types.QueryResStorage
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdGetLogs(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "logs [txhash]",
+		Short: "Querying logs by txHash",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query logs by txHash.
+Example:
+$ %s query vm logs [txHash]`, version.ClientName)),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.Query(
+				fmt.Sprintf("custom/vm/logs/%s", args[0]))
+			if err != nil {
+				return err
+			}
+
+			var out types.QueryLogs
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
