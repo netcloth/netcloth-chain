@@ -170,6 +170,14 @@ func (csdb *CommitStateDB) AddRefund(gas uint64) {
 	csdb.refund += gas
 }
 
+func (csdb *CommitStateDB) SubRefund(gas uint64) {
+	csdb.journal.append(refundChange{prev: csdb.refund})
+	if gas > csdb.refund {
+		panic("Refund counter below zero")
+	}
+	csdb.refund -= gas
+}
+
 func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
 	so := csdb.getStateObject(addr)
 	if so == nil {

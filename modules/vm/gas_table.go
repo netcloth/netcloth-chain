@@ -74,9 +74,47 @@ var (
 	gasReturnDataCopy = memoryCopierGas(2)
 )
 
+// gasSStoreEIP2200
 func gasSStore(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
-	// TODO
-	return NetSstoreDirtyGas, nil
+	// If we fail the minimum gas availability invariant, fail (0)
+	if contract.Gas <= SstoreSentryGasEIP2200 {
+		return 0, sdk.ErrInternal("not enough gas for reentrancy sentry")
+	}
+	// Gas sentry honoured, do the actual gas calculation based on the stored value
+	var (
+		y, x    = stack.Back(1), stack.Back(0)
+		current = evm.StateDB.GetState(contract.Address(), sdk.BigToHash(x))
+	)
+	value := sdk.BigToHash(y)
+
+	if current == value { // noop (1)
+		return SstoreNoopGasEIP2200, nil
+	}
+	original := evm.StateDB.GetCommittedState(contract.Address(), sdk.BigToHash(x))
+	if original == current {
+		if original == (sdk.Hash{}) { // create slot (2.1.1)
+			return SstoreInitGasEIP2200, nil
+		}
+		if value == (sdk.Hash{}) { // delete slot (2.1.2b)
+			evm.StateDB.AddRefund(SstoreClearRefundEIP2200)
+		}
+		return SstoreCleanGasEIP2200, nil // write existing slot (2.1.2)
+	}
+	if original != (sdk.Hash{}) {
+		if current == (sdk.Hash{}) { // recreate slot (2.2.1.1)
+			evm.StateDB.SubRefund(SstoreClearRefundEIP2200)
+		} else if value == (sdk.Hash{}) { // delete slot (2.2.1.2)
+			evm.StateDB.AddRefund(SstoreClearRefundEIP2200)
+		}
+	}
+	if original == value {
+		if original == (sdk.Hash{}) { // reset to original inexistent slot (2.2.2.1)
+			evm.StateDB.AddRefund(SstoreInitRefundEIP2200)
+		} else { // reset to original existing slot (2.2.2.2)
+			evm.StateDB.AddRefund(SstoreCleanRefundEIP2200)
+		}
+	}
+	return SstoreDirtyGasEIP2200, nil // dirty update (2.2)
 }
 
 func gasExpFrontier(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
