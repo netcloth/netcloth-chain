@@ -48,18 +48,7 @@ var (
 // newIstanbulInstructionSet returns the frontier, homestead
 // byzantium, contantinople and petersburg instructions.
 func newIstanbulInstructionSet() JumpTable {
-	instructionSet := newConstantinopleInstructionSet()
-
-	// ChainID opcode - https://eips.ethereum.org/EIPS/eip-1344
-	instructionSet[CHAINID] = operation{
-		execute:     opChainID,
-		constantGas: GasQuickStep,
-		minStack:    minStack(0, 1),
-		maxStack:    maxStack(0, 1),
-		valid:       true,
-	}
-
-	return instructionSet
+	return newConstantinopleInstructionSet()
 }
 
 // newConstantinopleInstructionSet returns the frontier, homestead
@@ -89,7 +78,7 @@ func newConstantinopleInstructionSet() JumpTable {
 	}
 	instructionSet[EXTCODEHASH] = operation{
 		execute:     opExtCodeHash,
-		constantGas: ExtcodeHashGasEIP1884,
+		constantGas: ExtcodeHashGas,
 		minStack:    minStack(1, 1),
 		maxStack:    maxStack(1, 1),
 		valid:       true,
@@ -114,7 +103,7 @@ func newByzantiumInstructionSet() JumpTable {
 	instructionSet := newSpuriousDragonInstructionSet()
 	instructionSet[STATICCALL] = operation{
 		execute:     opStaticCall,
-		constantGas: CallGasEIP150,
+		constantGas: CallGas,
 		dynamicGas:  gasStaticCall,
 		minStack:    minStack(6, 1),
 		maxStack:    maxStack(6, 1),
@@ -163,7 +152,7 @@ func newHomesteadInstructionSet() JumpTable {
 	instructionSet[DELEGATECALL] = operation{
 		execute:     opDelegateCall,
 		dynamicGas:  gasDelegateCall,
-		constantGas: CallGasEIP150,
+		constantGas: CallGas,
 		minStack:    minStack(6, 1),
 		maxStack:    maxStack(6, 1),
 		memorySize:  memoryDelegateCall,
@@ -250,7 +239,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		EXP: {
 			execute:    opExp,
-			dynamicGas: gasExpEIP158,
+			dynamicGas: gasExp,
 			minStack:   minStack(2, 1),
 			maxStack:   maxStack(2, 1),
 			valid:      true,
@@ -357,7 +346,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		BALANCE: {
 			execute:     opBalance,
-			constantGas: BalanceGasEIP1884,
+			constantGas: BalanceGas,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
@@ -431,14 +420,14 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		EXTCODESIZE: {
 			execute:     opExtCodeSize,
-			constantGas: ExtcodeSizeGasEIP150,
+			constantGas: ExtcodeSizeGas,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
 		},
 		EXTCODECOPY: {
 			execute:     opExtCodeCopy,
-			constantGas: ExtcodeCopyBaseEIP150,
+			constantGas: ExtcodeCopyBase,
 			dynamicGas:  gasExtCodeCopy,
 			minStack:    minStack(4, 0),
 			maxStack:    maxStack(4, 0),
@@ -487,6 +476,20 @@ func newFrontierInstructionSet() JumpTable {
 			maxStack:    maxStack(0, 1),
 			valid:       true,
 		},
+		CHAINID: {
+			execute:     opChainID,
+			constantGas: GasQuickStep,
+			minStack:    minStack(0, 1),
+			maxStack:    maxStack(0, 1),
+			valid:       true,
+		},
+		SELFBALANCE: {
+			execute:     opSelfBalance,
+			constantGas: GasFastStep,
+			minStack:    minStack(0, 1),
+			maxStack:    maxStack(0, 1),
+			valid:       true,
+		},
 		POP: {
 			execute:     opPop,
 			constantGas: GasQuickStep,
@@ -524,7 +527,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		SLOAD: {
 			execute:     opSload,
-			constantGas: SloadGasEIP1884,
+			constantGas: SloadGas,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
@@ -1087,7 +1090,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		CALL: {
 			execute:     opCall,
-			constantGas: CallGasEIP150,
+			constantGas: CallGas,
 			dynamicGas:  gasCall,
 			minStack:    minStack(7, 1),
 			maxStack:    maxStack(7, 1),
@@ -1097,7 +1100,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		CALLCODE: {
 			execute:     opCallCode,
-			constantGas: CallGasEIP150,
+			constantGas: CallGas,
 			dynamicGas:  gasCallCode,
 			minStack:    minStack(7, 1),
 			maxStack:    maxStack(7, 1),
