@@ -37,13 +37,12 @@ type operation struct {
 type JumpTable [256]operation
 
 var (
-	frontierInstructionSet         = newFrontierInstructionSet()
-	homesteadInstructionSet        = newHomesteadInstructionSet()
-	tangerineWhistleInstructionSet = newTangerineWhistleInstructionSet()
-	spuriousDragonInstructionSet   = newSpuriousDragonInstructionSet()
-	byzantiumInstructionSet        = newByzantiumInstructionSet()
-	constantinopleInstructionSet   = newConstantinopleInstructionSet()
-	istanbulInstructionSet         = newIstanbulInstructionSet()
+	frontierInstructionSet       = newFrontierInstructionSet()
+	homesteadInstructionSet      = newHomesteadInstructionSet()
+	spuriousDragonInstructionSet = newSpuriousDragonInstructionSet()
+	byzantiumInstructionSet      = newByzantiumInstructionSet()
+	constantinopleInstructionSet = newConstantinopleInstructionSet()
+	istanbulInstructionSet       = newIstanbulInstructionSet()
 )
 
 // newIstanbulInstructionSet returns the frontier, homestead
@@ -59,15 +58,6 @@ func newIstanbulInstructionSet() JumpTable {
 		maxStack:    maxStack(0, 1),
 		valid:       true,
 	}
-
-	// Reprice reader opcodes - https://eips.ethereum.org/EIPS/eip-1884
-	// Gas cost changes
-	instructionSet[BALANCE].constantGas = BalanceGasEIP1884
-	instructionSet[EXTCODEHASH].constantGas = ExtcodeHashGasEIP1884
-	instructionSet[SLOAD].constantGas = SloadGasEIP1884
-
-	// Net metered SSTORE - https://eips.ethereum.org/EIPS/eip-2200
-	instructionSet[SSTORE].dynamicGas = gasSStoreEIP2200
 
 	return instructionSet
 }
@@ -99,7 +89,7 @@ func newConstantinopleInstructionSet() JumpTable {
 	}
 	instructionSet[EXTCODEHASH] = operation{
 		execute:     opExtCodeHash,
-		constantGas: ExtcodeHashGasConstantinople,
+		constantGas: ExtcodeHashGasEIP1884,
 		minStack:    minStack(1, 1),
 		maxStack:    maxStack(1, 1),
 		valid:       true,
@@ -163,23 +153,7 @@ func newByzantiumInstructionSet() JumpTable {
 
 // EIP 158 a.k.a Spurious Dragon
 func newSpuriousDragonInstructionSet() JumpTable {
-	instructionSet := newTangerineWhistleInstructionSet()
-	instructionSet[EXP].dynamicGas = gasExpEIP158
-	return instructionSet
-
-}
-
-// EIP 150 a.k.a Tangerine Whistle
-func newTangerineWhistleInstructionSet() JumpTable {
-	instructionSet := newHomesteadInstructionSet()
-	instructionSet[BALANCE].constantGas = BalanceGasEIP150
-	instructionSet[EXTCODESIZE].constantGas = ExtcodeSizeGasEIP150
-	instructionSet[SLOAD].constantGas = SloadGasEIP150
-	instructionSet[EXTCODECOPY].constantGas = ExtcodeCopyBaseEIP150
-	instructionSet[CALL].constantGas = CallGasEIP150
-	instructionSet[CALLCODE].constantGas = CallGasEIP150
-	instructionSet[DELEGATECALL].constantGas = CallGasEIP150
-	return instructionSet
+	return newHomesteadInstructionSet()
 }
 
 // newHomesteadInstructionSet returns the frontier and homestead
@@ -189,7 +163,7 @@ func newHomesteadInstructionSet() JumpTable {
 	instructionSet[DELEGATECALL] = operation{
 		execute:     opDelegateCall,
 		dynamicGas:  gasDelegateCall,
-		constantGas: CallGasFrontier,
+		constantGas: CallGasEIP150,
 		minStack:    minStack(6, 1),
 		maxStack:    maxStack(6, 1),
 		memorySize:  memoryDelegateCall,
@@ -276,7 +250,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		EXP: {
 			execute:    opExp,
-			dynamicGas: gasExpFrontier,
+			dynamicGas: gasExpEIP158,
 			minStack:   minStack(2, 1),
 			maxStack:   maxStack(2, 1),
 			valid:      true,
@@ -383,7 +357,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		BALANCE: {
 			execute:     opBalance,
-			constantGas: BalanceGasFrontier,
+			constantGas: BalanceGasEIP1884,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
@@ -457,14 +431,14 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		EXTCODESIZE: {
 			execute:     opExtCodeSize,
-			constantGas: ExtcodeSizeGasFrontier,
+			constantGas: ExtcodeSizeGasEIP150,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
 		},
 		EXTCODECOPY: {
 			execute:     opExtCodeCopy,
-			constantGas: ExtcodeCopyBaseFrontier,
+			constantGas: ExtcodeCopyBaseEIP150,
 			dynamicGas:  gasExtCodeCopy,
 			minStack:    minStack(4, 0),
 			maxStack:    maxStack(4, 0),
@@ -550,7 +524,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		SLOAD: {
 			execute:     opSload,
-			constantGas: SloadGasFrontier,
+			constantGas: SloadGasEIP1884,
 			minStack:    minStack(1, 1),
 			maxStack:    maxStack(1, 1),
 			valid:       true,
@@ -1113,7 +1087,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		CALL: {
 			execute:     opCall,
-			constantGas: CallGasFrontier,
+			constantGas: CallGasEIP150,
 			dynamicGas:  gasCall,
 			minStack:    minStack(7, 1),
 			maxStack:    maxStack(7, 1),
@@ -1123,7 +1097,7 @@ func newFrontierInstructionSet() JumpTable {
 		},
 		CALLCODE: {
 			execute:     opCallCode,
-			constantGas: CallGasFrontier,
+			constantGas: CallGasEIP150,
 			dynamicGas:  gasCallCode,
 			minStack:    minStack(7, 1),
 			maxStack:    maxStack(7, 1),
