@@ -33,6 +33,7 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 	return sdk.Hash{}
 }
 
+// func returns: (ret []byte, usedGas uint64, failed bool, sdk.Result)
 func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result) {
 
 	evmCtx := Context{
