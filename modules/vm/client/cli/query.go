@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/netcloth/netcloth-chain/client/context"
-	"github.com/netcloth/netcloth-chain/version"
 	"github.com/spf13/cobra"
 
 	"github.com/netcloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {

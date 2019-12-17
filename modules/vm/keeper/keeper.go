@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/auth/exported"
-
 	tmcrypto "github.com/tendermint/tendermint/crypto"
-
-	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"

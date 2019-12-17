@@ -5,11 +5,10 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/distribution/client/common"
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
-	"github.com/netcloth/netcloth-chain/client/context"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )

@@ -12,16 +12,15 @@ import (
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/staking/types"
-
-	"github.com/netcloth/netcloth-chain/version"
-	"github.com/netcloth/netcloth-chain/client"
-	"github.com/netcloth/netcloth-chain/client/context"
+	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 // GetTxCmd returns the transaction commands for this module
