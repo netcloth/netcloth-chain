@@ -9,15 +9,9 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-var DefaultVMDenom = "unch"
+var _ VMDB = (*VM2DB)(nil)
 
-func CoinsFromBigInt(v *big.Int) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(DefaultVMDenom, sdk.NewInt(v.Int64())))
-}
-
-var _ StateDB = (*VMDB)(nil)
-
-type VMDB struct {
+type VM2DB struct {
 	ctx sdk.Context
 	ak  types.AccountKeeper
 	bk  types.BankKeeper
@@ -29,16 +23,16 @@ type VMDB struct {
 	dbErr error
 }
 
-func NewVMDB() *VMDB {
-	return &VMDB{}
+func NewVMDB() *VM2DB {
+	return &VM2DB{}
 }
 
-func (db *VMDB) WithContext(ctx sdk.Context) *VMDB {
+func (db *VM2DB) WithContext(ctx sdk.Context) *VM2DB {
 	db.ctx = ctx
 	return db
 }
 
-func (db *VMDB) getStateObject(addr sdk.AccAddress) (stateObject *stateObject) {
+func (db *VM2DB) getStateObject(addr sdk.AccAddress) (stateObject *stateObject) {
 	if so := db.stateObjects[addr.String()]; so != nil {
 		if so.deleted {
 			return nil
@@ -63,7 +57,7 @@ func (db *VMDB) getStateObject(addr sdk.AccAddress) (stateObject *stateObject) {
 
 // createObject creates a new state object. If there is an existing account with
 // the given address, it is overwritten and returned as the second return value.
-func (db *VMDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
+func (db *VM2DB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
 	prevObj = db.getStateObject(addr)
 
 	acc := db.ak.NewAccountWithAddress(csdb.Ctx, addr)
@@ -80,22 +74,22 @@ func (db *VMDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject)
 
 }
 
-func (db *VMDB) CreateAccount(addr sdk.AccAddress) {
+func (db *VM2DB) CreateAccount(addr sdk.AccAddress) {
 	newObj, prev := db.createObject(addr)
 	if prev != nil {
 		newObj.setBalance(prev.account.Balance())
 	}
 }
 
-func (db *VMDB) SubBalance(addr sdk.AccAddress, amt *big.Int) {
+func (db *VM2DB) SubBalance(addr sdk.AccAddress, amt *big.Int) {
 	db.bk.SubtractCoins(db.ctx, addr, CoinsFromBigInt(amt))
 }
 
-func (db *VMDB) AddBalance(addr sdk.AccAddress, amt *big.Int) {
+func (db *VM2DB) AddBalance(addr sdk.AccAddress, amt *big.Int) {
 	db.bk.AddCoins(db.ctx, addr, CoinsFromBigInt(amt))
 }
 
-func (db *VMDB) GetBalance(addr sdk.AccAddress) *big.Int {
+func (db *VM2DB) GetBalance(addr sdk.AccAddress) *big.Int {
 	acc := db.ak.GetAccount(db.ctx, addr)
 	if acc != nil {
 		for _, coin := range acc.GetCoins() {
@@ -108,7 +102,7 @@ func (db *VMDB) GetBalance(addr sdk.AccAddress) *big.Int {
 	return sdk.NewInt(0).BigInt()
 }
 
-func (db *VMDB) GetNonce(addr sdk.AccAddress) uint64 {
+func (db *VM2DB) GetNonce(addr sdk.AccAddress) uint64 {
 	acc := db.ak.GetAccount(db.ctx, addr)
 	if acc != nil {
 		return acc.GetSequence()
@@ -116,7 +110,7 @@ func (db *VMDB) GetNonce(addr sdk.AccAddress) uint64 {
 	return 0 //TODO check
 }
 
-func (db *VMDB) SetNonce(addr sdk.AccAddress, nonce uint64) {
+func (db *VM2DB) SetNonce(addr sdk.AccAddress, nonce uint64) {
 	acc := db.ak.GetAccount(db.ctx, addr)
 	if acc != nil {
 		if acc.GetSequence()+1 == nonce {
@@ -126,7 +120,7 @@ func (db *VMDB) SetNonce(addr sdk.AccAddress, nonce uint64) {
 	}
 }
 
-func (db *VMDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
+func (db *VM2DB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	acc := db.ak.GetAccount(db.ctx, addr)
 	if acc != nil {
 		return sdk.BytesToHash(acc.GetCodeHash())
@@ -134,79 +128,79 @@ func (db *VMDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	return sdk.Hash{} // TODO check: use empty hash?
 }
 
-func (db *VMDB) GetCode(addr sdk.AccAddress) []byte {
+func (db *VM2DB) GetCode(addr sdk.AccAddress) []byte {
 	return nil
 }
 
-func (db *VMDB) SetCode(addr sdk.AccAddress, code []byte) {
+func (db *VM2DB) SetCode(addr sdk.AccAddress, code []byte) {
 	panic("implement me")
 }
 
-func (db *VMDB) GetCodeSize(addr sdk.AccAddress) int {
+func (db *VM2DB) GetCodeSize(addr sdk.AccAddress) int {
 	panic("implement me")
 }
 
-func (db *VMDB) AddRefund(uint64) {
+func (db *VM2DB) AddRefund(uint64) {
 	panic("implement me")
 }
 
-func (db *VMDB) SubRefund(uint64) {
+func (db *VM2DB) SubRefund(uint64) {
 	panic("implement me")
 }
 
-func (db *VMDB) GetRefund() uint64 {
+func (db *VM2DB) GetRefund() uint64 {
 	panic("implement me")
 }
 
-func (db *VMDB) GetCommittedState(addr sdk.AccAddress, s sdk.Hash) sdk.Hash {
+func (db *VM2DB) GetCommittedState(addr sdk.AccAddress, s sdk.Hash) sdk.Hash {
 	panic("implement me")
 }
 
-func (db *VMDB) GetState(addr sdk.AccAddress, k sdk.Hash) sdk.Hash {
+func (db *VM2DB) GetState(addr sdk.AccAddress, k sdk.Hash) sdk.Hash {
 	panic("implement me")
 }
 
-func (db *VMDB) SetState(addr sdk.AccAddress, k sdk.Hash, v sdk.Hash) {
+func (db *VM2DB) SetState(addr sdk.AccAddress, k sdk.Hash, v sdk.Hash) {
 	panic("implement me")
 }
 
-func (db *VMDB) Suicide(addr sdk.AccAddress) bool {
+func (db *VM2DB) Suicide(addr sdk.AccAddress) bool {
 	panic("implement me")
 }
 
-func (db *VMDB) HasSuicided(addr sdk.AccAddress) bool {
+func (db *VM2DB) HasSuicided(addr sdk.AccAddress) bool {
 	panic("implement me")
 }
 
-func (db *VMDB) Exist(addr sdk.AccAddress) bool {
+func (db *VM2DB) Exist(addr sdk.AccAddress) bool {
 	panic("implement me")
 }
 
-func (db *VMDB) Empty(addr sdk.AccAddress) bool {
+func (db *VM2DB) Empty(addr sdk.AccAddress) bool {
 	panic("implement me")
 }
 
-func (db *VMDB) RevertToSnapshot(int) {
+func (db *VM2DB) RevertToSnapshot(int) {
 	panic("implement me")
 }
 
-func (db *VMDB) Snapshot() int {
+func (db *VM2DB) Snapshot() int {
 	panic("implement me")
 }
 
-func (db *VMDB) AddLog(*ethtypes.Log) {
+func (db *VM2DB) AddLog(*ethtypes.Log) {
 	panic("implement me")
 }
 
-func (db *VMDB) AddPreimage(sdk.Hash, []byte) {
+func (db *VM2DB) AddPreimage(sdk.Hash, []byte) {
 	panic("implement me")
 }
 
-func (db *VMDB) ForEachStorage(sdk.AccAddress, func(sdk.Hash, sdk.Hash) bool) error {
+func (db *VM2DB) ForEachStorage(sdk.AccAddress, func(sdk.Hash, sdk.Hash) bool) error {
 	panic("implement me")
 }
 
-func (db *VMDB) setError(err error) {
+func (db *VM2DB) setError(err error) {
 	if db.dbErr == nil {
 		db.dbErr = err
 	}

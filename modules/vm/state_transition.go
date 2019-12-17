@@ -5,8 +5,6 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -18,7 +16,7 @@ type StateTransition struct {
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
 	Payload   []byte
-	CSDB      *types.CommitStateDB
+	k         *Keeper
 }
 
 func (st StateTransition) CanTransfer(acc sdk.AccAddress, amount *big.Int) bool {
@@ -50,7 +48,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	cfg := Config{}
 
-	evm := NewEVM(evmCtx, *st.CSDB, cfg)
+	evm := NewEVM(evmCtx, ctx, k, cfg)
 
 	var (
 		ret         []byte

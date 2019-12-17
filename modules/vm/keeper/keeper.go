@@ -2,7 +2,10 @@ package keeper
 
 import (
 	"fmt"
+	"math/big"
 	"os"
+
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/netcloth/netcloth-chain/modules/auth/exported"
 
@@ -17,9 +20,10 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-type Keeper struct {
-	*VMDB
+var _ VMDB = (*Keeper)(nil)
 
+type Keeper struct {
+	ctx        sdk.Context
 	storeKey   sdk.StoreKey
 	storeTKey  sdk.StoreKey
 	cdc        *codec.Codec
@@ -27,9 +31,140 @@ type Keeper struct {
 	ak         types.AccountKeeper
 	bk         types.BankKeeper
 
-	CSDB *types.CommitStateDB
-
 	codespace sdk.CodespaceType
+}
+
+var VMDenom = "unch"
+
+func CoinsFromBigInt(v *big.Int) sdk.Coins {
+	return sdk.NewCoins(sdk.NewCoin(VMDenom, sdk.NewInt(v.Int64())))
+}
+
+func (k Keeper) CreateAccount(addr sdk.AccAddress) {
+	k.ak.NewAccountWithAddress(k.ctx, addr)
+}
+
+func (k Keeper) SubBalance(addr sdk.AccAddress, amt *big.Int) {
+	k.bk.SubtractCoins(k.ctx, addr, CoinsFromBigInt(amt))
+}
+
+func (k Keeper) AddBalance(addr sdk.AccAddress, amt *big.Int) {
+	k.bk.AddCoins(k.ctx, addr, CoinsFromBigInt(amt))
+}
+
+func (k Keeper) GetBalance(addr sdk.AccAddress) *big.Int {
+	coins := k.bk.GetCoins(k.ctx, addr)
+	for _, coin := range coins {
+		if coin.Denom == VMDenom {
+			return coin.Amount.BigInt()
+		}
+	}
+
+	return sdk.NewInt(0).BigInt() //TODO
+}
+
+func (k Keeper) GetNonce(addr sdk.AccAddress) uint64 {
+	acc := k.ak.GetAccount(k.ctx, addr)
+	if acc != nil {
+		return acc.GetSequence()
+	}
+	return 0 //TODO
+}
+
+func (k Keeper) SetNonce(addr sdk.AccAddress, nonce uint64) {
+	acc := k.ak.GetAccount(k.ctx, addr)
+	if acc != nil {
+		if acc.GetSequence()+1 == nonce {
+			acc.SetSequence(nonce)
+			k.ak.SetAccount(k.ctx, acc)
+		}
+	}
+}
+
+func (k Keeper) GetCodeHash(sdk.AccAddress) sdk.Hash {
+
+}
+
+func (k Keeper) GetCode(sdk.AccAddress) []byte {
+	panic("implement me")
+}
+
+func (k Keeper) SetCode(sdk.AccAddress, []byte) {
+	panic("implement me")
+}
+
+func (k Keeper) GetCodeSize(sdk.AccAddress) int {
+	panic("implement me")
+}
+
+func (k Keeper) AddRefund(uint64) {
+	panic("implement me")
+}
+
+func (k Keeper) SubRefund(uint64) {
+	panic("implement me")
+}
+
+func (k Keeper) GetRefund() uint64 {
+	panic("implement me")
+}
+
+func (k Keeper) GetCommittedState(sdk.AccAddress, sdk.Hash) sdk.Hash {
+	panic("implement me")
+}
+
+func (k Keeper) GetState(sdk.AccAddress, sdk.Hash) sdk.Hash {
+	panic("implement me")
+}
+
+func (k Keeper) SetState(sdk.AccAddress, sdk.Hash, sdk.Hash) {
+	panic("implement me")
+}
+
+func (k Keeper) Suicide(sdk.AccAddress) bool {
+	panic("implement me")
+}
+
+func (k Keeper) HasSuicided(sdk.AccAddress) bool {
+	panic("implement me")
+}
+
+func (k Keeper) Exist(sdk.AccAddress) bool {
+	panic("implement me")
+}
+
+func (k Keeper) Empty(sdk.AccAddress) bool {
+	panic("implement me")
+}
+
+func (k Keeper) RevertToSnapshot(int) {
+	panic("implement me")
+}
+
+func (k Keeper) Snapshot() int {
+	panic("implement me")
+}
+
+func (k Keeper) AddLog(*ethtypes.Log) {
+	panic("implement me")
+}
+
+func (k Keeper) AddPreimage(sdk.Hash, []byte) {
+	panic("implement me")
+}
+
+func (k Keeper) ForEachStorage(sdk.AccAddress, func(sdk.Hash, sdk.Hash) bool) error {
+	panic("implement me")
+}
+
+func (k Keeper) GetVMObject(ctx sdk.Context, addr sdk.AccAddress) exported.Account {
+	store := ctx.KVStore(ak.key)
+	bz := store.Get(types.AddressStoreKey(addr))
+	if bz == nil {
+		return nil
+	}
+	acc := ak.decodeAccount(bz)
+	return acc
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -45,13 +180,14 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, codespace sdk.Codespace
 	}
 }
 
+func (k *Keeper) WithContext(ctx sdk.Context) *Keeper {
+	k.ctx = ctx
+	return k
+}
+
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
-}
-
-func (k Keeper) GetCodeHash(ctx sdk.Context, acc sdk.AccAddress) (codeHash sdk.Hash, found bool) {
-	return sdk.Hash{}, true
 }
 
 func (k Keeper) GetCodeByCodeHash(ctx sdk.Context, codeHash sdk.Hash) (code []byte, found bool) {

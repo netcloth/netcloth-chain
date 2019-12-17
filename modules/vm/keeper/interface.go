@@ -8,7 +8,7 @@ import (
 )
 
 // StateDB is an VM database for full state querying.
-type StateDB interface {
+type VMDB interface {
 	CreateAccount(sdk.AccAddress)
 
 	SubBalance(sdk.AccAddress, *big.Int)

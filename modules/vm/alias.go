@@ -24,6 +24,8 @@ type (
 
 	CommitStateDB = types.CommitStateDB
 
+	VMDB = keeper.VMDB
+
 	Log = types.Log
 )
 

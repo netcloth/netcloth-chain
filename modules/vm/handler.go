@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -25,38 +26,59 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
-	err := msg.ValidateBasic()
+	var (
+		ret         []byte
+		leftOverGas uint64
+		addr        sdk.AccAddress
+		err         sdk.Error
+	)
+
+	const (
+		gas = 100000000
+	)
+
+	err = msg.ValidateBasic()
 	if err != nil {
 		return err.Result()
 	}
 
-	st := StateTransition{
-		Sender:    msg.From,
-		Recipient: nil,
-		Price:     sdk.NewInt(1000000),
-		GasLimit:  10000000,
-		Amount:    msg.Amount.Amount,
-		Payload:   msg.Code,
-		CSDB:      k.CSDB.WithContext(ctx),
+	evmCtx := Context{}
+	cfg := Config{}
+	evm := NewEVM(evmCtx, ctx, k, cfg)
+
+	ret, addr, leftOverGas, err = evm.Create(msg.From, msg.Code, gas, msg.Amount.Amount.BigInt())
+	fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s, leftOverGas = %v, err = %v\n", addr, leftOverGas, err))
+
+	if err != nil {
+		return sdk.ErrInternal("contract deploy err").Result()
 	}
-	_, res := st.TransitionCSDB(ctx)
-	return res
+
+	return sdk.Result{Data: ret, GasUsed: gas - leftOverGas}
 }
 
 func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.Result {
-	ctx.Logger().Info("handleMsgContractCall ...")
+	var (
+		ret         []byte
+		leftOverGas uint64
+		err         sdk.Error
+	)
+	const (
+		gas = 100000000
+	)
 
-	st := StateTransition{
-		Sender:    msg.From,
-		Recipient: msg.Recipient,
-		Price:     sdk.NewInt(1000000),
-		GasLimit:  10000000,
-		Payload:   msg.Payload,
-		Amount:    msg.Amount.Amount,
-		CSDB:      k.CSDB.WithContext(ctx),
+	err = msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
 	}
-	_, res := st.TransitionCSDB(ctx)
-	return res
+
+	evmCtx := Context{}
+	cfg := Config{}
+	evm := NewEVM(evmCtx, ctx, k, cfg)
+
+	ret, leftOverGas, err = evm.Call(msg.From, msg.Recipient, msg.Payload, gas, msg.Amount.Amount.BigInt())
+	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
+
+	return sdk.Result{Data: ret, GasUsed: gas - leftOverGas}
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
