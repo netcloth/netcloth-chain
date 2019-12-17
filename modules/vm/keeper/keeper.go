@@ -17,8 +17,9 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-// keeper of the staking store
 type Keeper struct {
+	*VMDB
+
 	storeKey   sdk.StoreKey
 	storeTKey  sdk.StoreKey
 	cdc        *codec.Codec
@@ -28,7 +29,6 @@ type Keeper struct {
 
 	CSDB *types.CommitStateDB
 
-	// codespace
 	codespace sdk.CodespaceType
 }
 
@@ -42,13 +42,28 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, codespace sdk.Codespace
 		codespace:  codespace,
 		ak:         ak,
 		bk:         bk,
-		CSDB:       csdb,
 	}
 }
 
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
+}
+
+func (k Keeper) GetCodeHash(ctx sdk.Context, acc sdk.AccAddress) (codeHash sdk.Hash, found bool) {
+	return sdk.Hash{}, true
+}
+
+func (k Keeper) GetCodeByCodeHash(ctx sdk.Context, codeHash sdk.Hash) (code []byte, found bool) {
+	return nil, true
+}
+
+func (k Keeper) GetCodeByAccount(ctx sdk.Context, acc sdk.AccAddress) (code []byte, found bool) {
+	return nil, true
+}
+
+func (k Keeper) GetVMState(ctx sdk.Context, key sdk.Hash) sdk.Hash {
+	return sdk.Hash{}
 }
 
 func (k Keeper) GetContractCode(ctx sdk.Context, codeHash []byte) (code []byte, found bool) {
