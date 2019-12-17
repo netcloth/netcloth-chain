@@ -7,7 +7,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

@@ -4,11 +4,11 @@ import (
 	"crypto/sha256"
 	"math/big"
 
+	"golang.org/x/crypto/ripemd160"
+
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"golang.org/x/crypto/ripemd160"
 )
 
 // Common big integers often used
