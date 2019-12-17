@@ -64,19 +64,19 @@ type CommitStateDB struct {
 //
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
-func NewCommitStateDB(ak AccountKeeper, bk BankKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-	return &CommitStateDB{
-		AK:                ak,
-		BK:                bk,
-		storageKey:        storageKey,
-		codeKey:           codeKey,
-		stateObjects:      make(map[string]*stateObject),
-		stateObjectsDirty: make(map[string]struct{}),
-		logs:              make(map[sdk.Hash][]*Log),
-		preimages:         make(map[sdk.Hash][]byte),
-		journal:           newJournal(),
-	}
-}
+//func NewCommitStateDB(ak AccountKeeper, bk BankKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+//	return &CommitStateDB{
+//		AK:                ak,
+//		BK:                bk,
+//		storageKey:        storageKey,
+//		codeKey:           codeKey,
+//		stateObjects:      make(map[string]*stateObject),
+//		stateObjectsDirty: make(map[string]struct{}),
+//		logs:              make(map[sdk.Hash][]*Log),
+//		preimages:         make(map[sdk.Hash][]byte),
+//		journal:           newJournal(),
+//	}
+//}
 
 // WithContext returns a Database with an updated sdk context
 func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {

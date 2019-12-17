@@ -168,7 +168,7 @@ func (k Keeper) GetVMObject(ctx sdk.Context, addr sdk.AccAddress) exported.Accou
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper, bk types.BankKeeper, csdb *types.CommitStateDB) Keeper {
+func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper, bk types.BankKeeper) Keeper {
 	return Keeper{
 		storeKey:   key,
 		storeTKey:  tkey,

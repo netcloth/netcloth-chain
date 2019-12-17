@@ -27,7 +27,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	"github.com/netcloth/netcloth-chain/modules/supply"
 	"github.com/netcloth/netcloth-chain/modules/vm"
-	vmtypes "github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 	"github.com/netcloth/netcloth-chain/version"
@@ -201,15 +200,14 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		aipalSubspace,
 		ipal.DefaultCodespace)
 
-	csdb := vmtypes.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
+	//csdb := vmtypes.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc, keys[vm.StoreKey],
 		tkeys[vm.TStoreKey],
 		vm.DefaultCodespace,
 		vmSubspace,
 		app.accountKeeper,
-		app.bankKeeper,
-		csdb)
+		app.bankKeeper)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
