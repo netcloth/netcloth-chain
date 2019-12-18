@@ -11,26 +11,6 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-// Common big integers often used
-var (
-	big0      = big.NewInt(0)
-	big1      = big.NewInt(1)
-	big2      = big.NewInt(2)
-	big3      = big.NewInt(3)
-	big4      = big.NewInt(4)
-	big8      = big.NewInt(8)
-	big16     = big.NewInt(16)
-	big32     = big.NewInt(32)
-	big64     = big.NewInt(64)
-	big96     = big.NewInt(96)
-	big256    = big.NewInt(256)
-	big257    = big.NewInt(257)
-	big480    = big.NewInt(480)
-	big1024   = big.NewInt(1024)
-	big3072   = big.NewInt(3072)
-	big199680 = big.NewInt(199680)
-)
-
 // PrecompiledContract is the basic interface for native Go contracts. The implementation
 // requires a deterministic gas count based on the input size of the Run method of the
 // contract.
@@ -47,11 +27,19 @@ var PrecompiledContractsIstanbul = map[string]PrecompiledContract{
 	(sdk.BytesToAddress([]byte{3})).String(): &ripemd160hash{},
 	(sdk.BytesToAddress([]byte{4})).String(): &dataCopy{},
 	(sdk.BytesToAddress([]byte{5})).String(): &bigModExp{},
-	//sdk.BytesToAddress([]byte{6}): &bn256AddIstanbul{},
-	//sdk.BytesToAddress([]byte{7}): &bn256ScalarMulIstanbul{},
-	//sdk.BytesToAddress([]byte{8}): &bn256PairingIstanbul{},
-	//sdk.BytesToAddress([]byte{9}): &blake2F{},
+	//(sdk.BytesToAddress([]byte{6})).String(): &bn256Add{},
+	//(sdk.BytesToAddress([]byte{7})).String(): &bn256ScalarMul{},
+	//(sdk.BytesToAddress([]byte{8})).String(): &bn256Pairing{},
+	//(sdk.BytesToAddress([]byte{9})).String(): &blake2F{},
 }
+
+var (
+	// true32Byte is returned if the bn256 pairing check succeeds.
+	true32Byte = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+
+	// false32Byte is returned if the bn256 pairing check fails.
+	false32Byte = make([]byte, 32)
+)
 
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
 func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err sdk.Error) {
@@ -72,12 +60,20 @@ func (c *ecrecover) RequiredGas(input []byte) uint64 {
 func (c *ecrecover) Run(input []byte) ([]byte, sdk.Error) {
 	const ecRecoverInputLength = 128
 
+	// TODO
 	//input = common.RightPadBytes(input, ecRecoverInputLength)
 	//r := new(big.Int).SetBytes(input[64:96])
 	//s := new(big.Int).SetBytes(input[96:128])
 	//v := input[63] - 27
+	//
+	//if !allZero(input[32:64]) || !common.ValidateSignatureValues(v, r, s) {
+	//	return nil, nil
+	//}
+	//
+	//sig := make([]byte, 65)
+	//copy(sig, input[64:128])
+	//sig[64] = v
 
-	// TODO
 	return nil, nil
 }
 
@@ -137,7 +133,7 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 	if big.NewInt(int64(len(input))).Cmp(baseLen) <= 0 {
 		expHead = new(big.Int)
 	} else {
-		if expLen.Cmp(big32) > 0 {
+		if expLen.Cmp(common.Big32) > 0 {
 			expHead = new(big.Int).SetBytes(getData(input, baseLen.Uint64(), 32))
 		} else {
 			expHead = new(big.Int).SetBytes(getData(input, baseLen.Uint64(), expLen.Uint64()))
@@ -149,29 +145,29 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 		msb = bitlen - 1
 	}
 	adjExpLen := new(big.Int)
-	if expLen.Cmp(big32) > 0 {
-		adjExpLen.Sub(expLen, big32)
-		adjExpLen.Mul(big8, adjExpLen)
+	if expLen.Cmp(common.Big32) > 0 {
+		adjExpLen.Sub(expLen, common.Big32)
+		adjExpLen.Mul(common.Big8, adjExpLen)
 	}
 	adjExpLen.Add(adjExpLen, big.NewInt(int64(msb)))
 
 	// Calculate the gas cost of the operation
 	gas := new(big.Int).Set(math.BigMax(modLen, baseLen))
 	switch {
-	case gas.Cmp(big64) <= 0:
+	case gas.Cmp(common.Big64) <= 0:
 		gas.Mul(gas, gas)
-	case gas.Cmp(big1024) <= 0:
+	case gas.Cmp(common.Big1024) <= 0:
 		gas = new(big.Int).Add(
-			new(big.Int).Div(new(big.Int).Mul(gas, gas), big4),
-			new(big.Int).Sub(new(big.Int).Mul(big96, gas), big3072),
+			new(big.Int).Div(new(big.Int).Mul(gas, gas), common.Big4),
+			new(big.Int).Sub(new(big.Int).Mul(common.Big96, gas), common.Big3072),
 		)
 	default:
 		gas = new(big.Int).Add(
-			new(big.Int).Div(new(big.Int).Mul(gas, gas), big16),
-			new(big.Int).Sub(new(big.Int).Mul(big480, gas), big199680),
+			new(big.Int).Div(new(big.Int).Mul(gas, gas), common.Big16),
+			new(big.Int).Sub(new(big.Int).Mul(common.Big480, gas), common.Big199680),
 		)
 	}
-	gas.Mul(gas, math.BigMax(adjExpLen, big1))
+	gas.Mul(gas, math.BigMax(adjExpLen, common.Big1))
 	gas.Div(gas, new(big.Int).SetUint64(ModExpQuadCoeffDiv))
 
 	if gas.BitLen() > 64 {
