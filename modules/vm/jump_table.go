@@ -37,134 +37,11 @@ type operation struct {
 type JumpTable [256]operation
 
 var (
-	frontierInstructionSet       = newFrontierInstructionSet()
-	homesteadInstructionSet      = newHomesteadInstructionSet()
-	spuriousDragonInstructionSet = newSpuriousDragonInstructionSet()
-	byzantiumInstructionSet      = newByzantiumInstructionSet()
-	constantinopleInstructionSet = newConstantinopleInstructionSet()
-	istanbulInstructionSet       = newIstanbulInstructionSet()
+	istanbulInstructionSet = newIstanbulInstructionSet()
 )
 
-// newIstanbulInstructionSet returns the frontier, homestead
-// byzantium, contantinople and petersburg instructions.
+// newIstanbulInstructionSet
 func newIstanbulInstructionSet() JumpTable {
-	return newConstantinopleInstructionSet()
-}
-
-// newConstantinopleInstructionSet returns the frontier, homestead
-// byzantium and contantinople instructions.
-func newConstantinopleInstructionSet() JumpTable {
-	instructionSet := newByzantiumInstructionSet()
-	instructionSet[SHL] = operation{
-		execute:     opSHL,
-		constantGas: GasFastestStep,
-		minStack:    minStack(2, 1),
-		maxStack:    maxStack(2, 1),
-		valid:       true,
-	}
-	instructionSet[SHR] = operation{
-		execute:     opSHR,
-		constantGas: GasFastestStep,
-		minStack:    minStack(2, 1),
-		maxStack:    maxStack(2, 1),
-		valid:       true,
-	}
-	instructionSet[SAR] = operation{
-		execute:     opSAR,
-		constantGas: GasFastestStep,
-		minStack:    minStack(2, 1),
-		maxStack:    maxStack(2, 1),
-		valid:       true,
-	}
-	instructionSet[EXTCODEHASH] = operation{
-		execute:     opExtCodeHash,
-		constantGas: ExtcodeHashGas,
-		minStack:    minStack(1, 1),
-		maxStack:    maxStack(1, 1),
-		valid:       true,
-	}
-	instructionSet[CREATE2] = operation{
-		execute:     opCreate2,
-		constantGas: Create2Gas,
-		dynamicGas:  gasCreate2,
-		minStack:    minStack(4, 1),
-		maxStack:    maxStack(4, 1),
-		memorySize:  memoryCreate2,
-		valid:       true,
-		writes:      true,
-		returns:     true,
-	}
-	return instructionSet
-}
-
-// newByzantiumInstructionSet returns the frontier, homestead and
-// byzantium instructions.
-func newByzantiumInstructionSet() JumpTable {
-	instructionSet := newSpuriousDragonInstructionSet()
-	instructionSet[STATICCALL] = operation{
-		execute:     opStaticCall,
-		constantGas: CallGas,
-		dynamicGas:  gasStaticCall,
-		minStack:    minStack(6, 1),
-		maxStack:    maxStack(6, 1),
-		memorySize:  memoryStaticCall,
-		valid:       true,
-		returns:     true,
-	}
-	instructionSet[RETURNDATASIZE] = operation{
-		execute:     opReturnDataSize,
-		constantGas: GasQuickStep,
-		minStack:    minStack(0, 1),
-		maxStack:    maxStack(0, 1),
-		valid:       true,
-	}
-	instructionSet[RETURNDATACOPY] = operation{
-		execute:     opReturnDataCopy,
-		constantGas: GasFastestStep,
-		dynamicGas:  gasReturnDataCopy,
-		minStack:    minStack(3, 0),
-		maxStack:    maxStack(3, 0),
-		memorySize:  memoryReturnDataCopy,
-		valid:       true,
-	}
-	instructionSet[REVERT] = operation{
-		execute:    opRevert,
-		dynamicGas: gasRevert,
-		minStack:   minStack(2, 0),
-		maxStack:   maxStack(2, 0),
-		memorySize: memoryRevert,
-		valid:      true,
-		reverts:    true,
-		returns:    true,
-	}
-	return instructionSet
-}
-
-// EIP 158 a.k.a Spurious Dragon
-func newSpuriousDragonInstructionSet() JumpTable {
-	return newHomesteadInstructionSet()
-}
-
-// newHomesteadInstructionSet returns the frontier and homestead
-// instructions that can be executed during the homestead phase.
-func newHomesteadInstructionSet() JumpTable {
-	instructionSet := newFrontierInstructionSet()
-	instructionSet[DELEGATECALL] = operation{
-		execute:     opDelegateCall,
-		dynamicGas:  gasDelegateCall,
-		constantGas: CallGas,
-		minStack:    minStack(6, 1),
-		maxStack:    maxStack(6, 1),
-		memorySize:  memoryDelegateCall,
-		valid:       true,
-		returns:     true,
-	}
-	return instructionSet
-}
-
-// newFrontierInstructionSet returns the frontier instructions
-// that can be executed during the frontier phase.
-func newFrontierInstructionSet() JumpTable {
 	return JumpTable{
 		STOP: {
 			execute:     opStop,
@@ -1108,6 +985,52 @@ func newFrontierInstructionSet() JumpTable {
 			valid:       true,
 			returns:     true,
 		},
+		DELEGATECALL: {
+			execute:     opDelegateCall,
+			dynamicGas:  gasDelegateCall,
+			constantGas: CallGas,
+			minStack:    minStack(6, 1),
+			maxStack:    maxStack(6, 1),
+			memorySize:  memoryDelegateCall,
+			valid:       true,
+			returns:     true,
+		},
+		STATICCALL: {
+			execute:     opStaticCall,
+			constantGas: CallGas,
+			dynamicGas:  gasStaticCall,
+			minStack:    minStack(6, 1),
+			maxStack:    maxStack(6, 1),
+			memorySize:  memoryStaticCall,
+			valid:       true,
+			returns:     true,
+		},
+		RETURNDATASIZE: {
+			execute:     opReturnDataSize,
+			constantGas: GasQuickStep,
+			minStack:    minStack(0, 1),
+			maxStack:    maxStack(0, 1),
+			valid:       true,
+		},
+		RETURNDATACOPY: {
+			execute:     opReturnDataCopy,
+			constantGas: GasFastestStep,
+			dynamicGas:  gasReturnDataCopy,
+			minStack:    minStack(3, 0),
+			maxStack:    maxStack(3, 0),
+			memorySize:  memoryReturnDataCopy,
+			valid:       true,
+		},
+		REVERT: {
+			execute:    opRevert,
+			dynamicGas: gasRevert,
+			minStack:   minStack(2, 0),
+			maxStack:   maxStack(2, 0),
+			memorySize: memoryRevert,
+			valid:      true,
+			reverts:    true,
+			returns:    true,
+		},
 		RETURN: {
 			execute:    opReturn,
 			dynamicGas: gasReturn,
@@ -1125,6 +1048,45 @@ func newFrontierInstructionSet() JumpTable {
 			halts:      true,
 			valid:      true,
 			writes:     true,
+		},
+		SHL: {
+			execute:     opSHL,
+			constantGas: GasFastestStep,
+			minStack:    minStack(2, 1),
+			maxStack:    maxStack(2, 1),
+			valid:       true,
+		},
+		SHR: {
+			execute:     opSHR,
+			constantGas: GasFastestStep,
+			minStack:    minStack(2, 1),
+			maxStack:    maxStack(2, 1),
+			valid:       true,
+		},
+		SAR: {
+			execute:     opSAR,
+			constantGas: GasFastestStep,
+			minStack:    minStack(2, 1),
+			maxStack:    maxStack(2, 1),
+			valid:       true,
+		},
+		EXTCODEHASH: {
+			execute:     opExtCodeHash,
+			constantGas: ExtcodeHashGas,
+			minStack:    minStack(1, 1),
+			maxStack:    maxStack(1, 1),
+			valid:       true,
+		},
+		CREATE2: {
+			execute:     opCreate2,
+			constantGas: Create2Gas,
+			dynamicGas:  gasCreate2,
+			minStack:    minStack(4, 1),
+			maxStack:    maxStack(4, 1),
+			memorySize:  memoryCreate2,
+			valid:       true,
+			writes:      true,
+			returns:     true,
 		},
 	}
 }

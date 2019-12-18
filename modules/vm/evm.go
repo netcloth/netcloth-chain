@@ -26,7 +26,7 @@ type (
 
 func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, sdk.Error) {
 	if contract.CodeAddr != nil {
-		precompiles := PrecompiledContractsIstanbul
+		precompiles := PrecompiledContracts
 		if p := precompiles[(*contract.CodeAddr).String()]; p != nil {
 			fmt.Println("RunPrecompiledContract ...")
 			return RunPrecompiledContract(p, input, contract)
@@ -232,7 +232,7 @@ func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas 
 		snapshot = evm.StateDB.Snapshot()
 	)
 	if !evm.StateDB.Exist(addr) {
-		precompiles := PrecompiledContractsIstanbul
+		precompiles := PrecompiledContracts
 
 		if precompiles[addr.String()] == nil && value.Sign() == 0 {
 			// Calling a non existing account, don't do anything, but ping the tracer

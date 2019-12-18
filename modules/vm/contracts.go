@@ -19,9 +19,8 @@ type PrecompiledContract interface {
 	Run(input []byte) ([]byte, sdk.Error) // Run runs the precompiled contract
 }
 
-// PrecompiledContractsIstanbul contains the default set of pre-compiled Ethereum
-// contracts used in the Istanbul release.
-var PrecompiledContractsIstanbul = map[string]PrecompiledContract{
+// PrecompiledContracts contains the default set of pre-compiled contracts used in the Istanbul release.
+var PrecompiledContracts = map[string]PrecompiledContract{
 	(sdk.BytesToAddress([]byte{1})).String(): &ecrecover{},
 	(sdk.BytesToAddress([]byte{2})).String(): &sha256hash{},
 	(sdk.BytesToAddress([]byte{3})).String(): &ripemd160hash{},
