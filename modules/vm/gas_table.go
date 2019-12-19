@@ -311,7 +311,7 @@ func gasSelfdestruct(evm *EVM, contract *Contract, stack *Stack, mem *Memory, me
 		gas += CreateBySelfdestructGas
 	}
 
-	if !evm.StateDB.HasSuicide(contract.Address()) {
+	if !evm.StateDB.HasSuicided(contract.Address()) {
 		evm.StateDB.AddRefund(SelfdestructRefundGas)
 	}
 	return gas, nil

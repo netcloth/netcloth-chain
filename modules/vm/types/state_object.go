@@ -3,9 +3,8 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math/big"
-
-	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
 
 	"github.com/tendermint/tendermint/crypto"
 
@@ -17,10 +16,8 @@ import (
 var (
 	_ StateObject = (*stateObject)(nil)
 
-	emptyCodeHash = sdk.Hash{}
+	emptyCodeHash = sdk.BytesToHash(crypto.Sha256(nil))
 )
-
-var ripemd = sdk.HexToAddress("0000000000000000000000000000000000000003")
 
 type (
 	// StateObject interface for interacting with state object
@@ -31,21 +28,20 @@ type (
 
 		Code() []byte
 		SetCode(codeHash sdk.Hash, code []byte)
-		CodeHash() []byte // codeHash = crypto.Sha256(Code)
+		CodeHash() []byte
 
 		AddBalance(amount *big.Int)
 		SubBalance(amount *big.Int)
 		SetBalance(amount *big.Int)
 
 		Balance() *big.Int
-		//ReturnGas(gas *big.Int)
-		Address() sdk.AccAddress
+		ReturnGas(gas *big.Int)
+		Address() sdk.Address
 
 		SetNonce(nonce uint64)
 		Nonce() uint64
 	}
-
-	// stateObject represents an NCH account which is being modified
+	// stateObject represents an Ethereum account which is being modified.
 	//
 	// The usage pattern is as follows:
 	// First you need to obtain a state object.
@@ -56,34 +52,40 @@ type (
 		stateDB *CommitStateDB
 		account *types.BaseAccount
 
+		// DB error.
+		// State objects are used by the consensus core and VM which are
+		// unable to deal with database-level errors. Any error that occurs
+		// during a database read is memoized here and will eventually be returned
+		// by StateDB.Commit.
 		dbErr error
 
-		code sdk.Code // contract bytecode
+		code sdk.Code // contract bytecode, which gets set when code is loaded
 
 		originStorage sdk.Storage // Storage cache of original entries to dedup rewrites
 		dirtyStorage  sdk.Storage // Storage entries that need to be flushed to disk
 
 		// cache flags
 		//
-		// When an object is marked suicided, it will be deleted from the trie during the "update" phase of the state transition.
+		// When an object is marked suicided it will be delete from the trie during
+		// the "update" phase of the state transition.
 		dirtyCode bool // true if the code was updated
 		suicided  bool
 		deleted   bool
 	}
 )
 
-func newObject(accProto authexported.Account, csdb *CommitStateDB) *stateObject {
+func newObject(db *CommitStateDB, accProto authexported.Account) *stateObject {
 	acc, ok := accProto.(*types.BaseAccount)
 	if !ok {
 		panic(fmt.Sprintf("invalid account type for state object: %T", accProto))
 	}
 
 	if acc.CodeHash == nil {
-		acc.CodeHash = emptyCodeHash.Bytes()
+		acc.CodeHash = emptyCodeHash.Bytes() //TODO fix me
 	}
 
 	return &stateObject{
-		stateDB:       csdb,
+		stateDB:       db,
 		account:       acc,
 		address:       acc.Address,
 		originStorage: make(sdk.Storage),
@@ -98,12 +100,20 @@ func newObject(accProto authexported.Account, csdb *CommitStateDB) *stateObject 
 // SetState updates a value in account storage. Note, the key will be prefixed
 // with the address of the state object.
 func (so *stateObject) SetState(key, value sdk.Hash) {
+	// if the new value is the same as old, don't set
 	prev := so.GetState(key)
 	if prev == value {
 		return
 	}
 
 	prefixKey := so.GetStorageByAddressKey(key.Bytes())
+
+	// since the new value is different, update and journal the change
+	so.stateDB.journal.append(storageChange{
+		account:   &so.address,
+		key:       prefixKey,
+		prevValue: prev,
+	})
 
 	so.setState(prefixKey, value)
 }
@@ -112,8 +122,16 @@ func (so *stateObject) setState(key, value sdk.Hash) {
 	so.dirtyStorage[key] = value
 }
 
-// SetCode
+// SetCode sets the state object's code.
 func (so *stateObject) SetCode(codeHash sdk.Hash, code []byte) {
+	prevCode := so.Code()
+
+	so.stateDB.journal.append(codeChange{
+		account:  &so.address,
+		prevHash: so.CodeHash(),
+		prevCode: prevCode,
+	})
+
 	so.setCode(codeHash, code)
 }
 
@@ -128,10 +146,13 @@ func (so *stateObject) setCode(codeHash sdk.Hash, code []byte) {
 func (so *stateObject) AddBalance(amount *big.Int) {
 	amt := sdk.NewIntFromBigInt(amount)
 
+	// EIP158: We must check emptiness for the objects such that the account
+	// clearing (0,0,0 objects) can take effect.
 	if amt.Sign() == 0 {
 		if so.empty() {
 			so.touch()
 		}
+
 		return
 	}
 
@@ -193,11 +214,37 @@ func (so *stateObject) markSuicided() {
 	so.suicided = true
 }
 
+// commitState commits all dirty storage to a KVStore.
+func (so *stateObject) commitState() {
+	ctx := so.stateDB.ctx
+	store := ctx.KVStore(so.stateDB.storageKey)
+
+	for key, value := range so.dirtyStorage {
+		delete(so.dirtyStorage, key)
+
+		// skip no-op changes, persist actual changes
+		if value == so.originStorage[key] {
+			continue
+		}
+
+		so.originStorage[key] = value
+
+		// delete empty values
+		if (value == sdk.Hash{}) {
+			store.Delete(key.Bytes())
+			continue
+		}
+
+		store.Set(key.Bytes(), value.Bytes())
+	}
+
+	// TODO: Set the account (storage) root (but we probably don't need this)
+}
+
+// commitCode persists the state object's code to the KVStore.
 func (so *stateObject) commitCode() {
 	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
-	fmt.Printf("codehash = %s, code = %s\n", hexutil.Encode(so.CodeHash()), hexutil.Encode(so.code))
-	fmt.Printf("Set ctx:%v\n", ctx)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -205,29 +252,28 @@ func (so *stateObject) commitCode() {
 // Getters
 // ----------------------------------------------------------------------------
 
-// Address returns the address of the state object
-func (so stateObject) Address() sdk.AccAddress {
+// Address returns the address of the state object.
+func (so stateObject) Address() sdk.Address {
 	return so.address
 }
 
-// Balance returns the state object's current balance
+// Balance returns the state object's current balance.
 func (so *stateObject) Balance() *big.Int {
 	return so.account.Balance().BigInt()
 }
 
-// CodeHash returns the state object's code hash
+// CodeHash returns the state object's code hash.
 func (so *stateObject) CodeHash() []byte {
 	return so.account.CodeHash
 }
 
-// Nonce returns the state object's current nonce(sequence number)
+// Nonce returns the state object's current nonce (sequence number).
 func (so *stateObject) Nonce() uint64 {
 	return so.account.Sequence
 }
 
-// Code returns the contract code associated with this object
+// Code returns the contract code associated with this object, if any.
 func (so *stateObject) Code() []byte {
-	// TODO
 	if so.code != nil {
 		return so.code
 	}
@@ -236,21 +282,20 @@ func (so *stateObject) Code() []byte {
 		return nil
 	}
 
-	fmt.Printf(fmt.Sprintf("GET so.CodeHash() = %s, code = %s\n", hexutil.Encode(so.CodeHash()), hexutil.Encode(so.code)))
 	ctx := so.stateDB.ctx
-	fmt.Printf("Get ctx:%v\n", ctx)
 	store := ctx.KVStore(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
-		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.address))
+		so.setError(fmt.Errorf("failed to get code hash %x for address: %x", so.CodeHash(), so.Address()))
 	}
 
 	so.code = code
 	return code
 }
 
-// GetState retrieves a value from the account storage trie. Note, the key will be prefixed with the address of the state object
+// GetState retrieves a value from the account storage trie. Note, the key will
+// be prefixed with the address of the state object.
 func (so *stateObject) GetState(key sdk.Hash) sdk.Hash {
 	prefixKey := so.GetStorageByAddressKey(key.Bytes())
 
@@ -260,8 +305,8 @@ func (so *stateObject) GetState(key sdk.Hash) sdk.Hash {
 		return value
 	}
 
-	// otherwise return the entry's original valeu
-	return so.GetCommittedState(prefixKey)
+	// otherwise return the entry's original value
+	return so.GetCommittedState(key)
 }
 
 // GetCommittedState retrieves a value from the committed account storage trie.
@@ -275,9 +320,9 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 		return value
 	}
 
-	// otherwise load the value from KVStore
+	// otherwise load the value from the KVStore
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storeKey)
+	store := ctx.KVStore(so.stateDB.storageKey)
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {
@@ -292,6 +337,23 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 // Auxiliary
 // ----------------------------------------------------------------------------
 
+// ReturnGas returns the gas back to the origin. Used by the Virtual machine or
+// Closures. It performs a no-op.
+func (so *stateObject) ReturnGas(gas *big.Int) {}
+
+func (so *stateObject) deepCopy(db *CommitStateDB) *stateObject {
+	newStateObj := newObject(db, so.account)
+
+	newStateObj.code = so.code
+	newStateObj.dirtyStorage = so.dirtyStorage.Copy()
+	newStateObj.originStorage = so.originStorage.Copy()
+	newStateObj.suicided = so.suicided
+	newStateObj.dirtyCode = so.dirtyCode
+	newStateObj.deleted = so.deleted
+
+	return newStateObj
+}
+
 // empty returns whether the account is considered empty.
 func (so *stateObject) empty() bool {
 	return so.account.Sequence == 0 &&
@@ -299,14 +361,22 @@ func (so *stateObject) empty() bool {
 		bytes.Equal(so.account.CodeHash, emptyCodeHash.Bytes())
 }
 
+// EncodeRLP implements rlp.Encoder.
+func (so *stateObject) EncodeRLP(w io.Writer) error {
+	return nil //TODO check
+	//return rlp.Encode(w, so.account)
+}
+
 func (so *stateObject) touch() {
 	so.stateDB.journal.append(touchChange{
 		account: &so.address,
 	})
 
-	if so.address.Equals(ripemd) {
-		so.stateDB.journal.dirty(so.address)
-	}
+	//if so.address == ripemd {//TODO check
+	//	// Explicitly put it in the dirty-cache, which is otherwise generated from
+	//	// flattened journals.
+	//	so.stateDB.journal.dirty(so.address)
+	//}
 }
 
 // GetStorageByAddressKey returns a hash of the composite key for a state
@@ -318,7 +388,5 @@ func (so stateObject) GetStorageByAddressKey(key []byte) sdk.Hash {
 	copy(compositeKey, prefix)
 	copy(compositeKey[len(prefix):], key)
 
-	h := sdk.Hash{}
-	h.SetBytes(crypto.Sha256(compositeKey))
-	return h
+	return sdk.BytesToHash(crypto.Sha256(compositeKey))
 }

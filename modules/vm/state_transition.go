@@ -51,7 +51,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	cfg := Config{}
 
-	evm := NewEVM(evmCtx, *st.stateDB, cfg)
+	evm := NewEVM(evmCtx, st.stateDB, cfg)
 
 	var (
 		ret         []byte
@@ -72,6 +72,6 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
 	}
 
-	st.stateDB.Commit(true)
+	st.stateDB.Finalise(true)
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
 }

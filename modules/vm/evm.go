@@ -110,10 +110,10 @@ type EVM struct {
 	callGasTemp uint64
 }
 
-func NewEVM(ctx Context, statedb CommitStateDB, vmConfig Config) *EVM {
+func NewEVM(ctx Context, statedb *CommitStateDB, vmConfig Config) *EVM {
 	evm := &EVM{
 		Context:      ctx,
-		StateDB:      &statedb,
+		StateDB:      statedb,
 		vmConfig:     vmConfig,
 		interpreters: make([]Interpreter, 0, 1),
 	}
@@ -149,7 +149,8 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	evm.StateDB.SetNonce(caller.Address(), nonce+1)
 
 	// Ensure there's no existing contract already at the designated address
-	contractHash := evm.StateDB.GetCodeHash(caller.Address())
+	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
+	contractHash := evm.StateDB.GetCodeHash(address)
 	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (sdk.Hash{})) {
 		return nil, sdk.AccAddress{}, 0, ErrContractAddressCollision()
 	}

@@ -6,8 +6,12 @@ import (
 	"sort"
 	"sync"
 
+	ethstate "github.com/ethereum/go-ethereum/core/state"
+
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -21,13 +25,17 @@ type revision struct {
 }
 
 type CommitStateDB struct {
+	// TODO: We need to store the context as part of the structure itself opposed
+	// to being passed as a parameter (as it should be) in order to implement the
+	// StateDB interface. Perhaps there is a better way.
 	ctx sdk.Context
 
-	ak AccountKeeper
+	ak         auth.AccountKeeper
+	storageKey sdk.StoreKey
+	codeKey    sdk.StoreKey
 
-	storeKey sdk.StoreKey
-	codeKey  sdk.StoreKey
-
+	// maps that hold 'live' objects, which will get modified while processing a
+	// state transition
 	stateObjects      map[string]*stateObject
 	stateObjectsDirty map[string]struct{}
 
@@ -38,7 +46,10 @@ type CommitStateDB struct {
 	txIndex      int
 	logs         map[sdk.Hash][]*Log
 	logSize      uint
-	preimages    map[sdk.Hash][]byte
+
+	// TODO: Determine if we actually need this as we do not need preimages in
+	// the SDK, but it seems to be used elsewhere in Geth.
+	preimages map[sdk.Hash][]byte
 
 	// DB error.
 	// State objects are used by the consensus core and VM which are
@@ -53,6 +64,7 @@ type CommitStateDB struct {
 	validRevisions []revision
 	nextRevisionID int
 
+	// mutex for state deep copying
 	lock sync.Mutex
 }
 
@@ -61,10 +73,11 @@ type CommitStateDB struct {
 //
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
-func NewCommitStateDB(ak AccountKeeper, storeKey, codeKey sdk.StoreKey) *CommitStateDB {
+//func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
-		storeKey:          storeKey,
+		storageKey:        storageKey,
 		codeKey:           codeKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
@@ -84,6 +97,7 @@ func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 // Setters
 // ----------------------------------------------------------------------------
 
+// SetBalance sets the balance of an account.
 func (csdb *CommitStateDB) SetBalance(addr sdk.AccAddress, amount *big.Int) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
@@ -91,6 +105,7 @@ func (csdb *CommitStateDB) SetBalance(addr sdk.AccAddress, amount *big.Int) {
 	}
 }
 
+// AddBalance adds amount to the account associated with addr.
 func (csdb *CommitStateDB) AddBalance(addr sdk.AccAddress, amount *big.Int) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
@@ -98,6 +113,7 @@ func (csdb *CommitStateDB) AddBalance(addr sdk.AccAddress, amount *big.Int) {
 	}
 }
 
+// SubBalance subtracts amount from the account associated with addr.
 func (csdb *CommitStateDB) SubBalance(addr sdk.AccAddress, amount *big.Int) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
@@ -105,14 +121,15 @@ func (csdb *CommitStateDB) SubBalance(addr sdk.AccAddress, amount *big.Int) {
 	}
 }
 
+// SetNonce sets the nonce (sequence number) of an account.
 func (csdb *CommitStateDB) SetNonce(addr sdk.AccAddress, nonce uint64) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
 		so.SetNonce(nonce)
 	}
-
 }
 
+// SetState sets the storage state with a key, value pair for an account.
 func (csdb *CommitStateDB) SetState(addr sdk.AccAddress, key, value sdk.Hash) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
@@ -120,14 +137,15 @@ func (csdb *CommitStateDB) SetState(addr sdk.AccAddress, key, value sdk.Hash) {
 	}
 }
 
+// SetCode sets the code for a given account.
 func (csdb *CommitStateDB) SetCode(addr sdk.AccAddress, code []byte) {
 	so := csdb.GetOrNewStateObject(addr)
 	if so != nil {
-		codeHash := sdk.BytesToHash(crypto.Sha256(code))
-		so.SetCode(codeHash, code)
+		so.SetCode(sdk.BytesToHash(crypto.Sha256(code)), code)
 	}
 }
 
+// AddLog adds a new log to the state and sets the log metadata from the state.
 func (csdb *CommitStateDB) AddLog(log *Log) {
 	csdb.journal.append(addLogChange{txhash: csdb.thash})
 
@@ -139,18 +157,7 @@ func (csdb *CommitStateDB) AddLog(log *Log) {
 	csdb.logSize++
 }
 
-func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) []*Log {
-	return csdb.logs[hash]
-}
-
-func (csdb *CommitStateDB) Logs() []*Log {
-	var logs []*Log
-	for _, lgs := range csdb.logs {
-		logs = append(logs, lgs...)
-	}
-	return logs
-}
-
+// AddPreimage records a SHA3 preimage seen by the VM.
 func (csdb *CommitStateDB) AddPreimage(hash sdk.Hash, preimage []byte) {
 	if _, ok := csdb.preimages[hash]; !ok {
 		csdb.journal.append(addPreimageChange{hash: hash})
@@ -161,143 +168,59 @@ func (csdb *CommitStateDB) AddPreimage(hash sdk.Hash, preimage []byte) {
 	}
 }
 
+// AddRefund adds gas to the refund counter.
 func (csdb *CommitStateDB) AddRefund(gas uint64) {
 	csdb.journal.append(refundChange{prev: csdb.refund})
 	csdb.refund += gas
 }
 
+// SubRefund removes gas from the refund counter. It will panic if the refund
+// counter goes below zero.
 func (csdb *CommitStateDB) SubRefund(gas uint64) {
 	csdb.journal.append(refundChange{prev: csdb.refund})
 	if gas > csdb.refund {
-		panic("Refund counter below zero")
+		panic("refund counter below zero")
 	}
+
 	csdb.refund -= gas
-}
-
-func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
-	so := csdb.getStateObject(addr)
-	if so == nil {
-		return false
-	}
-
-	csdb.journal.append(suicideChange{
-		account:     &addr,
-		prev:        so.suicided,
-		prevBalance: sdk.NewIntFromBigInt(so.Balance()),
-	})
-
-	so.markSuicided()
-	//TODO: set balance 0
-	so.account.Coins = sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))}
-
-	return true
-}
-
-func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject {
-	so := csdb.getStateObject(addr)
-	if so == nil || so.deleted {
-		so, _ = csdb.createObject(addr)
-	}
-
-	return so
-}
-
-// createObject creates a new state object. If there is an existing account with
-// the given address, it is overwritten and returned as the second return value.
-func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
-	prevObj = csdb.getStateObject(addr)
-
-	acc := csdb.ak.NewAccountWithAddress(csdb.ctx, addr)
-	newObj = newObject(acc, csdb)
-	newObj.SetNonce(0)
-
-	if prevObj == nil {
-		csdb.journal.append(createObjectChange{account: &addr})
-	} else {
-		csdb.journal.append(resetObjectChange{prev: prevObj})
-	}
-	csdb.setStateObject(newObj)
-	return newObj, prevObj
-}
-
-// getStateObject attempts to retrieve a state object given by the address.
-// Returns nil and sets an error if not found.
-func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *stateObject) {
-	// prefer "live" (cached) objects
-	if so := csdb.stateObjects[addr.String()]; so != nil {
-		if so.deleted {
-			return nil
-		}
-
-		return so
-	}
-
-	// otherwise, attempt to fetch the account from the account mapper
-	acc := csdb.ak.GetAccount(csdb.ctx, addr)
-	if acc == nil {
-		csdb.setError(fmt.Errorf("no account found for address: %s", addr.String()))
-		return nil
-	}
-
-	// insert the state object into the live set
-	so := newObject(acc, csdb)
-	csdb.setStateObject(so)
-
-	return so
-}
-
-// CreateAccount explicitly creates a state object. If a state object with the address
-// already exists the balance is carried over to the new account.
-//
-// CreateAccount is called during the EVM CREATE operation. The situation might arise that
-// a contract does the following:
-//
-//   1. sends funds to sha(account ++ (nonce + 1))
-//   2. tx_create(sha(account ++ nonce)) (note that this gets the address of 1)
-//
-// Carrying over the balance ensures that Ether doesn't disappear.
-func (csdb *CommitStateDB) CreateAccount(addr sdk.AccAddress) {
-	newObj, prev := csdb.createObject(addr)
-	if prev != nil {
-		newObj.setBalance(prev.account.Balance())
-	}
-}
-
-func (csdb *CommitStateDB) setStateObject(so *stateObject) {
-	csdb.stateObjects[so.Address().String()] = so
-}
-
-// setError remembers the first non-nil error it is called with.
-func (csdb *CommitStateDB) setError(err error) {
-	if csdb.dbErr == nil {
-		csdb.dbErr = err
-	}
 }
 
 // ----------------------------------------------------------------------------
 // Getters
 // ----------------------------------------------------------------------------
 
+// GetBalance retrieves the balance from the given address or 0 if object not
+// found.
 func (csdb *CommitStateDB) GetBalance(addr sdk.AccAddress) *big.Int {
 	so := csdb.getStateObject(addr)
 	if so != nil {
 		return so.Balance()
 	}
+
 	return zeroBalance
 }
 
+// GetNonce returns the nonce (sequence number) for a given account.
 func (csdb *CommitStateDB) GetNonce(addr sdk.AccAddress) uint64 {
 	so := csdb.getStateObject(addr)
 	if so != nil {
 		return so.Nonce()
 	}
+
 	return 0
 }
 
+// TxIndex returns the current transaction index set by Prepare.
 func (csdb *CommitStateDB) TxIndex() int {
 	return csdb.txIndex
 }
 
+// BlockHash returns the current block hash set by Prepare.
+func (csdb *CommitStateDB) BlockHash() sdk.Hash {
+	return csdb.bhash
+}
+
+// GetCode returns the code for a given account.
 func (csdb *CommitStateDB) GetCode(addr sdk.AccAddress) []byte {
 	so := csdb.getStateObject(addr)
 	if so != nil {
@@ -307,6 +230,7 @@ func (csdb *CommitStateDB) GetCode(addr sdk.AccAddress) []byte {
 	return nil
 }
 
+// GetCodeSize returns the code size for a given account.
 func (csdb *CommitStateDB) GetCodeSize(addr sdk.AccAddress) int {
 	so := csdb.getStateObject(addr)
 	if so == nil {
@@ -317,9 +241,11 @@ func (csdb *CommitStateDB) GetCodeSize(addr sdk.AccAddress) int {
 		return len(so.code)
 	}
 
+	// TODO: we may need to cache these lookups directly
 	return len(so.Code())
 }
 
+// GetCodeHash returns the code hash for a given account.
 func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	so := csdb.getStateObject(addr)
 	if so == nil {
@@ -329,14 +255,18 @@ func (csdb *CommitStateDB) GetCodeHash(addr sdk.AccAddress) sdk.Hash {
 	return sdk.BytesToHash(so.CodeHash())
 }
 
+// GetState retrieves a value from the given account's storage store.
 func (csdb *CommitStateDB) GetState(addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
 	so := csdb.getStateObject(addr)
 	if so != nil {
 		return so.GetState(hash)
 	}
+
 	return sdk.Hash{}
 }
 
+// GetCommittedState retrieves a value from the given account's committed
+// storage.
 func (csdb *CommitStateDB) GetCommittedState(addr sdk.AccAddress, hash sdk.Hash) sdk.Hash {
 	so := csdb.getStateObject(addr)
 	if so != nil {
@@ -346,15 +276,34 @@ func (csdb *CommitStateDB) GetCommittedState(addr sdk.AccAddress, hash sdk.Hash)
 	return sdk.Hash{}
 }
 
+// GetLogs returns the current logs for a given hash in the state.
+func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) []*Log {
+	return csdb.logs[hash]
+}
+
+// Logs returns all the current logs in the state.
+func (csdb *CommitStateDB) Logs() []*Log {
+	var logs []*Log
+	for _, lgs := range csdb.logs {
+		logs = append(logs, lgs...)
+	}
+
+	return logs
+}
+
+// GetRefund returns the current value of the refund counter.
 func (csdb *CommitStateDB) GetRefund() uint64 {
 	return csdb.refund
 }
 
+// Preimages returns a list of SHA3 preimages that have been submitted.
 func (csdb *CommitStateDB) Preimages() map[sdk.Hash][]byte {
 	return csdb.preimages
 }
 
-func (csdb *CommitStateDB) HasSuicide(addr sdk.AccAddress) bool {
+// HasSuicided returns if the given account for the specified address has been
+// killed.
+func (csdb *CommitStateDB) HasSuicided(addr sdk.AccAddress) bool {
 	so := csdb.getStateObject(addr)
 	if so != nil {
 		return so.suicided
@@ -367,6 +316,10 @@ func (csdb *CommitStateDB) HasSuicide(addr sdk.AccAddress) bool {
 // Persistence
 // ----------------------------------------------------------------------------
 
+// Commit writes the state to the appropriate KVStores. For each state object
+// in the cache, it will either be removed, or have it's code set and/or it's
+// state (storage) updated. In addition, the state object (account) itself will
+// be written. Finally, the root hash (version) will be returned.
 func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err error) {
 	defer csdb.clearJournalAndRefund()
 
@@ -377,13 +330,16 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 
 	// set the state objects
 	for addr, so := range csdb.stateObjects {
-		_, isDrity := csdb.stateObjectsDirty[addr]
+		_, isDirty := csdb.stateObjectsDirty[addr]
 
 		switch {
-		case so.suicided || (isDrity && deleteEmptyObjects && so.empty()):
+		case so.suicided || (isDirty && deleteEmptyObjects && so.empty()):
+			// If the state object has been removed, don't bother syncing it and just
+			// remove it from the store.
 			csdb.deleteStateObject(so)
 
-		case isDrity:
+		case isDirty:
+			// write any contract code associated with the state object
 			if so.code != nil && so.dirtyCode {
 				so.commitCode()
 				so.dirtyCode = false
@@ -392,31 +348,73 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 			// update the object in the KVStore
 			csdb.updateStateObject(so)
 		}
+
 		delete(csdb.stateObjectsDirty, addr)
 	}
 
+	// NOTE: Ethereum returns the trie merkle root here, but as commitment
+	// actually happens in the BaseApp at EndBlocker, we do not know the root at
+	// this time.
 	return
 }
 
-// ClearStateObjects clears cache of state objects to handle account changes outside of the EVM
-func (csdb *CommitStateDB) ClearStateObjects() {
-	csdb.stateObjects = make(map[string]*stateObject)
-	csdb.stateObjectsDirty = make(map[string]struct{})
+// Finalise finalizes the state objects (accounts) state by setting their state,
+// removing the csdb destructed objects and clearing the journal as well as the
+// refunds.
+func (csdb *CommitStateDB) Finalise(deleteEmptyObjects bool) {
+	for addr := range csdb.journal.dirties {
+		so, exist := csdb.stateObjects[addr]
+		if !exist {
+			// ripeMD is 'touched' at block 1714175, in tx:
+			// 0x1237f737031e40bcde4a8b7e717b2d15e3ecadfe49bb1bbc71ee9deb09c6fcf2
+			//
+			// That tx goes out of gas, and although the notion of 'touched' does not
+			// exist there, the touch-event will still be recorded in the journal.
+			// Since ripeMD is a special snowflake, it will persist in the journal even
+			// though the journal is reverted. In this special circumstance, it may
+			// exist in journal.dirties but not in stateObjects. Thus, we can safely
+			// ignore it here.
+			continue
+		}
+
+		if so.suicided || (deleteEmptyObjects && so.empty()) {
+			csdb.deleteStateObject(so)
+		} else {
+			// Set all the dirty state storage items for the state object in the
+			// KVStore and finally set the account in the account mapper.
+			so.commitState()
+			csdb.updateStateObject(so)
+		}
+
+		csdb.stateObjectsDirty[addr] = struct{}{}
+	}
+
+	// invalidate journal because reverting across transactions is not allowed
+	csdb.clearJournalAndRefund()
 }
 
+// IntermediateRoot returns the current root hash of the state. It is called in
+// between transactions to get the root hash that goes into transaction
+// receipts.
+//
+// NOTE: The SDK has not concept or method of getting any intermediate merkle
+// root as commitment of the merkle-ized tree doesn't happen until the
+// BaseApps' EndBlocker.
+func (csdb *CommitStateDB) IntermediateRoot(deleteEmptyObjects bool) sdk.Hash {
+	csdb.Finalise(deleteEmptyObjects)
+
+	return sdk.Hash{}
+}
+
+// updateStateObject writes the given state object to the store.
 func (csdb *CommitStateDB) updateStateObject(so *stateObject) {
 	csdb.ak.SetAccount(csdb.ctx, so.account)
 }
 
+// deleteStateObject removes the given state object from the state store.
 func (csdb *CommitStateDB) deleteStateObject(so *stateObject) {
 	so.deleted = true
 	csdb.ak.RemoveAccount(csdb.ctx, so.account)
-}
-
-func (csdb *CommitStateDB) clearJournalAndRefund() {
-	csdb.journal = newJournal()
-	csdb.validRevisions = csdb.validRevisions[:0]
-	csdb.refund = 0
 }
 
 // ----------------------------------------------------------------------------
@@ -441,6 +439,7 @@ func (csdb *CommitStateDB) Snapshot() int {
 
 // RevertToSnapshot reverts all state changes made since the given revision.
 func (csdb *CommitStateDB) RevertToSnapshot(revID int) {
+	// find the snapshot in the stack of valid snapshots
 	idx := sort.Search(len(csdb.validRevisions), func(i int) bool {
 		return csdb.validRevisions[i].id >= revID
 	})
@@ -460,11 +459,21 @@ func (csdb *CommitStateDB) RevertToSnapshot(revID int) {
 // Auxiliary
 // ----------------------------------------------------------------------------
 
+// Database retrieves the low level database supporting the lower level trie
+// ops. It is not used in Ethermint, so it returns nil.
+func (csdb *CommitStateDB) Database() ethstate.Database {
+	return nil
+}
+
+// Empty returns whether the state object is either non-existent or empty
+// according to the EIP161 specification (balance = nonce = code = 0).
 func (csdb *CommitStateDB) Empty(addr sdk.AccAddress) bool {
 	so := csdb.getStateObject(addr)
 	return so == nil || so.empty()
 }
 
+// Exist reports whether the given account address exists in the state. Notably,
+// this also returns true for suicided accounts.
 func (csdb *CommitStateDB) Exist(addr sdk.AccAddress) bool {
 	return csdb.getStateObject(addr) != nil
 }
@@ -472,4 +481,256 @@ func (csdb *CommitStateDB) Exist(addr sdk.AccAddress) bool {
 // Error returns the first non-nil error the StateDB encountered.
 func (csdb *CommitStateDB) Error() error {
 	return csdb.dbErr
+}
+
+// Suicide marks the given account as suicided and clears the account balance.
+//
+// The account's state object is still available until the state is committed,
+// getStateObject will return a non-nil account after Suicide.
+func (csdb *CommitStateDB) Suicide(addr sdk.AccAddress) bool {
+	so := csdb.getStateObject(addr)
+	if so == nil {
+		return false
+	}
+
+	csdb.journal.append(suicideChange{
+		account:     &addr,
+		prev:        so.suicided,
+		prevBalance: sdk.NewIntFromBigInt(so.Balance()),
+	})
+
+	so.markSuicided()
+	so.SetBalance(new(big.Int))
+
+	return true
+}
+
+// Reset clears out all ephemeral state objects from the state db, but keeps
+// the underlying account mapper and store keys to avoid reloading data for the
+// next operations.
+func (csdb *CommitStateDB) Reset(_ sdk.Hash) error {
+	csdb.stateObjects = make(map[string]*stateObject)
+	csdb.stateObjectsDirty = make(map[string]struct{})
+	csdb.thash = sdk.Hash{}
+	csdb.bhash = sdk.Hash{}
+	csdb.txIndex = 0
+	csdb.logs = make(map[sdk.Hash][]*Log)
+	csdb.logSize = 0
+	csdb.preimages = make(map[sdk.Hash][]byte)
+
+	csdb.clearJournalAndRefund()
+	return nil
+}
+
+// UpdateAccounts updates the nonce and coin balances of accounts
+func (csdb *CommitStateDB) UpdateAccounts() {
+	for addr, so := range csdb.stateObjects {
+		addr, err := sdk.AccAddressFromBech32(addr)
+		if err != nil {
+			continue
+		}
+		accI := csdb.ak.GetAccount(csdb.ctx, addr)
+		acc, ok := accI.(*types.BaseAccount)
+		if ok {
+			if (so.Balance() != acc.GetCoins().AmountOf("unch").BigInt()) || (so.Nonce() != acc.GetSequence()) {
+				// If queried account's balance or nonce are invalid, update the account pointer
+				so.account = acc
+			}
+		}
+
+	}
+}
+
+// ClearStateObjects clears cache of state objects to handle account changes outside of the EVM
+func (csdb *CommitStateDB) ClearStateObjects() {
+	csdb.stateObjects = make(map[string]*stateObject)
+	csdb.stateObjectsDirty = make(map[string]struct{})
+}
+
+func (csdb *CommitStateDB) clearJournalAndRefund() {
+	csdb.journal = newJournal()
+	csdb.validRevisions = csdb.validRevisions[:0]
+	csdb.refund = 0
+}
+
+// Prepare sets the current transaction hash and index and block hash which is
+// used when the EVM emits new state logs.
+func (csdb *CommitStateDB) Prepare(thash, bhash sdk.Hash, txi int) {
+	csdb.thash = thash
+	csdb.bhash = bhash
+	csdb.txIndex = txi
+}
+
+// CreateAccount explicitly creates a state object. If a state object with the
+// address already exists the balance is carried over to the new account.
+//
+// CreateAccount is called during the EVM CREATE operation. The situation might
+// arise that a contract does the following:
+//
+//   1. sends funds to sha(account ++ (nonce + 1))
+//   2. tx_create(sha(account ++ nonce)) (note that this gets the address of 1)
+//
+// Carrying over the balance ensures that Ether doesn't disappear.
+func (csdb *CommitStateDB) CreateAccount(addr sdk.AccAddress) {
+	newobj, prevobj := csdb.createObject(addr)
+	if prevobj != nil {
+		newobj.setBalance(sdk.NewIntFromBigInt(prevobj.Balance()))
+	}
+}
+
+// Copy creates a deep, independent copy of the state.
+//
+// NOTE: Snapshots of the copied state cannot be applied to the copy.
+func (csdb *CommitStateDB) Copy() *CommitStateDB {
+	csdb.lock.Lock()
+	defer csdb.lock.Unlock()
+
+	// copy all the basic fields, initialize the memory ones
+	state := &CommitStateDB{
+		ctx:               csdb.ctx,
+		ak:                csdb.ak,
+		storageKey:        csdb.storageKey,
+		codeKey:           csdb.codeKey,
+		stateObjects:      make(map[string]*stateObject, len(csdb.journal.dirties)),
+		stateObjectsDirty: make(map[string]struct{}, len(csdb.journal.dirties)),
+		refund:            csdb.refund,
+		logs:              make(map[sdk.Hash][]*Log, len(csdb.logs)),
+		logSize:           csdb.logSize,
+		preimages:         make(map[sdk.Hash][]byte),
+		journal:           newJournal(),
+	}
+
+	// copy the dirty states, logs, and preimages
+	for addr := range csdb.journal.dirties {
+		// There is a case where an object is in the journal but not in the
+		// stateObjects: OOG after touch on ripeMD prior to Byzantium. Thus, we
+		// need to check for nil.
+		//
+		// Ref: https://github.com/ethereum/go-ethereum/pull/16485#issuecomment-380438527
+		if object, exist := csdb.stateObjects[addr]; exist {
+			state.stateObjects[addr] = object.deepCopy(state)
+			state.stateObjectsDirty[addr] = struct{}{}
+		}
+	}
+
+	// Above, we don't copy the actual journal. This means that if the copy is
+	// copied, the loop above will be a no-op, since the copy's journal is empty.
+	// Thus, here we iterate over stateObjects, to enable copies of copies.
+	for addr := range csdb.stateObjectsDirty {
+		if _, exist := state.stateObjects[addr]; !exist {
+			state.stateObjects[addr] = csdb.stateObjects[addr].deepCopy(state)
+			state.stateObjectsDirty[addr] = struct{}{}
+		}
+	}
+
+	// copy logs
+	for hash, logs := range csdb.logs {
+		cpy := make([]*Log, len(logs))
+		for i, l := range logs {
+			cpy[i] = new(Log)
+			*cpy[i] = *l
+		}
+		state.logs[hash] = cpy
+	}
+
+	// copy pre-images
+	for hash, preimage := range csdb.preimages {
+		state.preimages[hash] = preimage
+	}
+
+	return state
+}
+
+// ForEachStorage iterates over each storage items, all invokes the provided
+// callback on each key, value pair .
+func (csdb *CommitStateDB) ForEachStorage(addr sdk.AccAddress, cb func(key, value sdk.Hash) bool) error {
+	so := csdb.getStateObject(addr)
+	if so == nil {
+		return nil
+	}
+
+	store := csdb.ctx.KVStore(csdb.storageKey)
+	iter := sdk.KVStorePrefixIterator(store, so.Address().Bytes())
+
+	for ; iter.Valid(); iter.Next() {
+		key := sdk.BytesToHash(iter.Key())
+		value := iter.Value()
+
+		if value, dirty := so.dirtyStorage[key]; dirty {
+			cb(key, value)
+			continue
+		}
+
+		cb(key, sdk.BytesToHash(value))
+	}
+
+	iter.Close()
+	return nil
+}
+
+// GetOrNewStateObject retrieves a state object or create a new state object if
+// nil.
+func (csdb *CommitStateDB) GetOrNewStateObject(addr sdk.AccAddress) StateObject {
+	so := csdb.getStateObject(addr)
+	if so == nil || so.deleted {
+		so, _ = csdb.createObject(addr)
+	}
+
+	return so
+}
+
+// createObject creates a new state object. If there is an existing account with
+// the given address, it is overwritten and returned as the second return value.
+func (csdb *CommitStateDB) createObject(addr sdk.AccAddress) (newObj, prevObj *stateObject) {
+	prevObj = csdb.getStateObject(addr)
+
+	acc := csdb.ak.NewAccountWithAddress(csdb.ctx, sdk.AccAddress(addr.Bytes()))
+	newObj = newObject(csdb, acc)
+	newObj.setNonce(0) // sets the object to dirty
+
+	if prevObj == nil {
+		csdb.journal.append(createObjectChange{account: &addr})
+	} else {
+		csdb.journal.append(resetObjectChange{prev: prevObj})
+	}
+
+	csdb.setStateObject(newObj)
+	return newObj, prevObj
+}
+
+// setError remembers the first non-nil error it is called with.
+func (csdb *CommitStateDB) setError(err error) {
+	if csdb.dbErr == nil {
+		csdb.dbErr = err
+	}
+}
+
+// getStateObject attempts to retrieve a state object given by the address.
+// Returns nil and sets an error if not found.
+func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *stateObject) {
+	// prefer 'live' (cached) objects
+	if so := csdb.stateObjects[addr.String()]; so != nil {
+		if so.deleted {
+			return nil
+		}
+
+		return so
+	}
+
+	// otherwise, attempt to fetch the account from the account mapper
+	acc := csdb.ak.GetAccount(csdb.ctx, addr.Bytes())
+	if acc == nil {
+		csdb.setError(fmt.Errorf("no account found for address: %X", addr.Bytes()))
+		return nil
+	}
+
+	// insert the state object into the live set
+	so := newObject(csdb, acc)
+	csdb.setStateObject(so)
+
+	return so
+}
+
+func (csdb *CommitStateDB) setStateObject(so *stateObject) {
+	csdb.stateObjects[so.Address().String()] = so
 }

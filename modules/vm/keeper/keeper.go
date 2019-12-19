@@ -6,6 +6,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -18,7 +19,7 @@ type Keeper struct {
 	codespace  sdk.CodespaceType
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey, codeKey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak types.AccountKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey, codeKey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
 	return Keeper{
 		cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),

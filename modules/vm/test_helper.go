@@ -112,5 +112,5 @@ func newEVM() *EVM {
 
 	keys := sdk.NewKVStoreKeys(auth.StoreKey, StoreKey, CodeKey)
 
-	return NewEVM(Context{}, *NewCommitStateDB(accountKeeper, keys[StoreKey], keys[CodeKey]), Config{})
+	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, keys[StoreKey], keys[CodeKey]), Config{})
 }
