@@ -108,7 +108,7 @@ func opSmod(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 func opExp(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	base, exponent := stack.pop(), stack.pop()
 
-	cmpToOne := exponent.Cmp(big1)
+	cmpToOne := exponent.Cmp(common.Big1)
 	if cmpToOne < 0 { // Exponent is zero
 		// x ^ 0 == 1
 		stack.push(base.SetUint64(1))
@@ -131,8 +131,8 @@ func opSignExtend(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 	if back.Cmp(big.NewInt(31)) < 0 {
 		bit := uint(back.Uint64()*8 + 7)
 		num := stack.pop()
-		mask := back.Lsh(big1, bit)
-		mask.Sub(mask, big1)
+		mask := back.Lsh(common.Big1, bit)
+		mask.Sub(mask, common.Big1)
 		if num.Bit(int(bit)) > 0 {
 			num.Or(num, mask.Not(mask))
 		} else {
@@ -270,7 +270,7 @@ func opXor(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 
 func opByte(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	th, val := stack.pop(), stack.peek()
-	if th.Cmp(big32) < 0 {
+	if th.Cmp(common.Big32) < 0 {
 		b := math.Byte(val, 32, int(th.Int64()))
 		val.SetUint64(uint64(b))
 	} else {
@@ -313,7 +313,7 @@ func opSHL(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	shift, value := math.U256(stack.pop()), math.U256(stack.peek())
 	defer interpreter.intPool.put(shift) // First operand back into the pool
 
-	if shift.Cmp(big256) >= 0 {
+	if shift.Cmp(common.Big256) >= 0 {
 		value.SetUint64(0)
 		return nil, nil
 	}
@@ -328,7 +328,7 @@ func opSHR(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	shift, value := math.U256(stack.pop()), math.U256(stack.peek())
 	defer interpreter.intPool.put(shift) // First operand back into the pool
 
-	if shift.Cmp(big256) >= 0 {
+	if shift.Cmp(common.Big256) >= 0 {
 		value.SetUint64(0)
 		return nil, nil
 	}
@@ -343,7 +343,7 @@ func opSAR(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	shift, value := math.U256(stack.pop()), math.S256(stack.pop())
 	defer interpreter.intPool.put(shift) // First operand back into the pool
 
-	if shift.Cmp(big256) >= 0 {
+	if shift.Cmp(common.Big256) >= 0 {
 		if value.Sign() >= 0 {
 			value.SetUint64(0)
 		} else {
@@ -409,7 +409,7 @@ func opCallValue(pc *uint64, interpreter *EVMInterpreter, contract *Contract, me
 }
 
 func opCallDataLoad(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
-	stack.push(interpreter.intPool.get().SetBytes(getDataBig(contract.Input, stack.pop(), big32)))
+	stack.push(interpreter.intPool.get().SetBytes(getDataBig(contract.Input, stack.pop(), common.Big32)))
 	return nil, nil
 }
 
@@ -512,7 +512,7 @@ func opGasprice(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 func opBlockhash(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	num := stack.pop()
 
-	n := interpreter.intPool.get().Sub(interpreter.evm.BlockNumber, big257)
+	n := interpreter.intPool.get().Sub(interpreter.evm.BlockNumber, common.Big257)
 	if num.Cmp(n) > 0 && num.Cmp(interpreter.evm.BlockNumber) < 0 {
 		stack.push(interpreter.evm.GetHash(num.Uint64()).Big())
 	} else {
