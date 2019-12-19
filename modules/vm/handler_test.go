@@ -38,7 +38,7 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	handler := NewHandler(k)
 
 	// test MsgContractCreate
-	msgCreate := types.NewMsgContractCreate(fromAddr, sdk.NewInt64Coin(sdk.NativeTokenName, 1000), code)
+	msgCreate := types.NewMsgContractCreate(fromAddr, sdk.NewInt64Coin(sdk.NativeTokenName, 0), code)
 	require.NotNil(t, msgCreate)
 	require.Equal(t, msgCreate.Route(), RouterKey)
 	require.Equal(t, msgCreate.Type(), types.TypeMsgContractCreate)
@@ -49,13 +49,6 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 		fmt.Println("logs: ", resCreate.Log)
 	}
 	require.NotNil(t, k.StateDB.GetCode(contractAddr))
-
-	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-	contractAcc := k.GetAccount(ctx, contractAddr)
-	if contractAcc != nil {
-		fmt.Println(contractAcc.GetCoins())
-	}
-	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 	// test MsgContractCall
 	msgCall := types.NewMsgContractCall(fromAddr, contractAddr, sdk.NewInt64Coin(sdk.NativeTokenName, 0), common.FromHex("a17a9e660000000000000000000000000000000000000000000000000000000000000002"))
