@@ -72,5 +72,6 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
 	}
 
+	st.stateDB.Commit(true)
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
 }
