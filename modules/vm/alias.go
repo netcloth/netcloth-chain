@@ -9,8 +9,8 @@ import (
 const (
 	ModuleName        = types.ModuleName
 	StoreKey          = types.StoreKey
+	CodeKey           = types.CodeKey
 	RouterKey         = types.RouterKey
-	TStoreKey         = types.TStoreKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultCodespace  = types.DefaultCodespace
 	DefaultParamspace = keeper.DefaultParamspace
@@ -49,7 +49,4 @@ var (
 	ErrExecutionReverted        = types.ErrExecutionReverted
 	ErrInvalidJump              = types.ErrInvalidJump
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
-
-	StorageKey = types.StorageKey
-	CodeKey    = types.CodeKey
 )

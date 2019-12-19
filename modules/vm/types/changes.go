@@ -26,7 +26,7 @@ type (
 		prev    sdk.Int
 	}
 
-	nonceChanges struct {
+	nonceChange struct {
 		account *sdk.AccAddress
 		prev    uint64
 	}
@@ -110,11 +110,11 @@ func (ch balanceChange) dirtied() *sdk.AccAddress {
 }
 
 // nonceChange
-func (ch nonceChanges) revert(s *CommitStateDB) {
+func (ch nonceChange) revert(s *CommitStateDB) {
 	s.getStateObject(*ch.account).setNonce(ch.prev)
 }
 
-func (ch nonceChanges) dirtied() *sdk.AccAddress {
+func (ch nonceChange) dirtied() *sdk.AccAddress {
 	return ch.account
 }
 

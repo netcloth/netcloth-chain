@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
+
 	"github.com/tendermint/tendermint/crypto"
 
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
@@ -154,6 +156,11 @@ func (so *stateObject) SubBalance(amount *big.Int) {
 func (so *stateObject) SetBalance(amount *big.Int) {
 	amt := sdk.NewIntFromBigInt(amount)
 
+	so.stateDB.journal.append(balanceChange{
+		account: &so.address,
+		prev:    so.account.Balance(),
+	})
+
 	so.setBalance(amt)
 }
 
@@ -163,6 +170,11 @@ func (so *stateObject) setBalance(amount sdk.Int) {
 
 // SetNonce sets the state object's nonce (sequence number).
 func (so *stateObject) SetNonce(nonce uint64) {
+	so.stateDB.journal.append(nonceChange{
+		account: &so.address,
+		prev:    so.account.Sequence,
+	})
+
 	so.setNonce(nonce)
 }
 
@@ -182,8 +194,10 @@ func (so *stateObject) markSuicided() {
 }
 
 func (so *stateObject) commitCode() {
-	ctx := so.stateDB.Ctx
+	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.codeKey)
+	fmt.Printf("codehash = %s, code = %s\n", hexutil.Encode(so.CodeHash()), hexutil.Encode(so.code))
+	fmt.Printf("Set ctx:%v\n", ctx)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -222,7 +236,9 @@ func (so *stateObject) Code() []byte {
 		return nil
 	}
 
-	ctx := so.stateDB.Ctx
+	fmt.Printf(fmt.Sprintf("GET so.CodeHash() = %s, code = %s\n", hexutil.Encode(so.CodeHash()), hexutil.Encode(so.code)))
+	ctx := so.stateDB.ctx
+	fmt.Printf("Get ctx:%v\n", ctx)
 	store := ctx.KVStore(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
@@ -260,8 +276,8 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 	}
 
 	// otherwise load the value from KVStore
-	ctx := so.stateDB.Ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
+	ctx := so.stateDB.ctx
+	store := ctx.KVStore(so.stateDB.storeKey)
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {

@@ -12,7 +12,6 @@ import (
 	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
-	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	distr "github.com/netcloth/netcloth-chain/modules/distribution"
 	"github.com/netcloth/netcloth-chain/modules/gov"
@@ -65,30 +64,25 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		cipal.StoreKey,
 		ipal.StoreKey,
 		StoreKey,
-		StorageKey,
 		CodeKey,
 	)
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey, TStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
 	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
 	authSubspace := paramsKeeper.Subspace(auth.DefaultParamspace)
-	bankSubspace := paramsKeeper.Subspace(bank.DefaultParamspace)
 
 	vmSubspace := paramsKeeper.Subspace(DefaultParamspace)
 
 	// add keepers
 	accountKeeper := auth.NewAccountKeeper(cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, ModuleAccountAddrs())
 
-	csdb := NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey])
 	vmKeeper = NewKeeper(
-		cdc, keys[StoreKey],
-		tkeys[TStoreKey],
+		cdc,
+		keys[StoreKey],
+		keys[CodeKey],
 		DefaultCodespace,
 		vmSubspace,
-		accountKeeper,
-		bankKeeper,
-		csdb)
+		accountKeeper)
 
 	for _, key := range keys {
 		ms.MountStoreWithDB(key, sdk.StoreTypeIAVL, nil) // db nil
@@ -115,9 +109,8 @@ func newEVM() *EVM {
 
 	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
 	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
 
-	keys := sdk.NewKVStoreKeys(auth.StoreKey, StorageKey, CodeKey)
+	keys := sdk.NewKVStoreKeys(auth.StoreKey, StoreKey, CodeKey)
 
-	return NewEVM(Context{}, *NewCommitStateDB(accountKeeper, bankKeeper, keys[StorageKey], keys[CodeKey]), Config{})
+	return NewEVM(Context{}, *NewCommitStateDB(accountKeeper, keys[StoreKey], keys[CodeKey]), Config{})
 }

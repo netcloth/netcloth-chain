@@ -27,8 +27,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	"github.com/netcloth/netcloth-chain/modules/supply"
 	"github.com/netcloth/netcloth-chain/modules/vm"
-	types2 "github.com/netcloth/netcloth-chain/modules/vm/types"
-	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 	"github.com/netcloth/netcloth-chain/version"
@@ -143,10 +141,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		cipal.StoreKey,
 		ipal.StoreKey,
 		vm.StoreKey,
-		vm.StorageKey,
 		vm.CodeKey,
 	)
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey, vm.TStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
@@ -202,15 +199,13 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		aipalSubspace,
 		ipal.DefaultCodespace)
 
-	csdb := types2.NewCommitStateDB(app.accountKeeper, app.bankKeeper, keys[vm.StorageKey], keys[vm.CodeKey])
 	app.vmKeeper = vm.NewKeeper(
-		app.cdc, keys[vm.StoreKey],
-		tkeys[vm.TStoreKey],
+		app.cdc,
+		keys[vm.StoreKey],
+		keys[vm.CodeKey],
 		vm.DefaultCodespace,
 		vmSubspace,
-		app.accountKeeper,
-		app.bankKeeper,
-		csdb)
+		app.accountKeeper)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -260,7 +255,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -323,9 +318,9 @@ func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 }
 
 func SetBech32AddressPrefixes(config *sdk.Config) {
-	config.SetBech32PrefixForAccount(types.Bech32PrefixAccAddr, types.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(types.Bech32PrefixValAddr, types.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 }
 
 // load a particular height

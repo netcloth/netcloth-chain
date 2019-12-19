@@ -48,7 +48,7 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	if len(resCreate.Log) > 0 {
 		fmt.Println("logs: ", resCreate.Log)
 	}
-	require.NotNil(t, k.CSDB.GetCode(contractAddr))
+	require.NotNil(t, k.StateDB.GetCode(contractAddr))
 
 	fmt.Println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 	contractAcc := k.GetAccount(ctx, contractAddr)

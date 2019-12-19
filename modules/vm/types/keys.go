@@ -7,7 +7,7 @@ const (
 	// StoreKey is the string store representation
 	StoreKey = ModuleName
 
-	TStoreKey = "transient_" + ModuleName
+	CodeKey = StoreKey + "_code"
 
 	// QuerierRoute is the querier route for the vm module
 	QuerierRoute = ModuleName
@@ -15,16 +15,3 @@ const (
 	// RouterKey is the msg router key for the vm module
 	RouterKey = ModuleName
 )
-
-const (
-	StorageKey = "csdb"
-	CodeKey    = "csdbcode"
-)
-
-var (
-	ContractCodeKey = []byte{0x10}
-)
-
-func GetContractCodeKey(codeHash []byte) []byte {
-	return append(ContractCodeKey, codeHash...)
-}

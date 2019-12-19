@@ -18,15 +18,16 @@ type StateTransition struct {
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
 	Payload   []byte
-	CSDB      *types.CommitStateDB
+	stateDB   *types.CommitStateDB
 }
 
 func (st StateTransition) CanTransfer(acc sdk.AccAddress, amount *big.Int) bool {
-	return st.CSDB.GetBalance(acc).Cmp(amount) >= 0
+	return st.stateDB.GetBalance(acc).Cmp(amount) >= 0
 }
 
-func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) sdk.Error {
-	return st.CSDB.BK.SendCoins(st.CSDB.Ctx, from, to, sdk.NewCoins(sdk.NewCoin("unch", sdk.NewInt(amount.Int64()))))
+func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
+	st.stateDB.SubBalance(from, amount)
+	st.stateDB.AddBalance(to, amount)
 }
 
 func (st StateTransition) GetHash(uint64) sdk.Hash {
@@ -35,7 +36,6 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 
 // func returns: (ret []byte, usedGas uint64, failed bool, sdk.Result)
 func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result) {
-
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
@@ -51,7 +51,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	cfg := Config{}
 
-	evm := NewEVM(evmCtx, *st.CSDB, cfg)
+	evm := NewEVM(evmCtx, *st.stateDB, cfg)
 
 	var (
 		ret         []byte
