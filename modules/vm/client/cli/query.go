@@ -75,7 +75,8 @@ $ %s query vm code [address]`, version.ClientName)),
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData("custom/vm/code", addr)
+			route := fmt.Sprintf("custom/vm/%s", types.QueryContractCode)
+			res, _, err := cliCtx.QueryWithData(route, addr)
 			if err != nil {
 				return err
 			}

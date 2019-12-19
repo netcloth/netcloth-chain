@@ -98,6 +98,7 @@ func (a AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
+	// TODO
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
