@@ -156,7 +156,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	}
 
 	// Create a new account on the state
-	//snapshot := evm.StateDB.Snapshot()
+	snapshot := evm.StateDB.Snapshot()
 	evm.StateDB.CreateAccount(address)
 	evm.StateDB.SetNonce(address, 0)
 	evm.Transfer(caller.Address(), address, value)
@@ -170,7 +170,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		return nil, address, gas, nil
 	}
 
-	//start := time.Now()
+	start := time.Now()
 	ret, err := run(evm, contract, nil, false)
 
 	maxCodeSizeExceeded := len(ret) > MaxCodeSize
@@ -187,7 +187,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	// above we revert to the snapshot and consume any gas remaining. Additionally
 	// when we're in homestead this also counts for code storage gas errors.
 	if maxCodeSizeExceeded || (err != nil && (err != ErrCodeStoreOutOfGas())) {
-		//evm.StateDB.RevertToSnapshot(snapshot)
+		evm.StateDB.RevertToSnapshot(snapshot)
 		if err.Code() != ErrExecutionReverted().Code() {
 			contract.UseGas(contract.Gas)
 		}
@@ -197,7 +197,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		err = ErrMaxCodeSizeExceeded()
 	}
 	if evm.vmConfig.Debug && evm.depth == 0 {
-		//evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
+		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 	}
 	return ret, address, contract.Gas, err
 }

@@ -62,14 +62,15 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	if st.Recipient == nil {
 		ret, addr, leftOverGas, err = evm.Create(st.Sender, st.Payload, 100000000, st.Amount.BigInt())
-		fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s, leftOverGas = %v, err = %v\n", addr, leftOverGas, err))
-
-		if err != nil {
-			return nil, sdk.ErrInternal("contract deploy err").Result()
-		}
+		fmt.Fprint(os.Stderr, fmt.Sprintf("contractAddr = %s\n", addr))
 	} else {
 		ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, st.Amount.BigInt())
-		fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
+	}
+
+	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
+
+	if err != nil {
+		return nil, err.Result()
 	}
 
 	st.stateDB.Finalise(true)
