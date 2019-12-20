@@ -49,7 +49,7 @@ func TestStoreCapture(t *testing.T) {
 		accountKeeper)
 
 	var (
-		env      = NewEVM(Context{}, *vmKeeper.StateDB, Config{})
+		env      = NewEVM(Context{}, vmKeeper.StateDB, Config{})
 		logger   = NewStructLogger(nil)
 		mem      = NewMemory()
 		stack    = newstack()
