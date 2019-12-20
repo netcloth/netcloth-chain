@@ -5,8 +5,9 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/types"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -51,7 +52,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	cfg := Config{}
 
-	evm := NewEVM(evmCtx, st.stateDB, cfg)
+	evm := NewEVM(evmCtx, st.stateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())), cfg)
 
 	var (
 		ret         []byte

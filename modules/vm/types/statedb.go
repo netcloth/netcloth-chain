@@ -93,6 +93,11 @@ func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 	return csdb
 }
 
+func (csdb *CommitStateDB) WithTxHash(txHash []byte) *CommitStateDB {
+	csdb.thash = sdk.BytesToHash(txHash)
+	return csdb
+}
+
 // ----------------------------------------------------------------------------
 // Setters
 // ----------------------------------------------------------------------------
