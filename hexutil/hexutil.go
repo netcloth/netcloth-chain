@@ -1,17 +1,3 @@
-/*
-Package hexutil implements hex encoding with 0x prefix.
-This encoding is used by the Ethereum RPC API to transport binary data in JSON payloads.
-
-Encoding Rules
-
-All hex data must have prefix "0x".
-
-For byte slices, the hex data must be of even length. An empty byte slice
-encodes as "0x".
-
-Integers are encoded using the least amount of digits (no leading zero digits). Their
-encoding may be of uneven length. The number zero encodes as "0x0".
-*/
 package hexutil
 
 import (
@@ -40,14 +26,12 @@ type decError struct{ msg string }
 
 func (err decError) Error() string { return err.msg }
 
-// Decode decodes a hex string with 0x prefix.
+// Decode decodes a hex string
 func Decode(input string) ([]byte, error) {
 	if len(input) == 0 {
 		return nil, ErrEmptyString
 	}
-	if !has0xPrefix(input) {
-		return nil, ErrMissingPrefix
-	}
+
 	b, err := hex.DecodeString(input[2:])
 	if err != nil {
 		err = mapError(err)
@@ -164,22 +148,16 @@ func MustDecodeBig(input string) *big.Int {
 func EncodeBig(bigint *big.Int) string {
 	nbits := bigint.BitLen()
 	if nbits == 0 {
-		return "0x0"
+		return "0"
 	}
 	return fmt.Sprintf("%#x", bigint)
-}
-
-func has0xPrefix(input string) bool {
-	return len(input) >= 2 && input[0] == '0' && (input[1] == 'x' || input[1] == 'X')
 }
 
 func checkNumber(input string) (raw string, err error) {
 	if len(input) == 0 {
 		return "", ErrEmptyString
 	}
-	if !has0xPrefix(input) {
-		return "", ErrMissingPrefix
-	}
+
 	input = input[2:]
 	if len(input) == 0 {
 		return "", ErrEmptyNumber

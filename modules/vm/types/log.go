@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -10,19 +10,19 @@ import (
 
 type Log struct {
 	// address of the contract that generated the event
-	Address sdk.AccAddress `json:"address"`
+	Address sdk.AccAddress `json:"address" yaml:"address"`
 	// list of topics provided by the contract.
-	Topics []sdk.Hash `json:"topics"`
+	Topics []sdk.Hash `json:"topics" yaml:"topics"`
 	// supplied by the contract, usually ABI-encoded
-	Data []byte `json:"data"`
+	Data []byte `json:"data" yaml:"data`
 
-	BlockNumber uint64   `json:"blockNumber"`
-	TxHash      sdk.Hash `json:"transactionHash"`
-	TxIndex     uint     `json:"transactionIndex"`
-	BlockHash   sdk.Hash `json:"blockHash"`
-	Index       uint     `json:"logIndex"`
+	BlockNumber uint64   `json:"blockNumber" yaml:"blockNumber"`
+	TxHash      sdk.Hash `json:"transactionHash" yaml:"transactionHash"`
+	TxIndex     uint     `json:"transactionIndex" yaml:"transactionIndex"`
+	BlockHash   sdk.Hash `json:"blockHash" yaml:"blockHash"`
+	Index       uint     `json:"logIndex" yaml:"logIndex"`
 
-	Removed bool `json:"removed"`
+	Removed bool `json:"removed" yaml:"removed"`
 }
 
 type logMarshaling struct {

@@ -350,7 +350,7 @@ func TestCustomAddressVerifier(t *testing.T) {
 }
 
 func TestPubkeyToAddress(t *testing.T) {
-	rawPubKey := types.FromHex("029f7211f39112e5d8c0eef8d8d034ab298078b763b6bd124c5cd297cfc9140b53")
+	rawPubKey := FromHex("029f7211f39112e5d8c0eef8d8d034ab298078b763b6bd124c5cd297cfc9140b53")
 	var pubkeyBytes secp256k1.PubKeySecp256k1
 	copy(pubkeyBytes[:], rawPubKey)
 	addr := types.BytesToAddress(pubkeyBytes.Address().Bytes())
@@ -358,7 +358,7 @@ func TestPubkeyToAddress(t *testing.T) {
 }
 
 func TestPrivkeyToAddress(t *testing.T) {
-	rawPrivKey := types.FromHex("029f7211f39112e5d8c0eef8d8d034ab298078b763b6bd124c5cd297cfc9140b53")
+	rawPrivKey := FromHex("029f7211f39112e5d8c0eef8d8d034ab298078b763b6bd124c5cd297cfc9140b53")
 	_, pubkeyObject := btcsecp256k1.PrivKeyFromBytes(btcsecp256k1.S256(), rawPrivKey[:])
 
 	var pubkeyBytes secp256k1.PubKeySecp256k1

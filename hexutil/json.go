@@ -335,9 +335,7 @@ func checkNumberText(input []byte) (raw []byte, err error) {
 	if len(input) == 0 {
 		return nil, nil // empty strings are allowed
 	}
-	if !bytesHave0xPrefix(input) {
-		return nil, ErrMissingPrefix
-	}
+
 	input = input[2:]
 	if len(input) == 0 {
 		return nil, ErrEmptyNumber

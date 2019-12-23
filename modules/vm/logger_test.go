@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	auth "github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"

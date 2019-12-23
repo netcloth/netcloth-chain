@@ -20,7 +20,7 @@ type (
 	TransferFunc func(sdk.AccAddress, sdk.AccAddress, *big.Int)
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
-	//GetHashFunc func(sdk.Context) sdk.Hash
+	//GetHashFunc func(sdk.Context) types.Hash
 	GetHashFunc func(uint64) sdk.Hash
 )
 

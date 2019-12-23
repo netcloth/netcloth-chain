@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/common/hexutil"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
