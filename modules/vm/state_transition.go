@@ -19,16 +19,16 @@ type StateTransition struct {
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
 	Payload   []byte
-	stateDB   *types.CommitStateDB
+	StateDB   *types.CommitStateDB
 }
 
 func (st StateTransition) CanTransfer(acc sdk.AccAddress, amount *big.Int) bool {
-	return st.stateDB.GetBalance(acc).Cmp(amount) >= 0
+	return st.StateDB.GetBalance(acc).Cmp(amount) >= 0
 }
 
 func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
-	st.stateDB.SubBalance(from, amount)
-	st.stateDB.AddBalance(to, amount)
+	st.StateDB.SubBalance(from, amount)
+	st.StateDB.AddBalance(to, amount)
 }
 
 func (st StateTransition) GetHash(uint64) sdk.Hash {
@@ -52,7 +52,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	cfg := Config{}
 
-	evm := NewEVM(evmCtx, st.stateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())), cfg)
+	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())), cfg)
 
 	var (
 		ret         []byte
@@ -74,6 +74,6 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		return nil, err.Result()
 	}
 
-	st.stateDB.Finalise(true)
+	st.StateDB.Finalise(true)
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
 }

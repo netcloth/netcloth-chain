@@ -38,7 +38,7 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		GasLimit:  10000000,
 		Amount:    msg.Amount.Amount,
 		Payload:   msg.Code,
-		stateDB:   k.StateDB.WithContext(ctx),
+		StateDB:   k.StateDB.WithContext(ctx),
 	}
 	_, res := st.TransitionCSDB(ctx)
 
@@ -62,7 +62,7 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 		GasLimit:  10000000,
 		Payload:   msg.Payload,
 		Amount:    msg.Amount.Amount,
-		stateDB:   k.StateDB.WithContext(ctx),
+		StateDB:   k.StateDB.WithContext(ctx),
 	}
 
 	_, res := st.TransitionCSDB(ctx)

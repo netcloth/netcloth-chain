@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	QueryParameters   = "params"
-	QueryContractCode = "code"
-	QueryStorage      = "storage"
-	QueryTxLogs       = "logs"
+	QueryParameters    = "params"
+	QueryContractCode  = "code"
+	QueryContractState = "state"
+	QueryStorage       = "storage"
+	QueryTxLogs        = "logs"
 )
 
 type QueryCodeParams struct {
@@ -46,5 +47,18 @@ func (q QueryLogs) String() string {
 func NewQueryCodeParams(AccAddr sdk.AccAddress) QueryCodeParams {
 	return QueryCodeParams{
 		AccAddr: AccAddr,
+	}
+}
+
+type QueryContractStateParams struct {
+	Addr    sdk.AccAddress
+	Payload []byte
+}
+
+// creates a new instance of QueryProposalParams
+func NewQueryContractStateParams(addr sdk.AccAddress, payload []byte) QueryContractStateParams {
+	return QueryContractStateParams{
+		Addr:    addr,
+		Payload: payload,
 	}
 }

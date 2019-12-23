@@ -2,9 +2,14 @@ package cli
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/spf13/cobra"
 
 	"github.com/netcloth/netcloth-chain/client"
@@ -27,6 +32,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryParams(cdc),
 		GetCmdQueryCode(cdc),
+		GetCmdQueryStorage(cdc),
 		GetCmdGetStorageAt(cdc),
 		GetCmdGetLogs(cdc),
 	)...)
@@ -65,9 +71,7 @@ func GetCmdQueryCode(cdc *codec.Codec) *cobra.Command {
 		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by accAddr.
 Example:
 $ %s query vm code [address]`, version.ClientName)),
-		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			addr, err := sdk.AccAddressFromBech32(args[0])
@@ -95,9 +99,81 @@ $ %s query vm code [address]`, version.ClientName)),
 	}
 }
 
+func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "get",
+		Short:   "get contract state",
+		Example: "nchcli query vm state [address] [name] [abi_file]",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			if len(args) != 3 {
+				return errors.New("params number wrong")
+			}
+
+			addr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			abiFile := args[2]
+			abiFile, err = filepath.Abs(abiFile)
+			if 0 == len(abiFile) {
+				return errors.New("abi_file path wrong")
+			}
+			abiData, err := ioutil.ReadFile(abiFile)
+			abiObj, err := abi.JSON(strings.NewReader(string(abiData)))
+			if err != nil {
+				return err
+			}
+
+			name := args[1]
+			_, exist := abiObj.Methods[name]
+			var payload []byte
+			if exist {
+				payload, err = abiObj.Pack(name)
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New(fmt.Sprintf("state %s not exist\n", name))
+			}
+
+			dump := make([]byte, len(payload)*2)
+			hex.Encode(dump[:], payload)
+			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
+
+			p := types.NewQueryContractStateParams(addr, payload)
+			qd, err := cliCtx.Codec.MarshalJSON(p)
+			if err != nil {
+				return err
+			}
+
+			route := fmt.Sprintf("custom/vm/%s", types.QueryContractState)
+			res, _, err := cliCtx.QueryWithData(route, qd)
+			if err != nil {
+				return err
+			}
+
+			if len(res) == 0 {
+				return fmt.Errorf("query state %s failed", args[1])
+			}
+
+			dst := make([]byte, 2*len(res))
+			hex.Encode(dst, res)
+
+			fmt.Println(string(dst))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
 func GetCmdGetStorageAt(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "storage [account] [key",
+		Use:   "storage [account] [key]",
 		Short: "Querying storage for an account at a given key",
 		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by accAddr.
 Example:
