@@ -31,8 +31,14 @@ func Decode(input string) ([]byte, error) {
 	if len(input) == 0 {
 		return nil, ErrEmptyString
 	}
+	if has0xPrefix(input) {
+		input = input[2:]
+		if len(input) == 0 {
+			return nil, ErrEmptyString
+		}
+	}
 
-	b, err := hex.DecodeString(input[2:])
+	b, err := hex.DecodeString(input[:])
 	if err != nil {
 		err = mapError(err)
 	}
@@ -50,9 +56,8 @@ func MustDecode(input string) []byte {
 
 // Encode encodes b as a hex string with 0x prefix.
 func Encode(b []byte) string {
-	enc := make([]byte, len(b)*2+2)
-	copy(enc, "0x")
-	hex.Encode(enc[2:], b)
+	enc := make([]byte, len(b)*2)
+	hex.Encode(enc[:], b)
 	return string(enc)
 }
 
@@ -82,7 +87,7 @@ func MustDecodeUint64(input string) uint64 {
 // EncodeUint64 encodes i as a hex string with 0x prefix.
 func EncodeUint64(i uint64) string {
 	enc := make([]byte, 2, 10)
-	copy(enc, "0x")
+	//copy(enc, "0x")
 	return string(strconv.AppendUint(enc, i, 16))
 }
 
@@ -150,7 +155,11 @@ func EncodeBig(bigint *big.Int) string {
 	if nbits == 0 {
 		return "0"
 	}
-	return fmt.Sprintf("%#x", bigint)
+	return fmt.Sprintf("%x", bigint)
+}
+
+func has0xPrefix(input string) bool {
+	return len(input) >= 2 && input[0] == '0' && (input[1] == 'x' || input[1] == 'X')
 }
 
 func checkNumber(input string) (raw string, err error) {
@@ -158,7 +167,10 @@ func checkNumber(input string) (raw string, err error) {
 		return "", ErrEmptyString
 	}
 
-	input = input[2:]
+	if has0xPrefix(input) {
+		input = input[2:]
+	}
+
 	if len(input) == 0 {
 		return "", ErrEmptyNumber
 	}

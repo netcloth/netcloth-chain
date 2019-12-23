@@ -23,7 +23,6 @@ type Bytes []byte
 // MarshalText implements encoding.TextMarshaler
 func (b Bytes) MarshalText() ([]byte, error) {
 	result := make([]byte, len(b)*2+2)
-	copy(result, `0x`)
 	hex.Encode(result[2:], b)
 	return result, nil
 }
@@ -38,7 +37,7 @@ func (b *Bytes) UnmarshalJSON(input []byte) error {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (b *Bytes) UnmarshalText(input []byte) error {
-	raw, err := checkText(input, true)
+	raw, err := checkText(input, false)
 	if err != nil {
 		return err
 	}
@@ -89,7 +88,7 @@ func UnmarshalFixedJSON(typ reflect.Type, input, out []byte) error {
 // determines the required input length. This function is commonly used to implement the
 // UnmarshalText method for fixed-size types.
 func UnmarshalFixedText(typname string, input, out []byte) error {
-	raw, err := checkText(input, true)
+	raw, err := checkText(input, false)
 	if err != nil {
 		return err
 	}
@@ -216,7 +215,6 @@ type Uint64 uint64
 // MarshalText implements encoding.TextMarshaler.
 func (b Uint64) MarshalText() ([]byte, error) {
 	buf := make([]byte, 2, 10)
-	copy(buf, `0x`)
 	buf = strconv.AppendUint(buf, uint64(b), 16)
 	return buf, nil
 }
