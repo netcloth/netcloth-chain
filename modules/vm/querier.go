@@ -1,15 +1,15 @@
-package keeper
+package vm
 
 import (
-	"github.com/netcloth/netcloth-chain/modules/vm"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-func NewQuerier(k Keeper) sdk.Querier {
+func NewQuerier(k keeper.Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
 		case types.QueryParameters:
@@ -28,7 +28,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 	}
 }
 
-func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryParameters(ctx sdk.Context, k keeper.Keeper) ([]byte, sdk.Error) {
 	params := k.GetParams(ctx)
 
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
@@ -38,7 +38,7 @@ func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryCode(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
 	if len(req.Data) != 20 {
 		return nil, sdk.ErrInvalidAddress("address invalid")
 	}
@@ -49,17 +49,18 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	return code, nil
 }
 
-func queryState(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
 	var p types.QueryContractStateParams
 	codec.Cdc.UnmarshalJSON(req.Data, &p)
 
-	st := vm.StateTransition{
+	st := StateTransition{
 		Sender:    p.From,
 		Recipient: p.To,
 		Price:     sdk.NewInt(1000000),
 		GasLimit:  10000000,
+		Amount:    sdk.NewInt(0),
 		Payload:   p.Data,
-		StateDB:   k.StateDB.WithContext(ctx),
+		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
 	_, result := st.TransitionCSDB(ctx)
@@ -67,24 +68,24 @@ func queryState(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 	return result.Data, nil
 }
 
-func queryStorage(ctx sdk.Context, path []string, keeper Keeper) ([]byte, sdk.Error) {
+func queryStorage(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, sdk.Error) {
 	addr, _ := sdk.AccAddressFromBech32(path[1])
 	key := sdk.HexToHash(path[2])
 	val := keeper.GetState(ctx, addr, key)
 	bRes := types.QueryResStorage{Value: val.Bytes()}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, bRes)
+	res, err := codec.MarshalJSONIndent(keeper.Cdc, bRes)
 	if err != nil {
 		panic("could not marshal result to JSON: " + err.Error())
 	}
 	return res, nil
 }
 
-func queryTxLogs(ctx sdk.Context, path []string, keeper Keeper) ([]byte, sdk.Error) {
+func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, sdk.Error) {
 	txHash := sdk.HexToHash(path[1])
 	logs := keeper.GetLogs(ctx, txHash)
 
 	bRes := types.QueryLogs{Logs: logs}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, bRes)
+	res, err := codec.MarshalJSONIndent(keeper.Cdc, bRes)
 	if err != nil {
 		panic("could not marshal result to JSON: " + err.Error())
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 type Keeper struct {
-	cdc        *codec.Codec
+	Cdc        *codec.Codec
 	paramstore params.Subspace
 	StateDB    *types.CommitStateDB
 	codespace  sdk.CodespaceType
@@ -21,7 +21,7 @@ type Keeper struct {
 
 func NewKeeper(cdc *codec.Codec, storeKey, codeKey sdk.StoreKey, codespace sdk.CodespaceType, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
 	return Keeper{
-		cdc:        cdc,
+		Cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:  codespace,
 		StateDB:    types.NewCommitStateDB(ak, storeKey, codeKey),

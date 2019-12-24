@@ -12,7 +12,6 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/vm/client/cli"
 	"github.com/netcloth/netcloth-chain/modules/vm/client/rest"
-	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
@@ -94,7 +93,7 @@ func (a AppModule) QuerierRoute() string {
 }
 
 func (a AppModule) NewQuerierHandler() sdk.Querier {
-	return keeper.NewQuerier(a.k)
+	return NewQuerier(a.k)
 }
 
 func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {

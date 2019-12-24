@@ -87,6 +87,19 @@ func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *
 	}
 }
 
+func NewStateDB(db *CommitStateDB) *CommitStateDB {
+	return &CommitStateDB{
+		ak:                db.ak,
+		storageKey:        db.storageKey,
+		codeKey:           db.codeKey,
+		stateObjects:      make(map[string]*stateObject),
+		stateObjectsDirty: make(map[string]struct{}),
+		logs:              make(map[sdk.Hash][]*Log),
+		preimages:         make(map[sdk.Hash][]byte),
+		journal:           newJournal(),
+	}
+}
+
 // WithContext returns a Database with an updated sdk context
 func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 	csdb.ctx = ctx
