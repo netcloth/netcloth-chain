@@ -23,7 +23,7 @@ type Bytes []byte
 // MarshalText implements encoding.TextMarshaler
 func (b Bytes) MarshalText() ([]byte, error) {
 	result := make([]byte, len(b)*2+2)
-	hex.Encode(result[2:], b)
+	hex.Encode(result[:], b)
 	return result, nil
 }
 
@@ -334,7 +334,9 @@ func checkNumberText(input []byte) (raw []byte, err error) {
 		return nil, nil // empty strings are allowed
 	}
 
-	input = input[2:]
+	if bytesHave0xPrefix(input) {
+		input = input[2:]
+	}
 	if len(input) == 0 {
 		return nil, ErrEmptyNumber
 	}

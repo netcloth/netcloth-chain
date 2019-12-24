@@ -86,8 +86,7 @@ func MustDecodeUint64(input string) uint64 {
 
 // EncodeUint64 encodes i as a hex string with 0x prefix.
 func EncodeUint64(i uint64) string {
-	enc := make([]byte, 2, 10)
-	//copy(enc, "0x")
+	enc := make([]byte, 0, 10)
 	return string(strconv.AppendUint(enc, i, 16))
 }
 
