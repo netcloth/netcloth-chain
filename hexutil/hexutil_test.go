@@ -42,10 +42,10 @@ var (
 	}
 
 	encodeUintTests = []marshalTest{
-		{uint(0), "0x0"},
-		{uint(1), "0x1"},
-		{uint(0xff), "0xff"},
-		{uint(0x11223344), "0x11223344"},
+		{uint(0), "0"},
+		{uint(1), "1"},
+		{uint(0xff), "ff"},
+		{uint(0x11223344), "11223344"},
 	}
 
 	decodeBytesTests = []unmarshalTest{
