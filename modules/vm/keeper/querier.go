@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/netcloth/netcloth-chain/modules/vm"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -16,7 +17,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryContractCode:
 			return queryCode(ctx, req, k)
 		case types.QueryContractState:
-			return queryContractState(ctx, req, k)
+			return queryState(ctx, req, k)
 		case types.QueryStorage:
 			return queryStorage(ctx, path, k)
 		case types.QueryTxLogs:
@@ -48,49 +49,22 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	return code, nil
 }
 
-func queryContractState(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryState(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var p types.QueryContractStateParams
-	codec.Cdc.UnmarshalJSON(req.Data, p)
+	codec.Cdc.UnmarshalJSON(req.Data, &p)
 
-	//st := vm.StateTransition{
-	//	Sender:    p.Addr,
-	//	Recipient: p.Addr,
-	//	Price:     sdk.NewInt(1000000),
-	//	GasLimit:  10000000,
-	//	Payload:   p.Payload,
-	//	StateDB:   k.StateDB.WithContext(ctx),
-	//}
-	//
-	//evmCtx := vm.Context{
-	//	CanTransfer: st.CanTransfer,
-	//	Transfer:    st.Transfer,
-	//	GetHash:     st.GetHash,
-	//	Origin:      st.Sender,
-	//	GasPrice:    st.Price.BigInt(),
-	//	CoinBase:    ctx.BlockHeader().ProposerAddress,
-	//	GasLimit:    st.GasLimit,
-	//	BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
-	//}
-	//
-	//cfg := vm.Config{}
-	//
-	//evm := vm.NewEVM(evmCtx, st.StateDB, cfg)
-	//
-	//var (
-	//	ret         []byte
-	//	leftOverGas uint64
-	//	err         sdk.Error
-	//)
-	//
-	//ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, 1000000000, st.Amount.BigInt())
-	//fmt.Print(leftOverGas)
-	//if err != nil {
-	//	return nil, err
-	//}
+	st := vm.StateTransition{
+		Sender:    p.From,
+		Recipient: p.To,
+		Price:     sdk.NewInt(1000000),
+		GasLimit:  10000000,
+		Payload:   p.Data,
+		StateDB:   k.StateDB.WithContext(ctx),
+	}
 
-	//return ret, nil
+	_, result := st.TransitionCSDB(ctx)
 
-	return nil, nil
+	return result.Data, nil
 }
 
 func queryStorage(ctx sdk.Context, path []string, keeper Keeper) ([]byte, sdk.Error) {

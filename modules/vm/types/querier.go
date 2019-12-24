@@ -51,14 +51,16 @@ func NewQueryCodeParams(AccAddr sdk.AccAddress) QueryCodeParams {
 }
 
 type QueryContractStateParams struct {
-	Addr    sdk.AccAddress
-	Payload []byte
+	From sdk.AccAddress
+	To   sdk.AccAddress
+	Data []byte
 }
 
 // creates a new instance of QueryProposalParams
-func NewQueryContractStateParams(addr sdk.AccAddress, payload []byte) QueryContractStateParams {
+func NewQueryContractStateParams(from, to sdk.AccAddress, data []byte) QueryContractStateParams {
 	return QueryContractStateParams{
-		Addr:    addr,
-		Payload: payload,
+		From: from,
+		To:   to,
+		Data: data,
 	}
 }

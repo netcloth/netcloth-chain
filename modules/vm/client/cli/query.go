@@ -101,17 +101,22 @@ $ %s query vm code [address]`, version.ClientName)),
 
 func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "get",
+		Use:     "state",
 		Short:   "get contract state",
-		Example: "nchcli query vm state [address] [name] [abi_file]",
+		Example: "nchcli query vm state [address] [name] [abi_file] [from_addr]",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			if len(args) != 3 {
+			if len(args) != 4 {
 				return errors.New("params number wrong")
 			}
 
 			addr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			fromAddr, err := sdk.AccAddressFromBech32(args[3])
 			if err != nil {
 				return err
 			}
@@ -143,7 +148,7 @@ func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
 			hex.Encode(dump[:], payload)
 			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
 
-			p := types.NewQueryContractStateParams(addr, payload)
+			p := types.NewQueryContractStateParams(fromAddr, addr, payload)
 			qd, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err
