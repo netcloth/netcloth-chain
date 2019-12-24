@@ -114,7 +114,7 @@ var unmarshalBigTests = []unmarshalTest{
 	{input: "null", wantErr: errNonString(bigT)},
 	{input: "10", wantErr: errNonString(bigT)},
 	{input: `"0"`, wantErr: wrapTypeError(ErrMissingPrefix, bigT)},
-	{input: `"0x"`, wantErr: wrapTypeError(ErrEmptyNumber, bigT)},
+	{input: `""`, wantErr: errJSONEOF},
 	{input: `"0x01"`, wantErr: wrapTypeError(ErrLeadingZero, bigT)},
 	{input: `"0xx"`, wantErr: wrapTypeError(ErrSyntax, bigT)},
 	{input: `"0x1zz01"`, wantErr: wrapTypeError(ErrSyntax, bigT)},
