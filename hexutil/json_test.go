@@ -48,9 +48,10 @@ var unmarshalBytesTests = []unmarshalTest{
 	{input: "", wantErr: errJSONEOF},
 	{input: "null", wantErr: errNonString(bytesT)},
 	{input: "10", wantErr: errNonString(bytesT)},
-	{input: `"0"`, wantErr: wrapTypeError(ErrMissingPrefix, bytesT)},
+	{input: `"0"`, wantErr: wrapTypeError(ErrOddLength, bytesT)},
 	{input: `"0x0"`, wantErr: wrapTypeError(ErrOddLength, bytesT)},
 	{input: `"0xxx"`, wantErr: wrapTypeError(ErrSyntax, bytesT)},
+	{input: `"01zz01"`, wantErr: wrapTypeError(ErrSyntax, bytesT)},
 	{input: `"0x01zz01"`, wantErr: wrapTypeError(ErrSyntax, bytesT)},
 
 	// valid encoding
@@ -110,11 +111,9 @@ func TestMarshalBytes(t *testing.T) {
 
 var unmarshalBigTests = []unmarshalTest{
 	// invalid encoding
-	{input: "", wantErr: errJSONEOF},
 	{input: "null", wantErr: errNonString(bigT)},
 	{input: "10", wantErr: errNonString(bigT)},
 	{input: `"0"`, wantErr: wrapTypeError(ErrMissingPrefix, bigT)},
-	{input: `""`, wantErr: errJSONEOF},
 	{input: `"0x01"`, wantErr: wrapTypeError(ErrLeadingZero, bigT)},
 	{input: `"0xx"`, wantErr: wrapTypeError(ErrSyntax, bigT)},
 	{input: `"0x1zz01"`, wantErr: wrapTypeError(ErrSyntax, bigT)},

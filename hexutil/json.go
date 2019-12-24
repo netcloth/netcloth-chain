@@ -22,7 +22,7 @@ type Bytes []byte
 
 // MarshalText implements encoding.TextMarshaler
 func (b Bytes) MarshalText() ([]byte, error) {
-	result := make([]byte, len(b)*2+2)
+	result := make([]byte, len(b)*2)
 	hex.Encode(result[:], b)
 	return result, nil
 }
@@ -69,7 +69,7 @@ func (b *Bytes) UnmarshalGraphQL(input interface{}) error {
 		}
 		*b = data
 	default:
-		err = fmt.Errorf("Unexpected type for Bytes: %v", input)
+		err = fmt.Errorf("unexpected type %T for Bytes", input)
 	}
 	return err
 }
@@ -203,7 +203,7 @@ func (b *Big) UnmarshalGraphQL(input interface{}) error {
 		num.SetInt64(int64(input))
 		*b = Big(num)
 	default:
-		err = fmt.Errorf("Unexpected type for BigInt: %v", input)
+		err = fmt.Errorf("unexpected type %T for BigInt", input)
 	}
 	return err
 }
@@ -214,7 +214,7 @@ type Uint64 uint64
 
 // MarshalText implements encoding.TextMarshaler.
 func (b Uint64) MarshalText() ([]byte, error) {
-	buf := make([]byte, 2, 10)
+	buf := make([]byte, 0, 10)
 	buf = strconv.AppendUint(buf, uint64(b), 16)
 	return buf, nil
 }
@@ -266,7 +266,7 @@ func (b *Uint64) UnmarshalGraphQL(input interface{}) error {
 	case int32:
 		*b = Uint64(input)
 	default:
-		err = fmt.Errorf("Unexpected type for Long: %v", input)
+		err = fmt.Errorf("unexpected type %T for Long", input)
 	}
 	return err
 }
@@ -333,10 +333,10 @@ func checkNumberText(input []byte) (raw []byte, err error) {
 	if len(input) == 0 {
 		return nil, nil // empty strings are allowed
 	}
-
-	if bytesHave0xPrefix(input) {
-		input = input[2:]
+	if !bytesHave0xPrefix(input) {
+		return nil, ErrMissingPrefix
 	}
+	input = input[2:]
 	if len(input) == 0 {
 		return nil, ErrEmptyNumber
 	}
