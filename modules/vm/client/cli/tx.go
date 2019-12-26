@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -55,27 +54,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			codeFile := viper.GetString(flagCodeFile)
-			codeFile, err = filepath.Abs(codeFile)
-			if 0 == len(codeFile) {
-				return errors.New("code_file can not be empty")
-			}
-
-			hexcode, err := ioutil.ReadFile(codeFile)
-			if err != nil {
-				return err
-			}
-
-			hexcode = bytes.TrimSpace(hexcode)
-
-			if 0 == len(hexcode) {
-				return errors.New("code can not be empty")
-			}
-
-			if len(hexcode)%2 != 0 {
-				return errors.New(fmt.Sprintf("Invalid input length for hex data (%d)\n", len(hexcode)))
-			}
-
-			code, err := hex.DecodeString(string(hexcode))
+			code, err := CodeFromFile(codeFile)
 			if err != nil {
 				return err
 			}

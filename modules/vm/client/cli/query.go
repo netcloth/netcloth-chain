@@ -35,6 +35,9 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdQueryStorage(cdc),
 		GetCmdGetStorageAt(cdc),
 		GetCmdGetLogs(cdc),
+		GetCmdQueryCreateFee(cdc),
+		//GetCmdQueryCallFee(cdc),
+		//GetCmdQueryFee(cdc),
 	)...)
 	return vmQueryCmd
 }
@@ -79,7 +82,7 @@ $ %s query vm code [address]`, version.ClientName)),
 				return err
 			}
 
-			route := fmt.Sprintf("custom/vm/%s", types.QueryContractCode)
+			route := fmt.Sprintf("custom/vm/%s", types.QueryCode)
 			res, _, err := cliCtx.QueryWithData(route, addr)
 			if err != nil {
 				return err
@@ -154,7 +157,7 @@ func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			route := fmt.Sprintf("custom/vm/%s", types.QueryContractState)
+			route := fmt.Sprintf("custom/vm/%s", types.QueryState)
 			res, _, err := cliCtx.QueryWithData(route, qd)
 			if err != nil {
 				return err
@@ -224,6 +227,42 @@ $ %s query vm logs [txHash]`, version.ClientName)),
 			}
 
 			var out types.QueryLogs
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdQueryCreateFee(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "feecreate [code_file]",
+		Short: "Querying fee to deploy contract",
+		Long: strings.TrimSpace(fmt.Sprintf(`Querying fee to deploy contract.
+Example:
+$ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			addr, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			code, err := CodeFromFile(args[0])
+			p := types.NewQueryFeeParams(addr, nil, code)
+			d, err := cliCtx.Codec.MarshalJSON(p)
+			if err != nil {
+				return err
+			}
+
+			res, _, err := cliCtx.QueryWithData(
+				fmt.Sprintf("custom/vm/%s", types.QueryCreateFee), d)
+			if err != nil {
+				return err
+			}
+
+			var out types.FeeResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
