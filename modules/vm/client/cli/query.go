@@ -36,7 +36,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdGetStorageAt(cdc),
 		GetCmdGetLogs(cdc),
 		GetCmdQueryCreateFee(cdc),
-		//GetCmdQueryCallFee(cdc),
+		GetCmdQueryCallFee(cdc),
 		//GetCmdQueryFee(cdc),
 	)...)
 	return vmQueryCmd
@@ -258,6 +258,81 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 
 			res, _, err := cliCtx.QueryWithData(
 				fmt.Sprintf("custom/vm/%s", types.QueryCreateFee), d)
+			if err != nil {
+				return err
+			}
+
+			var out types.FeeResult
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdQueryCallFee(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "feecall [from] [to] [method] [args] [amount] [abi_file]",
+		Short: "Querying fee to call contract",
+		Long: strings.TrimSpace(fmt.Sprintf(`Querying fee to call contract.
+Example:
+$ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf 0000000000000000000000000000000000000000000000000000000000000001 0unch ./demo.abi`, version.ClientName)),
+		Args: cobra.ExactArgs(6),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			fromAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			toAddr, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			abiObj, err := AbiFromFile(args[5])
+			if err != nil {
+				return err
+			}
+
+			argsBin, err := hex.DecodeString(args[3])
+			if err != nil {
+				return err
+			}
+
+			method := args[2]
+			m, exist := abiObj.Methods[method]
+			var payload []byte
+			if exist {
+				if len(m.Inputs) != len(argsBin)/32 {
+					return errors.New(fmt.Sprint("args count dismatch"))
+				}
+
+				readyArgs, err := m.Inputs.UnpackValues(argsBin)
+				if err != nil {
+					return err
+				}
+
+				payload, err = abiObj.Pack(method, readyArgs...)
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New(fmt.Sprintf("method %s not exist\n", method))
+			}
+
+			dump := make([]byte, len(payload)*2)
+			hex.Encode(dump[:], payload)
+			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
+
+			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
+			d, err := cliCtx.Codec.MarshalJSON(p)
+			if err != nil {
+				return err
+			}
+
+			res, _, err := cliCtx.QueryWithData(
+				fmt.Sprintf("custom/vm/%s", types.QueryCallFee), d)
 			if err != nil {
 				return err
 			}

@@ -4,10 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,8 +16,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
-
-	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 func VMCmd(cdc *codec.Codec) *cobra.Command {
@@ -97,13 +92,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			abiFile := viper.GetString(flagAbiFile)
-			abiFile, err = filepath.Abs(abiFile)
-			if 0 == len(abiFile) {
-				return errors.New("abi_file can not be empty")
-			}
-
-			abiData, err := ioutil.ReadFile(abiFile)
-			abiObj, err := abi.JSON(strings.NewReader(string(abiData)))
+			abiObj, err := AbiFromFile(abiFile)
 			if err != nil {
 				return err
 			}

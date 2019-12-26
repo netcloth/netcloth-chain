@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 func CodeFromFile(codeFile string) ([]byte, error) {
@@ -36,4 +39,19 @@ func CodeFromFile(codeFile string) ([]byte, error) {
 	}
 
 	return code, nil
+}
+
+func AbiFromFile(abiFile string) (abiObj abi.ABI, err error) {
+	abiFile, err = filepath.Abs(abiFile)
+	if 0 == len(abiFile) {
+		err = errors.New("abi_file can not be empty")
+		return
+	}
+
+	abiData, err := ioutil.ReadFile(abiFile)
+	if err != nil {
+		return
+	}
+
+	return abi.JSON(strings.NewReader(string(abiData)))
 }

@@ -24,6 +24,8 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 			return queryTxLogs(ctx, path, k)
 		case types.QueryCreateFee:
 			return queryCreateFee(ctx, req, k)
+		case types.QueryCallFee:
+			return queryCallFee(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
 		}
@@ -121,4 +123,32 @@ func queryCreateFee(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]
 	}
 
 	return nil, sdk.ErrInternal("contract deploy failed")
+}
+
+func queryCallFee(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
+	var p types.QueryFeeParams
+	codec.Cdc.UnmarshalJSON(req.Data, &p)
+
+	st := StateTransition{
+		Sender:    p.From,
+		Recipient: p.To,
+		Price:     sdk.NewInt(100000000),
+		GasLimit:  100000000,
+		Amount:    sdk.NewInt(0),
+		Payload:   p.Data,
+		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
+	}
+
+	_, result := st.TransitionCSDB(ctx)
+
+	if result.IsOK() {
+		bRes := types.FeeResult{V: result.GasUsed}
+		res, err := codec.MarshalJSONIndent(k.Cdc, bRes)
+		if err != nil {
+			panic("could not marshal result to JSON: " + err.Error())
+		}
+		return res, nil
+	}
+
+	return nil, sdk.ErrInternal("contract call failed")
 }
