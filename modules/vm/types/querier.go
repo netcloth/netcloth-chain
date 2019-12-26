@@ -36,11 +36,11 @@ func (q QueryResCode) String() string {
 
 // QueryResStorage is response type for storage query
 type QueryResStorage struct {
-	Value []byte `json:"value"`
+	Value sdk.Hash `json:"value"`
 }
 
 func (q QueryResStorage) String() string {
-	return string(q.Value)
+	return q.Value.String()
 }
 
 func (q QueryLogs) String() string {
