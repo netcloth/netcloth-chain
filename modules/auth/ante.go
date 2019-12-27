@@ -150,6 +150,9 @@ func NewAnteHandler(ak AccountKeeper, supplyKeeper types.SupplyKeeper, sigGasCon
 			ak.SetAccount(newCtx, signerAccs[i])
 		}
 
+		// cache the signer accounts in the context
+		newCtx = WithSigners(newCtx, signerAccs)
+
 		// TODO: tx tags (?)
 		return newCtx, sdk.Result{GasWanted: stdTx.Fee.Gas}, false // continue...
 	}
