@@ -290,9 +290,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.SetBeginBlocker(app.BeginBlocker)
 	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
-	// Fee handler
-	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.feeKeeper))
-	app.SetFeePreprocessHandler(auth.NewFeePreprocessHandler(app.feeKeeper))
+	// Fee refund handler
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.feeKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {

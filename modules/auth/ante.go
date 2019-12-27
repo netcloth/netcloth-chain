@@ -369,6 +369,15 @@ func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, f
 	return sdk.Result{}
 }
 
+func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) sdk.Result {
+	err := supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.FeeCollectorName, acc.GetAddress(), sdk.NewCoins(fees))
+	if err != nil {
+		return err.Result()
+	}
+
+	return sdk.Result{}
+}
+
 // EnsureSufficientMempoolFees verifies that the given transaction has supplied
 // enough fees to cover a proposer's minimum fees. A result object is returned
 // indicating success or failure.
