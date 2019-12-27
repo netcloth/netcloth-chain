@@ -117,6 +117,31 @@ func (sk DummySupplyKeeper) SendCoinsFromAccountToModule(ctx sdk.Context, fromAd
 	return nil
 }
 
+func (sk DummySupplyKeeper) SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error {
+	moduleAcc := sk.GetModuleAccount(ctx, senderModule)
+	recipientAcc := sk.ak.GetAccount(ctx, recipientAddr)
+
+	newFromCoins, hasNeg := moduleAcc.GetCoins().SafeSub(amt)
+	if hasNeg {
+		return sdk.ErrInsufficientCoins(moduleAcc.GetCoins().String())
+	}
+
+	newToCoins := recipientAcc.GetCoins().Add(amt)
+
+	if err := moduleAcc.SetCoins(newFromCoins); err != nil {
+		return sdk.ErrInternal(err.Error())
+	}
+
+	if err := recipientAcc.SetCoins(newToCoins); err != nil {
+		return sdk.ErrInternal(err.Error())
+	}
+
+	sk.ak.SetAccount(ctx, moduleAcc)
+	sk.ak.SetAccount(ctx, recipientAcc)
+
+	return nil
+}
+
 // GetModuleAccount for dummy supply keeper
 func (sk DummySupplyKeeper) GetModuleAccount(ctx sdk.Context, moduleName string) exported.ModuleAccountI {
 	addr := sk.GetModuleAddress(moduleName)

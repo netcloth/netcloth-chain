@@ -150,6 +150,9 @@ func NewAnteHandler(ak AccountKeeper, supplyKeeper types.SupplyKeeper, sigGasCon
 			ak.SetAccount(newCtx, signerAccs[i])
 		}
 
+		// cache the signer accounts in the context
+		newCtx = WithSigners(newCtx, signerAccs)
+
 		// TODO: tx tags (?)
 		return newCtx, sdk.Result{GasWanted: stdTx.Fee.Gas}, false // continue...
 	}
@@ -359,6 +362,15 @@ func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, f
 	}
 
 	err := supplyKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
+	if err != nil {
+		return err.Result()
+	}
+
+	return sdk.Result{}
+}
+
+func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) sdk.Result {
+	err := supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.FeeCollectorName, acc.GetAddress(), sdk.NewCoins(fees))
 	if err != nil {
 		return err.Result()
 	}

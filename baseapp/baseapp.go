@@ -20,6 +20,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
+	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -55,7 +56,10 @@ type BaseApp struct {
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
-	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
+	anteHandler          sdk.AnteHandler            // ante handler for fee and auth
+	feeRefundHandler     types.FeeRefundHandler     // fee handler for fee refund
+	feePreprocessHandler types.FeePreprocessHandler // fee handler for fee preprocessor
+
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
 	beginBlocker   sdk.BeginBlocker // logic to run before any txs
 	endBlocker     sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
@@ -856,7 +860,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
 	var gasWanted uint64
-
+	var msCache sdk.CacheMultiStore
 	ctx := app.getContextForTx(mode, txBytes)
 	ms := ctx.MultiStore()
 
@@ -889,6 +893,27 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		result.GasUsed = ctx.GasMeter().GasConsumed()
 	}()
 
+	// Add cache in fee refund. If an error is returned or panic happens during refund,
+	// no value will be written into blockchain state
+	defer func() {
+		result.GasUsed = ctx.GasMeter().GasConsumed()
+
+		var refundCtx sdk.Context
+		var refundCache sdk.CacheMultiStore
+
+		refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
+
+		// refund unspent fee
+		if mode != runTxModeCheck && app.feeRefundHandler != nil {
+			_, err := app.feeRefundHandler(refundCtx, tx, result)
+			if err != nil {
+				result = sdk.ErrInternal(err.Error()).Result()
+				return
+			}
+			refundCache.Write()
+		}
+	}()
+
 	// If BlockGasMeter() panics it will be caught by the above recover and will
 	// return an error - in any case BlockGasMeter will consume gas past the limit.
 	//
@@ -910,6 +935,14 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	var msgs = tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return err.Result()
+	}
+
+	if app.feePreprocessHandler != nil && ctx.BlockHeight() != 0 {
+		// skip fee pre-processing for gentx
+		err := app.feePreprocessHandler(ctx, tx)
+		if err != nil {
+			return err.Result()
+		}
 	}
 
 	if app.anteHandler != nil {
