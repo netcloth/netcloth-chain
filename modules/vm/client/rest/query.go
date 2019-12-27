@@ -18,8 +18,8 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("GET")
 
 	r.HandleFunc(
-		"/vm/feecreate",
-		getCreateFeeFn(cliCtx),
+		fmt.Sprintf("/vm/%s", types.EstimateGas),
+		estimateGasFn(cliCtx),
 	).Methods("POST")
 }
 
@@ -45,7 +45,7 @@ func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func queryCreateFee(cliCtx context.CLIContext) http.HandlerFunc {
+func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var params types.QueryFeeParams
@@ -68,7 +68,7 @@ func queryCreateFee(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		route := fmt.Sprintf("custom/vm/%s", types.QueryCreateFee)
+		route := fmt.Sprintf("custom/vm/%s", types.EstimateGas)
 		res, height, err := cliCtx.QueryWithData(route, d)
 		if err != nil {
 			return
@@ -83,6 +83,6 @@ func getStorageFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return queryStorage(cliCtx)
 }
 
-func getCreateFeeFn(cliCtx context.CLIContext) http.HandlerFunc {
-	return queryCreateFee(cliCtx)
+func estimateGasFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return estimateGas(cliCtx)
 }

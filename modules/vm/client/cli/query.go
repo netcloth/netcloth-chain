@@ -37,7 +37,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdGetLogs(cdc),
 		GetCmdQueryCreateFee(cdc),
 		GetCmdQueryCallFee(cdc),
-		//GetCmdQueryFee(cdc),
 	)...)
 	return vmQueryCmd
 }
@@ -256,8 +255,7 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/vm/%s", types.QueryCreateFee), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
 			if err != nil {
 				return err
 			}
@@ -321,18 +319,13 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			dump := make([]byte, len(payload)*2)
-			hex.Encode(dump[:], payload)
-			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
-
 			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
 			d, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/vm/%s", types.QueryCallFee), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
 			if err != nil {
 				return err
 			}
