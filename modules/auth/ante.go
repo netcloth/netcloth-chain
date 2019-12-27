@@ -370,6 +370,11 @@ func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, f
 }
 
 func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) sdk.Result {
+	if !fees.IsValid() {
+		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees)).Result()
+	}
+
+	//TODO add more validation
 	err := supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.FeeCollectorName, acc.GetAddress(), sdk.NewCoins(fees))
 	if err != nil {
 		return err.Result()
