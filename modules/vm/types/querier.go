@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -12,9 +14,7 @@ const (
 	QueryState      = "state"
 	QueryStorage    = "storage"
 	QueryTxLogs     = "logs"
-	QueryCreateFee  = "feecreate"
-	QueryCallFee    = "feecall"
-	QueryFee        = "fee"
+	EstimateGas     = "estimate_gas"
 )
 
 type QueryCodeParams struct {
@@ -69,17 +69,39 @@ func NewQueryContractStateParams(from, to sdk.AccAddress, data []byte) QueryCont
 }
 
 type FeeResult struct {
-	V uint64
+	Gas uint64
 }
 
 func (r FeeResult) String() string {
-	return string(fmt.Sprintf("fee:%d", r.V))
+	return fmt.Sprintf("Gas = %d\n", r.Gas)
 }
 
 type QueryFeeParams struct {
 	From sdk.AccAddress
 	To   sdk.AccAddress
-	Data []byte
+	Data Data
+}
+
+type Data []byte
+
+func (aa Data) MarshalJSON() ([]byte, error) {
+	return json.Marshal(hex.EncodeToString(aa))
+}
+
+func (aa *Data) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	d, err := hex.DecodeString(s)
+	if err != nil {
+		return err
+	}
+
+	*aa = append(*aa, d...)
+	return nil
 }
 
 func NewQueryFeeParams(from, to sdk.AccAddress, data []byte) QueryFeeParams {
