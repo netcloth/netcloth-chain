@@ -26,15 +26,6 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
-const (
-	storeAcc = "acc"
-	storeNCH = "nch"
-
-	flagFrom   = "from"
-	flagTo     = "to"
-	flagAmount = "amount"
-)
-
 func main() {
 	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false

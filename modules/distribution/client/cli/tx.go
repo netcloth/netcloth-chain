@@ -8,16 +8,16 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/netcloth/netcloth-chain/client"
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/distribution/client/common"
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
-	"github.com/netcloth/netcloth-chain/client"
-	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/gov"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
-	"github.com/netcloth/netcloth-chain/modules/gov"
 )
 
 var (
@@ -211,7 +211,7 @@ Where proposal.json contains:
 
 {
   "title": "Community Pool Spend",
-  "description": "Pay me some Atoms!",
+  "description": "Pay me some pnchs!",
   "recipient": "nch1s5afhd6gxevu37mkqcvvsj8qeylhn0rz46zdlq",
   "amount": [
     {

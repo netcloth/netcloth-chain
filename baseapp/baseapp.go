@@ -265,6 +265,7 @@ func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
 }
 
 func (app *BaseApp) setMinGasPrices(gasPrices sdk.DecCoins) {
+	fmt.Fprintf(os.Stdout, "minimus gas prices: %s\n", gasPrices.String())
 	app.minGasPrices = gasPrices
 }
 

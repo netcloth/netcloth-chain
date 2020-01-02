@@ -26,7 +26,8 @@ import (
 )
 
 const (
-	flagOverwrite = "overwrite"
+	flagOverwrite    = "overwrite"
+	flagMinGasPrices = "minimum-gas-prices"
 )
 
 // nchd custom flags
@@ -74,10 +75,10 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	minGasPrices := sdk.DecCoins{sdk.NewInt64DecCoin(sdk.NativeTokenName, 1)}
+	minGasPrices := viper.GetString(flagMinGasPrices)
 	return app.NewNCHApp(
 		logger, db, traceStore, true, invCheckPeriod,
-		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices.String()),
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices),
 	)
 }
 
