@@ -70,6 +70,8 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 
 	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
 
+	ctx.GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
+
 	if err != nil {
 		return nil, err.Result()
 	}
