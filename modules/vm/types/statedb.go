@@ -550,7 +550,7 @@ func (csdb *CommitStateDB) UpdateAccounts() {
 		accI := csdb.ak.GetAccount(csdb.ctx, addr)
 		acc, ok := accI.(*types.BaseAccount)
 		if ok {
-			if (so.Balance() != acc.GetCoins().AmountOf("unch").BigInt()) || (so.Nonce() != acc.GetSequence()) {
+			if (so.Balance() != acc.GetCoins().AmountOf(sdk.NativeTokenName).BigInt()) || (so.Nonce() != acc.GetSequence()) {
 				// If queried account's balance or nonce are invalid, update the account pointer
 				so.account = acc
 			}

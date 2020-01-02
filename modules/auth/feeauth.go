@@ -46,7 +46,7 @@ func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, fk Fe
 		acc := am.GetAccount(ctx, firstAccount.GetAddress())
 
 		if ctx.BlockHeight() == 0 { // fee for genesis block is 0
-			return sdk.NewCoin("unch", sdk.NewInt(0)), nil
+			return sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0)), nil
 		}
 		res := RefundFees(supplyKeeper, ctx, acc, refundCoin)
 		if !res.IsOK() {

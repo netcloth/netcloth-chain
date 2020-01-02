@@ -71,10 +71,10 @@ func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, 
 	tests.ExecuteT(t, fmt.Sprintf("nchcli config trust-node true --home=%s", nchcliHome), "")
 
 	fooAccAddress := executeGetAccAddress(t, fmt.Sprintf("nchcli keys show foo -a --home=%s", nchcliHome))
-	executeWrite(t, fmt.Sprintf("nchd add-genesis-account %s 11000000unch --home=%s", fooAccAddress, nchdHome), DefaultKeyPass)
+	executeWrite(t, fmt.Sprintf("nchd add-genesis-account %s 11000000pnch --home=%s", fooAccAddress, nchdHome), DefaultKeyPass)
 
 	fooPubkey := executeGetAccAddress(t, fmt.Sprintf("nchd tendermint show-validator --home=%s", nchdHome)) //TODO refact executeGetAccAddress
-	executeWrite(t, fmt.Sprintf("nchd gentx --amount 1000000unch --commission-rate 0.10 --commission-max-rate 0.20 --commission-max-change-rate 0.10 --pubkey %s --name foo --home=%s --home-client=%s", fooPubkey, nchdHome, nchcliHome), DefaultKeyPass)
+	executeWrite(t, fmt.Sprintf("nchd gentx --amount 1000000pnch --commission-rate 0.10 --commission-max-rate 0.20 --commission-max-change-rate 0.10 --pubkey %s --name foo --home=%s --home-client=%s", fooPubkey, nchdHome, nchcliHome), DefaultKeyPass)
 	tests.ExecuteT(t, fmt.Sprintf("nchd collect-gentxs --home=%s", nchdHome), "")
 
 	servAddr, port, err := server.FreeTCPAddr()

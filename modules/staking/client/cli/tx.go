@@ -143,7 +143,7 @@ func GetCmdDelegate(cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Delegate an amount of liquid coins to a validator from your wallet.
 
 Example:
-$ %s tx staking delegate nchvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000unch --from mykey
+$ %s tx staking delegate nchvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000pnch --from mykey
 `,
 				version.ClientName,
 			),
@@ -220,7 +220,7 @@ func GetCmdUnbond(storeName string, cdc *codec.Codec) *cobra.Command {
 			fmt.Sprintf(`Unbond an amount of bonded shares from a validator.
 
 Example:
-$ %s tx staking unbond nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100unch --from mykey
+$ %s tx staking unbond nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100pnch --from mykey
 `,
 				version.ClientName,
 			),

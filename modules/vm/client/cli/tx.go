@@ -39,13 +39,14 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
+			coin := sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
 			amount := viper.GetString(flagAmount)
-			if "" == amount {
-				amount = "0unch"
-			}
-			coin, err := sdk.ParseCoin(amount)
-			if err != nil {
-				return err
+			if len(amount) > 0 {
+				coinInput, err := sdk.ParseCoin(amount)
+				if err != nil {
+					return err
+				}
+				coin = coinInput
 			}
 
 			codeFile := viper.GetString(flagCodeFile)
@@ -64,7 +65,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagCodeFile, "", "contract code file")
-	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
+	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
 
 	cmd.MarkFlagRequired(flagCodeFile)
 
@@ -82,13 +83,14 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
+			coin := sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
 			amount := viper.GetString(flagAmount)
-			if "" == amount {
-				amount = "0unch"
-			}
-			coin, err := sdk.ParseCoin(amount)
-			if err != nil {
-				return err
+			if len(amount) > 0 {
+				coinInput, err := sdk.ParseCoin(amount)
+				if err != nil {
+					return err
+				}
+				coin = coinInput
 			}
 
 			abiFile := viper.GetString(flagAbiFile)
@@ -143,7 +145,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagContractAddr, "", "contract bech32 addr")
-	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000unch)")
+	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
 	cmd.Flags().String(flagMethod, "", "contract method")
 	cmd.Flags().String(flagArgs, "", "contract method arg list, e.g. [f(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
 	cmd.Flags().String(flagAbiFile, "", "contract abi file")

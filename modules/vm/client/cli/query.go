@@ -273,7 +273,7 @@ func GetCmdQueryCallFee(cdc *codec.Codec) *cobra.Command {
 		Short: "Querying fee to call contract",
 		Long: strings.TrimSpace(fmt.Sprintf(`Querying fee to call contract.
 Example:
-$ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf 0000000000000000000000000000000000000000000000000000000000000001 0unch ./demo.abi`, version.ClientName)),
+$ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf 0000000000000000000000000000000000000000000000000000000000000001 0pnch ./demo.abi`, version.ClientName)),
 		Args: cobra.ExactArgs(6),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

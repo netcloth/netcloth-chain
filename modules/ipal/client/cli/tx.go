@@ -62,7 +62,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagWebsite, "", "server node website")
 	cmd.Flags().String(flagEndPoints, "", "server node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
 	cmd.Flags().String(flagDetails, "", "server node details")
-	cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000unch)")
+	cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000pnch)")
 
 	cmd.MarkFlagRequired(flagMoniker)
 	cmd.MarkFlagRequired(flagEndPoints)

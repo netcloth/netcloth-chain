@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	DefaultMinBond = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(1000000*1))
+	DefaultMinBond = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(sdk.NativeTokenFraction))
 )
 
 var (

@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	NativeTokenName = "unch"
+	// unit: 1 nch = 10^12 pico-nch
+	NativeTokenName     = "pnch"
+	NativeTokenFraction = 1000000000000
 )
 
 // Config is the structure that holds the SDK configuration parameters.
