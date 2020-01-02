@@ -17,7 +17,7 @@ const (
 	// DefaultUnbondingTime reflects three weeks in seconds as the default
 	// unbonding time.
 	// TODO: Justify our choice of default here.
-	DefaultUnbondingTime time.Duration = time.Hour * 24 * 7
+	DefaultUnbondingTime time.Duration = time.Hour * 24 * 14
 
 	// Default maximum number of bonded validators
 	DefaultMaxValidators uint16 = 100
@@ -39,14 +39,14 @@ var (
 
 // nolint - Keys for parameter access
 var (
-	KeyUnbondingTime                = []byte("UnbondingTime")
-	KeyMaxValidators                = []byte("MaxValidators")
-	KeyMaxValidatorsExtending       = []byte("MaxValidatorsExtending")
-	KeyMaxValidatorsExtendingSpeed  = []byte("MaxValidatorsExtendingSpeed")
-	KeyNextExtendingTime            = []byte("NextExtendingTime")
-	KeyMaxEntries                   = []byte("KeyMaxEntries")
-	KeyBondDenom                    = []byte("BondDenom")
-	KeyMaxLever                     = []byte("MaxLever")
+	KeyUnbondingTime               = []byte("UnbondingTime")
+	KeyMaxValidators               = []byte("MaxValidators")
+	KeyMaxValidatorsExtending      = []byte("MaxValidatorsExtending")
+	KeyMaxValidatorsExtendingSpeed = []byte("MaxValidatorsExtendingSpeed")
+	KeyNextExtendingTime           = []byte("NextExtendingTime")
+	KeyMaxEntries                  = []byte("KeyMaxEntries")
+	KeyBondDenom                   = []byte("BondDenom")
+	KeyMaxLever                    = []byte("MaxLever")
 )
 
 var _ params.ParamSet = (*Params)(nil)
@@ -58,10 +58,10 @@ type Params struct {
 	MaxValidatorsExtending      uint16        `json:"max_validators_extending" yaml:"max_validators_extending"`
 	MaxValidatorsExtendingSpeed uint16        `json:"max_validators_extending_speed" yaml:"max_validators_extending_speed"`
 	NextExtendingTime           int64         `json:"next_extending_time" yaml:"next_extending_time"`
-	MaxEntries                  uint16        `json:"max_entries" yaml:"max_entries"`       // max entries for either unbonding delegation or redelegation (per pair/trio)
+	MaxEntries                  uint16        `json:"max_entries" yaml:"max_entries"` // max entries for either unbonding delegation or redelegation (per pair/trio)
 	// note: we need to be a bit careful about potential overflow here, since this is user-determined
-	BondDenom                   string        `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
-	MaxLever                    sdk.Dec       `json:"max_lever" yaml:"max_lever"`   // max lever: total user delegate / self delegate < max_lever
+	BondDenom string  `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
+	MaxLever  sdk.Dec `json:"max_lever" yaml:"max_lever"`   // max lever: total user delegate / self delegate < max_lever
 }
 
 // NewParams creates a new Params instance
@@ -69,14 +69,14 @@ func NewParams(unbondingTime time.Duration, maxValidators, maxValidatorsExtendin
 	bondDenom string, maxLeverRate sdk.Dec) Params {
 
 	return Params{
-		UnbondingTime                   : unbondingTime,
-		MaxValidators                   : maxValidators,
-		MaxValidatorsExtending          : maxValidatorsExtending,
-		MaxValidatorsExtendingSpeed     : maxValidatorsExtendingSpeed,
-		NextExtendingTime               : nextExtendingTime,
-		MaxEntries                      : maxEntries,
-		BondDenom                       : bondDenom,
-		MaxLever                        : maxLeverRate,
+		UnbondingTime:               unbondingTime,
+		MaxValidators:               maxValidators,
+		MaxValidatorsExtending:      maxValidatorsExtending,
+		MaxValidatorsExtendingSpeed: maxValidatorsExtendingSpeed,
+		NextExtendingTime:           nextExtendingTime,
+		MaxEntries:                  maxEntries,
+		BondDenom:                   bondDenom,
+		MaxLever:                    maxLeverRate,
 	}
 }
 
@@ -109,7 +109,7 @@ func DefaultParams() Params {
 		DefaultMaxValidators,
 		DefaultMaxValidatorsExtending,
 		DefaultMaxValidatorsExtendingSpeed,
-		tmtime.Now().Unix() + MaxValidatorsExtendingInterval,
+		tmtime.Now().Unix()+MaxValidatorsExtendingInterval,
 		DefaultMaxEntries,
 		nchtypes.DefaultBondDenom,
 		DefaultMaxLever)
@@ -126,14 +126,14 @@ func (p Params) String() string {
   Max Entries                    : %d
   Bonded Coin Denom              : %s
   Max Lever                      : %s`,
-  p.UnbondingTime,
-  p.MaxValidators,
-  p.MaxValidatorsExtending,
-  p.MaxValidatorsExtendingSpeed,
-  p.NextExtendingTime,
-  p.MaxEntries,
-  p.BondDenom,
-  p.MaxLever)
+		p.UnbondingTime,
+		p.MaxValidators,
+		p.MaxValidatorsExtending,
+		p.MaxValidatorsExtendingSpeed,
+		p.NextExtendingTime,
+		p.MaxEntries,
+		p.BondDenom,
+		p.MaxLever)
 }
 
 // unmarshal the current staking params value from store key or panic
