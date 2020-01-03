@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )

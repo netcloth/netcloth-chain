@@ -17,7 +17,7 @@ const (
 	// failures due to state changes that might occur between the tx simulation
 	// and the actual run.
 	DefaultGasAdjustment = 1.0
-	DefaultGasLimit      = 200000
+	DefaultGasLimit      = 100000
 	GasFlagAuto          = "auto"
 
 	// BroadcastBlock defines a tx broadcasting mode where the client waits for
@@ -89,8 +89,8 @@ func PostCommands(cmds ...*cobra.Command) []*cobra.Command {
 		c.Flags().Uint64P(FlagAccountNumber, "a", 0, "The account number of the signing account (offline mode only)")
 		c.Flags().Uint64P(FlagSequence, "s", 0, "The sequence number of the signing account (offline mode only)")
 		c.Flags().String(FlagMemo, "", "Memo to send along with transaction")
-		c.Flags().String(FlagFees, "", "Fees to pay along with transaction; eg: 10pnch")
-		c.Flags().String(FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 1.0pnch)")
+		c.Flags().String(FlagFees, "", "Fees to pay along with transaction; eg: 100000000000pnch")
+		c.Flags().String(FlagGasPrices, "10000.0pnch", "Gas prices to determine the transaction fee")
 		c.Flags().String(FlagNode, "tcp://localhost:26657", "<host>:<port> to tendermint rpc interface for this chain")
 		c.Flags().Bool(FlagUseLedger, false, "Use a connected Ledger device")
 		c.Flags().Float64(FlagGasAdjustment, DefaultGasAdjustment, "adjustment factor to be multiplied against the estimate returned by the tx simulation; if the gas limit is set manually this flag is ignored ")
@@ -102,9 +102,7 @@ func PostCommands(cmds ...*cobra.Command) []*cobra.Command {
 
 		// --gas can accept integers and "simulate"
 		c.Flags().Var(&GasFlagVar, "gas", fmt.Sprintf(
-			"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
-			GasFlagAuto, DefaultGasLimit,
-		))
+			"gas limit to set per-transaction; set to %q to calculate required gas automatically", GasFlagAuto))
 
 		viper.BindPFlag(FlagTrustNode, c.Flags().Lookup(FlagTrustNode))
 		viper.BindPFlag(FlagUseLedger, c.Flags().Lookup(FlagUseLedger))

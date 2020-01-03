@@ -5,10 +5,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/modules/vm/types"
-
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
