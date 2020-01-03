@@ -17,7 +17,7 @@ require (
 	github.com/otiai10/curr v0.0.0-20190513014714-f5a3d24e5776 // indirect
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.1
-	github.com/rakyll/statik v0.1.5
+	github.com/rakyll/statik v0.1.6
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -28,6 +28,7 @@ require (
 	github.com/tendermint/crypto v0.0.0-20180820045704-3764759f34a5
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/iavl v0.12.4
+	github.com/tendermint/lint v0.0.1 // indirect
 	github.com/tendermint/tendermint v0.32.8
 	github.com/tendermint/tm-db v0.2.0
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a

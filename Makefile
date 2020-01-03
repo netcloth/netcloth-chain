@@ -10,11 +10,6 @@ export GO111MODULE = on
 
 build_tags = netgo
 
-update-swagger-docs:
-	statik -src=client/lcd/swagger-ui -dest=client/lcd -f -m
-.PHONY: update-swagger-docs
-
-
 ifeq ($(WITH_CLEVELDB),yes)
   build_tags += gcc
 endif
@@ -43,9 +38,22 @@ ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
-all: install
+all: get_tools install
 
-build: go.sum
+get_tools:
+	cd scripts && $(MAKE) get_tools
+
+check_dev_tools:
+	cd scripts && $(MAKE) check_dev_tools
+
+get_dev_tools:
+	cd scripts && $(MAKE) get_dev_tools
+
+### Generate swagger docs for nchd
+update_nchd_swagger_docs:
+    @statik -src=lite/swagger-ui -dest=lite -f
+
+build: update_nchd_swagger_docs go.sum
 ifeq ($(OS),Windows_NT)
 	go build $(BUILD_FLAGS) -o build/nchd.exe ./cmd/nchd
 	go build $(BUILD_FLAGS) -o build/nchcli.exe ./cmd/nchcli
@@ -54,11 +62,10 @@ else
 	go build $(BUILD_FLAGS) -o build/nchcli ./cmd/nchcli
 endif
 
-build-linux: go.sum
+build-linux: update_nchd_swagger_docs go.sum
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
-install: go.sum
-	make update-swagger-docs
+install: update_nchd_swagger_docs go.sum
 	go install $(BUILD_FLAGS) ./cmd/nchd
 	go install $(BUILD_FLAGS) ./cmd/nchcli
 
@@ -72,7 +79,7 @@ go-mod-cache: go.sum
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
-#	@go mod verify
+	@go mod verify
 
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
