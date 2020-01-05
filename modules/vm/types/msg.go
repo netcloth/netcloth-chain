@@ -60,6 +60,15 @@ func (msg MsgContractCreate) GetSignBytes() []byte {
 }
 
 func (msg MsgContractCreate) ValidateBasic() sdk.Error {
+	if msg.From.Empty() {
+		return sdk.ErrInvalidAddress("msg missing sender address")
+	}
+	if !msg.Amount.IsValid() {
+		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
+	}
+	if !msg.Amount.IsPositive() {
+		return sdk.ErrInsufficientCoins("msg amount must be positive")
+	}
 	return nil
 }
 
@@ -77,5 +86,17 @@ func (msg MsgContractCall) GetSignBytes() []byte {
 }
 
 func (msg MsgContractCall) ValidateBasic() sdk.Error {
+	if msg.From.Empty() {
+		return sdk.ErrInvalidAddress("msg missing sender address")
+	}
+	if msg.Recipient.Empty() {
+		return sdk.ErrInvalidAddress("missing recipient address")
+	}
+	if !msg.Amount.IsValid() {
+		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
+	}
+	if !msg.Amount.IsPositive() {
+		return sdk.ErrInsufficientCoins("msg amount must be positive")
+	}
 	return nil
 }
