@@ -26,6 +26,7 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
+	// validate msg
 	err := msg.ValidateBasic()
 	if err != nil {
 		return err.Result()
@@ -53,7 +54,16 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 }
 
 func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.Result {
-	ctx.Logger().Info("handleMsgContractCall ...")
+	// validate msg
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+
+	// check code
+	if code := k.GetCode(ctx, msg.Recipient); code == nil {
+		return ErrNoCodeExist().Result()
+	}
 
 	st := StateTransition{
 		Sender:    msg.From,

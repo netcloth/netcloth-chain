@@ -57,7 +57,7 @@ func ErrContractAddressCollision() sdk.Error {
 }
 
 func ErrNoCodeExist() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeNoCodeExist, "code exists")
+	return sdk.NewError(DefaultCodespace, CodeNoCodeExist, "no code exists")
 }
 
 func ErrMaxCodeSizeExceeded() sdk.Error {
