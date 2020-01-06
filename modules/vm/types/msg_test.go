@@ -27,9 +27,9 @@ func TestMsgContractCreate(t *testing.T) {
 	}{
 		{true, NewMsgContractCreate(addr1, coin123, payload)},
 		{true, NewMsgContractCreate(addr1, coin123eth, payload)},
+		{true, NewMsgContractCreate(addr1, coin0, payload)},
+		{true, NewMsgContractCreate(addr1, coin0eth, payload)},
 
-		{false, NewMsgContractCreate(addr1, coin0, payload)},
-		{false, NewMsgContractCreate(addr1, coin0eth, payload)},
 		{false, NewMsgContractCreate(addr1, coin123, nil)},
 		{false, NewMsgContractCreate(addr1, coin123, payloadEmpty)},
 		{false, NewMsgContractCreate(emptyAddr, coin123, payload)},
