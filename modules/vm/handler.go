@@ -42,6 +42,10 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		StateDB:   k.StateDB.WithContext(ctx),
 	}
 	_, res := st.TransitionCSDB(ctx)
+	if !res.IsOK() {
+		// return vm error
+		return res
+	}
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -76,6 +80,10 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 	}
 
 	_, res := st.TransitionCSDB(ctx)
+	if !res.IsOK() {
+		// return vm error
+		return res
+	}
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
