@@ -66,9 +66,9 @@ func (msg MsgContractCreate) ValidateBasic() sdk.Error {
 	if !msg.Amount.IsValid() {
 		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
 	}
-	if !msg.Amount.IsPositive() {
-		return sdk.ErrInsufficientCoins("msg amount must be positive")
-	}
+	//if !msg.Amount.IsPositive() {
+	//	return sdk.ErrInsufficientCoins("msg amount must be positive")
+	//}
 	if len(msg.Code) == 0 {
 		return ErrNoCodeExist()
 	}
