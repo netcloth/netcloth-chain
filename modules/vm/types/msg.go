@@ -66,9 +66,10 @@ func (msg MsgContractCreate) ValidateBasic() sdk.Error {
 	if !msg.Amount.IsValid() {
 		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
 	}
-	if !msg.Amount.IsPositive() {
+	if !msg.Amount.IsPositive() && !msg.Amount.IsZero() {
 		return sdk.ErrInsufficientCoins("msg amount must be positive")
 	}
+
 	if len(msg.Code) == 0 {
 		return ErrNoCodeExist()
 	}
@@ -99,7 +100,7 @@ func (msg MsgContractCall) ValidateBasic() sdk.Error {
 	if !msg.Amount.IsValid() {
 		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
 	}
-	if !msg.Amount.IsPositive() {
+	if !msg.Amount.IsPositive() && !msg.Amount.IsZero() {
 		return sdk.ErrInsufficientCoins("msg amount must be positive")
 	}
 	return nil

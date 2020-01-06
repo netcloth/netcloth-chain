@@ -24,6 +24,8 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 			return queryTxLogs(ctx, path, k)
 		case types.EstimateGas:
 			return EstimteGas(ctx, req, k)
+		case types.QueryCall:
+			return queryCall(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
 		}
@@ -102,6 +104,7 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 	if p.To.Empty() {
 		p.To = nil
 	}
+
 	st := StateTransition{
 		Sender:    p.From,
 		Recipient: p.To,
@@ -121,6 +124,33 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 			panic("could not marshal result to JSON: " + err.Error())
 		}
 		return res, nil
+	}
+
+	return nil, sdk.ErrInternal("Estimate Gas failed")
+}
+
+func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
+	var p types.QueryFeeParams
+	codec.Cdc.UnmarshalJSON(req.Data, &p)
+
+	if p.To.Empty() {
+		p.To = nil
+	}
+
+	st := StateTransition{
+		Sender:    p.From,
+		Recipient: p.To,
+		Price:     sdk.NewInt(100000000),
+		GasLimit:  100000000,
+		Amount:    sdk.NewInt(0),
+		Payload:   p.Data,
+		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
+	}
+
+	_, result := st.TransitionCSDB(ctx)
+
+	if result.IsOK() {
+		return result.Data, nil
 	}
 
 	return nil, sdk.ErrInternal("Estimate Gas failed")

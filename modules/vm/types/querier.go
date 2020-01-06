@@ -15,6 +15,7 @@ const (
 	QueryStorage    = "storage"
 	QueryTxLogs     = "logs"
 	EstimateGas     = "estimate_gas"
+	QueryCall       = "call"
 )
 
 type QueryCodeParams struct {
@@ -74,6 +75,12 @@ type FeeResult struct {
 
 func (r FeeResult) String() string {
 	return fmt.Sprintf("Gas = %d\n", r.Gas)
+}
+
+type QueryCallResult []byte
+
+func (r QueryCallResult) String() string {
+	return hex.EncodeToString(r)
 }
 
 type QueryFeeParams struct {
