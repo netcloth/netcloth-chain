@@ -32,13 +32,13 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		return err.Result()
 	}
 
+	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: nil,
-		Price:     sdk.NewInt(1000000),
-		GasLimit:  10000000,
-		Amount:    msg.Amount.Amount,
+		GasLimit:  gasLimit,
 		Payload:   msg.Code,
+		Amount:    msg.Amount.Amount,
 		StateDB:   k.StateDB.WithContext(ctx),
 	}
 	_, res := st.TransitionCSDB(ctx)
@@ -69,11 +69,11 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 		return ErrNoCodeExist().Result()
 	}
 
+	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: msg.Recipient,
-		Price:     sdk.NewInt(1000000),
-		GasLimit:  10000000,
+		GasLimit:  gasLimit,
 		Payload:   msg.Payload,
 		Amount:    msg.Amount.Amount,
 		StateDB:   k.StateDB.WithContext(ctx),
