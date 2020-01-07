@@ -52,9 +52,9 @@ func NewParams(maxCodeSize uint64, vmOpGasParams [256]uint64, vmCommonGasParams 
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyMaxCodeSize, &p.MaxCodeSize},
-		{KeyVMOpGasParams, p.VMOpGasParams},
-		{KeyVMCommonGasParams, p.VMCommonGasParams},
+		params.NewParamSetPair(KeyMaxCodeSize, &p.MaxCodeSize, validateMaxCodeSize),
+		params.NewParamSetPair(KeyVMOpGasParams, &p.VMOpGasParams, nil),
+		params.NewParamSetPair(KeyVMCommonGasParams, &p.VMCommonGasParams, nil),
 	}
 }
 
@@ -70,4 +70,17 @@ func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   MaxCodeSize   : %v`,
 		p.MaxCodeSize)
+}
+
+func validateMaxCodeSize(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max code size must be positive: %d", v)
+	}
+
+	return nil
 }

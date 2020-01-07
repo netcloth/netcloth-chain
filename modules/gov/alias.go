@@ -72,6 +72,9 @@ var (
 	ErrInvalidVote                = types.ErrInvalidVote
 	ErrInvalidGenesis             = types.ErrInvalidGenesis
 	ErrNoProposalHandlerExists    = types.ErrNoProposalHandlerExists
+	DefaultGenesisState           = types.DefaultGenesisState
+	NewGenesisState               = types.NewGenesisState
+	ValidateGenesis               = types.ValidateGenesis
 	ProposalKey                   = types.ProposalKey
 	ActiveProposalByTimeKey       = types.ActiveProposalByTimeKey
 	ActiveProposalQueueKey        = types.ActiveProposalQueueKey
@@ -132,6 +135,7 @@ type (
 	Handler                 = types.Handler
 	Deposit                 = types.Deposit
 	Deposits                = types.Deposits
+	GenesisState            = types.GenesisState
 	MsgSubmitProposal       = types.MsgSubmitProposal
 	MsgDeposit              = types.MsgDeposit
 	MsgVote                 = types.MsgVote
