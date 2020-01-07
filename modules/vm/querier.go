@@ -67,7 +67,8 @@ func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	_, result := st.TransitionCSDB(ctx)
+	f := k.GetVMFeeParams(ctx)
+	_, result := st.TransitionCSDB(ctx, &f)
 
 	return result.Data, nil
 }
@@ -115,7 +116,8 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	_, result := st.TransitionCSDB(ctx)
+	f := k.GetVMFeeParams(ctx)
+	_, result := st.TransitionCSDB(ctx, &f)
 
 	if result.IsOK() {
 		bRes := types.FeeResult{Gas: result.GasUsed}
@@ -147,7 +149,8 @@ func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte,
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	_, result := st.TransitionCSDB(ctx)
+	f := k.GetVMFeeParams(ctx)
+	_, result := st.TransitionCSDB(ctx, &f)
 
 	if result.IsOK() {
 		return result.Data, nil

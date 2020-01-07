@@ -41,7 +41,9 @@ func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) s
 		Payload:   msg.Code,
 		StateDB:   k.StateDB.WithContext(ctx),
 	}
-	_, res := st.TransitionCSDB(ctx)
+
+	f := k.GetVMFeeParams(ctx)
+	_, res := st.TransitionCSDB(ctx, &f)
 	if !res.IsOK() {
 		// return vm error
 		return res
@@ -79,7 +81,8 @@ func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.R
 		StateDB:   k.StateDB.WithContext(ctx),
 	}
 
-	_, res := st.TransitionCSDB(ctx)
+	f := k.GetVMFeeParams(ctx)
+	_, res := st.TransitionCSDB(ctx, &f)
 	if !res.IsOK() {
 		// return vm error
 		return res
