@@ -23,19 +23,19 @@ func (k Keeper) SetMaxCodeSize(ctx sdk.Context, maxCodeSize uint64) {
 	k.paramstore.Set(ctx, types.KeyMaxCodeSize, maxCodeSize)
 }
 
-func (k Keeper) GetVMFeeParams(ctx sdk.Context) (params [256]uint64) {
-	k.paramstore.Get(ctx, types.KeyVMFeeParams, &params)
+func (k Keeper) GetVMGasParams(ctx sdk.Context) (params [256]uint64) {
+	k.paramstore.Get(ctx, types.KeyVMGasParams, &params)
 	return
 }
 
-func (k Keeper) SetVMFeeParams(ctx sdk.Context, params [256]uint64) {
-	k.paramstore.Set(ctx, types.KeyVMFeeParams, params)
+func (k Keeper) SetVMGasParams(ctx sdk.Context, params [256]uint64) {
+	k.paramstore.Set(ctx, types.KeyVMGasParams, params)
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) (res types.Params) {
 	return types.NewParams(
 		k.GetMaxCodeSize(ctx),
-		k.GetVMFeeParams(ctx),
+		k.GetVMGasParams(ctx),
 	)
 }
 

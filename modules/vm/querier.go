@@ -67,7 +67,7 @@ func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	f := k.GetVMFeeParams(ctx)
+	f := k.GetVMGasParams(ctx)
 	_, result := st.TransitionCSDB(ctx, &f)
 
 	return result.Data, nil
@@ -99,7 +99,7 @@ func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, 
 }
 
 func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.QueryFeeParams
+	var p types.QueryGasParams
 	codec.Cdc.UnmarshalJSON(req.Data, &p)
 
 	if p.To.Empty() {
@@ -116,7 +116,7 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	f := k.GetVMFeeParams(ctx)
+	f := k.GetVMGasParams(ctx)
 	_, result := st.TransitionCSDB(ctx, &f)
 
 	if result.IsOK() {
@@ -132,7 +132,7 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 }
 
 func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.QueryFeeParams
+	var p types.QueryGasParams
 	codec.Cdc.UnmarshalJSON(req.Data, &p)
 
 	if p.To.Empty() {
@@ -149,7 +149,7 @@ func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte,
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
 	}
 
-	f := k.GetVMFeeParams(ctx)
+	f := k.GetVMGasParams(ctx)
 	_, result := st.TransitionCSDB(ctx, &f)
 
 	if result.IsOK() {

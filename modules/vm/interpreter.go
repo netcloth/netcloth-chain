@@ -17,8 +17,8 @@ type Config struct {
 	NoRecursion             bool   // Disables call, callcode, delegate call and create
 	EnablePreimageRecording bool   // Enables recording of SHA3/keccak preimages
 
-	JumpTable [256]operation // EVM instruction table, automatically populated if unset
-	FeeConfig *[256]uint64
+	JumpTable      [256]operation // EVM instruction table, automatically populated if unset
+	ConstGasConfig *[256]uint64
 
 	EWASMInterpreter string // External EWASM interpreter options
 	EVMInterpreter   string // External EVM interpreter options
@@ -145,7 +145,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		op = contract.GetOp(pc)
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("op code = %d, op = %s\n", op, op))
 		operation := in.cfg.JumpTable[op]
-		operation.constantGas = in.cfg.FeeConfig[op]
+		operation.constantGas = in.cfg.ConstGasConfig[op]
 		if !operation.valid {
 			//return nil, fmt.Errorf("invalid opcode 0x%x", int(op))
 			return nil, sdk.ErrInternal(fmt.Sprintf("invalid opcode 0x%x", int(op)))

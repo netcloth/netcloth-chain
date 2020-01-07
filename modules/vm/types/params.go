@@ -13,9 +13,9 @@ const (
 
 var (
 	KeyMaxCodeSize = []byte("MaxCodeSize")
-	KeyVMFeeParams = []byte("VMFeeParams")
+	KeyVMGasParams = []byte("VMFeeParams")
 
-	DefaultVMFeeParams = [256]uint64{
+	DefaultVMGasParams = [256]uint64{
 		0, 3, 5, 3, 5, 5, 5, 5, 8, 8, 0, 5, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, //0-31
 		30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 700, 2, 2, 2, 3, 2, 3, 2, 3, 2, 700, 700, 2, 3, 700, //32-63
 		20, 2, 2, 2, 0, 2, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 800, 0, 8, 10, 2, 2, 2, 1, 0, 0, 0, 0, //64-95
@@ -44,14 +44,14 @@ func NewParams(maxCodeSize uint64, vmParams [256]uint64) Params {
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{KeyMaxCodeSize, &p.MaxCodeSize},
-		{KeyVMFeeParams, &(p.VMFeeParams)},
+		{KeyVMGasParams, &(p.VMFeeParams)},
 	}
 }
 
 func DefaultParams() Params {
 	return NewParams(
 		DefaultMaxCodeSize,
-		DefaultVMFeeParams,
+		DefaultVMGasParams,
 	)
 }
 
