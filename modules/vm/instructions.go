@@ -538,6 +538,10 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	return nil, nil
 }
 
+func opDifficulty(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
+	return nil, nil
+}
+
 func opGasLimit(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error) {
 	stack.push(math.U256(interpreter.intPool.get().SetUint64(interpreter.evm.GasLimit)))
 	return nil, nil

@@ -339,13 +339,13 @@ func newIstanbulInstructionSet() JumpTable {
 			maxStack:    maxStack(0, 1),
 			valid:       true,
 		},
-		//DIFFICULTY: {
-		//	execute:     opDifficulty,
-		//	constantGas: GasQuickStep,
-		//	minStack:    minStack(0, 1),
-		//	maxStack:    maxStack(0, 1),
-		//	valid:       true,
-		//},
+		DIFFICULTY: {
+			execute:     opDifficulty,
+			constantGas: GasQuickStep,
+			minStack:    minStack(0, 1),
+			maxStack:    maxStack(0, 1),
+			valid:       false,
+		},
 		GASLIMIT: {
 			execute:     opGasLimit,
 			constantGas: GasQuickStep,
@@ -358,7 +358,7 @@ func newIstanbulInstructionSet() JumpTable {
 			constantGas: GasQuickStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
-			valid:       true,
+			valid:       false,
 		},
 		SELFBALANCE: {
 			execute:     opSelfBalance,
