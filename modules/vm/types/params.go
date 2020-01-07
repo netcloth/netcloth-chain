@@ -33,7 +33,7 @@ func NewParams(maxCodeSize uint64) Params {
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyMaxCodeSize, &p.MaxCodeSize},
+		params.NewParamSetPair(KeyMaxCodeSize, &p.MaxCodeSize, validateMaxCodeSize),
 	}
 }
 
@@ -47,4 +47,17 @@ func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   MaxCodeSize   : %v`,
 		p.MaxCodeSize)
+}
+
+func validateMaxCodeSize(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max code size must be positive: %d", v)
+	}
+
+	return nil
 }

@@ -4,8 +4,21 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/netcloth/netcloth-chain/types"
 	params "github.com/netcloth/netcloth-chain/modules/params/subspace"
+	sdk "github.com/netcloth/netcloth-chain/types"
+)
+
+// Default period for deposits & voting
+const (
+	DefaultPeriod time.Duration = time.Hour * 24 * 2 // 2 days
+)
+
+// Default governance params
+var (
+	DefaultMinDepositTokens = sdk.TokensFromConsensusPower(10)
+	DefaultQuorum           = sdk.NewDecWithPrec(334, 3)
+	DefaultThreshold        = sdk.NewDecWithPrec(5, 1)
+	DefaultVeto             = sdk.NewDecWithPrec(334, 3)
 )
 
 // Parameter store key
@@ -38,6 +51,14 @@ func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration) Depo
 	}
 }
 
+// DefaultDepositParams default parameters for deposits
+func DefaultDepositParams() DepositParams {
+	return NewDepositParams(
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinDepositTokens)),
+		DefaultPeriod,
+	)
+}
+
 func (dp DepositParams) String() string {
 	return fmt.Sprintf(`Deposit Params:
   Min Deposit:        %s
@@ -65,6 +86,11 @@ func NewTallyParams(quorum, threshold, veto sdk.Dec) TallyParams {
 	}
 }
 
+// DefaultTallyParams default parameters for tallying
+func DefaultTallyParams() TallyParams {
+	return NewTallyParams(DefaultQuorum, DefaultThreshold, DefaultVeto)
+}
+
 func (tp TallyParams) String() string {
 	return fmt.Sprintf(`Tally Params:
   Quorum:             %s
@@ -83,6 +109,11 @@ func NewVotingParams(votingPeriod time.Duration) VotingParams {
 	return VotingParams{
 		VotingPeriod: votingPeriod,
 	}
+}
+
+// DefaultVotingParams default parameters for voting
+func DefaultVotingParams() VotingParams {
+	return NewVotingParams(DefaultPeriod)
 }
 
 func (vp VotingParams) String() string {
@@ -108,4 +139,9 @@ func NewParams(vp VotingParams, tp TallyParams, dp DepositParams) Params {
 		DepositParams: dp,
 		TallyParams:   tp,
 	}
+}
+
+// DefaultParams default governance params
+func DefaultParams() Params {
+	return NewParams(DefaultVotingParams(), DefaultTallyParams(), DefaultDepositParams())
 }

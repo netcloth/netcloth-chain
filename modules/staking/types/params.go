@@ -2,7 +2,9 @@ package types
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -83,14 +85,14 @@ func NewParams(unbondingTime time.Duration, maxValidators, maxValidatorsExtendin
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyUnbondingTime, &p.UnbondingTime},
-		{KeyMaxValidators, &p.MaxValidators},
-		{KeyMaxValidatorsExtending, &p.MaxValidatorsExtending},
-		{KeyMaxValidatorsExtendingSpeed, &p.MaxValidatorsExtendingSpeed},
-		{KeyNextExtendingTime, &p.NextExtendingTime},
-		{KeyMaxEntries, &p.MaxEntries},
-		{KeyBondDenom, &p.BondDenom},
-		{KeyMaxLever, &p.MaxLever},
+		params.NewParamSetPair(KeyUnbondingTime, &p.UnbondingTime, validateUnbondingTime),
+		params.NewParamSetPair(KeyMaxValidators, &p.MaxValidators, validateMaxValidators),
+		params.NewParamSetPair(KeyMaxValidatorsExtending, &p.MaxValidatorsExtending, validateMaxValidatorsExtending),
+		params.NewParamSetPair(KeyMaxValidatorsExtendingSpeed, &p.MaxValidatorsExtendingSpeed, validateMaxValidatorsExtendingSpeed),
+		params.NewParamSetPair(KeyNextExtendingTime, &p.NextExtendingTime, validateNextExtendingTime),
+		params.NewParamSetPair(KeyMaxEntries, &p.MaxEntries, validateMaxEntries),
+		params.NewParamSetPair(KeyBondDenom, &p.BondDenom, validateBondDenom),
+		params.NewParamSetPair(KeyMaxLever, &p.MaxLever, validateMaxLever),
 	}
 }
 
@@ -154,13 +156,139 @@ func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) 
 	return
 }
 
+func validateUnbondingTime(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("validateUnbondingTime invalid parameter type: %T", i)
+	}
+
+	if v <= 0 {
+		return fmt.Errorf("unbonding time must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateNextExtendingTime(i interface{}) error {
+	v, ok := i.(int64)
+	if !ok {
+		return fmt.Errorf("validateNextExtendingTime invalid parameter type: %T", i)
+	}
+
+	if v <= 0 {
+		return fmt.Errorf("unbonding time must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxValidators(i interface{}) error {
+	v, ok := i.(uint16)
+	if !ok {
+		return fmt.Errorf("validateMaxValidators invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max validators must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxValidatorsExtending(i interface{}) error {
+	v, ok := i.(uint16)
+	if !ok {
+		return fmt.Errorf("validateMaxValidatorsExtending invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max validators must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxValidatorsExtendingSpeed(i interface{}) error {
+	v, ok := i.(uint16)
+	if !ok {
+		return fmt.Errorf("validateMaxValidatorsExtendingSpeed invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max validators must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxEntries(i interface{}) error {
+	v, ok := i.(uint16)
+	if !ok {
+		return fmt.Errorf("validateMaxEntries invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("max entries must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxLever(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("validateMaxLever invalid parameter type: %T", i)
+	}
+
+	if v.IsNegative() {
+		return fmt.Errorf("staking max lever cannot be negative: %s", v)
+	}
+
+	return nil
+}
+
+func validateBondDenom(i interface{}) error {
+	v, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("validateBondDenom invalid parameter type: %T", i)
+	}
+
+	if strings.TrimSpace(v) == "" {
+		return errors.New("bond denom cannot be blank")
+	}
+	if err := sdk.ValidateDenom(v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // validate a set of params
 func (p Params) Validate() error {
-	if p.BondDenom == "" {
-		return fmt.Errorf("staking parameter BondDenom can't be an empty string")
+	if err := validateUnbondingTime(p.UnbondingTime); err != nil {
+		return err
 	}
-	if p.MaxValidators == 0 {
-		return fmt.Errorf("staking parameter MaxValidators must be a positive integer")
+	if err := validateMaxValidators(p.MaxValidators); err != nil {
+		return err
 	}
+	if err := validateMaxValidatorsExtending(p.MaxValidatorsExtending); err != nil {
+		return err
+	}
+	if err := validateMaxValidatorsExtendingSpeed(p.MaxValidatorsExtendingSpeed); err != nil {
+		return err
+	}
+	if err := validateNextExtendingTime(p.NextExtendingTime); err != nil {
+		return err
+	}
+	if err := validateMaxEntries(p.MaxEntries); err != nil {
+		return err
+	}
+	if err := validateBondDenom(p.BondDenom); err != nil {
+		return err
+	}
+	if err := validateMaxLever(p.MaxLever); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -22,7 +22,7 @@ func (keeper Keeper) AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.A
 	}
 
 	vote := NewVote(proposalID, voterAddr, option)
-	keeper.setVote(ctx, proposalID, voterAddr, vote)
+	keeper.SetVote(ctx, proposalID, voterAddr, vote)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -65,7 +65,7 @@ func (keeper Keeper) GetVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.A
 	return vote, true
 }
 
-func (keeper Keeper) setVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, vote Vote) {
+func (keeper Keeper) SetVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, vote Vote) {
 	store := ctx.KVStore(keeper.storeKey)
 	bz := keeper.cdc.MustMarshalBinaryLengthPrefixed(vote)
 	store.Set(types.VoteKey(proposalID, voterAddr), bz)

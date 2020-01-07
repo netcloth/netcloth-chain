@@ -1,12 +1,13 @@
-package gov
+package types
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	stakingexported "github.com/netcloth/netcloth-chain/modules/staking/exported"
 	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-// SupplyKeeper defines the supply Keeper for module accounts
+// SupplyKeeper defines the expected supply keeper for module accounts (noalias)
 type SupplyKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx sdk.Context, name string) supplyexported.ModuleAccountI
@@ -29,4 +30,9 @@ type StakingKeeper interface {
 
 	IterateDelegations(ctx sdk.Context, delegator sdk.AccAddress,
 		fn func(index int64, delegation stakingexported.DelegationI) (stop bool))
+}
+
+// AccountKeeper defines the expected account keeper (noalias)
+type AccountKeeper interface {
+	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authexported.Account
 }

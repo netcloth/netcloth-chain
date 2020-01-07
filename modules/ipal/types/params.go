@@ -37,8 +37,8 @@ func NewParams(unbondingTime time.Duration, minBond sdk.Coin) Params {
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyUnbondingTime, &p.UnbondingTime},
-		{KeyMinBond, &p.MinBond},
+		params.NewParamSetPair(KeyUnbondingTime, &p.UnbondingTime, validateUnbondingTime),
+		params.NewParamSetPair(KeyMinBond, &p.MinBond, validateMinBond),
 	}
 }
 
@@ -55,4 +55,22 @@ func (p Params) String() string {
   Min Bond   : %v`,
 		p.UnbondingTime,
 		p.MinBond)
+}
+
+func validateUnbondingTime(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v <= 0 {
+		return fmt.Errorf("unbonding time must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMinBond(i interface{}) error {
+	// TODO
+	return nil
 }
