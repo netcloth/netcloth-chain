@@ -172,7 +172,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 	maxCodeSizeExceeded := len(ret) > MaxCodeSize
 	if err == nil && !maxCodeSizeExceeded {
-		createGas := uint64(len(ret)) * types.CreateAccountGas
+		createGas := uint64(len(ret)) * CreateDataGas
 		if contract.UseGas(createGas) {
 			evm.StateDB.SetCode(address, ret)
 		} else {
