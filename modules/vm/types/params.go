@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	DefaultMaxCodeSize        = 1024 * 1024
+	DefaultMaxCodeSize uint64 = 1024 * 1024
 	CallCreateDepth    uint64 = 1024
 )
 
 var (
 	KeyMaxCodeSize = []byte("MaxCodeSize")
-	KeyVMGasParams = []byte("VMFeeParams")
+	KeyVMGasParams = []byte("VMGasParams")
 
 	DefaultVMGasParams = [256]uint64{
 		0, 3, 5, 3, 5, 5, 5, 5, 8, 8, 0, 5, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, //0-31
@@ -29,7 +29,7 @@ var (
 
 type Params struct {
 	MaxCodeSize uint64      `json:"max_code_size" yaml:"max_code_size"`
-	VMFeeParams [256]uint64 `json:"vm_fee_params" yaml:"vm_fee_params"`
+	VMGasParams [256]uint64 `json:"vm_gas_params" yaml:"vm_gas_params"`
 }
 
 var _ params.ParamSet = (*Params)(nil)
@@ -37,14 +37,14 @@ var _ params.ParamSet = (*Params)(nil)
 func NewParams(maxCodeSize uint64, vmParams [256]uint64) Params {
 	return Params{
 		MaxCodeSize: maxCodeSize,
-		VMFeeParams: vmParams,
+		VMGasParams: vmParams,
 	}
 }
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{KeyMaxCodeSize, &p.MaxCodeSize},
-		{KeyVMGasParams, &(p.VMFeeParams)},
+		{KeyVMGasParams, &(p.VMGasParams)},
 	}
 }
 
