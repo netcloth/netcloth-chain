@@ -9,6 +9,10 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+const (
+	DefaultGasLimit = 100000000
+)
+
 func NewQuerier(k keeper.Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
@@ -60,8 +64,7 @@ func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 	st := StateTransition{
 		Sender:    p.From,
 		Recipient: p.To,
-		Price:     sdk.NewInt(1000000),
-		GasLimit:  10000000,
+		GasLimit:  DefaultGasLimit,
 		Amount:    sdk.NewInt(0),
 		Payload:   p.Data,
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
@@ -108,8 +111,7 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 	st := StateTransition{
 		Sender:    p.From,
 		Recipient: p.To,
-		Price:     sdk.NewInt(100000000),
-		GasLimit:  100000000,
+		GasLimit:  DefaultGasLimit,
 		Amount:    sdk.NewInt(0),
 		Payload:   p.Data,
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
@@ -140,8 +142,7 @@ func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte,
 	st := StateTransition{
 		Sender:    p.From,
 		Recipient: p.To,
-		Price:     sdk.NewInt(100000000),
-		GasLimit:  100000000,
+		GasLimit:  DefaultGasLimit,
 		Amount:    sdk.NewInt(0),
 		Payload:   p.Data,
 		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),

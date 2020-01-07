@@ -14,7 +14,6 @@ import (
 // StateTransition defines data to transitionDB in vm
 type StateTransition struct {
 	Sender    sdk.AccAddress
-	Price     sdk.Int
 	GasLimit  uint64
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
@@ -42,8 +41,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		Transfer:    st.Transfer,
 		GetHash:     st.GetHash,
 
-		Origin:   st.Sender,
-		GasPrice: st.Price.BigInt(),
+		Origin: st.Sender,
 
 		CoinBase:    ctx.BlockHeader().ProposerAddress, // TODO: should be proposer account address
 		GasLimit:    st.GasLimit,
@@ -58,27 +56,27 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		ret         []byte
 		leftOverGas uint64
 		addr        sdk.AccAddress
-		err         sdk.Error
+		vmerr       sdk.Error
 	)
 
 	if st.Recipient == nil {
-		ret, addr, leftOverGas, err = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
+		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
 		fmt.Fprint(os.Stderr, "\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
 		fmt.Fprint(os.Stderr, "+                                                                             +\n")
 		fmt.Fprint(os.Stderr, fmt.Sprintf("+         contractAddr = %s           +\n", addr))
 		fmt.Fprint(os.Stderr, "+                                                                             +\n")
 		fmt.Fprint(os.Stderr, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
 	} else {
-		ret, leftOverGas, err = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
+		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
 	}
 
-	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, leftOverGas = %v, err = %v\n", ret, leftOverGas, err))
+	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, \nconsumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 
 	ctx.GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
-
-	if err != nil {
-		return nil, err.Result()
+	if vmerr != nil {
+		return nil, vmerr.Result()
 	}
+
 
 	st.StateDB.Finalise(true)
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
