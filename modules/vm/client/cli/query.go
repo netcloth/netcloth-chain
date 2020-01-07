@@ -20,6 +20,8 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
+var ZeroAmount = sdk.Coin{sdk.NativeTokenName, sdk.NewInt(0)}
+
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -151,7 +153,7 @@ func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
 			hex.Encode(dump[:], payload)
 			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
 
-			p := types.NewQueryContractStateParams(fromAddr, addr, payload)
+			p := types.NewMsgContract(fromAddr, addr, payload, ZeroAmount)
 			qd, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err
@@ -202,7 +204,7 @@ $ %s query vm code [address]`, version.ClientName)),
 				return err
 			}
 
-			var out types.QueryResStorage
+			var out types.QueryStorageResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -226,7 +228,7 @@ $ %s query vm logs [txHash]`, version.ClientName)),
 				return err
 			}
 
-			var out types.QueryLogs
+			var out types.QueryLogsResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -244,13 +246,13 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			addr, err := sdk.AccAddressFromBech32(args[1])
+			from, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
 				return err
 			}
 
 			code, err := CodeFromFile(args[0])
-			p := types.NewQueryFeeParams(addr, nil, code)
+			p := types.NewMsgContract(from, nil, code, ZeroAmount)
 			d, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err
@@ -261,7 +263,7 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 				return err
 			}
 
-			var out types.FeeResult
+			var out types.EstimateGasResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -320,7 +322,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
+			p := types.NewMsgContract(fromAddr, toAddr, payload, ZeroAmount)
 			d, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err
@@ -331,7 +333,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return err
 			}
 
-			var out types.FeeResult
+			var out types.EstimateGasResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -390,7 +392,7 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
+			p := types.NewMsgContract(fromAddr, toAddr, payload, ZeroAmount)
 			d, err := cliCtx.Codec.MarshalJSON(p)
 			if err != nil {
 				return err

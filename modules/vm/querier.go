@@ -1,6 +1,8 @@
 package vm
 
 import (
+	"fmt"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -58,22 +60,10 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte,
 }
 
 func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.QueryContractStateParams
-	codec.Cdc.UnmarshalJSON(req.Data, &p)
+	var msg types.MsgContract
+	codec.Cdc.UnmarshalJSON(req.Data, &msg)
 
-	st := StateTransition{
-		Sender:    p.From,
-		Recipient: p.To,
-		GasLimit:  DefaultGasLimit,
-		Amount:    sdk.NewInt(0),
-		Payload:   p.Data,
-		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
-	}
-
-	f := k.GetVMOpGasParams(ctx)
-	f1 := k.GetVMCommonGasParams(ctx)
-	_, result := st.TransitionCSDB(ctx, &f, &f1)
-
+	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
 	return result.Data, nil
 }
 
@@ -81,7 +71,7 @@ func queryStorage(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte,
 	addr, _ := sdk.AccAddressFromBech32(path[1])
 	key := sdk.HexToHash(path[2])
 	val := keeper.GetState(ctx, addr, key)
-	bRes := types.QueryResStorage{Value: val}
+	bRes := types.QueryStorageResult{Value: val}
 	res, err := codec.MarshalJSONIndent(keeper.Cdc, bRes)
 	if err != nil {
 		panic("could not marshal result to JSON: " + err.Error())
@@ -93,7 +83,7 @@ func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, 
 	txHash := sdk.HexToHash(path[1])
 	logs := keeper.GetLogs(ctx, txHash)
 
-	bRes := types.QueryLogs{Logs: logs}
+	bRes := types.QueryLogsResult{Logs: logs}
 	res, err := codec.MarshalJSONIndent(keeper.Cdc, bRes)
 	if err != nil {
 		panic("could not marshal result to JSON: " + err.Error())
@@ -103,28 +93,13 @@ func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, 
 }
 
 func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.QueryGasParams
+	var p types.MsgContract
 	codec.Cdc.UnmarshalJSON(req.Data, &p)
 
-	if p.To.Empty() {
-		p.To = nil
-	}
-
-	st := StateTransition{
-		Sender:    p.From,
-		Recipient: p.To,
-		GasLimit:  DefaultGasLimit,
-		Amount:    sdk.NewInt(0),
-		Payload:   p.Data,
-		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
-	}
-
-	f := k.GetVMOpGasParams(ctx)
-	f1 := k.GetVMCommonGasParams(ctx)
-	_, result := st.TransitionCSDB(ctx, &f, &f1)
+	_, result := DoStateTransition(ctx, p, k, DefaultGasLimit, true)
 
 	if result.IsOK() {
-		bRes := types.FeeResult{Gas: result.GasUsed}
+		bRes := types.EstimateGasResult{Gas: result.GasUsed}
 		res, err := codec.MarshalJSONIndent(k.Cdc, bRes)
 		if err != nil {
 			panic("could not marshal result to JSON: " + err.Error())
@@ -136,29 +111,14 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 }
 
 func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.QueryGasParams
-	codec.Cdc.UnmarshalJSON(req.Data, &p)
+	var msg types.MsgContract
+	codec.Cdc.UnmarshalJSON(req.Data, &msg)
 
-	if p.To.Empty() {
-		p.To = nil
-	}
-
-	st := StateTransition{
-		Sender:    p.From,
-		Recipient: p.To,
-		GasLimit:  DefaultGasLimit,
-		Amount:    sdk.NewInt(0),
-		Payload:   p.Data,
-		StateDB:   types.NewStateDB(k.StateDB).WithContext(ctx),
-	}
-
-	f := k.GetVMOpGasParams(ctx)
-	f1 := k.GetVMCommonGasParams(ctx)
-	_, result := st.TransitionCSDB(ctx, &f, &f1)
+	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
 
 	if result.IsOK() {
 		return result.Data, nil
 	}
 
-	return nil, sdk.ErrInternal("Estimate Gas failed")
+	return nil, sdk.ErrInternal(fmt.Sprintf("DoStateTransition failed, err:%s", result.Data))
 }

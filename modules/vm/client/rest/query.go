@@ -48,12 +48,12 @@ func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
 func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var params types.QueryGasParams
+		var params types.MsgContract
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
 			return
 		}
 
-		if params.From == nil || params.Data == nil {
+		if params.From == nil || params.Payload == nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("bad request"))
 			return
 		}
