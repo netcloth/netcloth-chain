@@ -83,7 +83,7 @@ func (r QueryCallResult) String() string {
 	return hex.EncodeToString(r)
 }
 
-type QueryFeeParams struct {
+type QueryGasParams struct {
 	From sdk.AccAddress
 	To   sdk.AccAddress
 	Data Data
@@ -111,8 +111,8 @@ func (aa *Data) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func NewQueryFeeParams(from, to sdk.AccAddress, data []byte) QueryFeeParams {
-	return QueryFeeParams{
+func NewQueryFeeParams(from, to sdk.AccAddress, data []byte) QueryGasParams {
+	return QueryGasParams{
 		From: from,
 		To:   to,
 		Data: data,

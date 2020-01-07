@@ -35,7 +35,7 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 }
 
 // func returns: (ret []byte, usedGas uint64, failed bool, sdk.Result)
-func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result) {
+func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, sdk.Result) {
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
@@ -48,7 +48,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context) (*big.Int, sdk.Result)
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	cfg := Config{}
+	cfg := Config{OpConstGasConfig: constGasConfig, CommonGasConfig: vmCommonGasConfig}
 
 	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())), cfg)
 

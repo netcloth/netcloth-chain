@@ -48,7 +48,7 @@ func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
 func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var params types.QueryFeeParams
+		var params types.QueryGasParams
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
 			return
 		}

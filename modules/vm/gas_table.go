@@ -77,7 +77,7 @@ var (
 // gasSStoreEIP2200
 func gasSStore(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
 	// If we fail the minimum gas availability invariant, fail (0)
-	if contract.Gas <= SstoreSentryGasEIP2200 {
+	if contract.Gas <= SstoreSentryGas {
 		return 0, sdk.ErrInternal("not enough gas for reentrancy sentry")
 	}
 	// Gas sentry honoured, do the actual gas calculation based on the stored value
@@ -88,33 +88,33 @@ func gasSStore(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySi
 	value := sdk.BigToHash(y)
 
 	if current == value { // noop (1)
-		return SstoreNoopGasEIP2200, nil
+		return SstoreNoopGas, nil
 	}
 	original := evm.StateDB.GetCommittedState(contract.Address(), sdk.BigToHash(x))
 	if original == current {
 		if original == (sdk.Hash{}) { // create slot (2.1.1)
-			return SstoreInitGasEIP2200, nil
+			return SstoreInitGas, nil
 		}
 		if value == (sdk.Hash{}) { // delete slot (2.1.2b)
-			evm.StateDB.AddRefund(SstoreClearRefundEIP2200)
+			evm.StateDB.AddRefund(SstoreClearRefund)
 		}
-		return SstoreCleanGasEIP2200, nil // write existing slot (2.1.2)
+		return SstoreCleanGas, nil // write existing slot (2.1.2)
 	}
 	if original != (sdk.Hash{}) {
 		if current == (sdk.Hash{}) { // recreate slot (2.2.1.1)
-			evm.StateDB.SubRefund(SstoreClearRefundEIP2200)
+			evm.StateDB.SubRefund(SstoreClearRefund)
 		} else if value == (sdk.Hash{}) { // delete slot (2.2.1.2)
-			evm.StateDB.AddRefund(SstoreClearRefundEIP2200)
+			evm.StateDB.AddRefund(SstoreClearRefund)
 		}
 	}
 	if original == value {
 		if original == (sdk.Hash{}) { // reset to original inexistent slot (2.2.2.1)
-			evm.StateDB.AddRefund(SstoreInitRefundEIP2200)
+			evm.StateDB.AddRefund(SstoreInitRefund)
 		} else { // reset to original existing slot (2.2.2.2)
-			evm.StateDB.AddRefund(SstoreCleanRefundEIP2200)
+			evm.StateDB.AddRefund(SstoreCleanRefund)
 		}
 	}
-	return SstoreDirtyGasEIP2200, nil // dirty update (2.2)
+	return SstoreDirtyGas, nil // dirty update (2.2)
 }
 
 func gasSha3(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, sdk.Error) {
