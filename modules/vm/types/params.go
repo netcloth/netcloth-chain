@@ -9,6 +9,9 @@ import (
 const (
 	DefaultMaxCodeSize uint64 = 1024 * 1024
 	CallCreateDepth    uint64 = 1024
+
+	DefaultContractCreationGas = 53000
+	DefaultCreateDataGas       = 200
 )
 
 var (
@@ -27,11 +30,12 @@ var (
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32000, 700, 700, 0, 700, 32000, 0, 0, 0, 0, 700, 0, 0, 0, 0, 0, //224-255
 	}
 
-	DefaultVMCommonGasParams = VMCommonGasParams{CreateDataGas: 200} //protocol_params.go::CreateDataGas
+	DefaultVMCommonGasParams = VMCommonGasParams{ContractCreationGas: DefaultContractCreationGas, CreateDataGas: DefaultCreateDataGas} //protocol_params.go::CreateDataGas
 )
 
 type VMCommonGasParams struct {
-	CreateDataGas uint64 `json:"create_data_gas" yaml:"create_data_gas"`
+	ContractCreationGas uint64 `json: "contract_creation_gas" yaml:"contract_creation_gas"`
+	CreateDataGas       uint64 `json:"create_data_gas" yaml:"create_data_gas"`
 }
 
 type Params struct {
