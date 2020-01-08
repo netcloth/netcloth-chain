@@ -93,10 +93,10 @@ func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, 
 }
 
 func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var p types.MsgContract
-	codec.Cdc.UnmarshalJSON(req.Data, &p)
+	var msg types.MsgContract
+	codec.Cdc.UnmarshalJSON(req.Data, &msg)
 
-	_, result := DoStateTransition(ctx, p, k, DefaultGasLimit, true)
+	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
 
 	if result.IsOK() {
 		bRes := types.EstimateGasResult{Gas: result.GasUsed}

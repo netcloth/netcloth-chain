@@ -153,14 +153,14 @@ func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
 			hex.Encode(dump[:], payload)
 			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
 
-			p := types.NewMsgContract(fromAddr, addr, payload, ZeroAmount)
-			qd, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(fromAddr, addr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
 			route := fmt.Sprintf("custom/vm/%s", types.QueryState)
-			res, _, err := cliCtx.QueryWithData(route, qd)
+			res, _, err := cliCtx.QueryWithData(route, data)
 			if err != nil {
 				return err
 			}
@@ -252,13 +252,13 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 			}
 
 			code, err := CodeFromFile(args[0])
-			p := types.NewMsgContract(from, nil, code, ZeroAmount)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(from, nil, code, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), data)
 			if err != nil {
 				return err
 			}
@@ -322,13 +322,13 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewMsgContract(fromAddr, toAddr, payload, ZeroAmount)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), data)
 			if err != nil {
 				return err
 			}
@@ -392,13 +392,13 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewMsgContract(fromAddr, toAddr, payload, ZeroAmount)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), data)
 			if err != nil {
 				return err
 			}

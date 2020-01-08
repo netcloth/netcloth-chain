@@ -94,7 +94,7 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimi
 		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
 	}
 
-	if st.Recipient.Empty() {
+	if st.Recipient != nil && st.Recipient.Empty() {
 		st.Recipient = nil
 	}
 
