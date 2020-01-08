@@ -77,6 +77,14 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 	}
 
 	st.StateDB.Finalise(true)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNewContract,
+			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
+		),
+	})
+
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
 }
 
