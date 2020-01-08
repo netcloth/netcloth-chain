@@ -94,5 +94,18 @@ func validateVMOpGasParams(i interface{}) error {
 }
 
 func validateVMCommonGasParams(i interface{}) error {
+	v, ok := i.(VMCommonGasParams)
+	if !ok {
+		return fmt.Errorf("validateVMCommonGasParams invalid parameter type: %T", i)
+	}
+
+	if v.ContractCreationGas == 0 {
+		return fmt.Errorf("contract_creation_gas must be positive: %d", v.ContractCreationGas)
+	}
+
+	if v.CreateDataGas == 0 {
+		return fmt.Errorf("create_data_gas must be positive: %d", v.CreateDataGas)
+	}
+
 	return nil
 }
