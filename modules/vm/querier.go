@@ -26,9 +26,7 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 			return queryStorage(ctx, path, k)
 		case types.QueryTxLogs:
 			return queryTxLogs(ctx, path, k)
-		case types.EstimateGas:
-			return simulateStateTransition(ctx, req, k)
-		case types.QueryCall:
+		case types.EstimateGas, types.QueryCall:
 			return simulateStateTransition(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
