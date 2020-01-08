@@ -7,6 +7,12 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// ParamSubspace defines the expected Subspace interface for parameters (noalias)
+type ParamSubspace interface {
+	Get(ctx sdk.Context, key []byte, ptr interface{})
+	Set(ctx sdk.Context, key []byte, param interface{})
+}
+
 // SupplyKeeper defines the expected supply keeper for module accounts (noalias)
 type SupplyKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress

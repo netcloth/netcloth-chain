@@ -11,14 +11,14 @@ import (
 func (keeper Keeper) AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, option VoteOption) sdk.Error {
 	proposal, ok := keeper.GetProposal(ctx, proposalID)
 	if !ok {
-		return ErrUnknownProposal(keeper.codespace, proposalID)
+		return ErrUnknownProposal(DefaultCodespace, proposalID)
 	}
 	if proposal.Status != StatusVotingPeriod {
-		return ErrInactiveProposal(keeper.codespace, proposalID)
+		return ErrInactiveProposal(DefaultCodespace, proposalID)
 	}
 
 	if !ValidVoteOption(option) {
-		return ErrInvalidVote(keeper.codespace, option)
+		return ErrInvalidVote(DefaultCodespace, option)
 	}
 
 	vote := NewVote(proposalID, voterAddr, option)

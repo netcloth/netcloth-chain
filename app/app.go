@@ -166,7 +166,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
 	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
+	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
 	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
@@ -218,14 +218,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
 
 	app.govKeeper = gov.NewKeeper(
-		app.cdc,
-		keys[gov.StoreKey],
-		app.paramsKeeper,
-		govSubspace,
-		app.supplyKeeper,
-		&stakingKeeper,
-		gov.DefaultCodespace,
-		govRouter,
+		app.cdc, keys[gov.StoreKey], govSubspace, app.supplyKeeper,
+		&stakingKeeper, govRouter,
 	)
 
 	// register the staking hooks

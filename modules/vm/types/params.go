@@ -57,8 +57,8 @@ func NewParams(maxCodeSize uint64, vmOpGasParams [256]uint64, vmCommonGasParams 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		params.NewParamSetPair(KeyMaxCodeSize, &p.MaxCodeSize, validateMaxCodeSize),
-		params.NewParamSetPair(KeyVMOpGasParams, &p.VMOpGasParams, nil),
-		params.NewParamSetPair(KeyVMCommonGasParams, &p.VMCommonGasParams, nil),
+		params.NewParamSetPair(KeyVMOpGasParams, &p.VMOpGasParams, validateVMOpGasParams),
+		params.NewParamSetPair(KeyVMCommonGasParams, &p.VMCommonGasParams, validateVMCommonGasParams),
 	}
 }
 
@@ -86,5 +86,13 @@ func validateMaxCodeSize(i interface{}) error {
 		return fmt.Errorf("max code size must be positive: %d", v)
 	}
 
+	return nil
+}
+
+func validateVMOpGasParams(i interface{}) error {
+	return nil
+}
+
+func validateVMCommonGasParams(i interface{}) error {
 	return nil
 }

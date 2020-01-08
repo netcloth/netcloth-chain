@@ -3,8 +3,8 @@ package gov
 import (
 	"fmt"
 
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GetDeposit gets the deposit of a specific depositor on a specific proposal
@@ -31,12 +31,12 @@ func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAdd
 	// Checks to see if proposal exists
 	proposal, ok := keeper.GetProposal(ctx, proposalID)
 	if !ok {
-		return ErrUnknownProposal(keeper.codespace, proposalID), false
+		return ErrUnknownProposal(DefaultCodespace, proposalID), false
 	}
 
 	// Check if proposal is still depositable
 	if (proposal.Status != StatusDepositPeriod) && (proposal.Status != StatusVotingPeriod) {
-		return ErrAlreadyFinishedProposal(keeper.codespace, proposalID), false
+		return ErrAlreadyFinishedProposal(DefaultCodespace, proposalID), false
 	}
 
 	// update the governance module's account coins pool

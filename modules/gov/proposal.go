@@ -10,7 +10,7 @@ import (
 // SubmitProposal create new proposal given a content
 func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal, sdk.Error) {
 	if !keeper.router.HasRoute(content.ProposalRoute()) {
-		return Proposal{}, ErrNoProposalHandlerExists(keeper.codespace, content)
+		return Proposal{}, ErrNoProposalHandlerExists(DefaultCodespace, content)
 	}
 
 	// Execute the proposal content in a cache-wrapped context to validate the
@@ -19,7 +19,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal,
 	cacheCtx, _ := ctx.CacheContext()
 	handler := keeper.router.GetRoute(content.ProposalRoute())
 	if err := handler(cacheCtx, content); err != nil {
-		return Proposal{}, ErrInvalidProposalContent(keeper.codespace, err.Result().Log)
+		return Proposal{}, ErrInvalidProposalContent(DefaultCodespace, err.Result().Log)
 	}
 
 	proposalID, err := keeper.GetProposalID(ctx)
@@ -137,7 +137,7 @@ func (keeper Keeper) GetProposalID(ctx sdk.Context) (proposalID uint64, err sdk.
 	store := ctx.KVStore(keeper.storeKey)
 	bz := store.Get(ProposalIDKey)
 	if bz == nil {
-		return 0, ErrInvalidGenesis(keeper.codespace, "initial proposal ID hasn't been set")
+		return 0, ErrInvalidGenesis(DefaultCodespace, "initial proposal ID hasn't been set")
 	}
 	keeper.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &proposalID)
 	return proposalID, nil

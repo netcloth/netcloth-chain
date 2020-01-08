@@ -38,7 +38,7 @@ func handleParameterChangeProposal(ctx sdk.Context, k Keeper, p ParameterChangeP
 			k.Logger(ctx).Info(
 				fmt.Sprintf("setting new parameter; key: %s, subkey: %s, value: %s", c.Key, c.Subspace, c.Value),
 			)
-			err = ss.UpdateWithSubkey(ctx, []byte(c.Key), []byte(c.Subkey), []byte(c.Value))
+			err = ss.Update(ctx, []byte(c.Key), []byte(c.Value))
 		}
 
 		if err != nil {

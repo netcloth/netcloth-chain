@@ -6,20 +6,16 @@ import (
 
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
-	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/supply/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 )
 
-// Governance Keeper
+// Keeper defines the governance module Keeper
 type Keeper struct {
-	// The reference to the Param Keeper to get and set Global Params
-	paramsKeeper params.Keeper
-
 	// The reference to the Paramstore to get and set gov specific params
-	paramSpace params.Subspace
+	paramSpace types.ParamSubspace
 
 	// The SupplyKeeper to reduce the supply of the network
 	supplyKeeper types.SupplyKeeper
@@ -33,11 +29,8 @@ type Keeper struct {
 	// The codec codec for binary encoding/decoding.
 	cdc *codec.Codec
 
-	// Reserved codespace
-	codespace sdk.CodespaceType
-
 	// Proposal router
-	router Router
+	router types.Router
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -45,9 +38,16 @@ type Keeper struct {
 // - depositing funds into proposals, and activating upon sufficient funds being deposited
 // - users voting on proposals, with weight proportional to stake in the system
 // - and tallying the result of the vote.
+// NewKeeper returns a governance keeper. It handles:
+// - submitting governance proposals
+// - depositing funds into proposals, and activating upon sufficient funds being deposited
+// - users voting on proposals, with weight proportional to stake in the system
+// - and tallying the result of the vote.
+//
+// CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
-	cdc *codec.Codec, key sdk.StoreKey, paramsKeeper params.Keeper, paramSpace params.Subspace,
-	supplyKeeper types.SupplyKeeper, sk types.StakingKeeper, codespace sdk.CodespaceType, rtr Router,
+	cdc *codec.Codec, key sdk.StoreKey, paramSpace types.ParamSubspace,
+	supplyKeeper types.SupplyKeeper, sk types.StakingKeeper, rtr types.Router,
 ) Keeper {
 
 	// ensure governance module account is set
@@ -62,12 +62,10 @@ func NewKeeper(
 
 	return Keeper{
 		storeKey:     key,
-		paramsKeeper: paramsKeeper,
-		paramSpace:   paramSpace.WithKeyTable(ParamKeyTable()),
+		paramSpace:   paramSpace,
 		supplyKeeper: supplyKeeper,
 		sk:           sk,
 		cdc:          cdc,
-		codespace:    codespace,
 		router:       rtr,
 	}
 }

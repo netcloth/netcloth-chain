@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	"github.com/netcloth/netcloth-chain/modules/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -18,6 +20,19 @@ var (
 // type declaration for parameters
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable(
-		ParamStoreKeyConstantFee, sdk.Coin{},
+		params.NewParamSetPair(ParamStoreKeyConstantFee, sdk.Coin{}, validateConstantFee),
 	)
+}
+
+func validateConstantFee(i interface{}) error {
+	v, ok := i.(sdk.Coin)
+	if !ok {
+		return fmt.Errorf("validateConstantFee invalid parameter type: %T", i)
+	}
+
+	if !v.IsValid() {
+		return fmt.Errorf("invalid constant fee: %s", v)
+	}
+
+	return nil
 }
