@@ -3,10 +3,11 @@ package vm
 import (
 	"fmt"
 
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
@@ -14,10 +15,8 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case MsgContractCreate:
-			return handleMsgContractCreate(ctx, msg, k)
-		case MsgContractCall:
-			return handleMsgContractCall(ctx, msg, k)
+		case MsgContract:
+			return handleMsgContract(ctx, msg, k)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized Msg type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -25,70 +24,18 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgContractCreate(ctx sdk.Context, msg MsgContractCreate, k Keeper) sdk.Result {
-	// validate msg
+func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) sdk.Result {
 	err := msg.ValidateBasic()
 	if err != nil {
 		return err.Result()
 	}
 
 	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	st := StateTransition{
-		Sender:    msg.From,
-		Recipient: nil,
-		GasLimit:  gasLimit,
-		Payload:   msg.Code,
-		Amount:    msg.Amount.Amount,
-		StateDB:   k.StateDB.WithContext(ctx),
-	}
-
-	f := k.GetVMOpGasParams(ctx)
-	f1 := k.GetVMCommonGasParams(ctx)
-	_, res := st.TransitionCSDB(ctx, &f, &f1)
+	_, res := DoStateTransition(ctx, msg, k, gasLimit, false)
 	if !res.IsOK() {
-		// return vm error
 		return res
 	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		),
-	)
-
-	return sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}
-}
-
-func handleMsgContractCall(ctx sdk.Context, msg MsgContractCall, k Keeper) sdk.Result {
-	// validate msg
-	err := msg.ValidateBasic()
-	if err != nil {
-		return err.Result()
-	}
-
-	// check code
-	if code := k.GetCode(ctx, msg.Recipient); code == nil {
-		return ErrNoCodeExist().Result()
-	}
-
-	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	st := StateTransition{
-		Sender:    msg.From,
-		Recipient: msg.Recipient,
-		GasLimit:  gasLimit,
-		Payload:   msg.Payload,
-		Amount:    msg.Amount.Amount,
-		StateDB:   k.StateDB.WithContext(ctx),
-	}
-
-	f := k.GetVMOpGasParams(ctx)
-	f1 := k.GetVMCommonGasParams(ctx)
-	_, res := st.TransitionCSDB(ctx, &f, &f1)
-	if !res.IsOK() {
-		// return vm error
-		return res
-	}
+	fmt.Println("handleMsgContract ...")
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

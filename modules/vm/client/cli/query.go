@@ -4,12 +4,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/spf13/cobra"
 
 	"github.com/netcloth/netcloth-chain/client"
@@ -19,6 +15,8 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
+
+var ZeroAmount = sdk.Coin{sdk.NativeTokenName, sdk.NewInt(0)}
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd := &cobra.Command{
@@ -32,8 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryParams(cdc),
 		GetCmdQueryCode(cdc),
-		GetCmdQueryStorage(cdc),
-		GetCmdGetStorageAt(cdc),
+		GetCmdGetStorage(cdc),
 		GetCmdGetLogs(cdc),
 		GetCmdQueryCreateFee(cdc),
 		GetCmdQueryCallFee(cdc),
@@ -102,84 +99,7 @@ $ %s query vm code [address]`, version.ClientName)),
 	}
 }
 
-func GetCmdQueryStorage(cdc *codec.Codec) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "state",
-		Short:   "get contract state",
-		Example: "nchcli query vm state [address] [name] [abi_file] [from_addr]",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			if len(args) != 4 {
-				return errors.New("params number wrong")
-			}
-
-			addr, err := sdk.AccAddressFromBech32(args[0])
-			if err != nil {
-				return err
-			}
-
-			fromAddr, err := sdk.AccAddressFromBech32(args[3])
-			if err != nil {
-				return err
-			}
-
-			abiFile := args[2]
-			abiFile, err = filepath.Abs(abiFile)
-			if 0 == len(abiFile) {
-				return errors.New("abi_file path wrong")
-			}
-			abiData, err := ioutil.ReadFile(abiFile)
-			abiObj, err := abi.JSON(strings.NewReader(string(abiData)))
-			if err != nil {
-				return err
-			}
-
-			name := args[1]
-			_, exist := abiObj.Methods[name]
-			var payload []byte
-			if exist {
-				payload, err = abiObj.Pack(name)
-				if err != nil {
-					return err
-				}
-			} else {
-				return errors.New(fmt.Sprintf("state %s not exist\n", name))
-			}
-
-			dump := make([]byte, len(payload)*2)
-			hex.Encode(dump[:], payload)
-			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
-
-			p := types.NewQueryContractStateParams(fromAddr, addr, payload)
-			qd, err := cliCtx.Codec.MarshalJSON(p)
-			if err != nil {
-				return err
-			}
-
-			route := fmt.Sprintf("custom/vm/%s", types.QueryState)
-			res, _, err := cliCtx.QueryWithData(route, qd)
-			if err != nil {
-				return err
-			}
-
-			if len(res) == 0 {
-				return fmt.Errorf("query state %s failed", args[1])
-			}
-
-			dst := make([]byte, 2*len(res))
-			hex.Encode(dst, res)
-
-			fmt.Println(string(dst))
-
-			return nil
-		},
-	}
-
-	return cmd
-}
-
-func GetCmdGetStorageAt(cdc *codec.Codec) *cobra.Command {
+func GetCmdGetStorage(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "storage [account] [key]",
 		Short: "Querying storage for an account at a given key",
@@ -202,7 +122,7 @@ $ %s query vm code [address]`, version.ClientName)),
 				return err
 			}
 
-			var out types.QueryResStorage
+			var out types.QueryStorageResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -226,7 +146,7 @@ $ %s query vm logs [txHash]`, version.ClientName)),
 				return err
 			}
 
-			var out types.QueryLogs
+			var out types.QueryLogsResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -244,24 +164,24 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			addr, err := sdk.AccAddressFromBech32(args[1])
+			from, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
 				return err
 			}
 
 			code, err := CodeFromFile(args[0])
-			p := types.NewQueryFeeParams(addr, nil, code)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(from, nil, code, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), data)
 			if err != nil {
 				return err
 			}
 
-			var out types.FeeResult
+			var out types.SimulationResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -320,18 +240,18 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.EstimateGas), data)
 			if err != nil {
 				return err
 			}
 
-			var out types.FeeResult
+			var out types.SimulationResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -390,19 +310,20 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
-			p := types.NewQueryFeeParams(fromAddr, toAddr, payload)
-			d, err := cliCtx.Codec.MarshalJSON(p)
+			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
 				return err
 			}
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), d)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), data)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(hex.EncodeToString(res))
-			return nil
+			var out types.SimulationResult
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
 		},
 	}
 }

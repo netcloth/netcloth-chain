@@ -17,14 +17,10 @@ const (
 )
 
 type (
-	Keeper = keeper.Keeper
-
-	MsgContractCreate = types.MsgContractCreate
-	MsgContractCall   = types.MsgContractCall
-
+	Keeper        = keeper.Keeper
+	MsgContract   = types.MsgContract
 	CommitStateDB = types.CommitStateDB
-
-	Log = types.Log
+	Log           = types.Log
 )
 
 var (
@@ -49,4 +45,5 @@ var (
 	ErrExecutionReverted        = types.ErrExecutionReverted
 	ErrInvalidJump              = types.ErrInvalidJump
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
+	ErrNoPayload                = types.ErrNoPayload
 )

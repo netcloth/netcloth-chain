@@ -34,7 +34,6 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 	return sdk.Hash{}
 }
 
-// func returns: (ret []byte, usedGas uint64, failed bool, sdk.Result)
 func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, sdk.Result) {
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
@@ -77,7 +76,30 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		return nil, vmerr.Result()
 	}
 
-
 	st.StateDB.Finalise(true)
 	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
+}
+
+func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimit uint64, readonly bool) (*big.Int, sdk.Result) {
+	st := StateTransition{
+		Sender:    msg.From,
+		Recipient: msg.To,
+		GasLimit:  gasLimit,
+		Payload:   msg.Payload,
+		Amount:    msg.Amount.Amount,
+		StateDB:   k.StateDB.WithContext(ctx),
+	}
+
+	if readonly {
+		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
+	}
+
+	if st.Recipient != nil && st.Recipient.Empty() {
+		st.Recipient = nil
+	}
+
+	opGasConfig := k.GetVMOpGasParams(ctx)
+	commonGasConfig := k.GetVMCommonGasParams(ctx)
+
+	return st.TransitionCSDB(ctx, &opGasConfig, &commonGasConfig)
 }

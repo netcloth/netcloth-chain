@@ -55,7 +55,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgContractCreate(cliCtx.GetFromAddress(), coin, code)
+			msg := types.NewMsgContract(cliCtx.GetFromAddress(), nil, code, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -135,7 +135,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgContractCall(cliCtx.GetFromAddress(), contractAddr, coin, payload)
+			msg := types.NewMsgContract(cliCtx.GetFromAddress(), contractAddr, payload, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
