@@ -19,34 +19,35 @@ type MsgContract struct {
 	Amount  sdk.Coin       `json:"amount" yaml:"amout"`
 }
 
-func (m MsgContract) Route() string {
+func (msg MsgContract) Route() string {
 	return RouterKey
 }
 
-func (m MsgContract) Type() string {
+func (msg MsgContract) Type() string {
 	return TypeMsgContract
 }
 
-func (m MsgContract) ValidateBasic() sdk.Error {
-	if m.From.Empty() {
+func (msg MsgContract) ValidateBasic() sdk.Error {
+	if msg.From.Empty() {
 		return sdk.ErrInvalidAddress("msg missing from address")
 	}
-	if !m.Amount.IsValid() {
-		return sdk.ErrInvalidCoins("msg amount is invalid: " + m.Amount.String())
+	if !msg.Amount.IsValid() {
+		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
 	}
-	if !m.Amount.IsPositive() && !m.Amount.IsZero() {
-		return sdk.ErrInsufficientCoins("msg amount must be positive")
+	if len(msg.Payload) == 0 {
+		return ErrNoPayload()
 	}
+
 	return nil
 }
 
-func (m MsgContract) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(m)
+func (msg MsgContract) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
-func (m MsgContract) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.From}
+func (msg MsgContract) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.From}
 }
 
 func NewMsgContract(from, to sdk.AccAddress, payload []byte, amount sdk.Coin) MsgContract {

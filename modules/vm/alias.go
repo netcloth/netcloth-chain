@@ -45,4 +45,5 @@ var (
 	ErrExecutionReverted        = types.ErrExecutionReverted
 	ErrInvalidJump              = types.ErrInvalidJump
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
+	ErrNoPayload                = types.ErrNoPayload
 )

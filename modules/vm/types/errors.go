@@ -22,7 +22,12 @@ const (
 	CodeExecutionReverted       sdk.CodeType = 113
 	CodeInvalidJump             sdk.CodeType = 114
 	CodeGasUintOverflow         sdk.CodeType = 115
+	CodeNoPayload               sdk.CodeType = 116
 )
+
+func ErrNoPayload() sdk.Error {
+	return sdk.NewError(DefaultCodespace, CodeNoPayload, "no payload")
+}
 
 func ErrOutOfGas() sdk.Error {
 	return sdk.NewError(DefaultCodespace, CodeOutOfGas, "out of gas")
