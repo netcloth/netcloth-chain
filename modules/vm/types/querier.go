@@ -9,7 +9,6 @@ import (
 const (
 	QueryParameters = "params"
 	QueryCode       = "code"
-	QueryState      = "state"
 	QueryStorage    = "storage"
 	QueryTxLogs     = "logs"
 	EstimateGas     = "estimate_gas"

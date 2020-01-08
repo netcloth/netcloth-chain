@@ -22,8 +22,6 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 			return queryParameters(ctx, k)
 		case types.QueryCode:
 			return queryCode(ctx, req, k)
-		case types.QueryState:
-			return queryState(ctx, req, k)
 		case types.QueryStorage:
 			return queryStorage(ctx, path, k)
 		case types.QueryTxLogs:
@@ -57,14 +55,6 @@ func queryCode(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte,
 	code := k.GetCode(ctx, accAddr)
 
 	return code, nil
-}
-
-func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var msg types.MsgContract
-	codec.Cdc.UnmarshalJSON(req.Data, &msg)
-
-	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
-	return result.Data, nil
 }
 
 func queryStorage(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, sdk.Error) {
