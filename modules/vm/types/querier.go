@@ -34,10 +34,11 @@ func (q QueryStorageResult) String() string {
 }
 
 // for Gas Estimate
-type EstimateGasResult struct {
+type SimulationResult struct {
 	Gas uint64
+	Res string
 }
 
-func (r EstimateGasResult) String() string {
-	return fmt.Sprintf("Gas = %d\n", r.Gas)
+func (r SimulationResult) String() string {
+	return fmt.Sprintf("Gas = %d\nRes = %s", r.Gas, r.Res)
 }

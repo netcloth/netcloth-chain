@@ -181,7 +181,7 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 				return err
 			}
 
-			var out types.EstimateGasResult
+			var out types.SimulationResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -251,7 +251,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 				return err
 			}
 
-			var out types.EstimateGasResult
+			var out types.SimulationResult
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
@@ -321,8 +321,9 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 				return err
 			}
 
-			fmt.Println(hex.EncodeToString(res))
-			return nil
+			var out types.SimulationResult
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
 		},
 	}
 }

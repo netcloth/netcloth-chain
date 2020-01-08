@@ -1,7 +1,7 @@
 package vm
 
 import (
-	"fmt"
+	"encoding/hex"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -27,9 +27,9 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 		case types.QueryTxLogs:
 			return queryTxLogs(ctx, path, k)
 		case types.EstimateGas:
-			return EstimteGas(ctx, req, k)
+			return simulateStateTransition(ctx, req, k)
 		case types.QueryCall:
-			return queryCall(ctx, req, k)
+			return simulateStateTransition(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown vm query endpoint")
 		}
@@ -82,14 +82,14 @@ func queryTxLogs(ctx sdk.Context, path []string, keeper keeper.Keeper) ([]byte, 
 	return res, nil
 }
 
-func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
+func simulateStateTransition(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
 	var msg types.MsgContract
 	codec.Cdc.UnmarshalJSON(req.Data, &msg)
 
 	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
 
 	if result.IsOK() {
-		bRes := types.EstimateGasResult{Gas: result.GasUsed}
+		bRes := types.SimulationResult{Gas: result.GasUsed, Res: hex.EncodeToString(result.Data)}
 		res, err := codec.MarshalJSONIndent(k.Cdc, bRes)
 		if err != nil {
 			panic("could not marshal result to JSON: " + err.Error())
@@ -97,18 +97,5 @@ func EstimteGas(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte
 		return res, nil
 	}
 
-	return nil, sdk.ErrInternal("Estimate Gas failed")
-}
-
-func queryCall(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	var msg types.MsgContract
-	codec.Cdc.UnmarshalJSON(req.Data, &msg)
-
-	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
-
-	if result.IsOK() {
-		return result.Data, nil
-	}
-
-	return nil, sdk.ErrInternal(fmt.Sprintf("DoStateTransition failed, err:%s", result.Data))
+	return nil, sdk.ErrInternal("DoStateTransition failed")
 }
