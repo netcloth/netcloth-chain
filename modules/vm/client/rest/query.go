@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net/http"
 
@@ -21,6 +22,11 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 		fmt.Sprintf("/vm/%s", types.EstimateGas),
 		estimateGasFn(cliCtx),
 	).Methods("POST")
+
+	r.HandleFunc(
+		fmt.Sprintf("/vm/%s/{addr}", types.QueryCode),
+		getCodeFn(cliCtx),
+	).Methods("GET")
 }
 
 func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
@@ -79,10 +85,38 @@ func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+func getCode(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		addr := vars["addr"]
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/vm/%s/%s", types.QueryCode, addr)
+		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			return
+		}
+
+		dst := make([]byte, 2*len(res))
+		hex.Encode(dst, res)
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, string(dst))
+	}
+}
+
 func getStorageFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return queryStorage(cliCtx)
 }
 
 func estimateGasFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return estimateGas(cliCtx)
+}
+
+func getCodeFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return getCode(cliCtx)
 }

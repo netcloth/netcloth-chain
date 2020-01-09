@@ -21,7 +21,7 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
 		case types.QueryCode:
-			return queryCode(ctx, req, k)
+			return queryCode(ctx, path, k)
 		case types.QueryStorage:
 			return queryStorage(ctx, path, k)
 		case types.QueryTxLogs:
@@ -44,13 +44,12 @@ func queryParameters(ctx sdk.Context, k keeper.Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-func queryCode(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) ([]byte, sdk.Error) {
-	if len(req.Data) != 20 {
-		return nil, sdk.ErrInvalidAddress("address invalid")
+func queryCode(ctx sdk.Context, path []string, k keeper.Keeper) ([]byte, sdk.Error) {
+	addr, err := sdk.AccAddressFromBech32(path[1])
+	if err != nil {
+		return nil, sdk.ErrInvalidAddress(err.Error())
 	}
-
-	accAddr := sdk.AccAddress(req.Data)
-	code := k.GetCode(ctx, accAddr)
+	code := k.GetCode(ctx, addr)
 
 	return code, nil
 }

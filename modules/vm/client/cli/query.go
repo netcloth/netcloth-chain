@@ -74,13 +74,13 @@ $ %s query vm code [address]`, version.ClientName)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			addr, err := sdk.AccAddressFromBech32(args[0])
+			_, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
 				return err
 			}
 
-			route := fmt.Sprintf("custom/vm/%s", types.QueryCode)
-			res, _, err := cliCtx.QueryWithData(route, addr)
+			route := fmt.Sprintf("custom/vm/%s/%s", types.QueryCode, args[0])
+			res, _, err := cliCtx.Query(route)
 			if err != nil {
 				return err
 			}
