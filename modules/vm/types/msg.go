@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/hex"
+
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -12,10 +14,28 @@ var (
 	_ sdk.Msg = &MsgContract{}
 )
 
+type Payload []byte
+
+func (p Payload) MarshalJSON() ([]byte, error) {
+	quote := "\""
+	s := hex.EncodeToString(p)
+	return []byte(quote + s + quote), nil
+}
+
+func (p *Payload) UnmarshalJSON(data []byte) error {
+	d, err := hex.DecodeString(string(data[1 : len(data)-1]))
+	if err != nil {
+		return err
+	}
+
+	*p = d
+	return nil
+}
+
 type MsgContract struct {
 	From    sdk.AccAddress `json:"from" yaml:"from"`
 	To      sdk.AccAddress `json:"to" yaml:"to"`
-	Payload []byte         `json:"payload" yaml:"payload"`
+	Payload Payload        `json:"payload" yaml:"payload"`
 	Amount  sdk.Coin       `json:"amount" yaml:"amout"`
 }
 
