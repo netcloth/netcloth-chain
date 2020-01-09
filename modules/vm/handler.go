@@ -35,7 +35,6 @@ func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) sdk.Result {
 	if !res.IsOK() {
 		return res
 	}
-	fmt.Println("handleMsgContract ...")
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
