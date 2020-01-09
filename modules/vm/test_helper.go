@@ -4,6 +4,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/tendermint/tendermint/crypto"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
@@ -43,6 +45,13 @@ func ModuleAccountAddrs() map[string]bool {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
 	}
 	return modAccAddrs
+}
+
+func KeyTestPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
+	key := secp256k1.GenPrivKey()
+	pub := key.PubKey()
+	addr := sdk.AccAddress(pub.Address())
+	return key, pub, addr
 }
 
 func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
@@ -94,13 +103,19 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	ms.LoadLatestVersion()
 
 	ctx = sdk.NewContext(ms, abci.Header{Time: time.Unix(0, 0)}, false, log.NewTMLogger(os.Stdout))
+	vmKeeper.SetParams(ctx, types.DefaultParams())
 
 	return
 }
 
-func newSdkAddress() sdk.AccAddress {
-	tmpKey := secp256k1.GenPrivKey().PubKey()
-	return sdk.BytesToAddress(tmpKey.Address().Bytes())
+func GetTestAccount() auth.BaseAccount {
+	_, pubKey, addr := KeyTestPubAddr()
+	acc := auth.NewBaseAccountWithAddress(addr)
+	acc.SetPubKey(pubKey)
+	acc.SetSequence(0)
+	acc.SetCoins(sdk.NewCoins(sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(10000000000))))
+
+	return acc
 }
 
 func newEVM() *EVM {
