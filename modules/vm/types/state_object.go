@@ -1,9 +1,7 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"math/big"
 
 	"github.com/tendermint/tendermint/crypto"
@@ -15,8 +13,6 @@ import (
 
 var (
 	_ StateObject = (*stateObject)(nil)
-
-	emptyCodeHash = sdk.BytesToHash(crypto.Sha256(nil))
 )
 
 type (
@@ -78,10 +74,6 @@ func newObject(db *CommitStateDB, accProto authexported.Account) *stateObject {
 	acc, ok := accProto.(*types.BaseAccount)
 	if !ok {
 		panic(fmt.Sprintf("invalid account type for state object: %T", accProto))
-	}
-
-	if acc.CodeHash == nil {
-		acc.CodeHash = emptyCodeHash.Bytes() //TODO fix me
 	}
 
 	return &stateObject{
@@ -237,8 +229,6 @@ func (so *stateObject) commitState() {
 
 		store.Set(key.Bytes(), value.Bytes())
 	}
-
-	// TODO: Set the account (storage) root (but we probably don't need this)
 }
 
 // commitCode persists the state object's code to the KVStore.
@@ -278,7 +268,7 @@ func (so *stateObject) Code() []byte {
 		return so.code
 	}
 
-	if bytes.Equal(so.CodeHash(), emptyCodeHash.Bytes()) {
+	if so.CodeHash() == nil {
 		return nil
 	}
 
@@ -358,13 +348,7 @@ func (so *stateObject) deepCopy(db *CommitStateDB) *stateObject {
 func (so *stateObject) empty() bool {
 	return so.account.Sequence == 0 &&
 		so.account.Balance().Sign() == 0 &&
-		bytes.Equal(so.account.CodeHash, emptyCodeHash.Bytes())
-}
-
-// EncodeRLP implements rlp.Encoder.
-func (so *stateObject) EncodeRLP(w io.Writer) error {
-	return nil //TODO check
-	//return rlp.Encode(w, so.account)
+		len(so.account.CodeHash) == 0
 }
 
 func (so *stateObject) touch() {
