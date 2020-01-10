@@ -170,7 +170,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	start := time.Now()
 	ret, err := run(evm, contract, nil, false)
 
-	maxCodeSizeExceeded := len(ret) > MaxCodeSize
+	maxCodeSizeExceeded := len(ret) > MaxCodeSize // TODO: use vm config
 	if err == nil && !maxCodeSizeExceeded {
 		createGas := evm.vmConfig.CommonGasConfig.ContractCreationGas + uint64(len(ret))*evm.vmConfig.CommonGasConfig.CreateDataGas
 		if contract.UseGas(createGas) {
