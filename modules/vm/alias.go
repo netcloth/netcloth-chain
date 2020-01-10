@@ -21,6 +21,8 @@ type (
 	MsgContract   = types.MsgContract
 	CommitStateDB = types.CommitStateDB
 	Log           = types.Log
+
+	GenesisState = types.GenesisState
 )
 
 var (
@@ -29,6 +31,8 @@ var (
 
 	CreateAddress  = common.CreateAddress
 	CreateAddress2 = common.CreateAddress2
+
+	ValidateGenesis = types.ValidateGenesis
 
 	ErrOutOfGas                 = types.ErrOutOfGas
 	ErrCodeStoreOutOfGas        = types.ErrCodeStoreOutOfGas

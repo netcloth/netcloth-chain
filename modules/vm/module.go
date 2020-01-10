@@ -38,7 +38,11 @@ func (a AppModuleBasic) DefaultGenesis() json.RawMessage {
 
 func (a AppModuleBasic) ValidateGenesis(value json.RawMessage) error {
 	var data types.GenesisState
-	return types.ModuleCdc.UnmarshalJSON(value, &data)
+	if err := types.ModuleCdc.UnmarshalJSON(value, &data); err != nil {
+		return err
+	}
+
+	return ValidateGenesis(data)
 }
 
 func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
