@@ -58,7 +58,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		vmerr       sdk.Error
 	)
 
-	if st.Recipient == nil {
+	if st.Recipient.Empty() {
 		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
 		fmt.Fprint(os.Stderr, "\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
 		fmt.Fprint(os.Stderr, "+                                                                             +\n")
@@ -100,10 +100,6 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimi
 
 	if readonly {
 		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
-	}
-
-	if st.Recipient != nil && st.Recipient.Empty() {
-		st.Recipient = nil
 	}
 
 	opGasConfig := k.GetVMOpGasParams(ctx)

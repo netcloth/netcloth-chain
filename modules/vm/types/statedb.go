@@ -186,6 +186,11 @@ func (csdb *CommitStateDB) AddPreimage(hash sdk.Hash, preimage []byte) {
 	}
 }
 
+// Preimages returns a list of SHA3 preimages that have been submitted.
+func (csdb *CommitStateDB) Preimages() map[sdk.Hash][]byte {
+	return csdb.preimages
+}
+
 // AddRefund adds gas to the refund counter.
 func (csdb *CommitStateDB) AddRefund(gas uint64) {
 	csdb.journal.append(refundChange{prev: csdb.refund})
@@ -312,11 +317,6 @@ func (csdb *CommitStateDB) Logs() []*Log {
 // GetRefund returns the current value of the refund counter.
 func (csdb *CommitStateDB) GetRefund() uint64 {
 	return csdb.refund
-}
-
-// Preimages returns a list of SHA3 preimages that have been submitted.
-func (csdb *CommitStateDB) Preimages() map[sdk.Hash][]byte {
-	return csdb.preimages
 }
 
 // HasSuicided returns if the given account for the specified address has been
