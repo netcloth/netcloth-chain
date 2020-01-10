@@ -16,7 +16,7 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
-var ZeroAmount = sdk.Coin{sdk.NativeTokenName, sdk.NewInt(0)}
+var ZeroAmount = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd := &cobra.Command{
