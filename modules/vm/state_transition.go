@@ -35,6 +35,7 @@ func (st StateTransition) GetHash(uint64) sdk.Hash {
 }
 
 func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, sdk.Result) {
+	st.StateDB.UpdateAccounts()
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
