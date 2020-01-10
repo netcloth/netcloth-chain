@@ -50,7 +50,8 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 	cfg := Config{OpConstGasConfig: constGasConfig, CommonGasConfig: vmCommonGasConfig}
 
-	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())), cfg)
+	currentGasMeter := ctx.GasMeter()
+	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())).WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())), cfg)
 
 	var (
 		ret         []byte
@@ -72,7 +73,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, \nconsumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 
-	ctx.GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
+	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
 	if vmerr != nil {
 		return nil, vmerr.Result()
 	}
