@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -34,6 +36,9 @@ func (msg MsgContract) ValidateBasic() sdk.Error {
 	}
 	if !msg.Amount.IsValid() {
 		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
+	}
+	if msg.Amount.Denom != sdk.NativeTokenName {
+		return sdk.ErrInvalidCoins(fmt.Sprintf("denom must be %s", sdk.NativeTokenName))
 	}
 	if len(msg.Payload) == 0 {
 		return ErrNoPayload()
