@@ -34,7 +34,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create a contract",
-		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code_file=<code file>",
+		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code_file=<code file> --args=<args>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -55,6 +55,15 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
+			argsString := viper.GetString(flagArgs)
+			if len(argsString) != 0 {
+				argsBin, err := hex.DecodeString(argsString)
+				if err != nil {
+					return err
+				}
+				code = append(code, argsBin...)
+			}
+
 			msg := types.NewMsgContract(cliCtx.GetFromAddress(), nil, code, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -65,6 +74,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagCodeFile, "", "contract code file")
+	cmd.Flags().String(flagArgs, "", "contract construct function arg list, e.g. [constructor(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
 	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
 
 	cmd.MarkFlagRequired(flagCodeFile)
