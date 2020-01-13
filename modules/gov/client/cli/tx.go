@@ -9,13 +9,14 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/codec"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/version"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	govutils "github.com/netcloth/netcloth-chain/modules/gov/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 // Proposal flags
@@ -28,6 +29,7 @@ const (
 	flagDepositor    = "depositor"
 	flagStatus       = "status"
 	flagNumLimit     = "limit"
+	flagPage         = "page"
 	FlagProposal     = "proposal"
 )
 
@@ -64,10 +66,10 @@ func GetTxCmd(storeKey string, cdc *codec.Codec, pcmds []*cobra.Command) *cobra.
 
 	cmdSubmitProp := GetCmdSubmitProposal(cdc)
 	for _, pcmd := range pcmds {
-		cmdSubmitProp.AddCommand(client.PostCommands(pcmd)[0])
+		cmdSubmitProp.AddCommand(flags.PostCommands(pcmd)[0])
 	}
 
-	govTxCmd.AddCommand(client.PostCommands(
+	govTxCmd.AddCommand(flags.PostCommands(
 		GetCmdDeposit(cdc),
 		GetCmdVote(cdc),
 		cmdSubmitProp,

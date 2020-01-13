@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -33,6 +34,13 @@ var (
 	tenInt               = big.NewInt(10)
 )
 
+// Decimal errors
+var (
+	ErrEmptyDecimalStr      = errors.New("decimal string cannot be empty")
+	ErrInvalidDecimalLength = errors.New("invalid decimal length")
+	ErrInvalidDecimalStr    = errors.New("invalid decimal string")
+)
+
 // Set precision multipliers
 func init() {
 	precisionMultipliers = make([]*big.Int, Precision+1)
@@ -45,7 +53,6 @@ func precisionInt() *big.Int {
 	return new(big.Int).Set(precisionReuse)
 }
 
-// nolint - common values
 func ZeroDec() Dec     { return Dec{new(big.Int).Set(zeroInt)} }
 func OneDec() Dec      { return Dec{precisionInt()} }
 func SmallestDec() Dec { return Dec{new(big.Int).Set(oneInt)} }
@@ -124,9 +131,9 @@ func NewDecFromIntWithPrec(i Int, prec int64) Dec {
 // are provided in the string than the constant Precision.
 //
 // CONTRACT - This function does not mutate the input str.
-func NewDecFromStr(str string) (d Dec, err Error) {
+func NewDecFromStr(str string) (Dec, error) {
 	if len(str) == 0 {
-		return d, ErrUnknownRequest("decimal string is empty")
+		return Dec{}, ErrEmptyDecimalStr
 	}
 
 	// first extract any negative symbol
@@ -137,7 +144,7 @@ func NewDecFromStr(str string) (d Dec, err Error) {
 	}
 
 	if len(str) == 0 {
-		return d, ErrUnknownRequest("decimal string is empty")
+		return Dec{}, ErrEmptyDecimalStr
 	}
 
 	strs := strings.Split(str, ".")
@@ -147,31 +154,31 @@ func NewDecFromStr(str string) (d Dec, err Error) {
 	if len(strs) == 2 { // has a decimal place
 		lenDecs = len(strs[1])
 		if lenDecs == 0 || len(combinedStr) == 0 {
-			return d, ErrUnknownRequest("bad decimal length")
+			return Dec{}, ErrInvalidDecimalLength
 		}
-		combinedStr = combinedStr + strs[1]
+		combinedStr += strs[1]
 
 	} else if len(strs) > 2 {
-		return d, ErrUnknownRequest("too many periods to be a decimal string")
+		return Dec{}, ErrInvalidDecimalStr
 	}
 
 	if lenDecs > Precision {
-		return d, ErrUnknownRequest(
-			fmt.Sprintf("too much precision, maximum %v, len decimal %v", Precision, lenDecs))
+		return Dec{}, fmt.Errorf("invalid precision; max: %d, got: %d", Precision, lenDecs)
 	}
 
 	// add some extra zero's to correct to the Precision factor
 	zerosToAdd := Precision - lenDecs
 	zeros := fmt.Sprintf(`%0`+strconv.Itoa(zerosToAdd)+`s`, "")
-	combinedStr = combinedStr + zeros
+	combinedStr += zeros
 
 	combined, ok := new(big.Int).SetString(combinedStr, 10) // base 10
 	if !ok {
-		return d, ErrUnknownRequest(fmt.Sprintf("bad string to integer conversion, combinedStr: %v", combinedStr))
+		return Dec{}, fmt.Errorf("failed to set decimal string: %s", combinedStr)
 	}
 	if neg {
 		combined = new(big.Int).Neg(combined)
 	}
+
 	return Dec{combined}, nil
 }
 
@@ -262,7 +269,6 @@ func (d Dec) MulInt64(i int64) Dec {
 
 // quotient
 func (d Dec) Quo(d2 Dec) Dec {
-
 	// multiply precision twice
 	mul := new(big.Int).Mul(d.Int, precisionReuse)
 	mul.Mul(mul, precisionReuse)
@@ -317,6 +323,76 @@ func (d Dec) QuoInt(i Int) Dec {
 func (d Dec) QuoInt64(i int64) Dec {
 	mul := new(big.Int).Quo(d.Int, big.NewInt(i))
 	return Dec{mul}
+}
+
+// ApproxRoot returns an approximate estimation of a Dec's positive real nth root
+// using Newton's method (where n is positive). The algorithm starts with some guess and
+// computes the sequence of improved guesses until an answer converges to an
+// approximate answer.  It returns `|d|.ApproxRoot() * -1` if input is negative.
+func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			var ok bool
+			err, ok = r.(error)
+			if !ok {
+				err = errors.New("out of bounds")
+			}
+		}
+	}()
+
+	if d.IsNegative() {
+		absRoot, err := d.MulInt64(-1).ApproxRoot(root)
+		return absRoot.MulInt64(-1), err
+	}
+
+	if root == 1 || d.IsZero() || d.Equal(OneDec()) {
+		return d, nil
+	}
+
+	if root == 0 {
+		return OneDec(), nil
+	}
+
+	rootInt := NewIntFromUint64(root)
+	guess, delta := OneDec(), OneDec()
+
+	for delta.Abs().GT(SmallestDec()) {
+		prev := guess.Power(root - 1)
+		if prev.IsZero() {
+			prev = SmallestDec()
+		}
+		delta = d.Quo(prev)
+		delta = delta.Sub(guess)
+		delta = delta.QuoInt(rootInt)
+
+		guess = guess.Add(delta)
+	}
+
+	return guess, nil
+}
+
+// Power returns a the result of raising to a positive integer power
+func (d Dec) Power(power uint64) Dec {
+	if power == 0 {
+		return OneDec()
+	}
+	tmp := OneDec()
+	for i := power; i > 1; {
+		if i%2 == 0 {
+			i /= 2
+		} else {
+			tmp = tmp.Mul(d)
+			i = (i - 1) / 2
+		}
+		d = d.Mul(d)
+	}
+	return d.Mul(tmp)
+}
+
+// ApproxSqrt is a wrapper around ApproxRoot for the common special case
+// of finding the square root of a number. It returns -(sqrt(abs(d)) if input is negative.
+func (d Dec) ApproxSqrt() (Dec, error) {
+	return d.ApproxRoot(2)
 }
 
 // is integer, e.g. decimals are zero
@@ -394,7 +470,6 @@ func (d Dec) String() string {
 // |_____:  /   | $$$    |
 //              |________|
 
-// nolint - go-cyclo
 // Remove a Precision amount of rightmost digits and perform bankers rounding
 // on the remainder (gaussian rounding) on the digits which have been removed.
 //
@@ -523,6 +598,42 @@ func (d Dec) Ceil() Dec {
 	}
 
 	return NewDecFromBigInt(quo.Add(quo, oneInt))
+}
+
+//___________________________________________________________________________________
+
+// MaxSortableDec is the largest Dec that can be passed into SortableDecBytes()
+// Its negative form is the least Dec that can be passed in.
+var MaxSortableDec = OneDec().Quo(SmallestDec())
+
+// ValidSortableDec ensures that a Dec is within the sortable bounds,
+// a Dec can't have a precision of less than 10^-18.
+// Max sortable decimal was set to the reciprocal of SmallestDec.
+func ValidSortableDec(dec Dec) bool {
+	return dec.Abs().LTE(MaxSortableDec)
+}
+
+// SortableDecBytes returns a byte slice representation of a Dec that can be sorted.
+// Left and right pads with 0s so there are 18 digits to left and right of the decimal point.
+// For this reason, there is a maximum and minimum value for this, enforced by ValidSortableDec.
+func SortableDecBytes(dec Dec) []byte {
+	if !ValidSortableDec(dec) {
+		panic("dec must be within bounds")
+	}
+	// Instead of adding an extra byte to all sortable decs in order to handle max sortable, we just
+	// makes its bytes be "max" which comes after all numbers in ASCIIbetical order
+	if dec.Equal(MaxSortableDec) {
+		return []byte("max")
+	}
+	// For the same reason, we make the bytes of minimum sortable dec be --, which comes before all numbers.
+	if dec.Equal(MaxSortableDec.Neg()) {
+		return []byte("--")
+	}
+	// We move the negative sign to the front of all the left padded 0s, to make negative numbers come before positive numbers
+	if dec.IsNegative() {
+		return append([]byte("-"), []byte(fmt.Sprintf(fmt.Sprintf("%%0%ds", Precision*2+1), dec.Abs().String()))...)
+	}
+	return []byte(fmt.Sprintf(fmt.Sprintf("%%0%ds", Precision*2+1), dec.String()))
 }
 
 //___________________________________________________________________________________
