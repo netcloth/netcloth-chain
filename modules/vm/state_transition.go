@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"os"
 
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
@@ -30,8 +31,13 @@ func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
 	st.StateDB.AddBalance(to, amount)
 }
 
-func (st StateTransition) GetHash(uint64) sdk.Hash {
-	return sdk.Hash{}
+func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash {
+	return func(n uint64) sdk.Hash {
+		var res = sdk.Hash{}
+		blockID := header.GetLastBlockId()
+		res.SetBytes(blockID.GetHash())
+		return res
+	}
 }
 
 func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, sdk.Result) {
@@ -39,7 +45,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
-		GetHash:     st.GetHash,
+		GetHash:     st.GetHashFn(ctx.BlockHeader()),
 
 		Origin: st.Sender,
 
