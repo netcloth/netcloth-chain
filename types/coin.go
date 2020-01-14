@@ -56,7 +56,7 @@ func validate(denom string, amount Int) error {
 		return err
 	}
 
-	if amount.LT(ZeroInt()) {
+	if amount.IsNegative() {
 		return fmt.Errorf("negative coin amount: %v", amount)
 	}
 
@@ -124,7 +124,7 @@ func (coin Coin) Sub(coinB Coin) Coin {
 
 	res := Coin{coin.Denom, coin.Amount.Sub(coinB.Amount)}
 	if res.IsNegative() {
-		panic("negative count amount")
+		panic("negative coin amount")
 	}
 
 	return res
@@ -244,7 +244,7 @@ func (coins Coins) IsValid() bool {
 //
 // CONTRACT: Add will never return Coins where one Coin has a non-positive
 // amount. In otherwords, IsValid will always return true.
-func (coins Coins) Add(coinsB Coins) Coins {
+func (coins Coins) Add(coinsB ...Coin) Coins {
 	return coins.safeAdd(coinsB)
 }
 
@@ -495,15 +495,20 @@ func (coins Coins) AmountOf(denom string) Int {
 	default:
 		midIdx := len(coins) / 2 // 2:1, 3:1, 4:2
 		coin := coins[midIdx]
-
-		if denom < coin.Denom {
+		switch {
+		case denom < coin.Denom:
 			return coins[:midIdx].AmountOf(denom)
-		} else if denom == coin.Denom {
+		case denom == coin.Denom:
 			return coin.Amount
-		} else {
+		default:
 			return coins[midIdx+1:].AmountOf(denom)
 		}
 	}
+}
+
+// GetDenomByIndex returns the Denom of the certain coin to make the findDup generic
+func (coins Coins) GetDenomByIndex(i int) string {
+	return coins[i].Denom
 }
 
 // IsAllPositive returns true if there is at least one coin and all currencies
@@ -599,6 +604,8 @@ var (
 	reDecCoin   = regexp.MustCompile(fmt.Sprintf(`^(%s)%s(%s)$`, reDecAmt, reSpc, reDnmString))
 )
 
+// ValidateDenom validates a denomination string returning an error if it is
+// invalid.
 func ValidateDenom(denom string) error {
 	if !reDnm.MatchString(denom) {
 		return fmt.Errorf("invalid denom: %s", denom)
@@ -667,18 +674,23 @@ func ParseCoins(coinsStr string) (Coins, error) {
 	return coins, nil
 }
 
+type findDupDescriptor interface {
+	GetDenomByIndex(int) string
+	Len() int
+}
+
 // findDup works on the assumption that coins is sorted
-func findDup(coins Coins) int {
-	if len(coins) <= 1 {
+func findDup(coins findDupDescriptor) int {
+	if coins.Len() <= 1 {
 		return -1
 	}
 
-	prevDenom := coins[0].Denom
-	for i := 1; i < len(coins); i++ {
-		if coins[i].Denom == prevDenom {
+	prevDenom := coins.GetDenomByIndex(0)
+	for i := 1; i < coins.Len(); i++ {
+		if coins.GetDenomByIndex(i) == prevDenom {
 			return i
 		}
-		prevDenom = coins[i].Denom
+		prevDenom = coins.GetDenomByIndex(i)
 	}
 
 	return -1
