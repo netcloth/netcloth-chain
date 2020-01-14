@@ -7,12 +7,15 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 const (
 	maxUserAddressLength   = 256
 	maxServerAddressLength = 256
 )
+
+const TypeMsgCIPALClaim = "cipal_claim"
 
 var (
 	_ sdk.Msg = MsgCIPALClaim{}
@@ -63,13 +66,13 @@ func (p ADParam) GetSignBytes() []byte {
 	return sdk.MustSortJSON(b)
 }
 
-func (p ADParam) Validate() sdk.Error {
+func (p ADParam) Validate() error {
 	if p.UserAddress == "" {
-		return ErrEmptyInputs("user address empty")
+		return sdkerrors.Wrap(ErrEmptyInputs, "user address empty")
 	}
 
 	if len(p.UserAddress) > maxUserAddressLength {
-		return ErrStringTooLong("user address too long")
+		return sdkerrors.Wrap(ErrStringTooLong, "user address too long")
 	}
 
 	return p.ServiceInfo.Validate()
@@ -99,11 +102,11 @@ func NewMsgCIPALClaim(from sdk.AccAddress, userAddress string, serviceAddress st
 
 func (msg MsgCIPALClaim) Route() string { return RouterKey }
 
-func (msg MsgCIPALClaim) Type() string { return "cipal_claim" }
+func (msg MsgCIPALClaim) Type() string { return TypeMsgCIPALClaim }
 
-func (msg MsgCIPALClaim) ValidateBasic() sdk.Error {
+func (msg MsgCIPALClaim) ValidateBasic() error {
 	if msg.From.Empty() {
-		return sdk.ErrInvalidAddress("missing sender address")
+		return sdkerrors.Wrap(ErrInvalidAddress, "missing sender address")
 	}
 
 	err := msg.UserRequest.Params.Validate()

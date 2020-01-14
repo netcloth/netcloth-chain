@@ -1,35 +1,13 @@
 package types
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-const (
-	DefaultCodespace sdk.CodespaceType = ModuleName
-
-	CodeEmptyInputs                    sdk.CodeType = 110
-	CodeStringTooLong                  sdk.CodeType = 111
-	CodeInvalidIPALClaimUserRequestSig sdk.CodeType = 112
-	CodeIPALClaimUserRequestExpired    sdk.CodeType = 113
-	CodeIPALClaimUserRequestSigVerify  sdk.CodeType = 114
+var (
+	ErrEmptyInputs                    = sdkerrors.Register(ModuleName, 1, "empty input")
+	ErrStringTooLong                  = sdkerrors.Register(ModuleName, 2, "input string to long")
+	ErrInvalidSignature               = sdkerrors.Register(ModuleName, 3, "CIPAL invalid user_request signature")
+	ErrIPALClaimUserRequestExpired    = sdkerrors.Register(ModuleName, 4, "CIPAL user_request time expired")
+	ErrCIPALClaimUserRequestSigVerify = sdkerrors.Register(ModuleName, 5, "CIPAL user_request signature verify failed")
 )
-
-func ErrEmptyInputs(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
-}
-
-func ErrStringTooLong(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeStringTooLong, msg)
-}
-
-func ErrInvalidSignature(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeInvalidIPALClaimUserRequestSig, msg)
-}
-
-func ErrIPALClaimUserRequestExpired(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeIPALClaimUserRequestExpired, msg)
-}
-
-func ErrCIPALClaimUserRequestSigVerify(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeIPALClaimUserRequestSigVerify, msg)
-}
