@@ -1,7 +1,7 @@
 package supply
 
 import (
-	autypes "github.com/netcloth/netcloth-chain/modules/auth"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/supply/internal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -14,8 +14,8 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, ak types.AccountKeeper, data Ge
 	if data.Supply.Empty() {
 		var totalSupply sdk.Coins
 		ak.IterateAccounts(ctx,
-			func(acc autypes.Account) (stop bool) {
-				totalSupply = totalSupply.Add(acc.GetCoins())
+			func(acc authexported.Account) (stop bool) {
+				totalSupply = totalSupply.Add(acc.GetCoins()...)
 				return false
 			},
 		)

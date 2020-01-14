@@ -8,9 +8,11 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+
+	"github.com/netcloth/netcloth-chain/modules/slashing/internal/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -25,7 +27,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 
 	slashingQueryCmd.AddCommand(
-		client.GetCommands(
+		flags.GetCommands(
 			GetCmdQuerySigningInfo(queryRoute, cdc),
 			GetCmdQueryParams(cdc),
 		)...,
@@ -42,13 +44,13 @@ func GetCmdQuerySigningInfo(storeName string, cdc *codec.Codec) *cobra.Command {
 		Short: "Query a validator's signing information",
 		Long: strings.TrimSpace(`Use a validators' consensus public key to find the signing-info for that validator:
 
-$ <appcli> query slashing signing-info nchvalconspub1zcjduepqfhvwcmt7p06fvdgexxhmz0l8c7sgswl7ulv7aulk364x4g5xsw7sr0k2g5
+$ <appcli> query slashing signing-info cosmosvalconspub1zcjduepqfhvwcmt7p06fvdgexxhmz0l8c7sgswl7ulv7aulk364x4g5xsw7sr0k2g5
 `),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			pk, err := sdk.GetConsPubKeyBech32(args[0])
+			pk, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, args[0])
 			if err != nil {
 				return err
 			}
@@ -62,7 +64,7 @@ $ <appcli> query slashing signing-info nchvalconspub1zcjduepqfhvwcmt7p06fvdgexxh
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("Validator %s not found in slashing store", consAddr)
+				return fmt.Errorf("validator %s not found in slashing store", consAddr)
 			}
 
 			var signingInfo types.ValidatorSigningInfo

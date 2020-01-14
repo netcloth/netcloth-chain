@@ -6,24 +6,22 @@ import (
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/store"
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/bank"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	"github.com/netcloth/netcloth-chain/modules/supply"
-
-	"github.com/netcloth/netcloth-chain/modules/distribution/types"
+	"github.com/netcloth/netcloth-chain/store"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-//nolint: deadcode unused
+//nolint:deadcode,unused
 var (
 	delPk1   = ed25519.GenPrivKey().PubKey()
 	delPk2   = ed25519.GenPrivKey().PubKey()
@@ -47,7 +45,6 @@ var (
 	valConsPk3   = ed25519.GenPrivKey().PubKey()
 	valConsAddr1 = sdk.ConsAddress(valConsPk1.Address())
 	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
-	valConsAddr3 = sdk.ConsAddress(valConsPk3.Address())
 
 	// TODO move to common testing package for all modules
 	// test addresses
@@ -55,10 +52,6 @@ var (
 		delAddr1, delAddr2, delAddr3,
 		valAccAddr1, valAccAddr2, valAccAddr3,
 	}
-
-	emptyDelAddr sdk.AccAddress
-	emptyValAddr sdk.ValAddress
-	emptyPubkey  crypto.PubKey
 
 	distrAcc = supply.NewEmptyModuleAccount(types.ModuleName)
 )
@@ -96,7 +89,6 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64,
 
 	keyDistr := sdk.NewKVStoreKey(types.StoreKey)
 	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
-	tkeyStaking := sdk.NewTransientStoreKey(staking.TStoreKey)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
@@ -106,7 +98,6 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64,
 	ms := store.NewCommitMultiStore(db)
 
 	ms.MountStoreWithDB(keyDistr, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyStaking, sdk.StoreTypeTransient, nil)
 	ms.MountStoreWithDB(keyStaking, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
@@ -121,29 +112,29 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64,
 	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
 
 	blacklistedAddrs := make(map[string]bool)
-	blacklistedAddrs[feeCollectorAcc.String()] = true
-	blacklistedAddrs[notBondedPool.String()] = true
-	blacklistedAddrs[bondPool.String()] = true
-	blacklistedAddrs[distrAcc.String()] = true
+	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
+	blacklistedAddrs[notBondedPool.GetAddress().String()] = true
+	blacklistedAddrs[bondPool.GetAddress().String()] = true
+	blacklistedAddrs[distrAcc.GetAddress().String()] = true
 
 	cdc := MakeTestCodec()
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
+	pk := params.NewKeeper(cdc, keyParams, tkeyParams)
 
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "foochainid"}, isCheckTx, log.NewNopLogger())
 	accountKeeper := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, blacklistedAddrs)
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk.Subspace(bank.DefaultParamspace), blacklistedAddrs)
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
 		types.ModuleName:          nil,
-		staking.NotBondedPoolName: []string{supply.Burner, supply.Staking},
-		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 	}
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 
-	sk := staking.NewKeeper(cdc, keyStaking, tkeyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace), staking.DefaultCodespace)
+	sk := staking.NewKeeper(cdc, keyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 	sk.SetParams(ctx, staking.DefaultParams())
 
-	keeper := NewKeeper(cdc, keyDistr, pk.Subspace(DefaultParamspace), sk, supplyKeeper, types.DefaultCodespace, auth.FeeCollectorName, blacklistedAddrs)
+	keeper := NewKeeper(cdc, keyDistr, pk.Subspace(types.DefaultParamspace), sk, supplyKeeper, auth.FeeCollectorName, blacklistedAddrs)
 
 	initCoins := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens))
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens.MulRaw(int64(len(TestAddrs)))))
@@ -166,9 +157,12 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64,
 
 	// set genesis items required for distribution
 	keeper.SetFeePool(ctx, types.InitialFeePool())
-	keeper.SetCommunityTax(ctx, communityTax)
-	keeper.SetBaseProposerReward(ctx, sdk.NewDecWithPrec(1, 2))
-	keeper.SetBonusProposerReward(ctx, sdk.NewDecWithPrec(4, 2))
+
+	params := types.DefaultParams()
+	params.CommunityTax = communityTax
+	params.BaseProposerReward = sdk.NewDecWithPrec(1, 2)
+	params.BonusProposerReward = sdk.NewDecWithPrec(4, 2)
+	keeper.SetParams(ctx, params)
 
 	return ctx, accountKeeper, bankKeeper, keeper, sk, pk, supplyKeeper
 }

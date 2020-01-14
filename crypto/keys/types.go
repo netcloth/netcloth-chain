@@ -31,7 +31,6 @@ type Keybase interface {
 	// Derive computes a BIP39 seed from th mnemonic and bip39Passwd.
 	// Derive private key from the seed using the BIP44 params.
 	// Encrypt the key to disk using encryptPasswd.
-	// See https://github.com/cosmos/cosmos-sdk/issues/2095
 	Derive(name, mnemonic, bip39Passwd, encryptPasswd string, params hd.BIP44Params) (Info, error)
 
 	// CreateLedger creates, stores, and returns a new Ledger key reference

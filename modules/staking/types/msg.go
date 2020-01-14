@@ -4,9 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+)
+
+const (
+	TypeMsgCreateValidator = "create_validator"
+	TypeMsgEditValidator   = "edit_validator"
+	TypeMsgDelegate        = "delegate"
+	TypeMsgBeginRedelegate = "begin_redelegate"
+	TypeMsgUndelegate      = "begin_unbonding"
 )
 
 // ensure Msg interface compliance at compile time
@@ -41,7 +52,8 @@ type msgCreateValidatorJSON struct {
 	Value             sdk.Coin        `json:"value" yaml:"value"`
 }
 
-// Default way to create validator. Delegator address and validator address are the same
+// NewMsgCreateValidator creates a new MsgCreateValidator instance.
+// Delegator address and validator address are the same.
 func NewMsgCreateValidator(
 	valAddr sdk.ValAddress, pubKey crypto.PubKey, selfDelegation sdk.Coin,
 	description Description, commission CommissionRates, minSelfDelegation sdk.Int,
@@ -60,7 +72,7 @@ func NewMsgCreateValidator(
 
 //nolint
 func (msg MsgCreateValidator) Route() string { return RouterKey }
-func (msg MsgCreateValidator) Type() string  { return "create_validator" }
+func (msg MsgCreateValidator) Type() string  { return TypeMsgCreateValidator }
 
 // Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgCreateValidator) GetSigners() []sdk.AccAddress {
@@ -83,7 +95,7 @@ func (msg MsgCreateValidator) MarshalJSON() ([]byte, error) {
 		Commission:        msg.Commission,
 		DelegatorAddress:  msg.DelegatorAddress,
 		ValidatorAddress:  msg.ValidatorAddress,
-		PubKey:            sdk.MustBech32ifyConsPub(msg.PubKey),
+		PubKey:            sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, msg.PubKey),
 		Value:             msg.Value,
 		MinSelfDelegation: msg.MinSelfDelegation,
 	})
@@ -102,7 +114,7 @@ func (msg *MsgCreateValidator) UnmarshalJSON(bz []byte) error {
 	msg.DelegatorAddress = msgCreateValJSON.DelegatorAddress
 	msg.ValidatorAddress = msgCreateValJSON.ValidatorAddress
 	var err error
-	msg.PubKey, err = sdk.GetConsPubKeyBech32(msgCreateValJSON.PubKey)
+	msg.PubKey, err = sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, msgCreateValJSON.PubKey)
 	if err != nil {
 		return err
 	}
@@ -112,6 +124,33 @@ func (msg *MsgCreateValidator) UnmarshalJSON(bz []byte) error {
 	return nil
 }
 
+// MarshalYAML implements a custom marshal yaml function due to consensus pubkey.
+func (msg MsgCreateValidator) MarshalYAML() (interface{}, error) {
+	bs, err := yaml.Marshal(struct {
+		Description       Description
+		Commission        CommissionRates
+		MinSelfDelegation sdk.Int
+		DelegatorAddress  sdk.AccAddress
+		ValidatorAddress  sdk.ValAddress
+		PubKey            string
+		Value             sdk.Coin
+	}{
+		Description:       msg.Description,
+		Commission:        msg.Commission,
+		MinSelfDelegation: msg.MinSelfDelegation,
+		DelegatorAddress:  msg.DelegatorAddress,
+		ValidatorAddress:  msg.ValidatorAddress,
+		PubKey:            sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, msg.PubKey),
+		Value:             msg.Value,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return string(bs), nil
+}
+
 // GetSignBytes returns the message bytes to sign over.
 func (msg MsgCreateValidator) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
@@ -119,34 +158,34 @@ func (msg MsgCreateValidator) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgCreateValidator) ValidateBasic() sdk.Error {
+func (msg MsgCreateValidator) ValidateBasic() error {
 	// note that unmarshaling from bech32 ensures either empty or valid
 	if msg.DelegatorAddress.Empty() {
-		return ErrNilDelegatorAddr(DefaultCodespace)
+		return ErrEmptyDelegatorAddr
 	}
 	if msg.ValidatorAddress.Empty() {
-		return ErrNilValidatorAddr(DefaultCodespace)
+		return ErrEmptyValidatorAddr
 	}
 	if !sdk.AccAddress(msg.ValidatorAddress).Equals(msg.DelegatorAddress) {
-		return ErrBadValidatorAddr(DefaultCodespace)
+		return ErrBadValidatorAddr
 	}
-	if msg.Value.Amount.LTE(sdk.ZeroInt()) {
-		return ErrBadDelegationAmount(DefaultCodespace)
+	if !msg.Value.Amount.IsPositive() {
+		return ErrBadDelegationAmount
 	}
 	if msg.Description == (Description{}) {
-		return sdk.NewError(DefaultCodespace, CodeInvalidInput, "description must be included")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
 	if msg.Commission == (CommissionRates{}) {
-		return sdk.NewError(DefaultCodespace, CodeInvalidInput, "commission must be included")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty commission")
 	}
 	if err := msg.Commission.Validate(); err != nil {
 		return err
 	}
-	if !msg.MinSelfDelegation.GT(sdk.ZeroInt()) {
-		return ErrMinSelfDelegationInvalid(DefaultCodespace)
+	if !msg.MinSelfDelegation.IsPositive() {
+		return ErrMinSelfDelegationInvalid
 	}
 	if msg.Value.Amount.LT(msg.MinSelfDelegation) {
-		return ErrSelfDelegationBelowMinimum(DefaultCodespace)
+		return ErrSelfDelegationBelowMinimum
 	}
 
 	return nil
@@ -175,9 +214,10 @@ func NewMsgEditValidator(valAddr sdk.ValAddress, description Description, newRat
 	}
 }
 
-//nolint
 func (msg MsgEditValidator) Route() string { return RouterKey }
-func (msg MsgEditValidator) Type() string  { return "edit_validator" }
+
+func (msg MsgEditValidator) Type() string { return TypeMsgEditValidator }
+
 func (msg MsgEditValidator) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
@@ -189,22 +229,19 @@ func (msg MsgEditValidator) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgEditValidator) ValidateBasic() sdk.Error {
+func (msg MsgEditValidator) ValidateBasic() error {
 	if msg.ValidatorAddress.Empty() {
-		return sdk.NewError(DefaultCodespace, CodeInvalidInput, "nil validator address")
+		return ErrEmptyValidatorAddr
 	}
-
 	if msg.Description == (Description{}) {
-		return sdk.NewError(DefaultCodespace, CodeInvalidInput, "transaction must include some information to modify")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
-
-	if msg.MinSelfDelegation != nil && !(*msg.MinSelfDelegation).GT(sdk.ZeroInt()) {
-		return ErrMinSelfDelegationInvalid(DefaultCodespace)
+	if msg.MinSelfDelegation != nil && !msg.MinSelfDelegation.IsPositive() {
+		return ErrMinSelfDelegationInvalid
 	}
-
 	if msg.CommissionRate != nil {
-		if msg.CommissionRate.GT(sdk.OneDec()) || msg.CommissionRate.LT(sdk.ZeroDec()) {
-			return sdk.NewError(DefaultCodespace, CodeInvalidInput, "commission rate must be between 0 and 1, inclusive")
+		if msg.CommissionRate.GT(sdk.OneDec()) || msg.CommissionRate.IsNegative() {
+			return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "commission rate must be between 0 and 1 (inclusive)")
 		}
 	}
 
@@ -226,9 +263,10 @@ func NewMsgDelegate(delAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.C
 	}
 }
 
-//nolint
 func (msg MsgDelegate) Route() string { return RouterKey }
-func (msg MsgDelegate) Type() string  { return "delegate" }
+
+func (msg MsgDelegate) Type() string { return TypeMsgDelegate }
+
 func (msg MsgDelegate) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.DelegatorAddress}
 }
@@ -240,15 +278,15 @@ func (msg MsgDelegate) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgDelegate) ValidateBasic() sdk.Error {
+func (msg MsgDelegate) ValidateBasic() error {
 	if msg.DelegatorAddress.Empty() {
-		return ErrNilDelegatorAddr(DefaultCodespace)
+		return ErrEmptyDelegatorAddr
 	}
 	if msg.ValidatorAddress.Empty() {
-		return ErrNilValidatorAddr(DefaultCodespace)
+		return ErrEmptyValidatorAddr
 	}
 	if msg.Amount.Amount.LTE(sdk.ZeroInt()) {
-		return ErrBadDelegationAmount(DefaultCodespace)
+		return ErrBadDelegationAmount
 	}
 	return nil
 }
@@ -274,9 +312,10 @@ func NewMsgBeginRedelegate(delAddr sdk.AccAddress, valSrcAddr,
 	}
 }
 
-//nolint
 func (msg MsgBeginRedelegate) Route() string { return RouterKey }
-func (msg MsgBeginRedelegate) Type() string  { return "begin_redelegate" }
+
+func (msg MsgBeginRedelegate) Type() string { return TypeMsgBeginRedelegate }
+
 func (msg MsgBeginRedelegate) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.DelegatorAddress}
 }
@@ -288,18 +327,18 @@ func (msg MsgBeginRedelegate) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgBeginRedelegate) ValidateBasic() sdk.Error {
+func (msg MsgBeginRedelegate) ValidateBasic() error {
 	if msg.DelegatorAddress.Empty() {
-		return ErrNilDelegatorAddr(DefaultCodespace)
+		return ErrEmptyDelegatorAddr
 	}
 	if msg.ValidatorSrcAddress.Empty() {
-		return ErrNilValidatorAddr(DefaultCodespace)
+		return ErrEmptyValidatorAddr
 	}
 	if msg.ValidatorDstAddress.Empty() {
-		return ErrNilValidatorAddr(DefaultCodespace)
+		return ErrEmptyValidatorAddr
 	}
 	if msg.Amount.Amount.LTE(sdk.ZeroInt()) {
-		return ErrBadSharesAmount(DefaultCodespace)
+		return ErrBadSharesAmount
 	}
 	return nil
 }
@@ -319,9 +358,10 @@ func NewMsgUndelegate(delAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk
 	}
 }
 
-//nolint
-func (msg MsgUndelegate) Route() string                { return RouterKey }
-func (msg MsgUndelegate) Type() string                 { return "begin_unbonding" }
+func (msg MsgUndelegate) Route() string { return RouterKey }
+
+func (msg MsgUndelegate) Type() string { return TypeMsgUndelegate }
+
 func (msg MsgUndelegate) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.DelegatorAddress} }
 
 // get the bytes for the message signer to sign on
@@ -331,15 +371,15 @@ func (msg MsgUndelegate) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgUndelegate) ValidateBasic() sdk.Error {
+func (msg MsgUndelegate) ValidateBasic() error {
 	if msg.DelegatorAddress.Empty() {
-		return ErrNilDelegatorAddr(DefaultCodespace)
+		return ErrEmptyDelegatorAddr
 	}
 	if msg.ValidatorAddress.Empty() {
-		return ErrNilValidatorAddr(DefaultCodespace)
+		return ErrEmptyValidatorAddr
 	}
 	if msg.Amount.Amount.LTE(sdk.ZeroInt()) {
-		return ErrBadSharesAmount(DefaultCodespace)
+		return ErrBadSharesAmount
 	}
 	return nil
 }

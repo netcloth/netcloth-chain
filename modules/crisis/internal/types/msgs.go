@@ -4,6 +4,8 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+const TypeMsgVerifyInvariant = "verify_invariant"
+
 // MsgVerifyInvariant - message struct to verify a particular invariance
 type MsgVerifyInvariant struct {
 	Sender              sdk.AccAddress `json:"sender" yaml:"sender"`
@@ -27,7 +29,7 @@ func NewMsgVerifyInvariant(sender sdk.AccAddress, invariantModuleName,
 
 //nolint
 func (msg MsgVerifyInvariant) Route() string { return ModuleName }
-func (msg MsgVerifyInvariant) Type() string  { return "verify_invariant" }
+func (msg MsgVerifyInvariant) Type() string  { return TypeMsgVerifyInvariant }
 
 // get the bytes for the message signer to sign on
 func (msg MsgVerifyInvariant) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.Sender} }
@@ -39,9 +41,9 @@ func (msg MsgVerifyInvariant) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgVerifyInvariant) ValidateBasic() sdk.Error {
+func (msg MsgVerifyInvariant) ValidateBasic() error {
 	if msg.Sender.Empty() {
-		return ErrNilSender(DefaultCodespace)
+		return ErrNoSender
 	}
 	return nil
 }

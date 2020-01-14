@@ -1,14 +1,14 @@
 package slashing
 
 import (
-	"fmt"
-
-	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	"github.com/netcloth/netcloth-chain/modules/slashing/internal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
+// NewHandler creates an sdk.Handler for all the slashing type messages
 func NewHandler(k Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
@@ -16,53 +16,18 @@ func NewHandler(k Keeper) sdk.Handler {
 			return handleMsgUnjail(ctx, msg, k)
 
 		default:
-			errMsg := fmt.Sprintf("unrecognized slashing message type: %T", msg)
-			return sdk.ErrUnknownRequest(errMsg).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
 
 // Validators must submit a transaction to unjail itself after
 // having been jailed (and thus unbonded) for downtime
-func handleMsgUnjail(ctx sdk.Context, msg MsgUnjail, k Keeper) sdk.Result {
-	validator := k.sk.Validator(ctx, msg.ValidatorAddr)
-	if validator == nil {
-		return ErrNoValidatorForAddress(k.codespace).Result()
+func handleMsgUnjail(ctx sdk.Context, msg MsgUnjail, k Keeper) (*sdk.Result, error) {
+	err := k.Unjail(ctx, msg.ValidatorAddr)
+	if err != nil {
+		return nil, err
 	}
-
-	// cannot be unjailed if no self-delegation exists
-	selfDel := k.sk.Delegation(ctx, sdk.AccAddress(msg.ValidatorAddr), msg.ValidatorAddr)
-	if selfDel == nil {
-		return ErrMissingSelfDelegation(k.codespace).Result()
-	}
-
-	if validator.TokensFromShares(selfDel.GetShares()).TruncateInt().LT(validator.GetMinSelfDelegation()) {
-		return ErrSelfDelegationTooLowToUnjail(k.codespace).Result()
-	}
-
-	// cannot be unjailed if not jailed
-	if !validator.IsJailed() {
-		return ErrValidatorNotJailed(k.codespace).Result()
-	}
-
-	consAddr := sdk.ConsAddress(validator.GetConsPubKey().Address())
-
-	info, found := k.getValidatorSigningInfo(ctx, consAddr)
-	if !found {
-		return ErrNoValidatorForAddress(k.codespace).Result()
-	}
-
-	// cannot be unjailed if tombstoned
-	if info.Tombstoned {
-		return ErrValidatorJailed(k.codespace).Result()
-	}
-
-	// cannot be unjailed until out of jail
-	if ctx.BlockHeader().Time.Before(info.JailedUntil) {
-		return ErrValidatorJailed(k.codespace).Result()
-	}
-
-	k.sk.Unjail(ctx, consAddr)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -72,5 +37,5 @@ func handleMsgUnjail(ctx sdk.Context, msg MsgUnjail, k Keeper) sdk.Result {
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

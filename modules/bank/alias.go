@@ -9,38 +9,56 @@ import (
 )
 
 const (
-	DefaultCodespace         = types.DefaultCodespace
-	CodeSendDisabled         = types.CodeSendDisabled
-	CodeInvalidInputsOutputs = types.CodeInvalidInputsOutputs
-	ModuleName               = types.ModuleName
-	RouterKey                = types.RouterKey
-	QuerierRoute             = types.QuerierRoute
-	DefaultParamspace        = types.DefaultParamspace
+	QueryBalance       = keeper.QueryBalance
+	ModuleName         = types.ModuleName
+	QuerierRoute       = types.QuerierRoute
+	RouterKey          = types.RouterKey
+	DefaultParamspace  = types.DefaultParamspace
+	DefaultSendEnabled = types.DefaultSendEnabled
+
+	EventTypeTransfer      = types.EventTypeTransfer
+	AttributeKeyRecipient  = types.AttributeKeyRecipient
+	AttributeKeySender     = types.AttributeKeySender
+	AttributeValueCategory = types.AttributeValueCategory
 )
 
 var (
-	// functions aliases
-	RegisterCodec          = types.RegisterCodec
-	ErrNoInputs            = types.ErrNoInputs
-	ErrNoOutputs           = types.ErrNoOutputs
-	ErrInputOutputMismatch = types.ErrInputOutputMismatch
-	ErrSendDisabled        = types.ErrSendDisabled
-	NewBaseKeeper          = keeper.NewBaseKeeper
-	NewInput               = types.NewInput
-	NewOutput              = types.NewOutput
-	ParamKeyTable          = types.ParamKeyTable
-	NewMsgSend             = types.NewMsgSend
-
-	// variable aliases
-	ModuleCdc                = types.ModuleCdc
-	ParamStoreKeySendEnabled = types.ParamStoreKeySendEnabled
+	RegisterInvariants          = keeper.RegisterInvariants
+	NonnegativeBalanceInvariant = keeper.NonnegativeBalanceInvariant
+	NewBaseKeeper               = keeper.NewBaseKeeper
+	NewBaseSendKeeper           = keeper.NewBaseSendKeeper
+	NewBaseViewKeeper           = keeper.NewBaseViewKeeper
+	NewQuerier                  = keeper.NewQuerier
+	RegisterCodec               = types.RegisterCodec
+	ErrNoInputs                 = types.ErrNoInputs
+	ErrNoOutputs                = types.ErrNoOutputs
+	ErrInputOutputMismatch      = types.ErrInputOutputMismatch
+	ErrSendDisabled             = types.ErrSendDisabled
+	NewGenesisState             = types.NewGenesisState
+	DefaultGenesisState         = types.DefaultGenesisState
+	ValidateGenesis             = types.ValidateGenesis
+	NewMsgSend                  = types.NewMsgSend
+	NewMsgMultiSend             = types.NewMsgMultiSend
+	NewInput                    = types.NewInput
+	NewOutput                   = types.NewOutput
+	ValidateInputsOutputs       = types.ValidateInputsOutputs
+	ParamKeyTable               = types.ParamKeyTable
+	NewQueryBalanceParams       = types.NewQueryBalanceParams
+	ModuleCdc                   = types.ModuleCdc
+	ParamStoreKeySendEnabled    = types.ParamStoreKeySendEnabled
 )
 
 type (
-	BaseKeeper   = keeper.BaseKeeper // ibc module depends on this
-	Keeper       = keeper.Keeper
-	MsgSend      = types.MsgSend
-	MsgMultiSend = types.MsgMultiSend
-	Input        = types.Input
-	Output       = types.Output
+	Keeper             = keeper.Keeper
+	BaseKeeper         = keeper.BaseKeeper
+	SendKeeper         = keeper.SendKeeper
+	BaseSendKeeper     = keeper.BaseSendKeeper
+	ViewKeeper         = keeper.ViewKeeper
+	BaseViewKeeper     = keeper.BaseViewKeeper
+	GenesisState       = types.GenesisState
+	MsgSend            = types.MsgSend
+	MsgMultiSend       = types.MsgMultiSend
+	Input              = types.Input
+	Output             = types.Output
+	QueryBalanceParams = types.QueryBalanceParams
 )

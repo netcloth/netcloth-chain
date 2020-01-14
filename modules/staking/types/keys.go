@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/binary"
+	"strconv"
 	"time"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -45,6 +46,8 @@ var (
 	UnbondingQueueKey    = []byte{0x41} // prefix for the timestamps in unbonding queue
 	RedelegationQueueKey = []byte{0x42} // prefix for the timestamps in redelegations queue
 	ValidatorQueueKey    = []byte{0x43} // prefix for the timestamps in validator queue
+
+	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
 
 // gets the key for the validator with address
@@ -84,7 +87,7 @@ func getValidatorPowerRank(validator Validator) []byte {
 
 	consensusPower := sdk.TokensToConsensusPower(validator.Tokens)
 	consensusPowerBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(consensusPowerBytes[:], uint64(consensusPower))
+	binary.BigEndian.PutUint64(consensusPowerBytes, uint64(consensusPower))
 
 	powerBytes := consensusPowerBytes
 	powerBytesLen := len(powerBytes) // 8
@@ -152,8 +155,8 @@ func GetUBDByValIndexKey(delAddr sdk.AccAddress, valAddr sdk.ValAddress) []byte 
 }
 
 // rearranges the ValIndexKey to get the UBDKey
-func GetUBDKeyFromValIndexKey(IndexKey []byte) []byte {
-	addrs := IndexKey[1:] // remove prefix bytes
+func GetUBDKeyFromValIndexKey(indexKey []byte) []byte {
+	addrs := indexKey[1:] // remove prefix bytes
 	if len(addrs) != 2*sdk.AddrLen {
 		panic("unexpected key length")
 	}
@@ -277,4 +280,11 @@ func GetREDsByDelToValDstIndexKey(delAddr sdk.AccAddress, valDstAddr sdk.ValAddr
 	return append(
 		GetREDsToValDstIndexKey(valDstAddr),
 		delAddr.Bytes()...)
+}
+
+//________________________________________________________________________________
+
+// GetHistoricalInfoKey gets the key for the historical info
+func GetHistoricalInfoKey(height int64) []byte {
+	return append(HistoricalInfoKey, []byte(strconv.FormatInt(height, 10))...)
 }

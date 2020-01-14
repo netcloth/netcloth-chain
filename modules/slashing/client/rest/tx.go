@@ -8,7 +8,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	"github.com/netcloth/netcloth-chain/modules/slashing/internal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )

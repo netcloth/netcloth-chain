@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/client"
-
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"

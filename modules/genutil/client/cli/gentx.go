@@ -20,15 +20,17 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/codec"
 	kbkeys "github.com/netcloth/netcloth-chain/crypto/keys"
-	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/netcloth/netcloth-chain/server"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/types/module"
 	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/genutil"
 	"github.com/netcloth/netcloth-chain/modules/genutil/types"
+	"github.com/netcloth/netcloth-chain/server"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/errors"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 // StakingMsgBuildingHelpers helpers for message building gen-tx command
@@ -59,10 +61,10 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			config := ctx.Config
-			config.SetRoot(viper.GetString(client.FlagHome))
+			config.SetRoot(viper.GetString(flags.FlagHome))
 			nodeID, valPubKey, err := genutil.InitializeNodeValidatorFiles(ctx.Config)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to initialize node validator files")
 			}
 
 			// Read --nodeID, if empty take it from priv_validator.json
@@ -71,51 +73,51 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 			}
 			// Read --pubkey, if empty take it from priv_validator.json
 			if valPubKeyString := viper.GetString(flagPubKey); valPubKeyString != "" {
-				valPubKey, err = sdk.GetConsPubKeyBech32(valPubKeyString)
+				valPubKey, err = sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, valPubKeyString)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "failed to get consensus node public key")
 				}
 			}
 
 			genDoc, err := tmtypes.GenesisDocFromFile(config.GenesisFile())
 			if err != nil {
-				return err
+				return errors.Wrapf(err, "failed to read genesis doc file %s", config.GenesisFile())
 			}
 
 			var genesisState map[string]json.RawMessage
 			if err = cdc.UnmarshalJSON(genDoc.AppState, &genesisState); err != nil {
-				return err
+				return errors.Wrap(err, "failed to unmarshal genesis state")
 			}
 
 			if err = mbm.ValidateGenesis(genesisState); err != nil {
-				return err
+				return errors.Wrap(err, "failed to validate genesis state")
 			}
 
 			kb, err := client.NewKeyBaseFromDir(viper.GetString(flagClientHome))
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to initialize keybase")
 			}
 
-			name := viper.GetString(client.FlagName)
+			name := viper.GetString(flags.FlagName)
 			key, err := kb.Get(name)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to read from keybase")
 			}
 
 			// Set flags for creating gentx
-			viper.Set(client.FlagHome, viper.GetString(flagClientHome))
+			viper.Set(flags.FlagHome, viper.GetString(flagClientHome))
 			smbh.PrepareFlagsForTxCreateValidator(config, nodeID, genDoc.ChainID, valPubKey)
 
 			// Fetch the amount of coins staked
 			amount := viper.GetString(flagAmount)
 			coins, err := sdk.ParseCoins(amount)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to parse coins")
 			}
 
 			err = genutil.ValidateAccountInGenesis(genesisState, genAccIterator, key.GetAddress(), coins, cdc)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to validate account in genesis")
 			}
 
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -126,20 +128,15 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 			//
 			// TODO: Consider removing the manual setting of generate-only in
 			// favor of a 'gentx' flag in the create-validator command.
-			viper.Set(client.FlagGenerateOnly, true)
+			viper.Set(flags.FlagGenerateOnly, true)
 
 			// create a 'create-validator' message
 			txBldr, msg, err := smbh.BuildCreateValidatorMsg(cliCtx, txBldr)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to build create-validator message")
 			}
 
-			info, err := txBldr.Keybase().Get(name)
-			if err != nil {
-				return err
-			}
-
-			if info.GetType() == kbkeys.TypeOffline || info.GetType() == kbkeys.TypeMulti {
+			if key.GetType() == kbkeys.TypeOffline || key.GetType() == kbkeys.TypeMulti {
 				fmt.Println("Offline key passed in. Use `tx sign` command to sign:")
 				return utils.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg})
 			}
@@ -149,32 +146,32 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 			cliCtx = cliCtx.WithOutput(w)
 
 			if err = utils.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg}); err != nil {
-				return err
+				return errors.Wrap(err, "failed to print unsigned std tx")
 			}
 
 			// read the transaction
 			stdTx, err := readUnsignedGenTxFile(cdc, w)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to read unsigned gen tx file")
 			}
 
 			// sign the transaction and write it to the output file
 			signedTx, err := utils.SignStdTx(txBldr, cliCtx, name, stdTx, false, true)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to sign std tx")
 			}
 
 			// Fetch output file name
-			outputDocument := viper.GetString(client.FlagOutputDocument)
+			outputDocument := viper.GetString(flags.FlagOutputDocument)
 			if outputDocument == "" {
 				outputDocument, err = makeOutputFilepath(config.RootDir, nodeID)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "failed to create output file path")
 				}
 			}
 
 			if err := writeSignedGenTx(cdc, outputDocument, signedTx); err != nil {
-				return err
+				return errors.Wrap(err, "failed to write signed gen tx")
 			}
 
 			fmt.Fprintf(os.Stderr, "Genesis transaction written to %q\n", outputDocument)
@@ -183,14 +180,16 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 		},
 	}
 
-	cmd.Flags().String(client.FlagHome, defaultNodeHome, "node's home directory")
+	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "node's home directory")
 	cmd.Flags().String(flagClientHome, defaultCLIHome, "client's home directory")
-	cmd.Flags().String(client.FlagName, "", "name of private key with which to sign the gentx")
-	cmd.Flags().String(client.FlagOutputDocument, "",
+	cmd.Flags().String(flags.FlagName, "", "name of private key with which to sign the gentx")
+	cmd.Flags().String(flags.FlagOutputDocument, "",
 		"write the genesis transaction JSON document to the given file instead of the default location")
 	cmd.Flags().AddFlagSet(fsCreateValidator)
+	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
+	viper.BindPFlag(flags.FlagKeyringBackend, cmd.Flags().Lookup(flags.FlagKeyringBackend))
 
-	cmd.MarkFlagRequired(client.FlagName)
+	cmd.MarkFlagRequired(flags.FlagName)
 	return cmd
 }
 

@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -283,7 +285,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	// The AnteHandler handles signature verification and transaction pre-processing
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
+	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
 	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.feeKeeper))
 	app.SetEndBlocker(app.EndBlocker)

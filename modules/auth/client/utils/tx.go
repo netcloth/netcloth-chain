@@ -10,12 +10,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
-	"github.com/netcloth/netcloth-chain/codec"
-	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/client/input"
 	"github.com/netcloth/netcloth-chain/client/keys"
+	"github.com/netcloth/netcloth-chain/codec"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -93,13 +93,8 @@ func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLICon
 		}
 	}
 
-	passphrase, err := keys.GetPassphrase(fromName)
-	if err != nil {
-		return err
-	}
-
 	// build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(fromName, passphrase, msgs)
+	txBytes, err := txBldr.BuildAndSign(fromName, keys.DefaultKeyPass, msgs)
 	if err != nil {
 		return err
 	}
@@ -154,7 +149,12 @@ func PrintUnsignedStdTx(txBldr authtypes.TxBuilder, cliCtx context.CLIContext, m
 		return err
 	}
 
-	json, err := cliCtx.Codec.MarshalJSON(stdTx)
+	var json []byte
+	if viper.GetBool(flags.FlagIndentResponse) {
+		json, err = cliCtx.Codec.MarshalJSONIndent(stdTx, "", "  ")
+	} else {
+		json, err = cliCtx.Codec.MarshalJSON(stdTx)
+	}
 	if err != nil {
 		return err
 	}
@@ -192,12 +192,7 @@ func SignStdTx(
 		}
 	}
 
-	passphrase, err := keys.GetPassphrase(name)
-	if err != nil {
-		return signedStdTx, err
-	}
-
-	return txBldr.SignStdTx(name, passphrase, stdTx, appendSig)
+	return txBldr.SignStdTx(name, keys.DefaultKeyPass, stdTx, appendSig)
 }
 
 // SignStdTxWithSignerAddress attaches a signature to a StdTx and returns a copy of a it.
@@ -219,12 +214,7 @@ func SignStdTxWithSignerAddress(txBldr authtypes.TxBuilder, cliCtx context.CLICo
 		}
 	}
 
-	passphrase, err := keys.GetPassphrase(name)
-	if err != nil {
-		return signedStdTx, err
-	}
-
-	return txBldr.SignStdTx(name, passphrase, stdTx, false)
+	return txBldr.SignStdTx(name, keys.DefaultKeyPass, stdTx, false)
 }
 
 // Read and decode a StdTx from the given filename.  Can pass "-" to read from stdin.
@@ -288,12 +278,12 @@ func adjustGasEstimate(estimate uint64, adjustment float64) uint64 {
 }
 
 func parseQueryResponse(cdc *codec.Codec, rawRes []byte) (uint64, error) {
-	var simulationResult sdk.Result
-	if err := cdc.UnmarshalBinaryLengthPrefixed(rawRes, &simulationResult); err != nil {
+	var gasUsed uint64
+	if err := cdc.UnmarshalBinaryLengthPrefixed(rawRes, &gasUsed); err != nil {
 		return 0, err
 	}
 
-	return simulationResult.GasUsed, nil
+	return gasUsed, nil
 }
 
 // PrepareTxBuilder populates a TxBuilder in preparation for the build of a Tx.
@@ -341,7 +331,7 @@ func buildUnsignedStdTxOffline(txBldr authtypes.TxBuilder, cliCtx context.CLICon
 
 	stdSignMsg, err := txBldr.BuildSignMsg(msgs)
 	if err != nil {
-		return stdTx, nil
+		return stdTx, err
 	}
 
 	return authtypes.NewStdTx(stdSignMsg.Msgs, stdSignMsg.Fee, nil, stdSignMsg.Memo), nil

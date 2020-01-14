@@ -4,17 +4,16 @@ import (
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis - store genesis parameters
 func InitGenesis(ctx sdk.Context, k Keeper, supplyKeeper types.SupplyKeeper, data GenesisState) {
 
-	k.setProposalID(ctx, data.StartingProposalID)
-	k.setDepositParams(ctx, data.DepositParams)
-	k.setVotingParams(ctx, data.VotingParams)
-	k.setTallyParams(ctx, data.TallyParams)
+	k.SetProposalID(ctx, data.StartingProposalID)
+	k.SetDepositParams(ctx, data.DepositParams)
+	k.SetVotingParams(ctx, data.VotingParams)
+	k.SetTallyParams(ctx, data.TallyParams)
 
 	// check if the deposits pool account exists
 	moduleAcc := k.GetGovernanceAccount(ctx)
@@ -24,12 +23,12 @@ func InitGenesis(ctx sdk.Context, k Keeper, supplyKeeper types.SupplyKeeper, dat
 
 	var totalDeposits sdk.Coins
 	for _, deposit := range data.Deposits {
-		k.setDeposit(ctx, deposit.ProposalID, deposit.Depositor, deposit)
-		totalDeposits = totalDeposits.Add(deposit.Amount)
+		k.SetDeposit(ctx, deposit)
+		totalDeposits = totalDeposits.Add(deposit.Amount...)
 	}
 
 	for _, vote := range data.Votes {
-		k.SetVote(ctx, vote.ProposalID, vote.Voter, vote)
+		k.SetVote(ctx, vote)
 	}
 
 	for _, proposal := range data.Proposals {
@@ -57,8 +56,7 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 	depositParams := k.GetDepositParams(ctx)
 	votingParams := k.GetVotingParams(ctx)
 	tallyParams := k.GetTallyParams(ctx)
-
-	proposals := k.GetProposalsFiltered(ctx, nil, nil, StatusNil, 0)
+	proposals := k.GetProposals(ctx)
 
 	var proposalsDeposits Deposits
 	var proposalsVotes Votes

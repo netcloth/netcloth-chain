@@ -1,7 +1,6 @@
 package types
 
-// Crisis module event types
-var (
+const (
 	EventTypeInvariant = "invariant"
 
 	AttributeValueCrisis = ModuleName

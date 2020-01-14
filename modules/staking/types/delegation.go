@@ -352,11 +352,17 @@ func (d Redelegations) String() (out string) {
 // in addition to shares which is more suitable for client responses.
 type DelegationResponse struct {
 	Delegation
-	Balance sdk.Int `json:"balance" yaml:"balance"`
+	Balance sdk.Coin `json:"balance" yaml:"balance"`
 }
 
-func NewDelegationResp(d sdk.AccAddress, v sdk.ValAddress, s sdk.Dec, b sdk.Int) DelegationResponse {
-	return DelegationResponse{NewDelegation(d, v, s), b}
+// NewDelegationResp creates a new DelegationResponse instance
+func NewDelegationResp(
+	delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress, shares sdk.Dec, balance sdk.Coin,
+) DelegationResponse {
+	return DelegationResponse{
+		Delegation: NewDelegation(delegatorAddr, validatorAddr, shares),
+		Balance:    balance,
+	}
 }
 
 // String implements the Stringer interface for DelegationResponse.
@@ -405,19 +411,27 @@ type RedelegationEntryResponse struct {
 	Balance sdk.Int `json:"balance"`
 }
 
-func NewRedelegationResponse(d sdk.AccAddress, vSrc, vDst sdk.ValAddress, entries []RedelegationEntryResponse) RedelegationResponse {
+// NewRedelegationResponse crates a new RedelegationEntryResponse instance.
+func NewRedelegationResponse(
+	delegatorAddr sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, entries []RedelegationEntryResponse,
+) RedelegationResponse {
 	return RedelegationResponse{
-		Redelegation{
-			DelegatorAddress:    d,
-			ValidatorSrcAddress: vSrc,
-			ValidatorDstAddress: vDst,
+		Redelegation: Redelegation{
+			DelegatorAddress:    delegatorAddr,
+			ValidatorSrcAddress: validatorSrc,
+			ValidatorDstAddress: validatorDst,
 		},
-		entries,
+		Entries: entries,
 	}
 }
 
-func NewRedelegationEntryResponse(ch int64, ct time.Time, s sdk.Dec, ib, b sdk.Int) RedelegationEntryResponse {
-	return RedelegationEntryResponse{NewRedelegationEntry(ch, ct, ib, s), b}
+// NewRedelegationEntryResponse creates a new RedelegationEntryResponse instance.
+func NewRedelegationEntryResponse(
+	creationHeight int64, completionTime time.Time, sharesDst sdk.Dec, initialBalance, balance sdk.Int) RedelegationEntryResponse {
+	return RedelegationEntryResponse{
+		RedelegationEntry: NewRedelegationEntry(creationHeight, completionTime, initialBalance, sharesDst),
+		Balance:           balance,
+	}
 }
 
 // String implements the Stringer interface for RedelegationResp.

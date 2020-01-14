@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -14,15 +15,17 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/staking/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // nolint
 const (
 	// TODO: Why can't we just have one string description which can be JSON by convention
-	MaxMonikerLength  = 70
-	MaxIdentityLength = 3000
-	MaxWebsiteLength  = 140
-	MaxDetailsLength  = 280
+	MaxMonikerLength         = 70
+	MaxIdentityLength        = 3000
+	MaxWebsiteLength         = 140
+	MaxSecurityContactLength = 140
+	MaxDetailsLength         = 280
 )
 
 // Implements Validator interface
@@ -67,7 +70,7 @@ func (v Validator) MarshalYAML() (interface{}, error) {
 		SelfDelegation          sdk.Dec
 	}{
 		OperatorAddress:         v.OperatorAddress,
-		ConsPubKey:              sdk.MustBech32ifyConsPub(v.ConsPubKey),
+		ConsPubKey:              sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, v.ConsPubKey),
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
 		Tokens:                  v.Tokens,
@@ -102,6 +105,28 @@ func (v Validators) ToSDKValidators() (validators []exported.ValidatorI) {
 		validators = append(validators, val)
 	}
 	return validators
+}
+
+// Sort Validators sorts validator array in ascending operator address order
+func (v Validators) Sort() {
+	sort.Sort(v)
+}
+
+// Implements sort interface
+func (v Validators) Len() int {
+	return len(v)
+}
+
+// Implements sort interface
+func (v Validators) Less(i, j int) bool {
+	return bytes.Compare(v[i].OperatorAddress, v[j].OperatorAddress) == -1
+}
+
+// Implements sort interface
+func (v Validators) Swap(i, j int) {
+	it := v[i]
+	v[i] = v[j]
+	v[j] = it
 }
 
 // NewValidator - initialize a new validator
@@ -144,7 +169,7 @@ func UnmarshalValidator(cdc *codec.Codec, value []byte) (validator Validator, er
 
 // String returns a human readable string representation of a validator.
 func (v Validator) String() string {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(v.ConsPubKey)
+	bechConsPubKey, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, v.ConsPubKey)
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +210,7 @@ type bechValidator struct {
 
 // MarshalJSON marshals the validator to JSON using Bech32
 func (v Validator) MarshalJSON() ([]byte, error) {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(v.ConsPubKey)
+	bechConsPubKey, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, v.ConsPubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +237,7 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	consPubKey, err := sdk.GetConsPubKeyBech32(bv.ConsPubKey)
+	consPubKey, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, bv.ConsPubKey)
 	if err != nil {
 		return err
 	}
@@ -270,25 +295,27 @@ const DoNotModifyDesc = "[do-not-modify]"
 
 // Description - description fields for a validator
 type Description struct {
-	Moniker  string `json:"moniker" yaml:"moniker"`   // name
-	Identity string `json:"identity" yaml:"identity"` // optional identity signature (ex. UPort or Keybase)
-	Website  string `json:"website" yaml:"website"`   // optional website link
-	Details  string `json:"details" yaml:"details"`   // optional details
+	Moniker         string `json:"moniker" yaml:"moniker"`                   // name
+	Identity        string `json:"identity" yaml:"identity"`                 // optional identity signature (ex. UPort or Keybase)
+	Website         string `json:"website" yaml:"website"`                   // optional website link
+	SecurityContact string `json:"security_contact" yaml:"security_contact"` // optional security contact info
+	Details         string `json:"details" yaml:"details"`                   // optional details
 }
 
 // NewDescription returns a new Description with the provided values.
-func NewDescription(moniker, identity, website, details string) Description {
+func NewDescription(moniker, identity, website, securityContact, details string) Description {
 	return Description{
-		Moniker:  moniker,
-		Identity: identity,
-		Website:  website,
-		Details:  details,
+		Moniker:         moniker,
+		Identity:        identity,
+		Website:         website,
+		SecurityContact: securityContact,
+		Details:         details,
 	}
 }
 
 // UpdateDescription updates the fields of a given description. An error is
 // returned if the resulting description contains an invalid length.
-func (d Description) UpdateDescription(d2 Description) (Description, sdk.Error) {
+func (d Description) UpdateDescription(d2 Description) (Description, error) {
 	if d2.Moniker == DoNotModifyDesc {
 		d2.Moniker = d.Moniker
 	}
@@ -298,31 +325,38 @@ func (d Description) UpdateDescription(d2 Description) (Description, sdk.Error) 
 	if d2.Website == DoNotModifyDesc {
 		d2.Website = d.Website
 	}
+	if d2.SecurityContact == DoNotModifyDesc {
+		d2.SecurityContact = d.SecurityContact
+	}
 	if d2.Details == DoNotModifyDesc {
 		d2.Details = d.Details
 	}
 
-	return Description{
-		Moniker:  d2.Moniker,
-		Identity: d2.Identity,
-		Website:  d2.Website,
-		Details:  d2.Details,
-	}.EnsureLength()
+	return NewDescription(
+		d2.Moniker,
+		d2.Identity,
+		d2.Website,
+		d2.SecurityContact,
+		d2.Details,
+	).EnsureLength()
 }
 
 // EnsureLength ensures the length of a validator's description.
-func (d Description) EnsureLength() (Description, sdk.Error) {
+func (d Description) EnsureLength() (Description, error) {
 	if len(d.Moniker) > MaxMonikerLength {
-		return d, ErrDescriptionLength(DefaultCodespace, "moniker", len(d.Moniker), MaxMonikerLength)
+		return d, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid moniker length; got: %d, max: %d", len(d.Moniker), MaxMonikerLength)
 	}
 	if len(d.Identity) > MaxIdentityLength {
-		return d, ErrDescriptionLength(DefaultCodespace, "identity", len(d.Identity), MaxIdentityLength)
+		return d, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid identity length; got: %d, max: %d", len(d.Identity), MaxIdentityLength)
 	}
 	if len(d.Website) > MaxWebsiteLength {
-		return d, ErrDescriptionLength(DefaultCodespace, "website", len(d.Website), MaxWebsiteLength)
+		return d, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid website length; got: %d, max: %d", len(d.Website), MaxWebsiteLength)
+	}
+	if len(d.SecurityContact) > MaxSecurityContactLength {
+		return d, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid security contact length; got: %d, max: %d", len(d.SecurityContact), MaxSecurityContactLength)
 	}
 	if len(d.Details) > MaxDetailsLength {
-		return d, ErrDescriptionLength(DefaultCodespace, "details", len(d.Details), MaxDetailsLength)
+		return d, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid details length; got: %d, max: %d", len(d.Details), MaxDetailsLength)
 	}
 
 	return d, nil
@@ -348,7 +382,7 @@ func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 
 // SetInitialCommission attempts to set a validator's initial commission. An
 // error is returned if the commission is invalid.
-func (v Validator) SetInitialCommission(commission Commission) (Validator, sdk.Error) {
+func (v Validator) SetInitialCommission(commission Commission) (Validator, error) {
 	if err := commission.Validate(); err != nil {
 		return v, err
 	}
@@ -382,9 +416,9 @@ func (v Validator) TokensFromSharesRoundUp(shares sdk.Dec) sdk.Dec {
 
 // SharesFromTokens returns the shares of a delegation given a bond amount. It
 // returns an error if the validator has no tokens.
-func (v Validator) SharesFromTokens(amt sdk.Int) (sdk.Dec, sdk.Error) {
+func (v Validator) SharesFromTokens(amt sdk.Int) (sdk.Dec, error) {
 	if v.Tokens.IsZero() {
-		return sdk.ZeroDec(), ErrInsufficientShares(DefaultCodespace)
+		return sdk.ZeroDec(), ErrInsufficientShares
 	}
 
 	return v.GetDelegatorShares().MulInt(amt).QuoInt(v.GetTokens()), nil
@@ -392,9 +426,9 @@ func (v Validator) SharesFromTokens(amt sdk.Int) (sdk.Dec, sdk.Error) {
 
 // SharesFromTokensTruncated returns the truncated shares of a delegation given
 // a bond amount. It returns an error if the validator has no tokens.
-func (v Validator) SharesFromTokensTruncated(amt sdk.Int) (sdk.Dec, sdk.Error) {
+func (v Validator) SharesFromTokensTruncated(amt sdk.Int) (sdk.Dec, error) {
 	if v.Tokens.IsZero() {
-		return sdk.ZeroDec(), ErrInsufficientShares(DefaultCodespace)
+		return sdk.ZeroDec(), ErrInsufficientShares
 	}
 
 	return v.GetDelegatorShares().MulInt(amt).QuoTruncate(v.GetTokens().ToDec()), nil

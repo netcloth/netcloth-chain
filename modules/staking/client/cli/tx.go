@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netcloth/netcloth-chain/client/flags"
+
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -18,7 +20,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/staking/types"
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
@@ -33,7 +34,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	stakingTxCmd.AddCommand(client.PostCommands(
+	stakingTxCmd.AddCommand(flags.PostCommands(
 		GetCmdCreateValidator(cdc),
 		GetCmdEditValidator(cdc),
 		GetCmdDelegate(cdc),
@@ -68,10 +69,10 @@ func GetCmdCreateValidator(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsCommissionCreate)
 	cmd.Flags().AddFlagSet(FsMinSelfDelegation)
 
-	cmd.Flags().String(FlagIP, "", fmt.Sprintf("The node's public IP. It takes effect only when used in combination with --%s", client.FlagGenerateOnly))
+	cmd.Flags().String(FlagIP, "", fmt.Sprintf("The node's public IP. It takes effect only when used in combination with --%s", flags.FlagGenerateOnly))
 	cmd.Flags().String(FlagNodeID, "", "The node's ID")
 
-	cmd.MarkFlagRequired(client.FlagFrom)
+	cmd.MarkFlagRequired(flags.FlagFrom)
 	cmd.MarkFlagRequired(FlagAmount)
 	cmd.MarkFlagRequired(FlagPubKey)
 	cmd.MarkFlagRequired(FlagMoniker)
@@ -90,12 +91,13 @@ func GetCmdEditValidator(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			valAddr := cliCtx.GetFromAddress()
-			description := types.Description{
-				Moniker:  viper.GetString(FlagMoniker),
-				Identity: viper.GetString(FlagIdentity),
-				Website:  viper.GetString(FlagWebsite),
-				Details:  viper.GetString(FlagDetails),
-			}
+			description := types.NewDescription(
+				viper.GetString(FlagMoniker),
+				viper.GetString(FlagIdentity),
+				viper.GetString(FlagWebsite),
+				viper.GetString(FlagSecurityContact),
+				viper.GetString(FlagDetails),
+			)
 
 			var newRate *sdk.Dec
 
@@ -115,8 +117,9 @@ func GetCmdEditValidator(cdc *codec.Codec) *cobra.Command {
 			if minSelfDelegationString != "" {
 				msb, ok := sdk.NewIntFromString(minSelfDelegationString)
 				if !ok {
-					return fmt.Errorf(types.ErrMinSelfDelegationInvalid(types.DefaultCodespace).Error())
+					return types.ErrMinSelfDelegationInvalid
 				}
+
 				newMinSelfDelegation = &msb
 			}
 
@@ -129,6 +132,7 @@ func GetCmdEditValidator(cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().AddFlagSet(fsDescriptionEdit)
 	cmd.Flags().AddFlagSet(fsCommissionUpdate)
+	cmd.Flags().AddFlagSet(FsMinSelfDelegation)
 
 	return cmd
 }
@@ -250,7 +254,7 @@ $ %s tx staking unbond nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100pnch
 
 var (
 	defaultTokens                  = sdk.TokensFromConsensusPower(100)
-	defaultAmount                  = defaultTokens.String() + nchtypes.DefaultBondDenom
+	defaultAmount                  = defaultTokens.String() + sdk.DefaultBondDenom
 	defaultCommissionRate          = "0.1"
 	defaultCommissionMaxRate       = "0.2"
 	defaultCommissionMaxChangeRate = "0.01"
@@ -265,6 +269,7 @@ func CreateValidatorMsgHelpers(ipDefault string) (fs *flag.FlagSet, nodeIDFlag, 
 	fsCreateValidator.String(FlagIP, ipDefault, "The node's public IP")
 	fsCreateValidator.String(FlagNodeID, "", "The node's NodeID")
 	fsCreateValidator.String(FlagWebsite, "", "The validator's (optional) website")
+	fsCreateValidator.String(FlagSecurityContact, "", "The validator's (optional) security contact email")
 	fsCreateValidator.String(FlagDetails, "", "The validator's (optional) details")
 	fsCreateValidator.String(FlagIdentity, "", "The (optional) identity signature (ex. UPort or Keybase)")
 	fsCreateValidator.AddFlagSet(FsCommissionCreate)
@@ -297,21 +302,23 @@ func PrepareFlagsForTxCreateValidator(
 	}
 
 	website := viper.GetString(FlagWebsite)
+	securityContact := viper.GetString(FlagSecurityContact)
 	details := viper.GetString(FlagDetails)
 	identity := viper.GetString(FlagIdentity)
 
-	viper.Set(client.FlagChainID, chainID)
-	viper.Set(client.FlagFrom, viper.GetString(client.FlagName))
+	viper.Set(flags.FlagChainID, chainID)
+	viper.Set(flags.FlagFrom, viper.GetString(flags.FlagName))
 	viper.Set(FlagNodeID, nodeID)
 	viper.Set(FlagIP, ip)
-	viper.Set(FlagPubKey, sdk.MustBech32ifyConsPub(valPubKey))
+	viper.Set(FlagPubKey, sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeConsPub, valPubKey))
 	viper.Set(FlagMoniker, config.Moniker)
 	viper.Set(FlagWebsite, website)
+	viper.Set(FlagSecurityContact, securityContact)
 	viper.Set(FlagDetails, details)
 	viper.Set(FlagIdentity, identity)
 
 	if config.Moniker == "" {
-		viper.Set(FlagMoniker, viper.GetString(client.FlagName))
+		viper.Set(FlagMoniker, viper.GetString(flags.FlagName))
 	}
 	if viper.GetString(FlagAmount) == "" {
 		viper.Set(FlagAmount, defaultAmount)
@@ -341,7 +348,7 @@ func BuildCreateValidatorMsg(cliCtx context.CLIContext, txBldr auth.TxBuilder) (
 	valAddr := cliCtx.GetFromAddress()
 	pkStr := viper.GetString(FlagPubKey)
 
-	pk, err := sdk.GetConsPubKeyBech32(pkStr)
+	pk, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, pkStr)
 	if err != nil {
 		return txBldr, nil, err
 	}
@@ -350,6 +357,7 @@ func BuildCreateValidatorMsg(cliCtx context.CLIContext, txBldr auth.TxBuilder) (
 		viper.GetString(FlagMoniker),
 		viper.GetString(FlagIdentity),
 		viper.GetString(FlagWebsite),
+		viper.GetString(FlagSecurityContact),
 		viper.GetString(FlagDetails),
 	)
 
@@ -366,14 +374,14 @@ func BuildCreateValidatorMsg(cliCtx context.CLIContext, txBldr auth.TxBuilder) (
 	msbStr := viper.GetString(FlagMinSelfDelegation)
 	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
 	if !ok {
-		return txBldr, nil, fmt.Errorf(types.ErrMinSelfDelegationInvalid(types.DefaultCodespace).Error())
+		return txBldr, nil, types.ErrMinSelfDelegationInvalid
 	}
 
 	msg := types.NewMsgCreateValidator(
 		sdk.ValAddress(valAddr), pk, amount, description, commissionRates, minSelfDelegation,
 	)
 
-	if viper.GetBool(client.FlagGenerateOnly) {
+	if viper.GetBool(flags.FlagGenerateOnly) {
 		ip := viper.GetString(FlagIP)
 		nodeID := viper.GetString(FlagNodeID)
 		if nodeID != "" && ip != "" {

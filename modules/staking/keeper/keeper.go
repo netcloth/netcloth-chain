@@ -23,21 +23,18 @@ var _ types.DelegationSet = Keeper{}
 // keeper of the staking store
 type Keeper struct {
 	storeKey           sdk.StoreKey
-	storeTKey          sdk.StoreKey
 	cdc                *codec.Codec
 	supplyKeeper       types.SupplyKeeper
 	hooks              types.StakingHooks
 	paramstore         params.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List
-
-	// codespace
-	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, supplyKeeper types.SupplyKeeper,
-	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(
+	cdc *codec.Codec, key sdk.StoreKey, supplyKeeper types.SupplyKeeper, paramstore params.Subspace,
+) Keeper {
 
 	// ensure bonded and not bonded module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.BondedPoolName); addr == nil {
@@ -50,20 +47,18 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, supplyKeeper types.Supp
 
 	return Keeper{
 		storeKey:           key,
-		storeTKey:          tkey,
 		cdc:                cdc,
 		supplyKeeper:       supplyKeeper,
 		paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
 		hooks:              nil,
 		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),
 		validatorCacheList: list.New(),
-		codespace:          codespace,
 	}
 }
 
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // Set the validator hooks
@@ -73,11 +68,6 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 	}
 	k.hooks = sh
 	return k
-}
-
-// return the codespace
-func (k Keeper) Codespace() sdk.CodespaceType {
-	return k.codespace
 }
 
 // Load the last total validator power.
@@ -96,24 +86,4 @@ func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(power)
 	store.Set(types.LastTotalPowerKey, b)
-}
-
-func (k Keeper) EndBlock(ctx sdk.Context) {
-	p := k.GetParams(ctx)
-
-	if ctx.BlockTime().Unix() < p.NextExtendingTime {
-		return
-	}
-
-	if p.MaxValidatorsExtending > p.MaxValidators {
-		e := p.MaxValidatorsExtendingSpeed
-		if p.MaxValidatorsExtending - p.MaxValidators < p.MaxValidatorsExtendingSpeed {
-			e = p.MaxValidatorsExtending - p.MaxValidators
-		}
-
-		p.MaxValidators += e
-	}
-
-	p.NextExtendingTime += types.MaxValidatorsExtendingInterval
-	k.SetParams(ctx, p)
 }

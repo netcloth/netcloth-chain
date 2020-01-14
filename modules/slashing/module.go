@@ -2,6 +2,7 @@ package slashing
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -12,7 +13,8 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/slashing/client/cli"
 	"github.com/netcloth/netcloth-chain/modules/slashing/client/rest"
-	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	"github.com/netcloth/netcloth-chain/modules/slashing/internal/types"
+	stakingkeeper "github.com/netcloth/netcloth-chain/modules/staking/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 )
@@ -22,97 +24,103 @@ var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
-// app module basics object
+// AppModuleBasic defines the basic application module used by the slashing module.
 type AppModuleBasic struct{}
 
 var _ module.AppModuleBasic = AppModuleBasic{}
 
-// module name
+// Name returns the slashing module's name.
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-// register module codec
+// RegisterCodec registers the slashing module's types for the given codec.
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	RegisterCodec(cdc)
 }
 
-// default genesis state
+// DefaultGenesis returns default genesis state as raw bytes for the slashing
+// module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 	return ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
-// module validate genesis
+// ValidateGenesis performs genesis state validation for the slashing module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	var data GenesisState
-	err := ModuleCdc.UnmarshalJSON(bz, &data)
-	if err != nil {
-		return err
+	if err := ModuleCdc.UnmarshalJSON(bz, &data); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
+
 	return ValidateGenesis(data)
 }
 
-// register rest routes
+// RegisterRESTRoutes registers the REST routes for the slashing module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
 	rest.RegisterRoutes(ctx, rtr)
 }
 
-// get the root tx command of this module
+// GetTxCmd returns the root tx command for the slashing module.
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetTxCmd(cdc)
 }
 
-// get the root query command of this module
+// GetQueryCmd returns no root query command for the slashing module.
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
-//___________________________
-// app module
+//____________________________________________________________________________
+
+// AppModule implements an application module for the slashing module.
 type AppModule struct {
 	AppModuleBasic
+
 	keeper        Keeper
-	stakingKeeper types.StakingKeeper
+	accountKeeper types.AccountKeeper
+	stakingKeeper stakingkeeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper, stakingKeeper types.StakingKeeper) AppModule {
+func NewAppModule(keeper Keeper, accountKeeper types.AccountKeeper, stakingKeeper stakingkeeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
+		accountKeeper:  accountKeeper,
 		stakingKeeper:  stakingKeeper,
 	}
 }
 
-// module name
+// Name returns the slashing module's name.
 func (AppModule) Name() string {
 	return ModuleName
 }
 
-// register invariants
+// RegisterInvariants registers the slashing module invariants.
 func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// module message route name
+// Route returns the message routing key for the slashing module.
 func (AppModule) Route() string {
 	return RouterKey
 }
 
-// module handler
+// NewHandler returns an sdk.Handler for the slashing module.
 func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.keeper)
 }
 
-// module querier route name
+// QuerierRoute returns the slashing module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return QuerierRoute
 }
 
-// module querier
+// NewQuerierHandler returns the slashing module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
-// module init-genesis
+// InitGenesis performs genesis initialization for the slashing module. It returns
+// no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -120,18 +128,20 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-// module export genesis
+// ExportGenesis returns the exported genesis state as raw bytes for the slashing
+// module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return ModuleCdc.MustMarshalJSON(gs)
 }
 
-// module begin-block
+// BeginBlock returns the begin blocker for the slashing module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	BeginBlocker(ctx, req, am.keeper)
 }
 
-// module end-block
+// EndBlock returns the end blocker for the slashing module. It returns no validator
+// updates.
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

@@ -5,10 +5,11 @@ import (
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	"github.com/netcloth/netcloth-chain/modules/slashing/internal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -22,7 +23,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	slashingTxCmd.AddCommand(client.PostCommands(
+	slashingTxCmd.AddCommand(flags.PostCommands(
 		GetCmdUnjail(cdc),
 	)...)
 
