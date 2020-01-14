@@ -1,13 +1,12 @@
-// nolint: golint
 package baseapp
 
 import (
 	"fmt"
+	"io"
 
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/store"
-	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -29,9 +28,20 @@ func SetMinGasPrices(gasPricesStr string) func(*BaseApp) {
 	return func(bap *BaseApp) { bap.setMinGasPrices(gasPrices) }
 }
 
-// SetHaltHeight returns a BaseApp option function that sets the halt height.
-func SetHaltHeight(height uint64) func(*BaseApp) {
-	return func(bap *BaseApp) { bap.setHaltHeight(height) }
+// SetHaltHeight returns a BaseApp option function that sets the halt block height.
+func SetHaltHeight(blockHeight uint64) func(*BaseApp) {
+	return func(bap *BaseApp) { bap.setHaltHeight(blockHeight) }
+}
+
+// SetHaltTime returns a BaseApp option function that sets the halt block time.
+func SetHaltTime(haltTime uint64) func(*BaseApp) {
+	return func(bap *BaseApp) { bap.setHaltTime(haltTime) }
+}
+
+// SetInterBlockCache provides a BaseApp option function that sets the
+// inter-block cache.
+func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
+	return func(app *BaseApp) { app.setInterBlockCache(cache) }
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -91,20 +101,6 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	app.anteHandler = ah
 }
 
-func (app *BaseApp) SetFeePreprocessHandler(fh types.FeePreprocessHandler) {
-	if app.sealed {
-		panic("SetFeePreprocessHandler on sealed BaseApp")
-	}
-	app.feePreprocessHandler = fh
-}
-
-func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {
-	if app.sealed {
-		panic("SetFeeRefundHandler on sealed BaseApp")
-	}
-	app.feeRefundHandler = fh
-}
-
 func (app *BaseApp) SetAddrPeerFilter(pf sdk.PeerFilter) {
 	if app.sealed {
 		panic("SetAddrPeerFilter() on sealed BaseApp")
@@ -124,4 +120,26 @@ func (app *BaseApp) SetFauxMerkleMode() {
 		panic("SetFauxMerkleMode() on sealed BaseApp")
 	}
 	app.fauxMerkleMode = true
+}
+
+// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
+// CommitMultiStore.
+func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
+	app.cms.SetTracer(w)
+}
+
+// SetStoreLoader allows us to customize the rootMultiStore initialization.
+func (app *BaseApp) SetStoreLoader(loader StoreLoader) {
+	if app.sealed {
+		panic("SetStoreLoader() on sealed BaseApp")
+	}
+	app.storeLoader = loader
+}
+
+// SetRouter allows us to customize the router.
+func (app *BaseApp) SetRouter(router sdk.Router) {
+	if app.sealed {
+		panic("SetRouter() on sealed BaseApp")
+	}
+	app.router = router
 }

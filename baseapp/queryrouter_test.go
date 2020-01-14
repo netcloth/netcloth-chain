@@ -10,7 +10,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-var testQuerier = func(_ sdk.Context, _ []string, _ abci.RequestQuery) (res []byte, err sdk.Error) {
+var testQuerier = func(_ sdk.Context, _ []string, _ abci.RequestQuery) ([]byte, error) {
 	return nil, nil
 }
 
