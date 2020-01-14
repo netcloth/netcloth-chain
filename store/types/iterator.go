@@ -1,6 +1,8 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // KVStorePrefixIteratorPaginated returns iterator over items in the selected page.
 // Items iterated and skipped in ascending order.
