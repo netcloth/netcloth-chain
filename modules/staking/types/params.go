@@ -32,6 +32,10 @@ const (
 
 	// Default maximum entries in a UBD/RED pair
 	DefaultMaxEntries uint16 = 7
+
+	// DefaultHistorical entries is 0 since it must only be non-zero for
+	// IBC connected chains
+	DefaultHistoricalEntries uint16 = 0
 )
 
 var (
@@ -49,6 +53,7 @@ var (
 	KeyMaxEntries                  = []byte("KeyMaxEntries")
 	KeyBondDenom                   = []byte("BondDenom")
 	KeyMaxLever                    = []byte("MaxLever")
+	KeyHistoricalEntries           = []byte("HistoricalEntries")
 )
 
 var _ params.ParamSet = (*Params)(nil)
@@ -62,13 +67,16 @@ type Params struct {
 	NextExtendingTime           int64         `json:"next_extending_time" yaml:"next_extending_time"`
 	MaxEntries                  uint16        `json:"max_entries" yaml:"max_entries"` // max entries for either unbonding delegation or redelegation (per pair/trio)
 	// note: we need to be a bit careful about potential overflow here, since this is user-determined
-	BondDenom string  `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
-	MaxLever  sdk.Dec `json:"max_lever" yaml:"max_lever"`   // max lever: total user delegate / self delegate < max_lever
+	BondDenom         string  `json:"bond_denom" yaml:"bond_denom"`                 // bondable coin denomination
+	MaxLever          sdk.Dec `json:"max_lever" yaml:"max_lever"`                   // max lever: total user delegate / self delegate < max_lever
+	HistoricalEntries uint16  `json:"historical_entries" yaml:"historical_entries"` // number of historical entries to persist
+
 }
 
 // NewParams creates a new Params instance
-func NewParams(unbondingTime time.Duration, maxValidators, maxValidatorsExtending, maxValidatorsExtendingSpeed uint16, nextExtendingTime int64, maxEntries uint16,
-	bondDenom string, maxLeverRate sdk.Dec) Params {
+func NewParams(unbondingTime time.Duration, maxValidators, maxValidatorsExtending,
+	maxValidatorsExtendingSpeed uint16, nextExtendingTime int64, maxEntries uint16,
+	bondDenom string, maxLeverRate sdk.Dec, historicalEntries uint16) Params {
 
 	return Params{
 		UnbondingTime:               unbondingTime,
@@ -79,6 +87,7 @@ func NewParams(unbondingTime time.Duration, maxValidators, maxValidatorsExtendin
 		MaxEntries:                  maxEntries,
 		BondDenom:                   bondDenom,
 		MaxLever:                    maxLeverRate,
+		HistoricalEntries:           historicalEntries,
 	}
 }
 
@@ -93,6 +102,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		params.NewParamSetPair(KeyMaxEntries, &p.MaxEntries, validateMaxEntries),
 		params.NewParamSetPair(KeyBondDenom, &p.BondDenom, validateBondDenom),
 		params.NewParamSetPair(KeyMaxLever, &p.MaxLever, validateMaxLever),
+		params.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
 	}
 }
 
@@ -114,7 +124,8 @@ func DefaultParams() Params {
 		tmtime.Now().Unix()+MaxValidatorsExtendingInterval,
 		DefaultMaxEntries,
 		nchtypes.DefaultBondDenom,
-		DefaultMaxLever)
+		DefaultMaxLever,
+		DefaultHistoricalEntries)
 }
 
 // String returns a human readable string representation of the parameters.
@@ -127,6 +138,7 @@ func (p Params) String() string {
   Next Extending Time            : %d
   Max Entries                    : %d
   Bonded Coin Denom              : %s
+  Historical Entries			 : %d
   Max Lever                      : %s`,
 		p.UnbondingTime,
 		p.MaxValidators,
@@ -135,6 +147,7 @@ func (p Params) String() string {
 		p.NextExtendingTime,
 		p.MaxEntries,
 		p.BondDenom,
+		p.HistoricalEntries,
 		p.MaxLever)
 }
 
@@ -258,6 +271,15 @@ func validateBondDenom(i interface{}) error {
 	}
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateHistoricalEntries(i interface{}) error {
+	_, ok := i.(uint16)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	return nil

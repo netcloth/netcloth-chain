@@ -7,6 +7,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/ipal/types"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 type Keeper struct {
@@ -14,10 +15,9 @@ type Keeper struct {
 	cdc          *codec.Codec
 	supplyKeeper types.SupplyKeeper
 	paramstore   params.Subspace
-	codespace    sdk.CodespaceType
 }
 
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace) Keeper {
 	if addr := supplyKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
@@ -27,7 +27,6 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.Suppl
 		cdc:          cdc,
 		supplyKeeper: supplyKeeper,
 		paramstore:   paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:    codespace,
 	}
 }
 
@@ -104,11 +103,11 @@ func (k Keeper) deleteServiceNode(ctx sdk.Context, n types.ServiceNode) {
 	k.delServiceNodeByMonikerIndex(ctx, n.Moniker)
 }
 
-func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) sdk.Error {
+func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
-func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err sdk.Error) {
+func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err error) {
 	minBond := k.GetMinBond(ctx)
 	n, found := k.GetServiceNode(ctx, m.OperatorAddress)
 	if found {
@@ -136,7 +135,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 
 			k.createServiceNode(ctx, m)
 		} else {
-			return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String()))
+			return sdkerrors.Wrapf(types.ErrBondInsufficient, "bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String())
 		}
 	}
 

@@ -42,13 +42,13 @@ type MsgCIPALClaim struct {
 	UserRequest CIPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
-func (i ServiceInfo) Validate() sdk.Error {
+func (i ServiceInfo) Validate() error {
 	if i.Address == "" {
-		return ErrEmptyInputs("server address empty")
+		return sdkerrors.Wrap(ErrEmptyInputs, "server address empty")
 	}
 
 	if len(i.Address) > maxServerAddressLength {
-		return ErrStringTooLong("server address too long")
+		return sdkerrors.Wrap(ErrStringTooLong, "server address too long")
 	}
 
 	return nil
@@ -106,7 +106,7 @@ func (msg MsgCIPALClaim) Type() string { return TypeMsgCIPALClaim }
 
 func (msg MsgCIPALClaim) ValidateBasic() error {
 	if msg.From.Empty() {
-		return sdkerrors.Wrap(ErrInvalidAddress, "missing sender address")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
 	err := msg.UserRequest.Params.Validate()
@@ -117,7 +117,7 @@ func (msg MsgCIPALClaim) ValidateBasic() error {
 	pubKey := msg.UserRequest.Sig.PubKey
 	signBytes := msg.UserRequest.Params.GetSignBytes()
 	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
-		return ErrInvalidSignature("user request signature invalid")
+		return sdkerrors.Wrap(ErrInvalidSignature, "user request signature invalid")
 	}
 
 	return nil

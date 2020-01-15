@@ -10,7 +10,6 @@ const (
 	StoreKey          = types.StoreKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
-	DefaultCodespace  = types.DefaultCodespace
 	DefaultParamspace = keeper.DefaultParamspace
 )
 
@@ -20,10 +19,16 @@ var (
 	RegisterCodec          = types.RegisterCodec
 	NewServerNodeObject    = types.NewServiceNode
 	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
-	ErrEmptyInputs         = types.ErrEmptyInputs
 	ModuleCdc              = types.ModuleCdc
 	AttributeValueCategory = types.AttributeValueCategory
 	NewEndpoint            = types.NewEndpoint
+	ErrEmptyInputs         = types.ErrEmptyInputs
+	ErrBadDenom            = types.ErrBadDenom
+	ErrBondInsufficient    = types.ErrBondInsufficient
+	ErrMonikerExist        = types.ErrMonikerExist
+	ErrEndpointsFormat     = types.ErrEndpointsFormat
+	ErrEndpointsEmpty      = types.ErrEndpointsEmpty
+	ErrEndpointsDuplicate  = types.ErrEndpointsDuplicate
 )
 
 type (

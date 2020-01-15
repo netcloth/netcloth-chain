@@ -1,16 +1,16 @@
 package keeper
 
 import (
-	"fmt"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	abci "github.com/tendermint/tendermint/abci/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 func NewQuerier(k Keeper) sdk.Querier {
-	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
@@ -21,56 +21,56 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryServiceNodes:
 			return queryServiceNodes(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown ipal query endpoint")
 		}
 	}
 }
 
-func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryParameters(ctx sdk.Context, k Keeper) ([]byte, error) {
 	params := k.GetParams(ctx)
 
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
 	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return res, nil
 }
 
-func queryServiceNodeList(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryServiceNodeList(ctx sdk.Context, k Keeper) ([]byte, error) {
 	serviceNodes := k.GetAllServiceNodes(ctx)
 	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNodes)
 	if err != nil {
-		return []byte{}, sdk.ErrInternal(err.Error())
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return bz, nil
 }
 
-func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
 	var queryParams types.QueryServiceNodeParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
 	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
 	serviceNode, found := k.GetServiceNode(ctx, queryParams.AccAddr)
 	if found {
 		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNode)
 		if err != nil {
-			return []byte{}, sdk.ErrInternal(err.Error())
+			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 		}
 		return bz, nil
 	}
 
-	return nil, sdk.ErrInternal("not found")
+	return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "not found")
 }
 
-func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
 	var params types.QueryServiceNodesParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse accAddr: %s", err))
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
 	servcieNodes := types.ServiceNodes{}
@@ -83,7 +83,7 @@ func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 
 	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, servcieNodes)
 	if err != nil {
-		return []byte{}, sdk.ErrInternal(err.Error())
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return bz, nil
 }
