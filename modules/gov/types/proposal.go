@@ -9,8 +9,6 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-const DefaultStartingProposalID uint64 = 1
-
 // Proposal defines a struct used by the governance module to allow for voting
 // on network changes.
 type Proposal struct {

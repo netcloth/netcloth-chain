@@ -5,7 +5,6 @@ import (
 	stypes "github.com/netcloth/netcloth-chain/store/types"
 )
 
-// Import cosmos-sdk/types/store.go for convenience.
 // nolint
 type (
 	PruningOptions   = types.PruningOptions

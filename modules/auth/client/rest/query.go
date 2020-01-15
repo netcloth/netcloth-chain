@@ -8,10 +8,10 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	genutilrest "github.com/netcloth/netcloth-chain/modules/genutil/client/rest"
-	"github.com/netcloth/netcloth-chain/client/context"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )
@@ -38,7 +38,6 @@ func QueryAccountRequestHandlerFn(storeName string, cliCtx context.CLIContext) h
 		account, height, err := accGetter.GetAccountWithHeight(addr)
 		if err != nil {
 			// TODO: Handle more appropriately based on the error type.
-			// Ref: https://github.com/cosmos/cosmos-sdk/issues/4923
 			if err := accGetter.EnsureExists(addr); err != nil {
 				cliCtx = cliCtx.WithHeight(height)
 				rest.PostProcessResponse(w, cliCtx, types.BaseAccount{})

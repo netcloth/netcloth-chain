@@ -15,13 +15,13 @@ import (
 // Keeper defines the governance module Keeper
 type Keeper struct {
 	// The reference to the Paramstore to get and set gov specific params
-	paramSpace types.ParamSubspace
+	paramSpace ParamSubspace
 
 	// The SupplyKeeper to reduce the supply of the network
-	supplyKeeper types.SupplyKeeper
+	supplyKeeper SupplyKeeper
 
 	// The reference to the DelegationSet and ValidatorSet to get information about validators and delegators
-	sk types.StakingKeeper
+	sk StakingKeeper
 
 	// The (unexposed) keys used to access the stores from the Context.
 	storeKey sdk.StoreKey
@@ -30,7 +30,7 @@ type Keeper struct {
 	cdc *codec.Codec
 
 	// Proposal router
-	router types.Router
+	router Router
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -46,8 +46,8 @@ type Keeper struct {
 //
 // CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
-	cdc *codec.Codec, key sdk.StoreKey, paramSpace types.ParamSubspace,
-	supplyKeeper types.SupplyKeeper, sk types.StakingKeeper, rtr types.Router,
+	cdc *codec.Codec, key sdk.StoreKey, paramSpace ParamSubspace,
+	supplyKeeper SupplyKeeper, sk StakingKeeper, rtr Router,
 ) Keeper {
 
 	// ensure governance module account is set

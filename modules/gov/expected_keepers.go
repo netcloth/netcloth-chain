@@ -1,4 +1,4 @@
-package types
+package gov
 
 import (
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
@@ -13,12 +13,11 @@ type ParamSubspace interface {
 	Set(ctx sdk.Context, key []byte, param interface{})
 }
 
-// SupplyKeeper defines the expected supply keeper for module accounts (noalias)
+// SupplyKeeper defines the supply Keeper for module accounts
 type SupplyKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx sdk.Context, name string) supplyexported.ModuleAccountI
 
-	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
 	SetModuleAccount(sdk.Context, supplyexported.ModuleAccountI)
 
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
