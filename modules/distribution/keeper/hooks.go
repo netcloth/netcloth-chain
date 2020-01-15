@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -40,7 +41,7 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, _ sdk.ConsAddress, valAddr
 
 		// remainder to community pool
 		feePool := h.k.GetFeePool(ctx)
-		feePool.CommunityPool = feePool.CommunityPool.Add(remainder)
+		feePool.CommunityPool = feePool.CommunityPool.Add(remainder...)
 		h.k.SetFeePool(ctx, feePool)
 
 		// add to validator account
@@ -57,7 +58,7 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, _ sdk.ConsAddress, valAddr
 
 	// add outstanding to community pool
 	feePool := h.k.GetFeePool(ctx)
-	feePool.CommunityPool = feePool.CommunityPool.Add(outstanding)
+	feePool.CommunityPool = feePool.CommunityPool.Add(outstanding...)
 	h.k.SetFeePool(ctx, feePool)
 
 	// delete outstanding

@@ -1,11 +1,17 @@
 package types
 
 import (
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/staking"
 	stakingexported "github.com/netcloth/netcloth-chain/modules/staking/exported"
 	supplyexported "github.com/netcloth/netcloth-chain/modules/supply/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
+
+// AccountKeeper defines the expected account keeper used for simulations (noalias)
+type AccountKeeper interface {
+	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authexported.Account
+}
 
 // StakingKeeper expected staking keeper (noalias)
 type StakingKeeper interface {
@@ -63,7 +69,7 @@ type SupplyKeeper interface {
 
 	SetModuleAccount(sdk.Context, supplyexported.ModuleAccountI)
 
-	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule string, recipientModule string, amt sdk.Coins) sdk.Error
-	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
-	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
+	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule string, recipientModule string, amt sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 }

@@ -12,15 +12,6 @@ import (
 
 const (
 	DefaultParamspace                  = keeper.DefaultParamspace
-	DefaultCodespace                   = types.DefaultCodespace
-	CodeInvalidValidator               = types.CodeInvalidValidator
-	CodeInvalidDelegation              = types.CodeInvalidDelegation
-	CodeInvalidInput                   = types.CodeInvalidInput
-	CodeValidatorJailed                = types.CodeValidatorJailed
-	CodeInvalidAddress                 = types.CodeInvalidAddress
-	CodeUnauthorized                   = types.CodeUnauthorized
-	CodeInternal                       = types.CodeInternal
-	CodeUnknownRequest                 = types.CodeUnknownRequest
 	ModuleName                         = types.ModuleName
 	StoreKey                           = types.StoreKey
 	TStoreKey                          = types.TStoreKey
@@ -45,6 +36,7 @@ const (
 	QueryDelegatorValidator            = types.QueryDelegatorValidator
 	QueryPool                          = types.QueryPool
 	QueryParameters                    = types.QueryParameters
+	QueryHistoricalInfo                = types.QueryHistoricalInfo
 	MaxMonikerLength                   = types.MaxMonikerLength
 	MaxIdentityLength                  = types.MaxIdentityLength
 	MaxWebsiteLength                   = types.MaxWebsiteLength
@@ -53,8 +45,6 @@ const (
 )
 
 var (
-	DefaultMaxLever = types.DefaultMaxLever
-
 	// functions aliases
 	RegisterInvariants                 = keeper.RegisterInvariants
 	AllInvariants                      = keeper.AllInvariants
@@ -86,7 +76,11 @@ var (
 	NewDelegationResp                  = types.NewDelegationResp
 	NewRedelegationResponse            = types.NewRedelegationResponse
 	NewRedelegationEntryResponse       = types.NewRedelegationEntryResponse
-	ErrNilValidatorAddr                = types.ErrNilValidatorAddr
+	NewHistoricalInfo                  = types.NewHistoricalInfo
+	MustMarshalHistoricalInfo          = types.MustMarshalHistoricalInfo
+	MustUnmarshalHistoricalInfo        = types.MustUnmarshalHistoricalInfo
+	UnmarshalHistoricalInfo            = types.UnmarshalHistoricalInfo
+	ErrEmptyValidatorAddr              = types.ErrEmptyValidatorAddr
 	ErrBadValidatorAddr                = types.ErrBadValidatorAddr
 	ErrNoValidatorFound                = types.ErrNoValidatorFound
 	ErrValidatorOwnerExists            = types.ErrValidatorOwnerExists
@@ -94,7 +88,6 @@ var (
 	ErrValidatorPubKeyTypeNotSupported = types.ErrValidatorPubKeyTypeNotSupported
 	ErrValidatorJailed                 = types.ErrValidatorJailed
 	ErrBadRemoveValidator              = types.ErrBadRemoveValidator
-	ErrDescriptionLength               = types.ErrDescriptionLength
 	ErrCommissionNegative              = types.ErrCommissionNegative
 	ErrCommissionHuge                  = types.ErrCommissionHuge
 	ErrCommissionGTMaxRate             = types.ErrCommissionGTMaxRate
@@ -105,7 +98,7 @@ var (
 	ErrSelfDelegationBelowMinimum      = types.ErrSelfDelegationBelowMinimum
 	ErrMinSelfDelegationInvalid        = types.ErrMinSelfDelegationInvalid
 	ErrMinSelfDelegationDecreased      = types.ErrMinSelfDelegationDecreased
-	ErrNilDelegatorAddr                = types.ErrNilDelegatorAddr
+	ErrEmptyDelegatorAddr              = types.ErrEmptyDelegatorAddr
 	ErrBadDenom                        = types.ErrBadDenom
 	ErrBadDelegationAddr               = types.ErrBadDelegationAddr
 	ErrBadDelegationAmount             = types.ErrBadDelegationAmount
@@ -123,15 +116,15 @@ var (
 	ErrBadRedelegationAddr             = types.ErrBadRedelegationAddr
 	ErrNoRedelegation                  = types.ErrNoRedelegation
 	ErrSelfRedelegation                = types.ErrSelfRedelegation
-	ErrVerySmallRedelegation           = types.ErrVerySmallRedelegation
+	ErrTinyRedelegationAmount          = types.ErrTinyRedelegationAmount
 	ErrBadRedelegationDst              = types.ErrBadRedelegationDst
 	ErrTransitiveRedelegation          = types.ErrTransitiveRedelegation
 	ErrMaxRedelegationEntries          = types.ErrMaxRedelegationEntries
 	ErrDelegatorShareExRateInvalid     = types.ErrDelegatorShareExRateInvalid
-	ErrDelegatorShareExceedMaxLever    = types.ErrDelegatorShareExceedMaxLever
 	ErrBothShareMsgsGiven              = types.ErrBothShareMsgsGiven
 	ErrNeitherShareMsgsGiven           = types.ErrNeitherShareMsgsGiven
-	ErrMissingSignature                = types.ErrMissingSignature
+	ErrInvalidHistoricalInfo           = types.ErrInvalidHistoricalInfo
+	ErrNoHistoricalInfo                = types.ErrNoHistoricalInfo
 	NewGenesisState                    = types.NewGenesisState
 	DefaultGenesisState                = types.DefaultGenesisState
 	NewMultiStakingHooks               = types.NewMultiStakingHooks
@@ -160,6 +153,7 @@ var (
 	GetREDsFromValSrcIndexKey          = types.GetREDsFromValSrcIndexKey
 	GetREDsToValDstIndexKey            = types.GetREDsToValDstIndexKey
 	GetREDsByDelToValDstIndexKey       = types.GetREDsByDelToValDstIndexKey
+	GetHistoricalInfoKey               = types.GetHistoricalInfoKey
 	NewMsgCreateValidator              = types.NewMsgCreateValidator
 	NewMsgEditValidator                = types.NewMsgEditValidator
 	NewMsgDelegate                     = types.NewMsgDelegate
@@ -175,6 +169,7 @@ var (
 	NewQueryBondsParams                = types.NewQueryBondsParams
 	NewQueryRedelegationParams         = types.NewQueryRedelegationParams
 	NewQueryValidatorsParams           = types.NewQueryValidatorsParams
+	NewQueryHistoricalInfoParams       = types.NewQueryHistoricalInfoParams
 	NewValidator                       = types.NewValidator
 	MustMarshalValidator               = types.MustMarshalValidator
 	MustUnmarshalValidator             = types.MustUnmarshalValidator
@@ -197,6 +192,7 @@ var (
 	UnbondingQueueKey                = types.UnbondingQueueKey
 	RedelegationQueueKey             = types.RedelegationQueueKey
 	ValidatorQueueKey                = types.ValidatorQueueKey
+	HistoricalInfoKey                = types.HistoricalInfoKey
 	KeyUnbondingTime                 = types.KeyUnbondingTime
 	KeyMaxValidators                 = types.KeyMaxValidators
 	KeyMaxEntries                    = types.KeyMaxEntries
@@ -217,12 +213,12 @@ type (
 	Redelegation              = types.Redelegation
 	RedelegationEntry         = types.RedelegationEntry
 	Redelegations             = types.Redelegations
+	HistoricalInfo            = types.HistoricalInfo
 	DelegationResponse        = types.DelegationResponse
 	DelegationResponses       = types.DelegationResponses
 	RedelegationResponse      = types.RedelegationResponse
 	RedelegationEntryResponse = types.RedelegationEntryResponse
 	RedelegationResponses     = types.RedelegationResponses
-	CodeType                  = types.CodeType
 	GenesisState              = types.GenesisState
 	LastValidatorPower        = types.LastValidatorPower
 	MultiStakingHooks         = types.MultiStakingHooks
@@ -238,6 +234,7 @@ type (
 	QueryBondsParams          = types.QueryBondsParams
 	QueryRedelegationParams   = types.QueryRedelegationParams
 	QueryValidatorsParams     = types.QueryValidatorsParams
+	QueryHistoricalInfoParams = types.QueryHistoricalInfoParams
 	Validator                 = types.Validator
 	Validators                = types.Validators
 	Description               = types.Description

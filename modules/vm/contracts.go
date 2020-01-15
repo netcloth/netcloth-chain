@@ -15,8 +15,8 @@ import (
 // requires a deterministic gas count based on the input size of the Run method of the
 // contract.
 type PrecompiledContract interface {
-	RequiredGas(input []byte) uint64      // RequiredPrice calculates the contract gas use
-	Run(input []byte) ([]byte, sdk.Error) // Run runs the precompiled contract
+	RequiredGas(input []byte) uint64  // RequiredPrice calculates the contract gas use
+	Run(input []byte) ([]byte, error) // Run runs the precompiled contract
 }
 
 // PrecompiledContracts contains the default set of pre-compiled contracts used in the Istanbul release.
@@ -41,12 +41,12 @@ var (
 )
 
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
-func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err sdk.Error) {
+func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) ([]byte, error) {
 	gas := p.RequiredGas(input)
 	if contract.UseGas(gas) {
 		return p.Run(input)
 	}
-	return nil, ErrOutOfGas()
+	return nil, ErrOutOfGas
 }
 
 // ECRECOVER implemented as a native contract.
@@ -56,7 +56,7 @@ func (c *ecrecover) RequiredGas(input []byte) uint64 {
 	return EcrecoverGas
 }
 
-func (c *ecrecover) Run(input []byte) ([]byte, sdk.Error) {
+func (c *ecrecover) Run(input []byte) ([]byte, error) {
 	const ecRecoverInputLength = 128
 
 	// TODO
@@ -83,7 +83,7 @@ func (c *sha256hash) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*Sha256PerWordGas + Sha256BaseGas
 }
 
-func (c *sha256hash) Run(input []byte) ([]byte, sdk.Error) {
+func (c *sha256hash) Run(input []byte) ([]byte, error) {
 	h := sha256.Sum256(input)
 	return h[:], nil
 }
@@ -95,7 +95,7 @@ func (c *ripemd160hash) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*Ripemd160PerWordGas + Ripemd160BaseGas
 }
 
-func (c *ripemd160hash) Run(input []byte) ([]byte, sdk.Error) {
+func (c *ripemd160hash) Run(input []byte) ([]byte, error) {
 	ripemd := ripemd160.New()
 	ripemd.Write(input)
 	return common.LeftPadBytes(ripemd.Sum(nil), 32), nil
@@ -108,7 +108,7 @@ func (c *dataCopy) RequiredGas(input []byte) uint64 {
 	return uint64(len(input)+31)/32*IdentityPerWordGas + IdentityBaseGas
 }
 
-func (c *dataCopy) Run(in []byte) ([]byte, sdk.Error) {
+func (c *dataCopy) Run(in []byte) ([]byte, error) {
 	return in, nil
 }
 
@@ -175,7 +175,7 @@ func (c *bigModExp) RequiredGas(input []byte) uint64 {
 	return gas.Uint64()
 }
 
-func (c *bigModExp) Run(input []byte) ([]byte, sdk.Error) {
+func (c *bigModExp) Run(input []byte) ([]byte, error) {
 	var (
 		baseLen = new(big.Int).SetBytes(getData(input, 0, 32)).Uint64()
 		expLen  = new(big.Int).SetBytes(getData(input, 32, 32)).Uint64()
