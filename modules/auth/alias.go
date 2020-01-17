@@ -63,8 +63,6 @@ var (
 	KeyTxSizeCostPerByte      = types.KeyTxSizeCostPerByte
 	KeySigVerifyCostED25519   = types.KeySigVerifyCostED25519
 	KeySigVerifyCostSecp256k1 = types.KeySigVerifyCostSecp256k1
-
-	ErrInvalidGas = types.ErrInvalidGas
 )
 
 type (

@@ -5,12 +5,13 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // SubmitProposal create new proposal given a content
-func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal, sdk.Error) {
+func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal, error) {
 	if !keeper.router.HasRoute(content.ProposalRoute()) {
-		return Proposal{}, ErrNoProposalHandlerExists(DefaultCodespace, content)
+		return types.Proposal{}, sdkerrors.Wrap(types.ErrNoProposalHandlerExists, content.ProposalRoute())
 	}
 
 	// Execute the proposal content in a cache-wrapped context to validate the
@@ -19,7 +20,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal,
 	cacheCtx, _ := ctx.CacheContext()
 	handler := keeper.router.GetRoute(content.ProposalRoute())
 	if err := handler(cacheCtx, content); err != nil {
-		return Proposal{}, ErrInvalidProposalContent(DefaultCodespace, err.Result().Log)
+		return types.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalContent, err.Error())
 	}
 
 	proposalID, err := keeper.GetProposalID(ctx)
@@ -133,11 +134,11 @@ func (keeper Keeper) GetProposalsFiltered(ctx sdk.Context, voterAddr sdk.AccAddr
 }
 
 // GetProposalID gets the highest proposal ID
-func (keeper Keeper) GetProposalID(ctx sdk.Context) (proposalID uint64, err sdk.Error) {
+func (keeper Keeper) GetProposalID(ctx sdk.Context) (proposalID uint64, err error) {
 	store := ctx.KVStore(keeper.storeKey)
 	bz := store.Get(ProposalIDKey)
 	if bz == nil {
-		return 0, ErrInvalidGenesis(DefaultCodespace, "initial proposal ID hasn't been set")
+		return 0, sdkerrors.Wrap(types.ErrInvalidGenesis, "initial proposal ID hasn't been set")
 	}
 	keeper.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &proposalID)
 	return proposalID, nil
