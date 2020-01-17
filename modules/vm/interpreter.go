@@ -8,8 +8,8 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 type Config struct {
@@ -72,7 +72,7 @@ type EVMInterpreter struct {
 // It's important to note that any errors returned by the interpreter should be
 // considered a revert-and-consume-all-gas operation except for
 // errExecutionReverted which means revert-and-keep-gas-left.
-func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err sdk.Error) {
+func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
 	if in.intPool == nil {
 		in.intPool = poolOfIntPools.get()
 		defer func() {
@@ -149,16 +149,13 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		operation := in.cfg.JumpTable[op]
 		operation.constantGas = in.cfg.OpConstGasConfig[op]
 		if !operation.valid {
-			//return nil, fmt.Errorf("invalid opcode 0x%x", int(op))
-			return nil, sdk.ErrInternal(fmt.Sprintf("invalid opcode 0x%x", int(op)))
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInternal, "invalid opcode 0x%x", int(op))
 		}
 		// Validate stack
 		if sLen := stack.len(); sLen < operation.minStack {
-			//return nil, fmt.Errorf("stack underflow (%d <=> %d)", sLen, operation.minStack)
-			return nil, sdk.ErrInternal(fmt.Sprintf("stack underflow (%d <=> %d)", sLen, operation.minStack))
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInternal, "stack underflow (%d <=> %d)", sLen, operation.minStack)
 		} else if sLen > operation.maxStack {
-			//return nil, fmt.Errorf("stack limit reached %d (%d)", sLen, operation.maxStack)
-			return nil, sdk.ErrInternal(fmt.Sprintf("stack limit reached %d (%d)", sLen, operation.maxStack))
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInternal, "stack limit reached %d (%d)", sLen, operation.maxStack)
 		}
 		// If the operation is valid, enforce and write restrictions
 		if in.readOnly {
@@ -168,17 +165,13 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			// account to the others means the state is modified and should also
 			// return with an error.
 			if operation.writes || (op == CALL && stack.Back(2).Sign() != 0) {
-				//return nil, errWriteProtection
-				//return nil, fmt.Errorf("errWriteProtection")
-				return nil, sdk.ErrInternal("errWriteProtection")
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInternal, "errWriteProtection")
 			}
 		}
 		// Static portion of gas
 		cost = operation.constantGas // For tracing
 		if !contract.UseGas(operation.constantGas) {
-			//return nil, fmt.Errorf("ErrOutOfGas")
-
-			return nil, sdk.ErrInternal("ErrOutOfGas")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrInternal, "ErrOutOfGas")
 		}
 
 		var memorySize uint64
@@ -189,15 +182,12 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if operation.memorySize != nil {
 			memSize, overflow := operation.memorySize(stack)
 			if overflow {
-				//return nil, errGasUintOverflow
-				return nil, sdk.ErrInternal("errGasUintOverflow")
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInternal, "errGasUintOverflow")
 			}
 			// memory is expanded in words of 32 bytes. Gas
 			// is also calculated in words.
 			if memorySize, overflow = math.SafeMul(toWordSize(memSize), 32); overflow {
-				//return nil, errGasUintOverflow
-				//return nil, fmt.Errorf("errGasUintOverflow")
-				return nil, sdk.ErrInternal("errGasUintOverflow")
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInternal, "errGasUintOverflow")
 			}
 		}
 		// Dynamic portion of gas
@@ -208,10 +198,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			dynamicCost, err = operation.dynamicGas(in.evm, contract, stack, mem, memorySize)
 			cost += dynamicCost // total cost, for debug tracing
 			if err != nil || !contract.UseGas(dynamicCost) {
-				//return nil, ErrOutOfGas
-				//return nil, fmt.Errorf("ErrOutOfGas")
-				return nil, sdk.ErrInternal("ErrOutOfGas")
-
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInternal, "ErrOutOfGas")
 			}
 		}
 		if memorySize > 0 {

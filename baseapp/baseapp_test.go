@@ -7,8 +7,6 @@ import (
 	"os"
 	"testing"
 
-	store "github.com/netcloth/netcloth-chain/store/types"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -17,7 +15,9 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/codec"
+	store "github.com/netcloth/netcloth-chain/store/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
@@ -374,8 +374,8 @@ func (tx *txTest) setFailOnHandler(fail bool) {
 }
 
 // Implements Tx
-func (tx txTest) GetMsgs() []sdk.Msg       { return tx.Msgs }
-func (tx txTest) ValidateBasic() sdk.Error { return nil }
+func (tx txTest) GetMsgs() []sdk.Msg   { return tx.Msgs }
+func (tx txTest) ValidateBasic() error { return nil }
 
 const (
 	routeMsgCounter  = "msgCounter"
@@ -394,11 +394,11 @@ func (msg msgCounter) Route() string                { return routeMsgCounter }
 func (msg msgCounter) Type() string                 { return "counter1" }
 func (msg msgCounter) GetSignBytes() []byte         { return nil }
 func (msg msgCounter) GetSigners() []sdk.AccAddress { return nil }
-func (msg msgCounter) ValidateBasic() sdk.Error {
+func (msg msgCounter) ValidateBasic() error {
 	if msg.Counter >= 0 {
 		return nil
 	}
-	return sdk.ErrInvalidSequence("counter should be a non-negative integer.")
+	return sdkerrors.Wrap(sdkerrors.ErrInvalidSequence, "counter should be a non-negative integer")
 }
 
 func newTxCounter(txInt int64, msgInts ...int64) *txTest {
@@ -433,50 +433,55 @@ func (msg msgCounter2) Route() string                { return routeMsgCounter2 }
 func (msg msgCounter2) Type() string                 { return "counter2" }
 func (msg msgCounter2) GetSignBytes() []byte         { return nil }
 func (msg msgCounter2) GetSigners() []sdk.AccAddress { return nil }
-func (msg msgCounter2) ValidateBasic() sdk.Error {
+func (msg msgCounter2) ValidateBasic() error {
 	if msg.Counter >= 0 {
 		return nil
 	}
-	return sdk.ErrInvalidSequence("counter should be a non-negative integer.")
+	return sdkerrors.Wrap(sdkerrors.ErrInvalidSequence, "counter should be a non-negative integer")
 }
 
 // amino decode
 func testTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, sdk.Error) {
+	return func(txBytes []byte) (sdk.Tx, error) {
 		var tx txTest
 		if len(txBytes) == 0 {
-			return nil, sdk.ErrTxDecode("txBytes are empty")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "tx bytes are empty")
 		}
 		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 		if err != nil {
-			return nil, sdk.ErrTxDecode("").TraceSDK(err.Error())
+			return nil, sdkerrors.ErrTxDecode
 		}
 		return tx, nil
 	}
 }
 
 func anteHandlerTxTest(t *testing.T, capKey *sdk.KVStoreKey, storeKey []byte) sdk.AnteHandler {
-	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, res sdk.Result, abort bool) {
+	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 		store := ctx.KVStore(capKey)
 		txTest := tx.(txTest)
 
 		if txTest.FailOnAnte {
-			return newCtx, sdk.ErrInternal("ante handler failure").Result(), true
+			return newCtx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "ante handler failure")
 		}
 
-		res = incrementingCounter(t, store, storeKey, txTest.Counter)
-		return
+		_, err = incrementingCounter(t, store, storeKey, txTest.Counter)
+		if err != nil {
+			return newCtx, err
+		}
+
+		return newCtx, nil
 	}
 }
 
 func handlerMsgCounter(t *testing.T, capKey *sdk.KVStoreKey, deliverKey []byte) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		store := ctx.KVStore(capKey)
 		var msgCount int64
+
 		switch m := msg.(type) {
 		case *msgCounter:
 			if m.FailOnHandler {
-				return sdk.ErrInternal("message handler failure").Result()
+				return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "message handler failure")
 			}
 
 			msgCount = m.Counter
@@ -512,11 +517,11 @@ func setIntOnStore(store sdk.KVStore, key []byte, i int64) {
 
 // check counter matches what's in store.
 // increment and store
-func incrementingCounter(t *testing.T, store sdk.KVStore, counterKey []byte, counter int64) (res sdk.Result) {
+func incrementingCounter(t *testing.T, store sdk.KVStore, counterKey []byte, counter int64) (*sdk.Result, error) {
 	storedCounter := getIntFromStore(store, counterKey)
 	require.Equal(t, storedCounter, counter)
 	setIntOnStore(store, counterKey, counter+1)
-	return
+	return &sdk.Result{}, nil
 }
 
 //---------------------------------------------------------------------

@@ -1,12 +1,8 @@
 package vm
 
-import (
-	sdk "github.com/netcloth/netcloth-chain/types"
-)
-
 type (
-	executionFunc func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error)
-	gasFunc       func(*EVM, *Contract, *Stack, *Memory, uint64) (uint64, sdk.Error) // last parameter is the requested memory size as a uint64
+	executionFunc func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error)
+	gasFunc       func(*EVM, *Contract, *Stack, *Memory, uint64) (uint64, error) // last parameter is the requested memory size as a uint64
 	// memorySizeFunc returns the required size, and whether the operation overflowed a uint64
 	memorySizeFunc func(*Stack) (size uint64, overflow bool)
 )

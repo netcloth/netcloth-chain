@@ -9,6 +9,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/supply/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 const msgRoute = "testMsg"
@@ -32,11 +33,11 @@ func (tx testMsg) GetMemo() string                    { return "" }
 func (tx testMsg) GetSignBytes() []byte               { return nil }
 func (tx testMsg) GetSigners() []sdk.AccAddress       { return tx.signers }
 func (tx testMsg) GetSignatures() []auth.StdSignature { return nil }
-func (tx testMsg) ValidateBasic() sdk.Error {
+func (tx testMsg) ValidateBasic() error {
 	if tx.positiveNum >= 0 {
 		return nil
 	}
-	return sdk.ErrTxDecode("positiveNum should be a non-negative integer.")
+	return sdkerrors.Wrap(sdkerrors.ErrTxDecode, "positiveNum should be a non-negative integer")
 }
 
 // getMockApp returns an initialized mock application.

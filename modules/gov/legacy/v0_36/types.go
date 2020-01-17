@@ -51,7 +51,7 @@ type (
 		GetDescription() string
 		ProposalRoute() string
 		ProposalType() string
-		ValidateBasic() sdk.Error
+		ValidateBasic() error
 		String() string
 	}
 
@@ -101,11 +101,11 @@ func NewTextProposal(title, description string) Content {
 	return TextProposal{title, description}
 }
 
-func (tp TextProposal) GetTitle() string         { return tp.Title }
-func (tp TextProposal) GetDescription() string   { return tp.Description }
-func (tp TextProposal) ProposalRoute() string    { return RouterKey }
-func (tp TextProposal) ProposalType() string     { return ProposalTypeText }
-func (tp TextProposal) ValidateBasic() sdk.Error { return ValidateAbstract(DefaultCodespace, tp) }
+func (tp TextProposal) GetTitle() string       { return tp.Title }
+func (tp TextProposal) GetDescription() string { return tp.Description }
+func (tp TextProposal) ProposalRoute() string  { return RouterKey }
+func (tp TextProposal) ProposalType() string   { return ProposalTypeText }
+func (tp TextProposal) ValidateBasic() error   { return ValidateAbstract(DefaultCodespace, tp) }
 
 func (tp TextProposal) String() string {
 	return fmt.Sprintf(`Text Proposal:
@@ -122,7 +122,7 @@ func (sup SoftwareUpgradeProposal) GetTitle() string       { return sup.Title }
 func (sup SoftwareUpgradeProposal) GetDescription() string { return sup.Description }
 func (sup SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (sup SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
-func (sup SoftwareUpgradeProposal) ValidateBasic() sdk.Error {
+func (sup SoftwareUpgradeProposal) ValidateBasic() error {
 	return ValidateAbstract(DefaultCodespace, sup)
 }
 
@@ -133,25 +133,25 @@ func (sup SoftwareUpgradeProposal) String() string {
 `, sup.Title, sup.Description)
 }
 
-func ErrInvalidProposalContent(cs sdk.CodespaceType, msg string) sdk.Error {
-	return sdk.NewError(cs, CodeInvalidContent, fmt.Sprintf("invalid proposal content: %s", msg))
+func ErrInvalidProposalContent(cs sdk.CodespaceType, msg string) error {
+	return fmt.Errorf("invalid proposal content: %s", msg)
 }
 
-func ValidateAbstract(codespace sdk.CodespaceType, c Content) sdk.Error {
+func ValidateAbstract(codespace sdk.CodespaceType, c Content) error {
 	title := c.GetTitle()
 	if len(strings.TrimSpace(title)) == 0 {
-		return ErrInvalidProposalContent(codespace, "proposal title cannot be blank")
+		return ErrInvalidProposalContent("proposal title cannot be blank")
 	}
 	if len(title) > MaxTitleLength {
-		return ErrInvalidProposalContent(codespace, fmt.Sprintf("proposal title is longer than max length of %d", MaxTitleLength))
+		return ErrInvalidProposalContent(fmt.Sprintf("proposal title is longer than max length of %d", MaxTitleLength))
 	}
 
 	description := c.GetDescription()
 	if len(description) == 0 {
-		return ErrInvalidProposalContent(codespace, "proposal description cannot be blank")
+		return ErrInvalidProposalContent("proposal description cannot be blank")
 	}
 	if len(description) > MaxDescriptionLength {
-		return ErrInvalidProposalContent(codespace, fmt.Sprintf("proposal description is longer than max length of %d", MaxDescriptionLength))
+		return ErrInvalidProposalContent(fmt.Sprintf("proposal description is longer than max length of %d", MaxDescriptionLength))
 	}
 
 	return nil

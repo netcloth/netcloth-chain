@@ -63,7 +63,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		ret         []byte
 		leftOverGas uint64
 		addr        sdk.AccAddress
-		vmerr       sdk.Error
+		vmerr       error
 	)
 
 	if st.Recipient.Empty() {
@@ -81,7 +81,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
 	if vmerr != nil {
-		return nil, vmerr.Result()
+		return nil, vmerr
 	}
 
 	st.StateDB.Finalise(true)

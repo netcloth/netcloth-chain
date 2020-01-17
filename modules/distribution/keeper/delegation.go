@@ -3,10 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	sdk "github.com/netcloth/netcloth-chain/types"
-
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	"github.com/netcloth/netcloth-chain/modules/staking/exported"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // initialize starting info for a new delegation
@@ -136,10 +135,10 @@ func (k Keeper) calculateDelegationRewards(ctx sdk.Context, val exported.Validat
 	return rewards
 }
 
-func (k Keeper) withdrawDelegationRewards(ctx sdk.Context, val exported.ValidatorI, del exported.DelegationI) (sdk.Coins, sdk.Error) {
+func (k Keeper) withdrawDelegationRewards(ctx sdk.Context, val exported.ValidatorI, del exported.DelegationI) (sdk.Coins, error) {
 	// check existence of delegator starting info
 	if !k.HasDelegatorStartingInfo(ctx, del.GetValidatorAddr(), del.GetDelegatorAddr()) {
-		return nil, types.ErrNoDelegationDistInfo(k.codespace)
+		return nil, types.ErrNoValidatorDistInfo
 	}
 
 	// end current period and calculate rewards
