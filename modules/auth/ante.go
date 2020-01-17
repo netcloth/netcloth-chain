@@ -14,6 +14,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
@@ -336,51 +337,47 @@ func consumeMultisignatureVerificationGas(meter sdk.GasMeter,
 //
 // NOTE: We could use the CoinKeeper (in addition to the AccountKeeper, because
 // the CoinKeeper doesn't give us accounts), but it seems easier to do this.
-func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coins) sdk.Result {
+func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coins) (*sdk.Result, error) {
 	blockTime := ctx.BlockHeader().Time
 	coins := acc.GetCoins()
 
 	if !fees.IsValid() {
-		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees)).Result()
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid fee: %s", fees.String())
 	}
 
 	// verify the account has enough funds to pay for fees
 	_, hasNeg := coins.SafeSub(fees)
 	if hasNeg {
-		return sdk.ErrInsufficientFunds(
-			fmt.Sprintf("insufficient funds to pay for fees; %s < %s", coins, fees),
-		).Result()
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "insufficient funds to pay fees: %s < %s", coins.String(), fees.String())
 	}
 
 	// Validate the account has enough "spendable" coins as this will cover cases
 	// such as vesting accounts.
 	spendableCoins := acc.SpendableCoins(blockTime)
 	if _, hasNeg := spendableCoins.SafeSub(fees); hasNeg {
-		return sdk.ErrInsufficientFunds(
-			fmt.Sprintf("insufficient funds to pay for fees; %s < %s", spendableCoins, fees),
-		).Result()
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "insufficient funds to pay fees: %s < %s", spendableCoins.String(), fees.String())
 	}
 
 	err := supplyKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
 	if err != nil {
-		return err.Result()
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 
-	return sdk.Result{}
+	return &sdk.Result{}, nil
 }
 
-func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) sdk.Result {
+func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) (*sdk.Result, error) {
 	if !fees.IsValid() {
-		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees)).Result()
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid fee: %s", fees.String())
 	}
 
 	//TODO add more validation
 	err := supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.FeeCollectorName, acc.GetAddress(), sdk.NewCoins(fees))
 	if err != nil {
-		return err.Result()
+		return nil, err
 	}
 
-	return sdk.Result{}
+	return &sdk.Result{}, nil
 }
 
 // EnsureSufficientMempoolFees verifies that the given transaction has supplied
@@ -389,7 +386,7 @@ func RefundFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc Account, f
 //
 // Contract: This should only be called during CheckTx as it cannot be part of
 // consensus.
-func EnsureSufficientMempoolFees(ctx sdk.Context, stdFee StdFee) sdk.Result {
+func EnsureSufficientMempoolFees(ctx sdk.Context, stdFee StdFee) (*sdk.Result, error) {
 	minGasPrices := ctx.MinGasPrices()
 	if !minGasPrices.IsZero() {
 		requiredFees := make(sdk.Coins, len(minGasPrices))
@@ -403,15 +400,12 @@ func EnsureSufficientMempoolFees(ctx sdk.Context, stdFee StdFee) sdk.Result {
 		}
 
 		if !stdFee.Amount.IsAnyGTE(requiredFees) {
-			return sdk.ErrInsufficientFee(
-				fmt.Sprintf(
-					"insufficient fees; got: %q required: %q", stdFee.Amount, requiredFees,
-				),
-			).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee,
+				"insufficient fees; got: %s required: %s", stdFee.Amount.String(), requiredFees.String())
 		}
 	}
 
-	return sdk.Result{}
+	return &sdk.Result{}, nil
 }
 
 // SetGasMeter returns a new context with a gas meter set from a given context.
