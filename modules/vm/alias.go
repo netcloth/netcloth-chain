@@ -12,7 +12,6 @@ const (
 	CodeKey           = types.CodeKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
-	DefaultCodespace  = types.DefaultCodespace
 	DefaultParamspace = keeper.DefaultParamspace
 )
 

@@ -565,12 +565,12 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	// The queryRouter routes using path[1]. For example, in the path
 	// "custom/gov/proposal", queryRouter routes using "gov".
 	if len(path) < 2 || path[1] == "" {
-		return sdk.ErrUnknownRequest("No route for custom query specified").QueryResult()
+		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "no route for custom query specified"))
 	}
 
 	querier := app.queryRouter.Route(path[1])
 	if querier == nil {
-		return sdk.ErrUnknownRequest(fmt.Sprintf("no custom querier found for route %s", path[1])).QueryResult()
+		return sdkerrors.QueryResult(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "no custom querier found for route %s", path[1]))
 	}
 
 	// when a client did not provide a query height, manually inject the latest
@@ -579,17 +579,22 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	}
 
 	if req.Height <= 1 && req.Prove {
-		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
+		return sdkerrors.QueryResult(
+			sdkerrors.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"cannot query with proof when height <= 1; please provide a valid height",
+			),
+		)
 	}
 
 	cacheMS, err := app.cms.CacheMultiStoreWithVersion(req.Height)
 	if err != nil {
-		return sdk.ErrInternal(
-			fmt.Sprintf(
-				"failed to load state at height %d; %s (latest height: %d)",
-				req.Height, err, app.LastBlockHeight(),
+		return sdkerrors.QueryResult(
+			sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"failed to load state at height %d; %s (latest height: %d)", req.Height, err, app.LastBlockHeight(),
 			),
-		).QueryResult()
+		)
 	}
 
 	// cache wrap the commit-multistore for safety
@@ -603,16 +608,16 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	// []string{"proposal", "test"} as the path.
 	resBytes, queryErr := querier(ctx, path[2:], req)
 	if queryErr != nil {
+		space, code, log := sdkerrors.ABCIInfo(err, false)
 		return abci.ResponseQuery{
-			Code:      uint32(queryErr.Code()),
-			Codespace: string(queryErr.Codespace()),
+			Code:      code,
+			Codespace: space,
+			Log:       log,
 			Height:    req.Height,
-			Log:       queryErr.ABCILog(),
 		}
 	}
 
 	return abci.ResponseQuery{
-		Code:   uint32(sdk.CodeOK),
 		Height: req.Height,
 		Value:  resBytes,
 	}

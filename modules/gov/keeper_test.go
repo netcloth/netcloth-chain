@@ -1,6 +1,7 @@
 package gov
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -279,12 +280,12 @@ func TestProposalQueues(t *testing.T) {
 
 type validProposal struct{}
 
-func (validProposal) GetTitle() string         { return "title" }
-func (validProposal) GetDescription() string   { return "description" }
-func (validProposal) ProposalRoute() string    { return RouterKey }
-func (validProposal) ProposalType() string     { return ProposalTypeText }
-func (validProposal) String() string           { return "" }
-func (validProposal) ValidateBasic() sdk.Error { return nil }
+func (validProposal) GetTitle() string       { return "title" }
+func (validProposal) GetDescription() string { return "description" }
+func (validProposal) ProposalRoute() string  { return RouterKey }
+func (validProposal) ProposalType() string   { return ProposalTypeText }
+func (validProposal) String() string         { return "" }
+func (validProposal) ValidateBasic() error   { return nil }
 
 type invalidProposalTitle1 struct{ validProposal }
 
@@ -308,8 +309,8 @@ func (invalidProposalRoute) ProposalRoute() string { return "nonexistingroute" }
 
 type invalidProposalValidation struct{ validProposal }
 
-func (invalidProposalValidation) ValidateBasic() sdk.Error {
-	return sdk.NewError(sdk.CodespaceUndefined, sdk.CodeInternal, "")
+func (invalidProposalValidation) ValidateBasic() error {
+	return errors.New("invalid proposal")
 }
 
 func registerTestCodec(cdc *codec.Codec) {
@@ -335,7 +336,7 @@ func TestSubmitProposal(t *testing.T) {
 
 	testCases := []struct {
 		content     Content
-		expectedErr sdk.Error
+		expectedErr error
 	}{
 		{validProposal{}, nil},
 		// Keeper does not check the validity of title and description, no error

@@ -20,9 +20,9 @@ type SupplyKeeper interface {
 
 	SetModuleAccount(sdk.Context, supplyexported.ModuleAccountI)
 
-	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
-	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
-	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) sdk.Error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 }
 
 // StakingKeeper expected staking keeper (Validator and Delegator sets)

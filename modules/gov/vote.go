@@ -5,20 +5,21 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // AddVote Adds a vote on a specific proposal
-func (keeper Keeper) AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, option VoteOption) sdk.Error {
+func (keeper Keeper) AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, option VoteOption) error {
 	proposal, ok := keeper.GetProposal(ctx, proposalID)
 	if !ok {
-		return ErrUnknownProposal(DefaultCodespace, proposalID)
+		return sdkerrors.Wrapf(types.ErrUnknownProposal, "%d", proposalID)
 	}
 	if proposal.Status != StatusVotingPeriod {
-		return ErrInactiveProposal(DefaultCodespace, proposalID)
+		return sdkerrors.Wrapf(types.ErrInactiveProposal, "%d", proposalID)
 	}
 
 	if !ValidVoteOption(option) {
-		return ErrInvalidVote(DefaultCodespace, option)
+		return sdkerrors.Wrap(types.ErrInvalidVote, option.String())
 	}
 
 	vote := NewVote(proposalID, voterAddr, option)
