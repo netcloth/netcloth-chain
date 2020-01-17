@@ -4,6 +4,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	authtype "github.com/netcloth/netcloth-chain/modules/auth/types"
+
 	"github.com/tendermint/tendermint/crypto"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -56,6 +59,9 @@ func KeyTestPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 
 func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	cdc := codec.New()
+	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
+	cdc.RegisterInterface((*exported.Account)(nil), nil)
+	cdc.RegisterConcrete(&authtype.BaseAccount{}, "nch/Account", nil)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)

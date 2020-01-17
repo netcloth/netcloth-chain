@@ -69,21 +69,21 @@ func TestMsgContractGetSignBytes(t *testing.T) {
 
 	// with "to" nil
 	res := msg.GetSignBytes()
-	expected := `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"cGF5bG9hZA==","to":""}}`
+	expected := `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"7061796c6f6164","to":""}}`
 	require.Equal(t, expected, string(res))
 
 	// with "to" empty
 	var addrEmpty sdk.AccAddress
 	msg = NewMsgContract(addr1, addrEmpty, payload, coin123)
 	res = msg.GetSignBytes()
-	expected = `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"cGF5bG9hZA==","to":""}}`
+	expected = `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"7061796c6f6164","to":""}}`
 	require.Equal(t, expected, string(res))
 
 	// with "to"
 	addr2 := sdk.AccAddress([]byte("to"))
 	msg = NewMsgContract(addr1, addr2, payload, coin123)
 	res = msg.GetSignBytes()
-	expected = `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"cGF5bG9hZA==","to":"nch1w3hsls558e"}}`
+	expected = `{"type":"nch/MsgContract","value":{"amount":{"amount":"123","denom":"pnch"},"from":"nch1veex7mg3k0xqr","payload":"7061796c6f6164","to":"nch1w3hsls558e"}}`
 	require.Equal(t, expected, string(res))
 
 }
