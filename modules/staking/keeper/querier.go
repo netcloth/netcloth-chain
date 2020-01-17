@@ -6,15 +6,15 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/staking/types"
-	"github.com/netcloth/netcloth-chain/client"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // creates a querier for staking REST endpoints
 func NewQuerier(k Keeper) sdk.Querier {
-	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryValidators:
 			return queryValidators(ctx, req, k)
@@ -48,7 +48,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 	}
 }
 
-func queryValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
 	var params types.QueryValidatorsParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)

@@ -10,6 +10,15 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
+// GasInfo defines tx execution gas context.
+type GasInfo struct {
+	// GasWanted is the maximum units of work we allow this tx to perform.
+	GasWanted uint64
+
+	// GasUsed is the amount of gas actually consumed. NOTE: unimplemented
+	GasUsed uint64
+}
+
 // Result is the union of ResponseFormat and ResponseCheckTx.
 type Result struct {
 	// Code is the response code, is stored back on the chain.
@@ -50,6 +59,18 @@ type ABCIMessageLog struct {
 	MsgIndex uint16 `json:"msg_index"`
 	Success  bool   `json:"success"`
 	Log      string `json:"log"`
+
+	// Events contains a slice of Event objects that were emitted during some
+	// execution.
+	Events StringEvents `json:"events"`
+}
+
+func NewABCIMessageLog(i uint16, log string, events Events) ABCIMessageLog {
+	return ABCIMessageLog{
+		MsgIndex: i,
+		Log:      log,
+		Events:   StringifyEvents(events.ToABCIEvents()),
+	}
 }
 
 // String implements the fmt.Stringer interface for the ABCIMessageLogs type.

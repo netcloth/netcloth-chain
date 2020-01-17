@@ -5,6 +5,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // GetDeposit gets the deposit of a specific depositor on a specific proposal
@@ -27,22 +28,22 @@ func (keeper Keeper) setDeposit(ctx sdk.Context, proposalID uint64, depositorAdd
 
 // AddDeposit adds or updates a deposit of a specific depositor on a specific proposal
 // Activates voting period when appropriate
-func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAddr sdk.AccAddress, depositAmount sdk.Coins) (sdk.Error, bool) {
+func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAddr sdk.AccAddress, depositAmount sdk.Coins) (bool, error) {
 	// Checks to see if proposal exists
 	proposal, ok := keeper.GetProposal(ctx, proposalID)
 	if !ok {
-		return ErrUnknownProposal(DefaultCodespace, proposalID), false
+		return false, sdkerrors.Wrapf(types.ErrUnknownProposal, "%d", proposalID)
 	}
 
 	// Check if proposal is still depositable
 	if (proposal.Status != StatusDepositPeriod) && (proposal.Status != StatusVotingPeriod) {
-		return ErrAlreadyFinishedProposal(DefaultCodespace, proposalID), false
+		return false, sdkerrors.Wrapf(types.ErrInactiveProposal, "%d", proposalID)
 	}
 
 	// update the governance module's account coins pool
 	err := keeper.supplyKeeper.SendCoinsFromAccountToModule(ctx, depositorAddr, types.ModuleName, depositAmount)
 	if err != nil {
-		return err, false
+		return false, err
 	}
 
 	// Update proposal
@@ -73,7 +74,7 @@ func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAdd
 	)
 
 	keeper.setDeposit(ctx, proposalID, depositorAddr, deposit)
-	return nil, activatedVotingPeriod
+	return activatedVotingPeriod, nil
 }
 
 // GetAllDeposits returns all the deposits from the store

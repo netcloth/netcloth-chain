@@ -10,6 +10,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var _ Keeper = (*BaseKeeper)(nil)
@@ -176,7 +177,7 @@ func NewBaseSendKeeper(ak types.AccountKeeper,
 }
 
 // InputOutputCoins handles a list of inputs and outputs
-func (keeper BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, outputs []types.Output) sdk.Error {
+func (keeper BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, outputs []types.Output) error {
 	// Safety check ensuring that when sending coins the keeper must maintain the
 	// Check supply invariant and validity of Coins.
 	if err := types.ValidateInputsOutputs(inputs, outputs); err != nil {
@@ -244,10 +245,10 @@ func (keeper BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress,
 // SubtractCoins subtracts amt from the coins at the addr.
 //
 // CONTRACT: If the account is a vesting account, the amount has to be spendable.
-func (keeper BaseSendKeeper) SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Coins, sdk.Error) {
+func (keeper BaseSendKeeper) SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Coins, error) {
 
 	if !amt.IsValid() {
-		return nil, sdk.ErrInvalidCoins(amt.String())
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
 	oldCoins, spendableCoins := sdk.NewCoins(), sdk.NewCoins()
@@ -262,8 +263,8 @@ func (keeper BaseSendKeeper) SubtractCoins(ctx sdk.Context, addr sdk.AccAddress,
 	// So the check here is sufficient instead of subtracting from oldCoins.
 	_, hasNeg := spendableCoins.SafeSub(amt)
 	if hasNeg {
-		return amt, sdk.ErrInsufficientCoins(
-			fmt.Sprintf("insufficient account funds; %s < %s", spendableCoins, amt),
+		return amt, sdkerrors.Wrapf(
+			sdkerrors.ErrInsufficientFunds, "insufficient account funds; %s < %s", spendableCoins, amt,
 		)
 	}
 

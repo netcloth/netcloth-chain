@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	govtypes "github.com/netcloth/netcloth-chain/modules/gov/types"
-	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
@@ -46,8 +45,8 @@ func (pcp ParameterChangeProposal) ProposalRoute() string { return RouterKey }
 func (pcp ParameterChangeProposal) ProposalType() string { return ProposalTypeChange }
 
 // ValidateBasic validates the parameter change proposal
-func (pcp ParameterChangeProposal) ValidateBasic() sdk.Error {
-	err := govtypes.ValidateAbstract(DefaultCodespace, pcp)
+func (pcp ParameterChangeProposal) ValidateBasic() error {
+	err := govtypes.ValidateAbstract(pcp)
 	if err != nil {
 		return err
 	}
@@ -105,20 +104,20 @@ func (pc ParamChange) String() string {
 
 // ValidateChange performs basic validation checks over a set of ParamChange. It
 // returns an error if any ParamChange is invalid.
-func ValidateChanges(changes []ParamChange) sdk.Error {
+func ValidateChanges(changes []ParamChange) error {
 	if len(changes) == 0 {
-		return ErrEmptyChanges(DefaultCodespace)
+		return ErrEmptyChanges
 	}
 
 	for _, pc := range changes {
 		if len(pc.Subspace) == 0 {
-			return ErrEmptySubspace(DefaultCodespace)
+			return ErrEmptySubspace
 		}
 		if len(pc.Key) == 0 {
-			return ErrEmptyKey(DefaultCodespace)
+			return ErrEmptyKey
 		}
 		if len(pc.Value) == 0 {
-			return ErrEmptyValue(DefaultCodespace)
+			return ErrEmptyValue
 		}
 	}
 

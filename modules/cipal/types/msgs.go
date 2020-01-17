@@ -7,6 +7,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 const (
@@ -39,13 +40,13 @@ type MsgCIPALClaim struct {
 	UserRequest CIPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
-func (i ServiceInfo) Validate() sdk.Error {
-	if i.Address == "" {
-		return ErrEmptyInputs("server address empty")
+func (p ADParam) Validate() error {
+	if p.UserAddress == "" {
+		return sdkerrors.Wrap(ErrEmptyInputs, "user address empty")
 	}
 
-	if len(i.Address) > maxServerAddressLength {
-		return ErrStringTooLong("server address too long")
+	if len(p.UserAddress) > maxUserAddressLength {
+		return sdkerrors.Wrap(ErrStringTooLong, "user address too long")
 	}
 
 	return nil
@@ -63,16 +64,16 @@ func (p ADParam) GetSignBytes() []byte {
 	return sdk.MustSortJSON(b)
 }
 
-func (p ADParam) Validate() sdk.Error {
+func (p ADParam) Validate() error {
 	if p.UserAddress == "" {
-		return ErrEmptyInputs("user address empty")
+		return sdkerrors.Wrap(ErrEmptyInputs, "user address empty")
 	}
 
 	if len(p.UserAddress) > maxUserAddressLength {
-		return ErrStringTooLong("user address too long")
+		return sdkerrors.Wrap(ErrStringTooLong, "user address too long")
 	}
 
-	return p.ServiceInfo.Validate()
+	return nil
 }
 
 func NewADParam(userAddress string, serviceAddress string, serviceType uint64, expiration time.Time) ADParam {
@@ -101,9 +102,9 @@ func (msg MsgCIPALClaim) Route() string { return RouterKey }
 
 func (msg MsgCIPALClaim) Type() string { return "cipal_claim" }
 
-func (msg MsgCIPALClaim) ValidateBasic() sdk.Error {
+func (msg MsgCIPALClaim) ValidateBasic() error {
 	if msg.From.Empty() {
-		return sdk.ErrInvalidAddress("missing sender address")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
 	err := msg.UserRequest.Params.Validate()
@@ -114,7 +115,7 @@ func (msg MsgCIPALClaim) ValidateBasic() sdk.Error {
 	pubKey := msg.UserRequest.Sig.PubKey
 	signBytes := msg.UserRequest.Params.GetSignBytes()
 	if !pubKey.VerifyBytes(signBytes, msg.UserRequest.Sig.Signature) {
-		return ErrInvalidSignature("user request signature invalid")
+		return sdkerrors.Wrap(ErrInvalidSignature, "user request signature invalid")
 	}
 
 	return nil

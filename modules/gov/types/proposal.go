@@ -7,6 +7,7 @@ import (
 	"time"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // Proposal defines a struct used by the governance module to allow for voting
@@ -267,11 +268,11 @@ func NewTextProposal(title, description string) Content {
 var _ Content = TextProposal{}
 
 // nolint
-func (tp TextProposal) GetTitle() string         { return tp.Title }
-func (tp TextProposal) GetDescription() string   { return tp.Description }
-func (tp TextProposal) ProposalRoute() string    { return RouterKey }
-func (tp TextProposal) ProposalType() string     { return ProposalTypeText }
-func (tp TextProposal) ValidateBasic() sdk.Error { return ValidateAbstract(DefaultCodespace, tp) }
+func (tp TextProposal) GetTitle() string       { return tp.Title }
+func (tp TextProposal) GetDescription() string { return tp.Description }
+func (tp TextProposal) ProposalRoute() string  { return RouterKey }
+func (tp TextProposal) ProposalType() string   { return ProposalTypeText }
+func (tp TextProposal) ValidateBasic() error   { return ValidateAbstract(tp) }
 
 func (tp TextProposal) String() string {
 	return fmt.Sprintf(`Text Proposal:
@@ -300,8 +301,8 @@ func (sup SoftwareUpgradeProposal) GetTitle() string       { return sup.Title }
 func (sup SoftwareUpgradeProposal) GetDescription() string { return sup.Description }
 func (sup SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (sup SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
-func (sup SoftwareUpgradeProposal) ValidateBasic() sdk.Error {
-	return ValidateAbstract(DefaultCodespace, sup)
+func (sup SoftwareUpgradeProposal) ValidateBasic() error {
+	return ValidateAbstract(sup)
 }
 
 func (sup SoftwareUpgradeProposal) String() string {
@@ -353,14 +354,13 @@ func IsValidProposalType(ty string) bool {
 // proposals (ie. TextProposal and SoftwareUpgradeProposal). Since these are
 // merely signaling mechanisms at the moment and do not affect state, it
 // performs a no-op.
-func ProposalHandler(_ sdk.Context, c Content) sdk.Error {
+func ProposalHandler(_ sdk.Context, c Content) error {
 	switch c.ProposalType() {
 	case ProposalTypeText, ProposalTypeSoftwareUpgrade:
 		// both proposal types do not change state so this performs a no-op
 		return nil
 
 	default:
-		errMsg := fmt.Sprintf("unrecognized gov proposal type: %s", c.ProposalType())
-		return sdk.ErrUnknownRequest(errMsg)
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
 	}
 }

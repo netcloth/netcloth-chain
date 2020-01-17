@@ -43,43 +43,6 @@ func TestCreateLedgerUnsupportedAlgo(t *testing.T) {
 	assert.Equal(t, "unsupported signing algo: only secp256k1 is supported", err.Error())
 }
 
-func TestCreateLedger(t *testing.T) {
-	kb := NewInMemory()
-
-	// test_cover and test_unit will result in different answers
-	// test_cover does not compile some dependencies so ledger is disabled
-	// test_unit may add a ledger mock
-	// both cases are acceptable
-	ledger, err := kb.CreateLedger("some_account", Secp256k1, "cosmos", 3, 1)
-
-	if err != nil {
-		assert.Error(t, err)
-		assert.Equal(t, "ledger nano S: support for ledger devices is not available in this executable", err.Error())
-		assert.Nil(t, ledger)
-		t.Skip("ledger nano S: support for ledger devices is not available in this executable")
-		return
-	}
-
-	// The mock is available, check that the address is correct
-	pubKey := ledger.GetPubKey()
-	pk, err := sdk.Bech32ifyAccPub(pubKey)
-	assert.NoError(t, err)
-	assert.Equal(t, "nchpub1addwnpepqdszcr95mrqqs8lw099aa9h8h906zmet22pmwe9vquzcgvnm93eqygufdlv", pk)
-
-	// Check that restoring the key gets the same results
-	restoredKey, err := kb.Get("some_account")
-	assert.NotNil(t, restoredKey)
-	assert.Equal(t, "some_account", restoredKey.GetName())
-	assert.Equal(t, TypeLedger, restoredKey.GetType())
-	pubKey = restoredKey.GetPubKey()
-	pk, err = sdk.Bech32ifyAccPub(pubKey)
-	assert.Equal(t, "nchpub1addwnpepqdszcr95mrqqs8lw099aa9h8h906zmet22pmwe9vquzcgvnm93eqygufdlv", pk)
-
-	path, err := restoredKey.GetPath()
-	assert.NoError(t, err)
-	assert.Equal(t, "44'/118'/3'/0/1", path.String())
-}
-
 // TestKeyManagement makes sure we can manipulate these keys well
 func TestKeyManagement(t *testing.T) {
 	// make the storage with reasonable defaults

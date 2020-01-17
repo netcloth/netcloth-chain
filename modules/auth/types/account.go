@@ -47,20 +47,8 @@ func NewBaseAccount(address sdk.AccAddress, coins sdk.Coins,
 
 // String implements fmt.Stringer
 func (acc BaseAccount) String() string {
-	var pubkey string
-
-	if acc.PubKey != nil {
-		pubkey = sdk.MustBech32ifyAccPub(acc.PubKey)
-	}
-
-	return fmt.Sprintf(`Account:
-  Address:       %s
-  Pubkey:        %s
-  Coins:         %s
-  AccountNumber: %d
-  Sequence:      %d`,
-		acc.Address, pubkey, acc.Coins, acc.AccountNumber, acc.Sequence,
-	)
+	out, _ := acc.MarshalYAML()
+	return out.(string)
 }
 
 // ProtoBaseAccount - a prototype function for BaseAccount
@@ -192,7 +180,7 @@ func (acc BaseAccount) MarshalYAML() (interface{}, error) {
 	var pubkey string
 
 	if acc.PubKey != nil {
-		pubkey, err = sdk.Bech32ifyAccPub(acc.PubKey)
+		pubkey, err = sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, acc.PubKey)
 		if err != nil {
 			return nil, err
 		}
@@ -248,25 +236,8 @@ func NewBaseVestingAccount(baseAccount *BaseAccount, originalVesting sdk.Coins,
 
 // String implements fmt.Stringer
 func (bva BaseVestingAccount) String() string {
-	var pubkey string
-
-	if bva.PubKey != nil {
-		pubkey = sdk.MustBech32ifyAccPub(bva.PubKey)
-	}
-
-	return fmt.Sprintf(`Vesting Account:
-  Address:          %s
-  Pubkey:           %s
-  Coins:            %s
-  AccountNumber:    %d
-  Sequence:         %d
-  OriginalVesting:  %s
-  DelegatedFree:    %s
-  DelegatedVesting: %s
-  EndTime:          %d `,
-		bva.Address, pubkey, bva.Coins, bva.AccountNumber, bva.Sequence,
-		bva.OriginalVesting, bva.DelegatedFree, bva.DelegatedVesting, bva.EndTime,
-	)
+	out, _ := bva.MarshalYAML()
+	return out.(string)
 }
 
 // spendableCoins returns all the spendable coins for a vesting account given a
@@ -436,27 +407,8 @@ func NewContinuousVestingAccount(
 }
 
 func (cva ContinuousVestingAccount) String() string {
-	var pubkey string
-
-	if cva.PubKey != nil {
-		pubkey = sdk.MustBech32ifyAccPub(cva.PubKey)
-	}
-
-	return fmt.Sprintf(`Continuous Vesting Account:
-  Address:          %s
-  Pubkey:           %s
-  Coins:            %s
-  AccountNumber:    %d
-  Sequence:         %d
-  OriginalVesting:  %s
-  DelegatedFree:    %s
-  DelegatedVesting: %s
-  StartTime:        %d
-  EndTime:          %d `,
-		cva.Address, pubkey, cva.Coins, cva.AccountNumber, cva.Sequence,
-		cva.OriginalVesting, cva.DelegatedFree, cva.DelegatedVesting,
-		cva.StartTime, cva.EndTime,
-	)
+	out, _ := cva.MarshalYAML()
+	return out.(string)
 }
 
 // GetVestedCoins returns the total number of vested coins. If no coins are vested,

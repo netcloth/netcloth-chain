@@ -1,10 +1,9 @@
 package types
 
 import (
-	"fmt"
-
 	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 const (
@@ -30,18 +29,18 @@ func (msg MsgContract) Type() string {
 	return TypeMsgContract
 }
 
-func (msg MsgContract) ValidateBasic() sdk.Error {
+func (msg MsgContract) ValidateBasic() error {
 	if msg.From.Empty() {
-		return sdk.ErrInvalidAddress("msg missing from address")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "msg missing from address")
 	}
 	if !msg.Amount.IsValid() {
-		return sdk.ErrInvalidCoins("msg amount is invalid: " + msg.Amount.String())
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "msg amount is invalid: "+msg.Amount.String())
 	}
 	if msg.Amount.Denom != sdk.NativeTokenName {
-		return sdk.ErrInvalidCoins(fmt.Sprintf("denom must be %s", sdk.NativeTokenName))
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom must be %s", sdk.NativeTokenName)
 	}
 	if len(msg.Payload) == 0 {
-		return ErrNoPayload()
+		return ErrNoPayload
 	}
 
 	return nil

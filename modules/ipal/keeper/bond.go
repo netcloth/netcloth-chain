@@ -68,7 +68,7 @@ func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Tim
 	return matureUnBondings
 }
 
-func (k Keeper) DoUnbond(ctx sdk.Context, unBonding types.UnBonding) sdk.Error {
+func (k Keeper) DoUnbond(ctx sdk.Context, unBonding types.UnBonding) error {
 	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, unBonding.AccountAddress, sdk.NewCoins(unBonding.Amount))
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("DoUnbond failed, err:", err.Error()))

@@ -4,6 +4,8 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+const TypeMsgUnjail = "unjail"
+
 // verify interface at compile time
 var _ sdk.Msg = &MsgUnjail{}
 
@@ -20,7 +22,7 @@ func NewMsgUnjail(validatorAddr sdk.ValAddress) MsgUnjail {
 
 //nolint
 func (msg MsgUnjail) Route() string { return RouterKey }
-func (msg MsgUnjail) Type() string  { return "unjail" }
+func (msg MsgUnjail) Type() string  { return TypeMsgUnjail }
 func (msg MsgUnjail) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddr)}
 }
@@ -32,9 +34,9 @@ func (msg MsgUnjail) GetSignBytes() []byte {
 }
 
 // quick validity check
-func (msg MsgUnjail) ValidateBasic() sdk.Error {
+func (msg MsgUnjail) ValidateBasic() error {
 	if msg.ValidatorAddr.Empty() {
-		return ErrBadValidatorAddr(DefaultCodespace)
+		return ErrBadValidatorAddr
 	}
 	return nil
 }

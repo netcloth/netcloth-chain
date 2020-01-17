@@ -9,8 +9,10 @@ import (
 
 	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
 	"github.com/netcloth/netcloth-chain/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// TODO: fix this testcase
 func Test_writeReadLedgerInfo(t *testing.T) {
 	var tmpKey secp256k1.PubKeySecp256k1
 	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E143A")
@@ -24,7 +26,7 @@ func Test_writeReadLedgerInfo(t *testing.T) {
 	assert.Equal(t, "44'/118'/5'/0/1", path.String())
 	assert.Equal(t,
 		"nchpub1addwnpepqddddqg2glc8x4fl7vxjlnr7p5a3czm5kcdp4239sg6yqdc4rc2r5wmxv8p",
-		types.MustBech32ifyAccPub(lInfo.GetPubKey()))
+		types.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, lInfo.GetPubKey()))
 
 	// Serialize and restore
 	serialized := writeInfo(lInfo)
