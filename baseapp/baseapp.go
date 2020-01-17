@@ -25,9 +25,6 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-// Key to store the consensus params in the main store.
-var mainConsensusParamsKey = []byte("consensus_params")
-
 // Enum mode for app.runTx
 type runTxMode uint8
 
@@ -39,6 +36,14 @@ const (
 
 	// MainStoreKey is the string representation of the main store
 	MainStoreKey = "main"
+)
+
+var (
+	_ abci.Application = (*BaseApp)(nil)
+
+	// mainConsensusParamsKey defines a key to store the consensus params in the
+	// main store.
+	mainConsensusParamsKey = []byte("consensus_params")
 )
 
 // BaseApp reflects the ABCI application implementation.
@@ -71,9 +76,11 @@ type BaseApp struct {
 	// checkState is set on initialization and reset on Commit.
 	// deliverState is set in InitChain and BeginBlock and cleared on Commit.
 	// See methods setCheckState and setDeliverState.
-	checkState   *state          // for CheckTx
-	deliverState *state          // for DeliverTx
-	voteInfos    []abci.VoteInfo // absent validators from begin block
+	checkState   *state // for CheckTx
+	deliverState *state // for DeliverTx
+
+	// absent validators from begin block
+	voteInfos []abci.VoteInfo // absent validators from begin block
 
 	// consensus params
 	// TODO: Move this in the future to baseapp param store on main store.
@@ -92,8 +99,6 @@ type BaseApp struct {
 	// application's version string
 	appVersion string
 }
-
-var _ abci.Application = (*BaseApp)(nil)
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set
@@ -348,6 +353,81 @@ func (app *BaseApp) getMaximumBlockGas() uint64 {
 	default:
 		return uint64(maxGas)
 	}
+}
+
+func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
+	if req.Header.Height < 1 {
+		return fmt.Errorf("invalid height: %d", req.Header.Height)
+	}
+
+	prevHeight := app.LastBlockHeight()
+	if req.Header.Height != prevHeight+1 {
+		return fmt.Errorf("invalid height: %d; expected: %d", req.Header.Height, prevHeight+1)
+	}
+
+	return nil
+}
+
+// validateBasicTxMsgs executes basic validator calls for messages.
+func validateBasicTxMsgs(msgs []sdk.Msg) error {
+	if msgs == nil || len(msgs) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must contain at least one message")
+	}
+
+	for _, msg := range msgs {
+		// Validate the Msg.
+		err := msg.ValidateBasic()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Returns the applications's deliverState if app is in runTxModeDeliver,
+// otherwise it returns the application's checkstate.
+func (app *BaseApp) getState(mode runTxMode) *state {
+	if mode == runTxModeDeliver {
+		return app.deliverState
+	}
+
+	return app.checkState
+}
+
+// retrieve the context for the tx w/ txBytes and other memoized values.
+func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Context) {
+	ctx = app.getState(mode).ctx.
+		WithTxBytes(txBytes).
+		WithVoteInfos(app.voteInfos).
+		WithConsensusParams(app.consensusParams)
+
+	if mode == runTxModeReCheck {
+		ctx = ctx.WithIsReCheckTx(true)
+	}
+	if mode == runTxModeSimulate {
+		ctx, _ = ctx.CacheContext()
+	}
+
+	return
+}
+
+// cacheTxContext returns a new context based off of the provided context with
+// a cache wrapped multi-store.
+func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context, sdk.CacheMultiStore) {
+	ms := ctx.MultiStore()
+	msCache := ms.CacheMultiStore()
+	if msCache.TracingEnabled() {
+		msCache = msCache.SetTracingContext(
+			sdk.TraceContext(
+				map[string]interface{}{
+					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
+				},
+			),
+		).(sdk.CacheMultiStore)
+	}
+
+	return ctx.WithMultiStore(msCache), msCache
 }
 
 // ----------------------------------------------------------------------------
@@ -623,19 +703,6 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	}
 }
 
-func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
-	if req.Header.Height < 1 {
-		return fmt.Errorf("invalid height: %d", req.Header.Height)
-	}
-
-	prevHeight := app.LastBlockHeight()
-	if req.Header.Height != prevHeight+1 {
-		return fmt.Errorf("invalid height: %d; expected: %d", req.Header.Height, prevHeight+1)
-	}
-
-	return nil
-}
-
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	if app.cms.TracingEnabled() {
@@ -739,37 +806,6 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	}
 }
 
-// validateBasicTxMsgs executes basic validator calls for messages.
-func validateBasicTxMsgs(msgs []sdk.Msg) error {
-	if msgs == nil || len(msgs) == 0 {
-		return sdk.ErrUnknownRequest("Tx.GetMsgs() must return at least one message in list")
-	}
-
-	for _, msg := range msgs {
-		// Validate the Msg.
-		err := msg.ValidateBasic()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// retrieve the context for the tx w/ txBytes and other memoized values.
-func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Context) {
-	ctx = app.getState(mode).ctx.
-		WithTxBytes(txBytes).
-		WithVoteInfos(app.voteInfos).
-		WithConsensusParams(app.consensusParams)
-
-	if mode == runTxModeSimulate {
-		ctx, _ = ctx.CacheContext()
-	}
-
-	return
-}
-
 // runMsgs iterates through all the messages and executes them.
 // nolint: gocyclo
 func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
@@ -814,36 +850,6 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		Log:    strings.TrimSpace(msgLogs.String()),
 		Events: events,
 	}, nil
-}
-
-// Returns the applications's deliverState if app is in runTxModeDeliver,
-// otherwise it returns the application's checkstate.
-func (app *BaseApp) getState(mode runTxMode) *state {
-	if mode == runTxModeCheck || mode == runTxModeSimulate {
-		return app.checkState
-	}
-
-	return app.deliverState
-}
-
-// cacheTxContext returns a new context based off of the provided context with
-// a cache wrapped multi-store.
-func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (
-	sdk.Context, sdk.CacheMultiStore) {
-
-	ms := ctx.MultiStore()
-	msCache := ms.CacheMultiStore()
-	if msCache.TracingEnabled() {
-		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
-				map[string]interface{}{
-					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-				},
-			),
-		).(sdk.CacheMultiStore)
-	}
-
-	return ctx.WithMultiStore(msCache), msCache
 }
 
 // runTx processes a transaction. The transactions is processed via an
