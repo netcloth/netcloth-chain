@@ -3,6 +3,7 @@ package baseapp
 
 import (
 	"fmt"
+	"io"
 
 	dbm "github.com/tendermint/tm-db"
 
@@ -117,4 +118,18 @@ func (app *BaseApp) SetFauxMerkleMode() {
 		panic("SetFauxMerkleMode() on sealed BaseApp")
 	}
 	app.fauxMerkleMode = true
+}
+
+// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
+// CommitMultiStore.
+func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
+	app.cms.SetTracer(w)
+}
+
+// SetRouter allows us to customize the router.
+func (app *BaseApp) SetRouter(router sdk.Router) {
+	if app.sealed {
+		panic("SetRouter() on sealed BaseApp")
+	}
+	app.router = router
 }

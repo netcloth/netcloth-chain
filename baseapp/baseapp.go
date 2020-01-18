@@ -2,7 +2,6 @@ package baseapp
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -138,12 +137,6 @@ func (app *BaseApp) AppVersion() string {
 // Logger returns the logger of the BaseApp.
 func (app *BaseApp) Logger() log.Logger {
 	return app.logger
-}
-
-// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
-// CommitMultiStore.
-func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
-	app.cms.SetTracer(w)
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
@@ -905,16 +898,16 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	// Add cache in fee refund. If an error is returned or panic happens during refund,
 	// no value will be written into blockchain state
 	defer func() {
-		result.GasUsed = ctx.GasMeter().GasConsumed()
-		result.GasWanted = gasWanted
+		if mode == runTxModeDeliver && app.feeRefundHandler != nil {
+			result.GasUsed = ctx.GasMeter().GasConsumed()
+			result.GasWanted = gasWanted
 
-		var refundCtx sdk.Context
-		var refundCache sdk.CacheMultiStore
+			var refundCtx sdk.Context
+			var refundCache sdk.CacheMultiStore
 
-		refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
+			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
 
-		// refund unspent fee
-		if mode != runTxModeCheck && app.feeRefundHandler != nil {
+			// refund unspent fee
 			fmt.Println("++++++++++++++++++++ feeRefundHandler ++++++++++++++++++++")
 			_, err := app.feeRefundHandler(refundCtx, tx, *result)
 			if err != nil {
