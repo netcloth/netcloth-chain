@@ -106,8 +106,8 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 			return ctx, err
 		}
 	}
-
-	return next(ctx, tx, simulate)
+	newCtx = WithSigners(ctx, feePayerAcc)
+	return next(newCtx, tx, simulate)
 }
 
 // DeductFees deducts fees from the given account.

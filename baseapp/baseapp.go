@@ -906,6 +906,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	// no value will be written into blockchain state
 	defer func() {
 		result.GasUsed = ctx.GasMeter().GasConsumed()
+		result.GasWanted = gasWanted
 
 		var refundCtx sdk.Context
 		var refundCache sdk.CacheMultiStore

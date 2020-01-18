@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"fmt"
-
 	"github.com/netcloth/netcloth-chain/codec"
 	auth "github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/types"
@@ -24,11 +22,10 @@ func NewRefundKeeper(cdc *codec.Codec, key sdk.StoreKey) RefundKeeper {
 
 func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk RefundKeeper) types.FeeRefundHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, txResult sdk.Result) (actualCostFee sdk.Coin, err error) {
-		txAccounts := GetSigners(ctx)
-		if len(txAccounts) < 1 {
+		txAccount := GetSigners(ctx)
+		if txAccount == nil {
 			return sdk.Coin{}, nil
 		}
-		firstAccount := txAccounts[0]
 
 		stdTx, ok := tx.(StdTx)
 		if !ok {
@@ -46,11 +43,7 @@ func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk Re
 
 		unusedGas := txResult.GasWanted - txResult.GasUsed
 		refundCoin := sdk.NewCoin(fee.Denom, fee.Amount.Mul(sdk.NewInt(int64(unusedGas))).Quo(sdk.NewInt(int64(txResult.GasWanted))))
-		acc := am.GetAccount(ctx, firstAccount.GetAddress())
-
-		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
-		fmt.Println(fmt.Sprintf("refund coins: %s", refundCoin.String()))
-		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
+		acc := am.GetAccount(ctx, txAccount.GetAddress())
 
 		if ctx.BlockHeight() == 0 { // fee for genesis block is 0
 			return sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0)), nil
