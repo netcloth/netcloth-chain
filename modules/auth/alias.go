@@ -21,7 +21,7 @@ const (
 	DefaultSigVerifyCostSecp256k1 = types.DefaultSigVerifyCostSecp256k1
 	QueryAccount                  = types.QueryAccount
 
-	FeeKey = types.FeeKey
+	RefundKey = types.RefundKey
 )
 
 var (

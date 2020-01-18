@@ -60,9 +60,8 @@ type BaseApp struct {
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
-	anteHandler          sdk.AnteHandler            // ante handler for fee and auth
-	feeRefundHandler     types.FeeRefundHandler     // fee handler for fee refund
-	feePreprocessHandler types.FeePreprocessHandler // fee handler for fee preprocessor
+	anteHandler      sdk.AnteHandler        // ante handler for fee and auth
+	feeRefundHandler types.FeeRefundHandler // fee handler for fee refund
 
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
 	beginBlocker   sdk.BeginBlocker // logic to run before any txs
@@ -901,6 +900,27 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		}
 
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
+	}()
+
+	// Add cache in fee refund. If an error is returned or panic happens during refund,
+	// no value will be written into blockchain state
+	defer func() {
+		result.GasUsed = ctx.GasMeter().GasConsumed()
+
+		var refundCtx sdk.Context
+		var refundCache sdk.CacheMultiStore
+
+		refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
+
+		// refund unspent fee
+		if mode != runTxModeCheck && app.feeRefundHandler != nil {
+			fmt.Println("++++++++++++++++++++ feeRefundHandler ++++++++++++++++++++")
+			_, err := app.feeRefundHandler(refundCtx, tx, *result)
+			if err != nil {
+				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
+			}
+			refundCache.Write()
+		}
 	}()
 
 	// If BlockGasMeter() panics it will be caught by the above recover and will

@@ -42,7 +42,6 @@ func ChainAnteDecorators(chain ...AnteDecorator) AnteHandler {
 }
 
 // TODO
-type FeePreprocessHandler func(ctx Context, tx Tx) Error
 type FeeRefundHandler func(ctx Context, tx Tx, result Result) (Coin, error)
 
 // Terminator AnteDecorator will get added to the chain to simplify decorator code

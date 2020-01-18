@@ -1,26 +1,28 @@
 package auth
 
 import (
+	"fmt"
+
+	"github.com/netcloth/netcloth-chain/codec"
 	auth "github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-type FeeAuth struct {
-	NativeFeeDenom string `json:"native_fee_denom"`
+type RefundKeeper struct {
+	storeKey sdk.StoreKey
+	cdc      *codec.Codec
 }
 
-func NewFeeAuth(nativeFeeDenon string) FeeAuth {
-	return FeeAuth{NativeFeeDenom: nativeFeeDenon}
+func NewRefundKeeper(cdc *codec.Codec, key sdk.StoreKey) RefundKeeper {
+	return RefundKeeper{
+		storeKey: key,
+		cdc:      cdc,
+	}
 }
 
-func InitialFeeAuth() FeeAuth {
-	return NewFeeAuth(sdk.NativeTokenName)
-}
-
-// NewFeeRefundHandler creates a fee token refund handler
-func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, fk FeeKeeper) types.FeeRefundHandler {
+func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk RefundKeeper) types.FeeRefundHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, txResult sdk.Result) (actualCostFee sdk.Coin, err error) {
 		txAccounts := GetSigners(ctx)
 		if len(txAccounts) < 1 {
@@ -46,23 +48,20 @@ func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, fk Fe
 		refundCoin := sdk.NewCoin(fee.Denom, fee.Amount.Mul(sdk.NewInt(int64(unusedGas))).Quo(sdk.NewInt(int64(txResult.GasWanted))))
 		acc := am.GetAccount(ctx, firstAccount.GetAddress())
 
+		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
+		fmt.Println(fmt.Sprintf("refund coins: %s", refundCoin.String()))
+		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
+
 		if ctx.BlockHeight() == 0 { // fee for genesis block is 0
 			return sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0)), nil
 		}
 		_, err = RefundFees(supplyKeeper, ctx, acc, refundCoin)
 		if err != nil {
-			return actualCostFee, err
+			return sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0)), err
 		}
 
 		return actualCostFee, nil
 	}
-}
-
-func getFee(coins sdk.Coins) sdk.Coin {
-	if coins == nil || coins.Empty() {
-		return sdk.NewCoin(sdk.NativeTokenName, sdk.ZeroInt())
-	}
-	return sdk.NewCoin(sdk.NativeTokenName, coins.AmountOf(sdk.NativeTokenName))
 }
 
 func RefundFees(supplyKeeper auth.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) (*sdk.Result, error) {
@@ -77,4 +76,11 @@ func RefundFees(supplyKeeper auth.SupplyKeeper, ctx sdk.Context, acc Account, fe
 	}
 
 	return &sdk.Result{}, nil
+}
+
+func getFee(coins sdk.Coins) sdk.Coin {
+	if coins == nil || coins.Empty() {
+		return sdk.NewCoin(sdk.NativeTokenName, sdk.ZeroInt())
+	}
+	return sdk.NewCoin(sdk.NativeTokenName, coins.AmountOf(sdk.NativeTokenName))
 }

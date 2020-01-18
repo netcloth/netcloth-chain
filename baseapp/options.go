@@ -91,13 +91,6 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	app.anteHandler = ah
 }
 
-func (app *BaseApp) SetFeePreprocessHandler(fh types.FeePreprocessHandler) {
-	if app.sealed {
-		panic("SetFeePreprocessHandler on sealed BaseApp")
-	}
-	app.feePreprocessHandler = fh
-}
-
 func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {
 	if app.sealed {
 		panic("SetFeeRefundHandler on sealed BaseApp")
