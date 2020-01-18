@@ -47,7 +47,7 @@ func querySigningInfo(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 
 	signingInfo, found := k.getValidatorSigningInfo(ctx, params.ConsAddress)
 	if !found {
-		return nil, ErrNoSigningInfoFound(DefaultCodespace, params.ConsAddress)
+		return nil, ErrNoSigningInfoFound
 	}
 
 	res, err := codec.MarshalJSONIndent(ModuleCdc, signingInfo)

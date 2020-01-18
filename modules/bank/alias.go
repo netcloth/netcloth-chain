@@ -9,13 +9,10 @@ import (
 )
 
 const (
-	DefaultCodespace         = types.DefaultCodespace
-	CodeSendDisabled         = types.CodeSendDisabled
-	CodeInvalidInputsOutputs = types.CodeInvalidInputsOutputs
-	ModuleName               = types.ModuleName
-	RouterKey                = types.RouterKey
-	QuerierRoute             = types.QuerierRoute
-	DefaultParamspace        = types.DefaultParamspace
+	ModuleName        = types.ModuleName
+	RouterKey         = types.RouterKey
+	QuerierRoute      = types.QuerierRoute
+	DefaultParamspace = types.DefaultParamspace
 )
 
 var (

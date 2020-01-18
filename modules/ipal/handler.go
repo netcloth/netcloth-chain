@@ -1,45 +1,42 @@
 package ipal
 
 import (
-	"fmt"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/modules/ipal/keeper"
-	"github.com/netcloth/netcloth-chain/modules/ipal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
 		case MsgServiceNodeClaim:
 			return handleMsgServiceNodeClaim(ctx, k, msg)
 		default:
-			errMsg := "Unrecognized Msg type: %s" + msg.Type()
-			return sdk.ErrUnknownRequest(errMsg).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
 
-func handleMsgServiceNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) sdk.Result {
+func handleMsgServiceNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) (*sdk.Result, error) {
 	m.TrimSpace()
 
 	err := m.ValidateBasic()
 	if err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	acc, monikerExist := k.GetServiceNodeAddByMoniker(ctx, m.Moniker)
 	if monikerExist && !acc.Equals(m.OperatorAddress) {
-		return types.ErrMonikerExist(fmt.Sprintf("moniker: [%s] already exist", m.Moniker)).Result()
+		return nil, sdkerrors.Wrapf(ErrMonikerExist, "moniker: [%s] already exist", m.Moniker)
 	}
 
 	err = k.DoServiceNodeClaim(ctx, m)
 	if err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -49,7 +46,7 @@ func handleMsgServiceNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim)
 		),
 	)
 
-	return sdk.Result{}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {

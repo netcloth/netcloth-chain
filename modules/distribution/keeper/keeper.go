@@ -108,7 +108,7 @@ func (k Keeper) WithdrawValidatorCommission(ctx sdk.Context, valAddr sdk.ValAddr
 	// fetch validator accumulated commission
 	accumCommission := k.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if accumCommission.IsZero() {
-		return nil, types.ErrNoValidatorCommission(k.codespace)
+		return nil, types.ErrNoValidatorCommission
 	}
 
 	commission, remainder := accumCommission.TruncateDecimal()

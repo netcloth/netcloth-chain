@@ -1,39 +1,37 @@
 package vm
 
 import (
-	"fmt"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
 		case MsgContract:
 			return handleMsgContract(ctx, msg, k)
 		default:
-			errMsg := fmt.Sprintf("Unrecognized Msg type: %T", msg)
-			return sdk.ErrUnknownRequest(errMsg).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
 
-func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) sdk.Result {
+func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) (*sdk.Result, error) {
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	_, res := DoStateTransition(ctx, msg, k, gasLimit, false)
-	if !res.IsOK() {
-		return res
+	_, res, err := DoStateTransition(ctx, msg, k, gasLimit, false)
+	if err != nil {
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -43,7 +41,7 @@ func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) sdk.Result {
 		),
 	)
 
-	return sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}
+	return &sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}, nil
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {

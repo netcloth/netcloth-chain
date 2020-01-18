@@ -10,7 +10,6 @@ const (
 	StoreKey          = types.StoreKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
-	DefaultCodespace  = types.DefaultCodespace
 	DefaultParamspace = keeper.DefaultParamspace
 )
 

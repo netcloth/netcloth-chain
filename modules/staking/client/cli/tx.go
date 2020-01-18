@@ -115,7 +115,7 @@ func GetCmdEditValidator(cdc *codec.Codec) *cobra.Command {
 			if minSelfDelegationString != "" {
 				msb, ok := sdk.NewIntFromString(minSelfDelegationString)
 				if !ok {
-					return fmt.Errorf(types.ErrMinSelfDelegationInvalid(types.DefaultCodespace).Error())
+					return types.ErrMinSelfDelegationInvalid
 				}
 				newMinSelfDelegation = &msb
 			}

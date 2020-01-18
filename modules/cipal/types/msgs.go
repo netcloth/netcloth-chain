@@ -40,18 +40,6 @@ type MsgCIPALClaim struct {
 	UserRequest CIPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 
-func (p ADParam) Validate() error {
-	if p.UserAddress == "" {
-		return sdkerrors.Wrap(ErrEmptyInputs, "user address empty")
-	}
-
-	if len(p.UserAddress) > maxUserAddressLength {
-		return sdkerrors.Wrap(ErrStringTooLong, "user address too long")
-	}
-
-	return nil
-}
-
 func (i ServiceInfo) String() string {
 	return fmt.Sprintf(`ServiceInfo{Type:%s,Address:%s`, i.Type, i.Address)
 }

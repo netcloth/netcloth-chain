@@ -191,7 +191,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	}
 	// Assign err if contract code size exceeds the max while the err is still empty.
 	if maxCodeSizeExceeded && err == nil {
-		err = ErrMaxCodeSizeExceeded()
+		err = ErrMaxCodeSizeExceeded
 	}
 	if evm.vmConfig.Debug && evm.depth == 0 {
 		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
@@ -330,7 +330,7 @@ func (evm *EVM) StaticCall(caller ContractRef, addr sdk.AccAddress, input []byte
 	}
 	// Fail if we're trying to execute above the call depth limit
 	if evm.depth > int(CallCreateDepth) {
-		return nil, gas, ErrDepth()
+		return nil, gas, ErrDepth
 	}
 
 	var (
@@ -354,7 +354,7 @@ func (evm *EVM) StaticCall(caller ContractRef, addr sdk.AccAddress, input []byte
 	ret, err = run(evm, contract, input, true)
 	if err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)
-		if err.Code() != ErrExecutionReverted().Code() {
+		if err != ErrExecutionReverted {
 			contract.UseGas(contract.Gas)
 		}
 	}

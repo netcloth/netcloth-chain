@@ -15,24 +15,18 @@ type Keeper struct {
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
 	paramstore params.Subspace
-	codespace  sdk.CodespaceType
 }
 
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace) Keeper {
 	return Keeper{
 		storeKey:   storeKey,
 		cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:  codespace,
 	}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-func (k Keeper) Codespace() sdk.CodespaceType {
-	return k.codespace
+	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
 }
 
 func (k Keeper) GetCIPALObject(ctx sdk.Context, userAddress string) (obj types.CIPALObject, found bool) {

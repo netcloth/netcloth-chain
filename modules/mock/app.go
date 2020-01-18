@@ -17,6 +17,7 @@ import (
 	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
+	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -38,7 +39,7 @@ type App struct {
 	AccountKeeper auth.AccountKeeper
 	ParamsKeeper  params.Keeper
 
-	GenesisAccounts  []auth.Account
+	GenesisAccounts  []authexported.Account
 	TotalCoinsSupply sdk.Coins
 }
 
@@ -63,7 +64,7 @@ func NewApp() *App {
 	}
 
 	// define keepers
-	app.ParamsKeeper = params.NewKeeper(app.Cdc, app.KeyParams, app.TKeyParams, params.DefaultCodespace)
+	app.ParamsKeeper = params.NewKeeper(app.Cdc, app.KeyParams, app.TKeyParams)
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.Cdc,
@@ -72,7 +73,7 @@ func NewApp() *App {
 		auth.ProtoBaseAccount,
 	)
 
-	supplyKeeper := auth.NewDummySupplyKeeper(app.AccountKeeper)
+	supplyKeeper := NewDummySupplyKeeper(app.AccountKeeper)
 
 	// Initialize the app. The chainers and blockers can be overwritten before
 	// calling complete setup.
@@ -307,25 +308,6 @@ func RandomSetGenesis(r *rand.Rand, app *App, addrs []sdk.AccAddress, denoms []s
 		accts[i] = &baseAcc
 	}
 	app.GenesisAccounts = accts
-}
-
-// GenSequenceOfTxs generates a set of signed transactions of messages, such
-// that they differ only by having the sequence numbers incremented between
-// every transaction.
-func GenSequenceOfTxs(msgs []sdk.Msg, accnums []uint64, initSeqNums []uint64, numToGenerate int, priv ...crypto.PrivKey) []auth.StdTx {
-	txs := make([]auth.StdTx, numToGenerate)
-	for i := 0; i < numToGenerate; i++ {
-		txs[i] = GenTx(msgs, accnums, initSeqNums, priv...)
-		incrementAllSequenceNumbers(initSeqNums)
-	}
-
-	return txs
-}
-
-func incrementAllSequenceNumbers(initSeqNums []uint64) {
-	for i := 0; i < len(initSeqNums); i++ {
-		initSeqNums[i]++
-	}
 }
 
 func createCodec() *codec.Codec {

@@ -4,6 +4,7 @@ import (
 	auth "github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 type FeeAuth struct {
@@ -48,9 +49,9 @@ func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, fk Fe
 		if ctx.BlockHeight() == 0 { // fee for genesis block is 0
 			return sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0)), nil
 		}
-		res := RefundFees(supplyKeeper, ctx, acc, refundCoin)
-		if !res.IsOK() {
-			return actualCostFee, nil
+		_, err = RefundFees(supplyKeeper, ctx, acc, refundCoin)
+		if err != nil {
+			return actualCostFee, err
 		}
 
 		return actualCostFee, nil
@@ -62,4 +63,18 @@ func getFee(coins sdk.Coins) sdk.Coin {
 		return sdk.NewCoin(sdk.NativeTokenName, sdk.ZeroInt())
 	}
 	return sdk.NewCoin(sdk.NativeTokenName, coins.AmountOf(sdk.NativeTokenName))
+}
+
+func RefundFees(supplyKeeper auth.SupplyKeeper, ctx sdk.Context, acc Account, fees sdk.Coin) (*sdk.Result, error) {
+	if !fees.IsValid() {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
+	}
+
+	//TODO add more validation
+	err := supplyKeeper.SendCoinsFromModuleToAccount(ctx, auth.FeeCollectorName, acc.GetAddress(), sdk.NewCoins(fees))
+	if err != nil {
+		return nil, err
+	}
+
+	return &sdk.Result{}, nil
 }

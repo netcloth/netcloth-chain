@@ -84,9 +84,9 @@ func simulateStateTransition(ctx sdk.Context, req abci.RequestQuery, k keeper.Ke
 	var msg types.MsgContract
 	codec.Cdc.UnmarshalJSON(req.Data, &msg)
 
-	_, result := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
+	_, result, err := DoStateTransition(ctx, msg, k, DefaultGasLimit, true)
 
-	if result.IsOK() {
+	if err == nil {
 		bRes := types.SimulationResult{Gas: result.GasUsed, Res: hex.EncodeToString(result.Data)}
 		res, err := codec.MarshalJSONIndent(k.Cdc, bRes)
 		if err != nil {

@@ -6,30 +6,30 @@ import (
 
 	"github.com/netcloth/netcloth-chain/modules/cipal/keeper"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 func NewHandler(k Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
 		case MsgIPALClaim:
 			return handleMsgIPALClaim(ctx, k, msg)
 		default:
-			errMsg := "Unrecognized Msg type: %s" + msg.Type()
-			return sdk.ErrUnknownRequest(errMsg).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
 
-func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result {
+func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) (*sdk.Result, error) {
 	if ctx.BlockHeader().Time.After(msg.UserRequest.Params.Expiration) {
-		return ErrIPALClaimUserRequestExpired("user request expired").Result()
+		return nil, sdkerrors.Wrap(ErrIPALClaimUserRequestExpired, "user request expired")
 	}
 
 	sigVerifyPass := msg.UserRequest.Sig.VerifyBytes(msg.UserRequest.Params.GetSignBytes(), msg.UserRequest.Sig.Signature)
 	if !sigVerifyPass {
-		return ErrCIPALClaimUserRequestSigVerify("user signature verify failed").Result()
+		return nil, sdkerrors.Wrap(ErrCIPALClaimUserRequestSigVerify, "user signature verify failed")
 	}
 
 	obj, found := k.GetCIPALObject(ctx, msg.UserRequest.Params.UserAddress)
@@ -65,7 +65,7 @@ func handleMsgIPALClaim(ctx sdk.Context, k Keeper, msg MsgIPALClaim) sdk.Result 
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {

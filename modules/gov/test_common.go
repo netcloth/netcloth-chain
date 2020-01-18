@@ -68,7 +68,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 	rtr := NewRouter().
 		AddRoute(RouterKey, ProposalHandler)
 
-	bk := bank.NewBaseKeeper(mApp.AccountKeeper, mApp.ParamsKeeper.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, blacklistedAddrs)
+	bk := bank.NewBaseKeeper(mApp.AccountKeeper, mApp.ParamsKeeper.Subspace(bank.DefaultParamspace), blacklistedAddrs)
 
 	maccPerms := map[string][]string{
 		types.ModuleName:          []string{supply.Burner},
@@ -76,7 +76,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
 	}
 	supplyKeeper := supply.NewKeeper(mApp.Cdc, keySupply, mApp.AccountKeeper, bk, maccPerms)
-	sk := staking.NewKeeper(mApp.Cdc, keyStaking, tKeyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace), staking.DefaultCodespace)
+	sk := staking.NewKeeper(mApp.Cdc, keyStaking, tKeyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 
 	keeper := NewKeeper(mApp.Cdc, keyGov, pk.Subspace(DefaultParamspace), supplyKeeper, sk, rtr)
 
@@ -236,7 +236,8 @@ func createValidators(t *testing.T, stakingHandler sdk.Handler, ctx sdk.Context,
 			testDescription, testCommissionRates, sdk.OneInt(),
 		)
 
-		res := stakingHandler(ctx, valCreateMsg)
-		require.True(t, res.IsOK())
+		res, err := stakingHandler(ctx, valCreateMsg)
+		require.NoError(t, err)
+		require.NotNil(t, res)
 	}
 }
