@@ -49,7 +49,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 		Origin: st.Sender,
 
-		CoinBase:    ctx.BlockHeader().ProposerAddress, // TODO: should be proposer account address
+		CoinBase:    ctx.BlockHeader().ProposerAddress,
 		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
