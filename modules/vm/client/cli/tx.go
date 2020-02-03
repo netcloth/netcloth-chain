@@ -119,9 +119,9 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			m, exist := abiObj.Methods[method]
 			var payload []byte
 			if exist {
-				if len(m.Inputs) != len(argsBinary)/32 {
-					return errors.New(fmt.Sprint("args count dismatch"))
-				}
+				//if len(m.Inputs) != len(argsBinary)/32 {
+				//	return errors.New(fmt.Sprint("args count dismatch"))
+				//}
 
 				readyArgs, err := m.Inputs.UnpackValues(argsBinary)
 				if err != nil {
