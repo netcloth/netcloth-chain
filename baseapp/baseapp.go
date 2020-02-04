@@ -801,8 +801,9 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 // runMsgs iterates through all the messages and executes them.
 // nolint: gocyclo
 func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
-	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
-	data := make([]byte, 0, len(msgs))
+	idxLogs := make([]sdk.ABCIMessageLog, 0, len(msgs)) // a list of JSON-encoded logs with msg index
+
+	var data []byte
 	events := sdk.EmptyEvents()
 
 	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
@@ -818,28 +819,36 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
 		}
 
+		idxLog := sdk.ABCIMessageLog{MsgIndex: uint16(i)}
+
 		msgResult, err := handler(ctx, msg)
 		if err != nil {
-			return nil, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
+			idxLog.Success = false
+			idxLogs = append(idxLogs, idxLog)
+
+			logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
+
+			return &sdk.Result{
+				Data:   data,
+				Log:    strings.TrimSpace(string(logJSON)),
+				Events: events,
+			}, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
 		}
 
-		msgEvents := sdk.Events{
-			sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())),
-		}
-		msgEvents = msgEvents.AppendEvents(msgResult.Events)
-
-		// append message events, data and logs
-		//
-		// Note: Each message result's data must be length-prefixed in order to
-		// separate each result.
-		events = events.AppendEvents(msgEvents)
 		data = append(data, msgResult.Data...)
-		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(i), msgResult.Log, msgEvents))
+		// append events from the message's execution and a message action event
+		events = events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())))
+		events = events.AppendEvents(msgResult.Events)
+
+		idxLog.Success = true
+		idxLogs = append(idxLogs, idxLog)
+
 	}
 
+	logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
 	return &sdk.Result{
 		Data:   data,
-		Log:    strings.TrimSpace(msgLogs.String()),
+		Log:    strings.TrimSpace(string(logJSON)),
 		Events: events,
 	}, nil
 }
