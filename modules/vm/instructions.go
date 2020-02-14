@@ -837,7 +837,7 @@ func makeLog(size int) executionFunc {
 			topics[i] = sdk.BigToHash(stack.pop())
 		}
 
-		d := memory.GetPtr(mStart.Int64(), mSize.Int64())
+		d := memory.GetCopy(mStart.Int64(), mSize.Int64())
 		interpreter.evm.StateDB.AddLog(&Log{
 			Address:     contract.Address(),
 			Topics:      topics,
