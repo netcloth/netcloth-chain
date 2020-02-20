@@ -7,7 +7,9 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) {
-	//TODO
+	for _, obj := range data.CIPALObjs {
+		keeper.SetCIPALObject(ctx, obj)
+	}
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.

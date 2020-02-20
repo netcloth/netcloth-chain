@@ -66,9 +66,8 @@ func NewAppModule(keeper Keeper) AppModule {
 func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	a.keeper.SetParams(ctx, genesisState.Params)
 
-	return []abci.ValidatorUpdate{}
+	return InitGenesis(ctx, a.keeper, genesisState)
 }
 
 func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {

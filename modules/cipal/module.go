@@ -11,6 +11,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
 	"github.com/netcloth/netcloth-chain/modules/cipal/client/rest"
+	"github.com/netcloth/netcloth-chain/modules/cipal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 )
@@ -63,9 +64,9 @@ func NewAppModule(keeper Keeper) AppModule {
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	//var genesisState GenesisState
-	//types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	//InitGenesis(ctx, am.keeper, genesisState)
+	var genesisState GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	InitGenesis(ctx, am.keeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }
 

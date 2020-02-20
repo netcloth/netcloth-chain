@@ -22,11 +22,19 @@ func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
 		Endpoint: endpoint,
 	}
 }
+func (e Endpoint) String() string {
+	return fmt.Sprintf(`Endpoint
+type: %d
+endpoint: %s`, e.Type, e.Endpoint)
+}
 
 type Endpoints []Endpoint
 
-func (e Endpoints) String() string {
-	return fmt.Sprintf("%v", e)
+func (e Endpoints) String() (out string) {
+	for _, val := range e {
+		out += val.String() + "\n"
+	}
+	return strings.TrimSpace(out)
 }
 
 type MsgServiceNodeClaim struct {
