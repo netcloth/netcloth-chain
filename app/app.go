@@ -264,6 +264,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		crisis.ModuleName,
 		genutil.ModuleName,
 		ipal.ModuleName,
+		cipal.ModuleName,
 		vm.ModuleName,
 	)
 

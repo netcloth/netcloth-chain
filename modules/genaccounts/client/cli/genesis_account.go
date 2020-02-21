@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
+	"github.com/netcloth/netcloth-chain/client/keys"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/genaccounts"
 	"github.com/netcloth/netcloth-chain/modules/genutil"
-	"github.com/netcloth/netcloth-chain/client/keys"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )

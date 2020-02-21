@@ -41,7 +41,7 @@ func (k Keeper) GetServiceNode(ctx sdk.Context, operator sdk.AccAddress) (obj ty
 	return obj, true
 }
 
-func (k Keeper) setServiceNode(ctx sdk.Context, obj types.ServiceNode) {
+func (k Keeper) SetServiceNode(ctx sdk.Context, obj types.ServiceNode) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalServiceNode(k.cdc, obj)
 	store.Set(types.GetServiceNodeKey(obj.OperatorAddress), bz)
@@ -81,14 +81,14 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 
 func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
 	n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
-	k.setServiceNode(ctx, n)
+	k.SetServiceNode(ctx, n)
 	k.setServiceNodeByBond(ctx, n)
 	k.setServiceNodeByMonikerIndex(ctx, n)
 }
 
 func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
 	u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.Details, new.Endpoints, new.Bond)
-	k.setServiceNode(ctx, u)
+	k.SetServiceNode(ctx, u)
 
 	k.delServiceNodeByBond(ctx, old)
 	k.setServiceNodeByBond(ctx, u)

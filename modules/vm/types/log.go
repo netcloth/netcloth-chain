@@ -14,7 +14,7 @@ type Log struct {
 	// list of topics provided by the contract.
 	Topics []sdk.Hash `json:"topics" yaml:"topics"`
 	// supplied by the contract, usually ABI-encoded
-	Data []byte `json:"data" yaml:"data`
+	Data hexutil.Bytes `json:"data" yaml:"data`
 
 	BlockNumber uint64   `json:"blockNumber" yaml:"blockNumber"`
 	TxHash      sdk.Hash `json:"transactionHash" yaml:"transactionHash"`

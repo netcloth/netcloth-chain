@@ -9,11 +9,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/client/flags"
+	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

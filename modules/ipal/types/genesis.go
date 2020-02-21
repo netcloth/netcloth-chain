@@ -1,7 +1,8 @@
 package types
 
 type GenesisState struct {
-	Params Params `json:"params" yaml:"params"`
+	Params       Params       `json:"params" yaml:"params"`
+	ServiceNodes ServiceNodes `json:"service_nodes" yaml:"service_nodes"`
 }
 
 func DefaultGenesisState() GenesisState {
@@ -10,6 +11,9 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
-func NewGenesisState(params Params) GenesisState {
-	return GenesisState{Params: params}
+func NewGenesisState(params Params, serviceNodes ServiceNodes) GenesisState {
+	return GenesisState{
+		Params:       params,
+		ServiceNodes: serviceNodes,
+	}
 }
