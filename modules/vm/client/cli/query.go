@@ -294,7 +294,7 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 			var payload []byte
 			if exist {
 				if len(m.Inputs) != len(argsBin)/32 {
-					return errors.New(fmt.Sprint("args count dismatch"))
+					//return errors.New(fmt.Sprint("args count dismatch"))
 				}
 
 				readyArgs, err := m.Inputs.UnpackValues(argsBin)

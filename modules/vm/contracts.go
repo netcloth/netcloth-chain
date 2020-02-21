@@ -2,11 +2,12 @@ package vm
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"math/big"
 
-	ethsecp256k1 "github.com/ethereum/go-ethereum/crypto/secp256k1"
+	btcsecp256k1 "github.com/btcsuite/btcd/btcec"
 
-	"github.com/tendermint/tendermint/crypto"
+	ethsecp256k1 "github.com/ethereum/go-ethereum/crypto/secp256k1"
 
 	"golang.org/x/crypto/ripemd160"
 
@@ -106,14 +107,27 @@ func (c *ecrecover) Run(input []byte) ([]byte, sdk.Error) {
 	sig[64] = v
 
 	// v needs to be at the end for libsecp256k1
-	pubKey, err := Ecrecover(input[:32], sig)
+	pubkeyBin, err := Ecrecover(input[:32], sig)
 	// make sure the public key is a valid one
 	if err != nil {
 		return nil, nil
 	}
 
-	// the first byte of pubkey is bitcoin heritage
-	return common.LeftPadBytes(crypto.Sha256(pubKey[1:])[12:], 32), nil
+	ss := fmt.Sprintf("pubkey: %x", pubkeyBin)
+	fmt.Println(ss)
+
+	pubkey, err := btcsecp256k1.ParsePubKey(pubkeyBin, btcsecp256k1.S256())
+
+	fmt.Println(fmt.Sprintf("cpubkey: %x", pubkey.SerializeCompressed()))
+
+	hasherSHA256 := sha256.New()
+	hasherSHA256.Write(pubkey.SerializeCompressed())
+	sha := hasherSHA256.Sum(nil)
+
+	hasherRIPEMD160 := ripemd160.New()
+	hasherRIPEMD160.Write(sha)
+
+	return common.LeftPadBytes(hasherRIPEMD160.Sum(nil), 32), nil
 }
 
 // SHA256 implemented as a native contract.
