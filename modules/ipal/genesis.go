@@ -16,7 +16,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		fmt.Println("set serviceNode ")
 		serviceNode.Bond = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
 		fmt.Println(serviceNode)
-		keeper.SetServiceNode(ctx, serviceNode)
+		keeper.CreateServiceNode(ctx, serviceNode)
 	}
 	return []abci.ValidatorUpdate{}
 }
