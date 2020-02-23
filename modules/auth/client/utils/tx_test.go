@@ -137,6 +137,6 @@ func makeCodec() *codec.Codec {
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	authtypes.RegisterCodec(cdc)
-	cdc.RegisterConcrete(sdk.TestMsg{}, "cosmos-sdk/Test", nil)
+	cdc.RegisterConcrete(sdk.TestMsg{}, "nch/Test", nil)
 	return cdc
 }

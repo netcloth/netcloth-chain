@@ -7,8 +7,7 @@
 // In combination with the bip39 package in go-crypto this package provides the functionality for deriving keys using a
 // BIP 44 HD path, or, more general, by passing a BIP 32 path.
 //
-// In particular, this package (together with bip39) provides all necessary functionality to derive keys from
-// mnemonics generated during the cosmos fundraiser.
+
 package hd
 
 import (

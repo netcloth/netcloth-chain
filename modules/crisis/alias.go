@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	DefaultCodespace  = types.DefaultCodespace
-	CodeInvalidInput  = types.CodeInvalidInput
 	ModuleName        = types.ModuleName
 	DefaultParamspace = types.DefaultParamspace
 )
@@ -19,7 +17,7 @@ const (
 var (
 	// functions aliases
 	RegisterCodec         = types.RegisterCodec
-	ErrNilSender          = types.ErrNilSender
+	ErrNoSender           = types.ErrNoSender
 	ErrUnknownInvariant   = types.ErrUnknownInvariant
 	NewGenesisState       = types.NewGenesisState
 	DefaultGenesisState   = types.DefaultGenesisState

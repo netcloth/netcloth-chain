@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
-
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // InitGenesis - store genesis parameters
-func InitGenesis(ctx sdk.Context, k Keeper, supplyKeeper types.SupplyKeeper, data GenesisState) {
+func InitGenesis(ctx sdk.Context, k Keeper, supplyKeeper SupplyKeeper, data GenesisState) {
 
 	k.setProposalID(ctx, data.StartingProposalID)
 	k.setDepositParams(ctx, data.DepositParams)

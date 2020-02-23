@@ -18,28 +18,28 @@ const (
 	Storage
 )
 
-func EndpointsFromString(s string) (r Endpoints, e sdk.Error) {
+func EndpointsFromString(s string) (r Endpoints, e error) {
 	ss := strings.Split(s, ",")
 	for _, v := range ss {
 		v = strings.ReplaceAll(v, " ", "")
 		if len(v) > 0 {
 			es := strings.Split(v, "|")
 			if len(es) != 2 {
-				return nil, ErrEndpointsFormat()
+				return nil, ErrEndpointsFormat
 			}
 
 			if len(es[0]) == 0 || len(es[1]) == 0 {
-				return nil, ErrEndpointsFormat()
+				return nil, ErrEndpointsFormat
 			}
 
 			Type, err := strconv.Atoi(es[0])
 			if err != nil {
-				return nil, ErrEndpointsFormat()
+				return nil, ErrEndpointsFormat
 			}
 
 			r = append(r, NewEndpoint(uint64(Type), es[1]))
 		} else {
-			return nil, ErrEndpointsFormat()
+			return nil, ErrEndpointsFormat
 		}
 	}
 

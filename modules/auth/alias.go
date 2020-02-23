@@ -21,7 +21,7 @@ const (
 	DefaultSigVerifyCostSecp256k1 = types.DefaultSigVerifyCostSecp256k1
 	QueryAccount                  = types.QueryAccount
 
-	FeeKey = types.FeeKey
+	RefundKey = types.RefundKey
 )
 
 var (
@@ -63,8 +63,6 @@ var (
 	KeyTxSizeCostPerByte      = types.KeyTxSizeCostPerByte
 	KeySigVerifyCostED25519   = types.KeySigVerifyCostED25519
 	KeySigVerifyCostSecp256k1 = types.KeySigVerifyCostSecp256k1
-
-	ErrInvalidGas = types.ErrInvalidGas
 )
 
 type (

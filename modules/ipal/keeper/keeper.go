@@ -7,6 +7,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/ipal/types"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 type Keeper struct {
@@ -14,10 +15,9 @@ type Keeper struct {
 	cdc          *codec.Codec
 	supplyKeeper types.SupplyKeeper
 	paramstore   params.Subspace
-	codespace    sdk.CodespaceType
 }
 
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace) Keeper {
 	if addr := supplyKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
@@ -27,7 +27,6 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.Suppl
 		cdc:          cdc,
 		supplyKeeper: supplyKeeper,
 		paramstore:   paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:    codespace,
 	}
 }
 
@@ -80,35 +79,33 @@ func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 	store.Delete(types.GetServiceNodeByMonikerKey(moniker))
 }
 
-func (k Keeper) createServiceNode(ctx sdk.Context, m types.MsgServiceNodeClaim) {
-	n := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
-	k.setServiceNode(ctx, n)
-	k.setServiceNodeByBond(ctx, n)
-	k.setServiceNodeByMonikerIndex(ctx, n)
+func (k Keeper) CreateServiceNode(ctx sdk.Context, node types.ServiceNode) {
+	k.setServiceNode(ctx, node)
+	k.setServiceNodeByBond(ctx, node)
+	k.setServiceNodeByMonikerIndex(ctx, node)
 }
 
-func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.MsgServiceNodeClaim) {
-	u := types.NewServiceNode(new.OperatorAddress, new.Moniker, new.Website, new.Details, new.Endpoints, new.Bond)
-	k.setServiceNode(ctx, u)
+func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.ServiceNode) {
+	k.setServiceNode(ctx, new)
 
 	k.delServiceNodeByBond(ctx, old)
-	k.setServiceNodeByBond(ctx, u)
+	k.setServiceNodeByBond(ctx, new)
 
 	k.delServiceNodeByMonikerIndex(ctx, old.Moniker)
-	k.setServiceNodeByMonikerIndex(ctx, u)
+	k.setServiceNodeByMonikerIndex(ctx, new)
 }
 
-func (k Keeper) deleteServiceNode(ctx sdk.Context, n types.ServiceNode) {
-	k.delServiceNode(ctx, n.OperatorAddress)
-	k.delServiceNodeByBond(ctx, n)
-	k.delServiceNodeByMonikerIndex(ctx, n.Moniker)
+func (k Keeper) deleteServiceNode(ctx sdk.Context, obj types.ServiceNode) {
+	k.delServiceNode(ctx, obj.OperatorAddress)
+	k.delServiceNodeByBond(ctx, obj)
+	k.delServiceNodeByMonikerIndex(ctx, obj.Moniker)
 }
 
-func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) sdk.Error {
+func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
-func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err sdk.Error) {
+func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err error) {
 	minBond := k.GetMinBond(ctx)
 	n, found := k.GetServiceNode(ctx, m.OperatorAddress)
 	if found {
@@ -122,7 +119,9 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 				k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond.Sub(m.Bond))
 			} else {
 			}
-			k.updateServiceNode(ctx, n, m)
+
+			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
+			k.updateServiceNode(ctx, n, serviceNode)
 		} else {
 			k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
 			k.deleteServiceNode(ctx, n)
@@ -134,9 +133,10 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 				return err
 			}
 
-			k.createServiceNode(ctx, m)
+			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
+			k.CreateServiceNode(ctx, serviceNode)
 		} else {
-			return types.ErrBondInsufficient(fmt.Sprintf("bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String()))
+			return sdkerrors.Wrapf(types.ErrBondInsufficient, "bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String())
 		}
 	}
 

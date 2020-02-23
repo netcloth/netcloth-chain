@@ -1,66 +1,34 @@
 package types
 
 import (
-	"fmt"
-
-	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-const (
-	DefaultCodespace sdk.CodespaceType = ModuleName
-
-	CodeEmptyInputs           sdk.CodeType = 100
-	CodeEndpointsFormatErr    sdk.CodeType = 102
-	CodeEndpointsEmptyErr     sdk.CodeType = 103
-	CodeEndpointsDuplicateErr sdk.CodeType = 104
-	CodeBadDenom              sdk.CodeType = 111
-	CodeBondInsufficient      sdk.CodeType = 112
-	CodeMonikerExist          sdk.CodeType = 113
+var (
+	ErrEmptyInputs        = sdkerrors.Register(ModuleName, 1, "input empty")
+	ErrBadDenom           = sdkerrors.Register(ModuleName, 2, "bad denom")
+	ErrBondInsufficient   = sdkerrors.Register(ModuleName, 3, "bond insufficient")
+	ErrMonikerExist       = sdkerrors.Register(ModuleName, 4, "moniker exists")
+	ErrEndpointsFormat    = sdkerrors.Register(ModuleName, 5, "endpoints format err, should be in format: serviceType|endpoint,serviceType|endpoint, serviceType is a number, endpoint is a string")
+	ErrEndpointsEmpty     = sdkerrors.Register(ModuleName, 6, "no endpoints")
+	ErrEndpointsDuplicate = sdkerrors.Register(ModuleName, 7, "endpoints duplicate")
 )
-
-func ErrEmptyInputs(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeEmptyInputs, msg)
-}
-
-func ErrBadDenom(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeBadDenom, msg)
-}
-
-func ErrBondInsufficient(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeBondInsufficient, msg)
-}
-
-func ErrMonikerExist(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeMonikerExist, msg)
-}
-
-func ErrEndpointsFormat() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeEndpointsFormatErr, "endpoints format err, should be in format: serviceType|endpoint,serviceType|endpoint, serviceType is a number, endpoint is a string")
-}
-
-func ErrEndpointsEmpty() sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeEndpointsEmptyErr, "no endpoints")
-}
-
-func ErrEndpointsDuplicate(msg string) sdk.Error {
-	return sdk.NewError(DefaultCodespace, CodeEndpointsDuplicateErr, msg)
-}
 
 type EndpointDuplicateErrDetector struct {
 	V map[int]int
 }
 
-func (d *EndpointDuplicateErrDetector) detecte(t int) sdk.Error {
+func (d *EndpointDuplicateErrDetector) detecte(t int) error {
 	d.V[t]++
 
 	if d.V[t] > 1 {
-		return ErrEndpointsDuplicate(fmt.Sprintf("endpoint type: [%d] is duplicate", t))
+		return sdkerrors.Wrapf(ErrEndpointsDuplicate, "endpoint type: [%d] is duplicate", t)
 	}
 
 	return nil
 }
 
-func EndpointsDupCheck(eps Endpoints) sdk.Error {
+func EndpointsDupCheck(eps Endpoints) error {
 	d := EndpointDuplicateErrDetector{
 		V: make(map[int]int),
 	}

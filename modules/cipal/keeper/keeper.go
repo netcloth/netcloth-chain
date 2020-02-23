@@ -15,24 +15,18 @@ type Keeper struct {
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
 	paramstore params.Subspace
-	codespace  sdk.CodespaceType
 }
 
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, paramstore params.Subspace) Keeper {
 	return Keeper{
 		storeKey:   storeKey,
 		cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:  codespace,
 	}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-func (k Keeper) Codespace() sdk.CodespaceType {
-	return k.codespace
+	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
 }
 
 func (k Keeper) GetCIPALObject(ctx sdk.Context, userAddress string) (obj types.CIPALObject, found bool) {
@@ -45,6 +39,18 @@ func (k Keeper) GetCIPALObject(ctx sdk.Context, userAddress string) (obj types.C
 
 	obj = types.MustUnmarshalCIPALObject(k.cdc, value)
 	return obj, true
+}
+
+func (k Keeper) GetAllCIPALObjects(ctx sdk.Context) (CIPALObjs []types.CIPALObject) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.CIPALObjectKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		obj := types.MustUnmarshalCIPALObject(k.cdc, iterator.Value())
+		CIPALObjs = append(CIPALObjs, obj)
+	}
+	return CIPALObjs
 }
 
 // get the set of all cipal object with no limits

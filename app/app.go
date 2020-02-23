@@ -100,7 +100,7 @@ type NCHApp struct {
 
 	// keepers
 	accountKeeper  auth.AccountKeeper
-	feeKeeper      auth.FeeKeeper
+	refundKeeper   auth.RefundKeeper
 	bankKeeper     bank.Keeper
 	supplyKeeper   supply.Keeper
 	stakingKeeper  staking.Keeper
@@ -132,7 +132,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey,
 		auth.StoreKey,
-		auth.FeeKey,
+		auth.RefundKey,
 		staking.StoreKey,
 		supply.StoreKey,
 		mint.StoreKey,
@@ -159,7 +159,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// init params keeper
 	// The ParamsKeeper handles parameter storage for the application
 	// init params keeper and subspaces
-	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
+	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey])
 	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
@@ -174,39 +174,34 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	// add keepers
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	app.feeKeeper = auth.NewFeeKeeper(app.cdc, keys[auth.FeeKey])
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, bank.DefaultCodespace, app.ModuleAccountAddrs())
+	app.refundKeeper = auth.NewRefundKeeper(app.cdc, keys[auth.RefundKey])
+	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, app.ModuleAccountAddrs())
 	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(
 		app.cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey],
-		app.supplyKeeper, stakingSubspace, staking.DefaultCodespace,
-	)
+		app.supplyKeeper, stakingSubspace)
 	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
 	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
-		app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
+		app.supplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
 	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
-	)
+		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
 	app.ipalKeeper = cipal.NewKeeper(
 		keys[cipal.StoreKey],
 		app.cdc,
-		ipalSubspace,
-		cipal.DefaultCodespace)
+		ipalSubspace)
 
 	app.aipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
-		aipalSubspace,
-		ipal.DefaultCodespace)
+		aipalSubspace)
 
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc,
 		keys[vm.StoreKey],
 		keys[vm.CodeKey],
-		vm.DefaultCodespace,
 		vmSubspace,
 		app.accountKeeper)
 
@@ -269,6 +264,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		crisis.ModuleName,
 		genutil.ModuleName,
 		ipal.ModuleName,
+		cipal.ModuleName,
 		vm.ModuleName,
 	)
 
@@ -285,7 +281,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
-	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.feeKeeper))
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {

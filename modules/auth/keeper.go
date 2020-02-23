@@ -11,6 +11,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/modules/params/subspace"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // AccountKeeper encodes/decodes accounts using the go-amino (binary)
@@ -132,19 +133,19 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, process func(exported.A
 }
 
 // GetPubKey Returns the PubKey of the account at address
-func (ak AccountKeeper) GetPubKey(ctx sdk.Context, addr sdk.AccAddress) (crypto.PubKey, sdk.Error) {
+func (ak AccountKeeper) GetPubKey(ctx sdk.Context, addr sdk.AccAddress) (crypto.PubKey, error) {
 	acc := ak.GetAccount(ctx, addr)
 	if acc == nil {
-		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", addr))
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
 	}
 	return acc.GetPubKey(), nil
 }
 
 // GetSequence Returns the Sequence of the account at address
-func (ak AccountKeeper) GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint64, sdk.Error) {
+func (ak AccountKeeper) GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint64, error) {
 	acc := ak.GetAccount(ctx, addr)
 	if acc == nil {
-		return 0, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", addr))
+		return 0, sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
 	}
 	return acc.GetSequence(), nil
 }

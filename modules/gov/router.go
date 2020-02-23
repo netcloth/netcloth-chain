@@ -1,12 +1,15 @@
-package types
+package gov
 
 import (
 	"fmt"
-
-	sdk "github.com/netcloth/netcloth-chain/types"
+	"regexp"
 )
 
-var _ Router = (*router)(nil)
+var (
+	_ Router = (*router)(nil)
+
+	isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
+)
 
 // Router implements a governance Handler router.
 //
@@ -23,7 +26,6 @@ type router struct {
 	sealed bool
 }
 
-// NewRouter creates a new Router interface instance
 func NewRouter() Router {
 	return &router{
 		routes: make(map[string]Handler),
@@ -46,7 +48,7 @@ func (rtr *router) AddRoute(path string, h Handler) Router {
 		panic("router sealed; cannot add route handler")
 	}
 
-	if !sdk.IsAlphaNumeric(path) {
+	if !isAlphaNumeric(path) {
 		panic("route expressions can only contain alphanumeric characters")
 	}
 	if rtr.HasRoute(path) {

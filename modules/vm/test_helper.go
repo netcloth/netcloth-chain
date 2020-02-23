@@ -4,6 +4,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+	authtype "github.com/netcloth/netcloth-chain/modules/auth/types"
+
 	"github.com/tendermint/tendermint/crypto"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -56,6 +59,9 @@ func KeyTestPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 
 func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	cdc := codec.New()
+	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
+	cdc.RegisterInterface((*exported.Account)(nil), nil)
+	cdc.RegisterConcrete(&authtype.BaseAccount{}, "nch/Account", nil)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -63,7 +69,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey,
 		auth.StoreKey,
-		auth.FeeKey,
+		auth.RefundKey,
 		staking.StoreKey,
 		supply.StoreKey,
 		mint.StoreKey,
@@ -78,7 +84,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
-	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
+	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey])
 	authSubspace := paramsKeeper.Subspace(auth.DefaultParamspace)
 
 	vmSubspace := paramsKeeper.Subspace(DefaultParamspace)
@@ -90,7 +96,6 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		cdc,
 		keys[StoreKey],
 		keys[CodeKey],
-		DefaultCodespace,
 		vmSubspace,
 		accountKeeper)
 
@@ -123,7 +128,7 @@ func newEVM() *EVM {
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 
-	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
+	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams)
 	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 
 	keys := sdk.NewKVStoreKeys(auth.StoreKey, StoreKey, CodeKey)

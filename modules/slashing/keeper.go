@@ -19,19 +19,15 @@ type Keeper struct {
 	cdc        *codec.Codec
 	sk         types.StakingKeeper
 	paramspace params.Subspace
-
-	// codespace
-	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates a slashing keeper
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, sk types.StakingKeeper, paramspace params.Subspace, codespace sdk.CodespaceType) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, sk types.StakingKeeper, paramspace params.Subspace) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
 		sk:         sk,
 		paramspace: paramspace.WithKeyTable(ParamKeyTable()),
-		codespace:  codespace,
 	}
 	return keeper
 }

@@ -11,10 +11,10 @@ import (
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/version"
 	gcutils "github.com/netcloth/netcloth-chain/modules/gov/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 // GetQueryCmd returns the cli query commands for this module

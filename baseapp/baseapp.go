@@ -2,7 +2,6 @@ package baseapp
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -22,24 +21,28 @@ import (
 	"github.com/netcloth/netcloth-chain/store"
 	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
-
-// Key to store the consensus params in the main store.
-var mainConsensusParamsKey = []byte("consensus_params")
 
 // Enum mode for app.runTx
 type runTxMode uint8
 
 const (
-	// Check a transaction
-	runTxModeCheck runTxMode = iota
-	// Simulate a transaction
-	runTxModeSimulate runTxMode = iota
-	// Deliver a transaction
-	runTxModeDeliver runTxMode = iota
+	runTxModeCheck    runTxMode = iota // Check a transaction
+	runTxModeReCheck                   // Recheck a (pending) transaction after a commit
+	runTxModeSimulate                  // Simulate a transaction
+	runTxModeDeliver                   // Deliver a transaction
 
 	// MainStoreKey is the string representation of the main store
 	MainStoreKey = "main"
+)
+
+var (
+	_ abci.Application = (*BaseApp)(nil)
+
+	// mainConsensusParamsKey defines a key to store the consensus params in the
+	// main store.
+	mainConsensusParamsKey = []byte("consensus_params")
 )
 
 // BaseApp reflects the ABCI application implementation.
@@ -56,9 +59,8 @@ type BaseApp struct {
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
-	anteHandler          sdk.AnteHandler            // ante handler for fee and auth
-	feeRefundHandler     types.FeeRefundHandler     // fee handler for fee refund
-	feePreprocessHandler types.FeePreprocessHandler // fee handler for fee preprocessor
+	anteHandler      sdk.AnteHandler        // ante handler for fee and auth
+	feeRefundHandler types.FeeRefundHandler // fee handler for fee refund
 
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
 	beginBlocker   sdk.BeginBlocker // logic to run before any txs
@@ -72,9 +74,11 @@ type BaseApp struct {
 	// checkState is set on initialization and reset on Commit.
 	// deliverState is set in InitChain and BeginBlock and cleared on Commit.
 	// See methods setCheckState and setDeliverState.
-	checkState   *state          // for CheckTx
-	deliverState *state          // for DeliverTx
-	voteInfos    []abci.VoteInfo // absent validators from begin block
+	checkState   *state // for CheckTx
+	deliverState *state // for DeliverTx
+
+	// absent validators from begin block
+	voteInfos []abci.VoteInfo // absent validators from begin block
 
 	// consensus params
 	// TODO: Move this in the future to baseapp param store on main store.
@@ -93,8 +97,6 @@ type BaseApp struct {
 	// application's version string
 	appVersion string
 }
-
-var _ abci.Application = (*BaseApp)(nil)
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set
@@ -135,12 +137,6 @@ func (app *BaseApp) AppVersion() string {
 // Logger returns the logger of the BaseApp.
 func (app *BaseApp) Logger() log.Logger {
 	return app.logger
-}
-
-// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
-// CommitMultiStore.
-func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
-	app.cms.SetTracer(w)
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
@@ -351,6 +347,81 @@ func (app *BaseApp) getMaximumBlockGas() uint64 {
 	}
 }
 
+func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
+	if req.Header.Height < 1 {
+		return fmt.Errorf("invalid height: %d", req.Header.Height)
+	}
+
+	prevHeight := app.LastBlockHeight()
+	if req.Header.Height != prevHeight+1 {
+		return fmt.Errorf("invalid height: %d; expected: %d", req.Header.Height, prevHeight+1)
+	}
+
+	return nil
+}
+
+// validateBasicTxMsgs executes basic validator calls for messages.
+func validateBasicTxMsgs(msgs []sdk.Msg) error {
+	if msgs == nil || len(msgs) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must contain at least one message")
+	}
+
+	for _, msg := range msgs {
+		// Validate the Msg.
+		err := msg.ValidateBasic()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Returns the applications's deliverState if app is in runTxModeDeliver,
+// otherwise it returns the application's checkstate.
+func (app *BaseApp) getState(mode runTxMode) *state {
+	if mode == runTxModeDeliver {
+		return app.deliverState
+	}
+
+	return app.checkState
+}
+
+// retrieve the context for the tx w/ txBytes and other memoized values.
+func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Context) {
+	ctx = app.getState(mode).ctx.
+		WithTxBytes(txBytes).
+		WithVoteInfos(app.voteInfos).
+		WithConsensusParams(app.consensusParams)
+
+	if mode == runTxModeReCheck {
+		ctx = ctx.WithIsReCheckTx(true)
+	}
+	if mode == runTxModeSimulate {
+		ctx, _ = ctx.CacheContext()
+	}
+
+	return
+}
+
+// cacheTxContext returns a new context based off of the provided context with
+// a cache wrapped multi-store.
+func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context, sdk.CacheMultiStore) {
+	ms := ctx.MultiStore()
+	msCache := ms.CacheMultiStore()
+	if msCache.TracingEnabled() {
+		msCache = msCache.SetTracingContext(
+			sdk.TraceContext(
+				map[string]interface{}{
+					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
+				},
+			),
+		).(sdk.CacheMultiStore)
+	}
+
+	return ctx.WithMultiStore(msCache), msCache
+}
+
 // ----------------------------------------------------------------------------
 // ABCI
 
@@ -474,41 +545,40 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 
 func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abci.ResponseQuery) {
 	if len(path) >= 2 {
-		var result sdk.Result
-
 		switch path[1] {
 		case "simulate":
 			txBytes := req.Data
+
 			tx, err := app.txDecoder(txBytes)
 			if err != nil {
-				result = err.Result()
-			} else {
-				result = app.Simulate(txBytes, tx)
+				return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to decode tx"))
 			}
 
+			gInfo, _, _ := app.Simulate(txBytes, tx)
+
+			return abci.ResponseQuery{
+				Codespace: sdkerrors.RootCodespace,
+				Height:    req.Height,
+				Value:     codec.Cdc.MustMarshalBinaryLengthPrefixed(gInfo.GasUsed),
+			}
 		case "version":
 			return abci.ResponseQuery{
-				Code:      uint32(sdk.CodeOK),
-				Codespace: string(sdk.CodespaceRoot),
+				Codespace: sdkerrors.RootCodespace,
 				Height:    req.Height,
 				Value:     []byte(app.appVersion),
 			}
 
 		default:
-			result = sdk.ErrUnknownRequest(fmt.Sprintf("Unknown query: %s", path)).Result()
-		}
-
-		value := codec.Cdc.MustMarshalBinaryLengthPrefixed(result)
-		return abci.ResponseQuery{
-			Code:      uint32(sdk.CodeOK),
-			Codespace: string(sdk.CodespaceRoot),
-			Height:    req.Height,
-			Value:     value,
+			return sdkerrors.QueryResult(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query: %s", path))
 		}
 	}
 
-	msg := "Expected second parameter to be either simulate or version, neither was present"
-	return sdk.ErrUnknownRequest(msg).QueryResult()
+	return sdkerrors.QueryResult(
+		sdkerrors.Wrap(
+			sdkerrors.ErrUnknownRequest,
+			"expected second parameter to be either 'simulate' or 'version', neither was present",
+		),
+	)
 }
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
@@ -567,12 +637,12 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	// The queryRouter routes using path[1]. For example, in the path
 	// "custom/gov/proposal", queryRouter routes using "gov".
 	if len(path) < 2 || path[1] == "" {
-		return sdk.ErrUnknownRequest("No route for custom query specified").QueryResult()
+		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "no route for custom query specified"))
 	}
 
 	querier := app.queryRouter.Route(path[1])
 	if querier == nil {
-		return sdk.ErrUnknownRequest(fmt.Sprintf("no custom querier found for route %s", path[1])).QueryResult()
+		return sdkerrors.QueryResult(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "no custom querier found for route %s", path[1]))
 	}
 
 	// when a client did not provide a query height, manually inject the latest
@@ -581,17 +651,22 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	}
 
 	if req.Height <= 1 && req.Prove {
-		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
+		return sdkerrors.QueryResult(
+			sdkerrors.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"cannot query with proof when height <= 1; please provide a valid height",
+			),
+		)
 	}
 
 	cacheMS, err := app.cms.CacheMultiStoreWithVersion(req.Height)
 	if err != nil {
-		return sdk.ErrInternal(
-			fmt.Sprintf(
-				"failed to load state at height %d; %s (latest height: %d)",
-				req.Height, err, app.LastBlockHeight(),
+		return sdkerrors.QueryResult(
+			sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"failed to load state at height %d; %s (latest height: %d)", req.Height, err, app.LastBlockHeight(),
 			),
-		).QueryResult()
+		)
 	}
 
 	// cache wrap the commit-multistore for safety
@@ -605,32 +680,19 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	// []string{"proposal", "test"} as the path.
 	resBytes, queryErr := querier(ctx, path[2:], req)
 	if queryErr != nil {
+		space, code, log := sdkerrors.ABCIInfo(err, false)
 		return abci.ResponseQuery{
-			Code:      uint32(queryErr.Code()),
-			Codespace: string(queryErr.Codespace()),
+			Code:      code,
+			Codespace: space,
+			Log:       log,
 			Height:    req.Height,
-			Log:       queryErr.ABCILog(),
 		}
 	}
 
 	return abci.ResponseQuery{
-		Code:   uint32(sdk.CodeOK),
 		Height: req.Height,
 		Value:  resBytes,
 	}
-}
-
-func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
-	if req.Header.Height < 1 {
-		return fmt.Errorf("invalid height: %d", req.Header.Height)
-	}
-
-	prevHeight := app.LastBlockHeight()
-	if req.Header.Height != prevHeight+1 {
-		return fmt.Errorf("invalid height: %d; expected: %d", req.Header.Height, prevHeight+1)
-	}
-
-	return nil
 }
 
 // BeginBlock implements the ABCI application interface.
@@ -683,191 +745,131 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 //
 // NOTE:CheckTx does not run the actual Msg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
-	var result sdk.Result
-
 	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
-		result = err.Result()
-	} else {
-		result = app.runTx(runTxModeCheck, req.Tx, tx)
+		return sdkerrors.ResponseCheckTx(err, 0, 0)
+	}
+
+	var mode runTxMode
+
+	switch {
+	case req.Type == abci.CheckTxType_New:
+		mode = runTxModeCheck
+
+	case req.Type == abci.CheckTxType_Recheck:
+		mode = runTxModeReCheck
+
+	default:
+		panic(fmt.Sprintf("unknown RequestCheckTx type: %s", req.Type))
+	}
+
+	gInfo, result, err := app.runTx(mode, req.Tx, tx)
+	if err != nil {
+		return sdkerrors.ResponseCheckTx(err, gInfo.GasWanted, gInfo.GasUsed)
 	}
 
 	return abci.ResponseCheckTx{
-		Code:      uint32(result.Code),
-		Data:      result.Data,
+		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
+		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
 		Log:       result.Log,
-		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
+		Data:      result.Data,
 		Events:    result.Events.ToABCIEvents(),
 	}
 }
 
 // DeliverTx implements the ABCI interface.
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
-	var result sdk.Result
-
 	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
-		result = err.Result()
-	} else {
-		result = app.runTx(runTxModeDeliver, req.Tx, tx)
+		return sdkerrors.ResponseDeliverTx(err, 0, 0)
+	}
+
+	gInfo, result, err := app.runTx(runTxModeDeliver, req.Tx, tx)
+	if err != nil {
+		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed)
 	}
 
 	return abci.ResponseDeliverTx{
-		Code:      uint32(result.Code),
-		Codespace: string(result.Codespace),
-		Data:      result.Data,
+		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
+		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
 		Log:       result.Log,
-		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
+		Data:      result.Data,
 		Events:    result.Events.ToABCIEvents(),
 	}
 }
 
-// validateBasicTxMsgs executes basic validator calls for messages.
-func validateBasicTxMsgs(msgs []sdk.Msg) sdk.Error {
-	if msgs == nil || len(msgs) == 0 {
-		return sdk.ErrUnknownRequest("Tx.GetMsgs() must return at least one message in list")
-	}
-
-	for _, msg := range msgs {
-		// Validate the Msg.
-		err := msg.ValidateBasic()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// retrieve the context for the tx w/ txBytes and other memoized values.
-func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Context) {
-	ctx = app.getState(mode).ctx.
-		WithTxBytes(txBytes).
-		WithVoteInfos(app.voteInfos).
-		WithConsensusParams(app.consensusParams)
-
-	if mode == runTxModeSimulate {
-		ctx, _ = ctx.CacheContext()
-	}
-
-	return
-}
-
 // runMsgs iterates through all the messages and executes them.
 // nolint: gocyclo
-func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (result sdk.Result) {
+func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
 	idxLogs := make([]sdk.ABCIMessageLog, 0, len(msgs)) // a list of JSON-encoded logs with msg index
 
-	var (
-		data      []byte
-		code      sdk.CodeType
-		codespace sdk.CodespaceType
-	)
-
+	var data []byte
 	events := sdk.EmptyEvents()
 
-	// NOTE: GasWanted is determined by ante handler and GasUsed by the GasMeter.
-	for msgIdx, msg := range msgs {
-		// match message route
+	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
+	for i, msg := range msgs {
+		// skip actual execution for (Re)CheckTx mode
+		if mode == runTxModeCheck || mode == runTxModeReCheck {
+			break
+		}
+
 		msgRoute := msg.Route()
-		handler := app.router.Route(msgRoute)
+		handler := app.router.Route(ctx, msgRoute)
 		if handler == nil {
-			return sdk.ErrUnknownRequest("Unrecognized Msg type: " + msgRoute).Result()
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
 		}
 
-		var msgResult sdk.Result
+		idxLog := sdk.ABCIMessageLog{MsgIndex: uint16(i)}
 
-		// skip actual execution for CheckTx mode
-		if mode != runTxModeCheck {
-			msgResult = handler(ctx, msg)
+		msgResult, err := handler(ctx, msg)
+		if err != nil {
+			idxLog.Success = false
+			idxLogs = append(idxLogs, idxLog)
+
+			logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
+
+			return &sdk.Result{
+				Data:   data,
+				Log:    strings.TrimSpace(string(logJSON)),
+				Events: events,
+			}, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
 		}
 
-		// Each message result's Data must be length prefixed in order to separate
-		// each result.
 		data = append(data, msgResult.Data...)
-
 		// append events from the message's execution and a message action event
 		events = events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())))
 		events = events.AppendEvents(msgResult.Events)
 
-		idxLog := sdk.ABCIMessageLog{MsgIndex: uint16(msgIdx), Log: msgResult.Log}
-
-		// stop execution and return on first failed message
-		if !msgResult.IsOK() {
-			idxLog.Success = false
-			idxLogs = append(idxLogs, idxLog)
-
-			code = msgResult.Code
-			codespace = msgResult.Codespace
-			break
-		}
-
 		idxLog.Success = true
 		idxLogs = append(idxLogs, idxLog)
+
 	}
 
 	logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
-	result = sdk.Result{
-		Code:      code,
-		Codespace: codespace,
-		Data:      data,
-		Log:       strings.TrimSpace(string(logJSON)),
-		GasUsed:   ctx.GasMeter().GasConsumed(),
-		Events:    events,
-	}
-
-	return result
-}
-
-// Returns the applications's deliverState if app is in runTxModeDeliver,
-// otherwise it returns the application's checkstate.
-func (app *BaseApp) getState(mode runTxMode) *state {
-	if mode == runTxModeCheck || mode == runTxModeSimulate {
-		return app.checkState
-	}
-
-	return app.deliverState
-}
-
-// cacheTxContext returns a new context based off of the provided context with
-// a cache wrapped multi-store.
-func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (
-	sdk.Context, sdk.CacheMultiStore) {
-
-	ms := ctx.MultiStore()
-	// TODO: https://github.com/cosmos/cosmos-sdk/issues/2824
-	msCache := ms.CacheMultiStore()
-	if msCache.TracingEnabled() {
-		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
-				map[string]interface{}{
-					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-				},
-			),
-		).(sdk.CacheMultiStore)
-	}
-
-	return ctx.WithMultiStore(msCache), msCache
+	return &sdk.Result{
+		Data:   data,
+		Log:    strings.TrimSpace(string(logJSON)),
+		Events: events,
+	}, nil
 }
 
 // runTx processes a transaction. The transactions is processed via an
 // anteHandler. The provided txBytes may be nil in some cases, eg. in tests. For
 // further details on transaction execution, reference the BaseApp SDK
 // documentation.
-func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk.Result) {
+func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.GasInfo, result *sdk.Result, err error) {
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
 	var gasWanted uint64
-	var msCache sdk.CacheMultiStore
+
 	ctx := app.getContextForTx(mode, txBytes)
 	ms := ctx.MultiStore()
 
 	// only run the tx if there is block gas remaining
 	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
-		return sdk.ErrOutOfGas("no block gas left to run tx").Result()
+		gInfo = sdk.GasInfo{GasUsed: ctx.BlockGasMeter().GasConsumed()}
+		return gInfo, nil, sdkerrors.Wrap(sdkerrors.ErrOutOfGas, "no block gas left to run tx")
 	}
 
 	var startingGas uint64
@@ -878,38 +880,47 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
+			// TODO: Use ErrOutOfGas instead of ErrorOutOfGas which would allow us
+			// to keep the stracktrace.
 			case sdk.ErrorOutOfGas:
-				log := fmt.Sprintf(
-					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
-					rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
+				err = sdkerrors.Wrap(
+					sdkerrors.ErrOutOfGas, fmt.Sprintf(
+						"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
+						rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
+					),
 				)
-				result = sdk.ErrOutOfGas(log).Result()
+
 			default:
-				log := fmt.Sprintf("recovered: %v\nstack:\n%v", r, string(debug.Stack()))
-				result = sdk.ErrInternal(log).Result()
+				err = sdkerrors.Wrap(
+					sdkerrors.ErrPanic, fmt.Sprintf(
+						"recovered: %v\nstack:\n%v", r, string(debug.Stack()),
+					),
+				)
 			}
+
+			result = nil
 		}
 
-		result.GasWanted = gasWanted
-		result.GasUsed = ctx.GasMeter().GasConsumed()
+		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
 	}()
 
 	// Add cache in fee refund. If an error is returned or panic happens during refund,
 	// no value will be written into blockchain state
 	defer func() {
-		result.GasUsed = ctx.GasMeter().GasConsumed()
+		if mode == runTxModeDeliver && app.feeRefundHandler != nil {
+			result.GasUsed = ctx.GasMeter().GasConsumed()
+			result.GasWanted = gasWanted
 
-		var refundCtx sdk.Context
-		var refundCache sdk.CacheMultiStore
+			var refundCtx sdk.Context
+			var refundCache sdk.CacheMultiStore
 
-		refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
+			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
 
-		// refund unspent fee
-		if mode != runTxModeCheck && app.feeRefundHandler != nil {
-			_, err := app.feeRefundHandler(refundCtx, tx, result)
+			// refund unspent fee
+			fmt.Println("++++++++++++++++++++ feeRefundHandler ++++++++++++++++++++")
+			_, err := app.feeRefundHandler(refundCtx, tx, *result)
 			if err != nil {
-				result = sdk.ErrInternal(err.Error()).Result()
-				return
+				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
 			}
 			refundCache.Write()
 		}
@@ -923,8 +934,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	defer func() {
 		if mode == runTxModeDeliver {
 			ctx.BlockGasMeter().ConsumeGas(
-				ctx.GasMeter().GasConsumedToLimit(),
-				"block gas meter",
+				ctx.GasMeter().GasConsumedToLimit(), "block gas meter",
 			)
 
 			if ctx.BlockGasMeter().GasConsumed() < startingGas {
@@ -933,70 +943,61 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		}
 	}()
 
-	var msgs = tx.GetMsgs()
+	msgs := tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
-		return err.Result()
-	}
-
-	if app.feePreprocessHandler != nil && ctx.BlockHeight() != 0 {
-		// skip fee pre-processing for gentx
-		err := app.feePreprocessHandler(ctx, tx)
-		if err != nil {
-			return err.Result()
-		}
+		gInfo = sdk.GasInfo{GasUsed: ctx.BlockGasMeter().GasConsumed()}
+		return gInfo, nil, err
 	}
 
 	if app.anteHandler != nil {
 		var anteCtx sdk.Context
 		var msCache sdk.CacheMultiStore
 
-		// Cache wrap context before anteHandler call in case it aborts.
+		// Cache wrap context before AnteHandler call in case it aborts.
 		// This is required for both CheckTx and DeliverTx.
 		// Ref: https://github.com/cosmos/cosmos-sdk/issues/2772
 		//
-		// NOTE: Alternatively, we could require that anteHandler ensures that
+		// NOTE: Alternatively, we could require that AnteHandler ensures that
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
 
-		newCtx, result, abort := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
+		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
 		if !newCtx.IsZero() {
 			// At this point, newCtx.MultiStore() is cache-wrapped, or something else
-			// replaced by the ante handler. We want the original multistore, not one
-			// which was cache-wrapped for the ante handler.
+			// replaced by the AnteHandler. We want the original multistore, not one
+			// which was cache-wrapped for the AnteHandler.
 			//
 			// Also, in the case of the tx aborting, we need to track gas consumed via
-			// the instantiated gas meter in the ante handler, so we update the context
+			// the instantiated gas meter in the AnteHandler, so we update the context
 			// prior to returning.
 			ctx = newCtx.WithMultiStore(ms)
 		}
 
-		gasWanted = result.GasWanted
+		// GasMeter expected to be set in AnteHandler
+		gasWanted = ctx.GasMeter().Limit()
 
-		if abort {
-			return result
+		if err != nil {
+			return gInfo, nil, err
 		}
 
 		msCache.Write()
 	}
 
-	// Create a new context based off of the existing context with a cache wrapped
-	// multi-store in case message processing fails.
+	// Create a new Context based off of the existing Context with a cache-wrapped
+	// MultiStore in case message processing fails. At this point, the MultiStore
+	// is doubly cached-wrapped.
 	runMsgCtx, msCache := app.cacheTxContext(ctx, txBytes)
-	result = app.runMsgs(runMsgCtx, msgs, mode)
-	result.GasWanted = gasWanted
 
-	// Safety check: don't write the cache state unless we're in DeliverTx.
-	if mode != runTxModeDeliver {
-		return result
-	}
-
-	// only update state if all messages pass
-	if result.IsOK() {
+	// Attempt to execute all messages and only update state if all messages pass
+	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
+	// Result if any single message fails or does not have a registered Handler.
+	result, err = app.runMsgs(runMsgCtx, msgs, mode)
+	if err == nil && mode == runTxModeDeliver {
 		msCache.Write()
 	}
 
-	return result
+	return gInfo, result, err
 }
 
 // EndBlock implements the ABCI interface.

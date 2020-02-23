@@ -10,7 +10,6 @@ const (
 	StoreKey          = types.StoreKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
-	DefaultCodespace  = types.DefaultCodespace
 	DefaultParamspace = keeper.DefaultParamspace
 )
 
@@ -21,6 +20,7 @@ var (
 	NewADParam                        = types.NewADParam
 	NewIPALUserRequest                = types.NewCIPALUserRequest
 	NewMsgIPALClaim                   = types.NewMsgCIPALClaim
+	NewGenesisState                   = types.NewGenesisState
 	NewKeeper                         = keeper.NewKeeper
 	ErrEmptyInputs                    = types.ErrEmptyInputs
 	ErrStringTooLong                  = types.ErrStringTooLong
@@ -33,6 +33,7 @@ var (
 
 type (
 	Keeper          = keeper.Keeper
+	GenesisState    = types.GenesisState
 	MsgIPALClaim    = types.MsgCIPALClaim
 	IPALUserRequest = types.CIPALUserRequest
 	ADParam         = types.ADParam

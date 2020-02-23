@@ -163,7 +163,7 @@ func runAddCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	if viper.GetString(FlagPublicKey) != "" {
-		pk, err := sdk.GetAccPubKeyBech32(viper.GetString(FlagPublicKey))
+		pk, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, viper.GetString(FlagPublicKey))
 		if err != nil {
 			return err
 		}

@@ -16,6 +16,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// TODO: fix this testcase
 func Test_runAddCmdLedger(t *testing.T) {
 	cmd := addKeyCommand()
 	assert.NotNil(t, cmd)
@@ -46,5 +47,5 @@ func Test_runAddCmdLedger(t *testing.T) {
 	assert.Equal(t, keys.TypeLedger, key1.GetType())
 	assert.Equal(t,
 		"nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
-		sdk.MustBech32ifyAccPub(key1.GetPubKey()))
+		sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, key1.GetPubKey()))
 }

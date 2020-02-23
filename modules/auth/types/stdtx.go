@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/exported"
+
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/multisig"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
@@ -41,20 +44,29 @@ func (tx StdTx) GetMsgs() []sdk.Msg { return tx.Msgs }
 
 // ValidateBasic does a simple and lightweight validation check that doesn't
 // require access to any other information.
-func (tx StdTx) ValidateBasic() sdk.Error {
+func (tx StdTx) ValidateBasic() error {
 	stdSigs := tx.GetSignatures()
 
 	if tx.Fee.Gas > maxGasWanted {
-		return sdk.ErrGasOverflow(fmt.Sprintf("invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted))
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted,
+		)
 	}
 	if tx.Fee.Amount.IsAnyNegative() {
-		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee %s amount provided", tx.Fee.Amount))
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrInsufficientFee,
+			"invalid fee provided: %s", tx.Fee.Amount,
+		)
 	}
 	if len(stdSigs) == 0 {
-		return sdk.ErrNoSignatures("no signers")
+		return sdkerrors.ErrNoSignatures
 	}
 	if len(stdSigs) != len(tx.GetSigners()) {
-		return sdk.ErrUnauthorized("wrong number of signers")
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"wrong number of signers; expected %d, got %d", tx.GetSigners(), len(stdSigs),
+		)
 	}
 
 	return nil
@@ -105,7 +117,53 @@ func (tx StdTx) GetMemo() string { return tx.Memo }
 // CONTRACT: If the signature is missing (ie the Msg is
 // invalid), then the corresponding signature is
 // .Empty().
-func (tx StdTx) GetSignatures() []StdSignature { return tx.Signatures }
+func (tx StdTx) GetSignatures() [][]byte {
+	sigs := make([][]byte, len(tx.Signatures))
+	for i, stdSig := range tx.Signatures {
+		sigs[i] = stdSig.Signature
+	}
+	return sigs
+}
+
+// GetPubkeys returns the pubkeys of signers if the pubkey is included in the signature
+// If pubkey is not included in the signature, then nil is in the slice instead
+func (tx StdTx) GetPubKeys() []crypto.PubKey {
+	pks := make([]crypto.PubKey, len(tx.Signatures))
+	for i, stdSig := range tx.Signatures {
+		pks[i] = stdSig.PubKey
+	}
+	return pks
+}
+
+// GetSignBytes returns the signBytes of the tx for a given signer
+func (tx StdTx) GetSignBytes(ctx sdk.Context, acc exported.Account) []byte {
+	genesis := ctx.BlockHeight() == 0
+	chainID := ctx.ChainID()
+	var accNum uint64
+	if !genesis {
+		accNum = acc.GetAccountNumber()
+	}
+
+	return StdSignBytes(
+		chainID, accNum, acc.GetSequence(), tx.Fee, tx.Msgs, tx.Memo,
+	)
+}
+
+// GetGas returns the Gas in StdFee
+func (tx StdTx) GetGas() uint64 { return tx.Fee.Gas }
+
+// GetFee returns the FeeAmount in StdFee
+func (tx StdTx) GetFee() sdk.Coins { return tx.Fee.Amount }
+
+// FeePayer returns the address that is responsible for paying fee
+// StdTx returns the first signer as the fee payer
+// If no signers for tx, return empty address
+func (tx StdTx) FeePayer() sdk.AccAddress {
+	if tx.GetSigners() != nil {
+		return tx.GetSigners()[0]
+	}
+	return sdk.AccAddress{}
+}
 
 //__________________________________________________________
 
@@ -194,18 +252,18 @@ type StdSignature struct {
 
 // DefaultTxDecoder logic for standard transaction decoding
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, sdk.Error) {
+	return func(txBytes []byte) (sdk.Tx, error) {
 		var tx = StdTx{}
 
 		if len(txBytes) == 0 {
-			return nil, sdk.ErrTxDecode("txBytes are empty")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "tx bytes are empty")
 		}
 
 		// StdTx.Msg is an interface. The concrete types
 		// are registered by MakeTxCodec
 		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 		if err != nil {
-			return nil, sdk.ErrTxDecode("error decoding transaction").TraceSDK(err.Error())
+			return nil, sdkerrors.Wrap(sdkerrors.ErrTxDecode, err.Error())
 		}
 
 		return tx, nil
@@ -228,7 +286,7 @@ func (ss StdSignature) MarshalYAML() (interface{}, error) {
 	)
 
 	if ss.PubKey != nil {
-		pubkey, err = sdk.Bech32ifyAccPub(ss.PubKey)
+		pubkey, err = sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, ss.PubKey)
 		if err != nil {
 			return nil, err
 		}

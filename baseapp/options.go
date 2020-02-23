@@ -3,6 +3,7 @@ package baseapp
 
 import (
 	"fmt"
+	"io"
 
 	dbm "github.com/tendermint/tm-db"
 
@@ -91,13 +92,6 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	app.anteHandler = ah
 }
 
-func (app *BaseApp) SetFeePreprocessHandler(fh types.FeePreprocessHandler) {
-	if app.sealed {
-		panic("SetFeePreprocessHandler on sealed BaseApp")
-	}
-	app.feePreprocessHandler = fh
-}
-
 func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {
 	if app.sealed {
 		panic("SetFeeRefundHandler on sealed BaseApp")
@@ -124,4 +118,18 @@ func (app *BaseApp) SetFauxMerkleMode() {
 		panic("SetFauxMerkleMode() on sealed BaseApp")
 	}
 	app.fauxMerkleMode = true
+}
+
+// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
+// CommitMultiStore.
+func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
+	app.cms.SetTracer(w)
+}
+
+// SetRouter allows us to customize the router.
+func (app *BaseApp) SetRouter(router sdk.Router) {
+	if app.sealed {
+		panic("SetRouter() on sealed BaseApp")
+	}
+	app.router = router
 }

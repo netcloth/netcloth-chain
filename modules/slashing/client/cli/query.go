@@ -9,8 +9,8 @@ import (
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/modules/slashing/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -48,7 +48,7 @@ $ <appcli> query slashing signing-info nchvalconspub1zcjduepqfhvwcmt7p06fvdgexxh
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			pk, err := sdk.GetConsPubKeyBech32(args[0])
+			pk, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeConsPub, args[0])
 			if err != nil {
 				return err
 			}

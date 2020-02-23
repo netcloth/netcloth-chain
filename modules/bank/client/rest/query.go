@@ -5,8 +5,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/bank/internal/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )

@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/client/context"
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/gov/types"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (

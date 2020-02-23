@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/netcloth/netcloth-chain/modules/vm/common"
-	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 type TwoOperandTestcase struct {
@@ -195,7 +194,7 @@ func TestJsonTestcases(t *testing.T) {
 	}
 }
 
-func opBenchmark(bench *testing.B, op func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, sdk.Error), args ...string) {
+func opBenchmark(bench *testing.B, op func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error), args ...string) {
 	var (
 		env            = newEVM()
 		stack          = newstack()

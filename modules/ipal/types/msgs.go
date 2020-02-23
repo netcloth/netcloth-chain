@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
@@ -22,11 +23,19 @@ func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
 		Endpoint: endpoint,
 	}
 }
+func (e Endpoint) String() string {
+	return fmt.Sprintf(`Endpoint
+type: %d
+endpoint: %s`, e.Type, e.Endpoint)
+}
 
 type Endpoints []Endpoint
 
-func (e Endpoints) String() string {
-	return fmt.Sprintf("%v", e)
+func (e Endpoints) String() (out string) {
+	for _, val := range e {
+		out += val.String() + "\n"
+	}
+	return strings.TrimSpace(out)
 }
 
 type MsgServiceNodeClaim struct {
@@ -59,25 +68,25 @@ func (msg *MsgServiceNodeClaim) TrimSpace() {
 	msg.Details = strings.TrimSpace(msg.Details)
 }
 
-func (msg MsgServiceNodeClaim) ValidateBasic() sdk.Error {
+func (msg MsgServiceNodeClaim) ValidateBasic() error {
 	if msg.OperatorAddress.Empty() {
-		return sdk.ErrInvalidAddress("missing operator address")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing operator address")
 	}
 
 	if msg.Moniker == "" {
-		return ErrEmptyInputs("moniker empty")
+		return sdkerrors.Wrap(ErrEmptyInputs, "moniker empty")
 	}
 
 	if msg.Bond.Denom != sdk.NativeTokenName {
-		return ErrBadDenom(fmt.Sprintf("bond denom must be %s", sdk.NativeTokenName))
+		return sdkerrors.Wrapf(ErrBadDenom, "bond denom must be %s", sdk.NativeTokenName)
 	}
 
 	if msg.Bond.IsNegative() {
-		return ErrEmptyInputs("bond amount must > 0 ")
+		return sdkerrors.Wrap(ErrEmptyInputs, "bond amount must > 0 ")
 	}
 
 	if len(msg.Endpoints) <= 0 {
-		return ErrEndpointsEmpty()
+		return ErrEndpointsEmpty
 	}
 
 	if err := EndpointsDupCheck(msg.Endpoints); err != nil {

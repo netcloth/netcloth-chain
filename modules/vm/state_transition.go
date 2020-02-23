@@ -3,7 +3,6 @@ package vm
 import (
 	"fmt"
 	"math/big"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -40,7 +39,7 @@ func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash 
 	}
 }
 
-func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, sdk.Result) {
+func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, *sdk.Result, error) {
 	st.StateDB.UpdateAccounts()
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
@@ -49,7 +48,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 		Origin: st.Sender,
 
-		CoinBase:    ctx.BlockHeader().ProposerAddress, // TODO: should be proposer account address
+		CoinBase:    ctx.BlockHeader().ProposerAddress,
 		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
@@ -63,25 +62,20 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		ret         []byte
 		leftOverGas uint64
 		addr        sdk.AccAddress
-		vmerr       sdk.Error
+		vmerr       error
 	)
 
 	if st.Recipient.Empty() {
 		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
-		fmt.Fprint(os.Stderr, "\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-		fmt.Fprint(os.Stderr, "+                                                                             +\n")
-		fmt.Fprint(os.Stderr, fmt.Sprintf("+         contractAddr = %s           +\n", addr))
-		fmt.Fprint(os.Stderr, "+                                                                             +\n")
-		fmt.Fprint(os.Stderr, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
 	}
 
-	fmt.Fprint(os.Stderr, fmt.Sprintf("ret = %x, \nconsumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
+	ctx.Logger().Debug(fmt.Sprintf("ret = %x, \nconsumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
 	if vmerr != nil {
-		return nil, vmerr.Result()
+		return nil, nil, vmerr
 	}
 
 	st.StateDB.Finalise(true)
@@ -93,10 +87,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		),
 	})
 
-	return nil, sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}
+	return nil, &sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}, nil
 }
 
-func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimit uint64, readonly bool) (*big.Int, sdk.Result) {
+func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimit uint64, readonly bool) (*big.Int, *sdk.Result, error) {
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: msg.To,

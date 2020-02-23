@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto/multisig"
 
+	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
-	"github.com/netcloth/netcloth-chain/client/context"
-	"github.com/netcloth/netcloth-chain/client/flags"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -196,7 +196,7 @@ func printAndValidateSigs(
 	}
 
 	success := true
-	sigs := stdTx.GetSignatures()
+	sigs := stdTx.Signatures
 
 	fmt.Println("")
 	fmt.Println("Signatures:")

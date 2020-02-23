@@ -30,14 +30,11 @@ type Keeper struct {
 	paramstore         params.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List
-
-	// codespace
-	codespace sdk.CodespaceType
 }
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, supplyKeeper types.SupplyKeeper,
-	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+	paramstore params.Subspace) Keeper {
 
 	// ensure bonded and not bonded module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.BondedPoolName); addr == nil {
@@ -57,7 +54,6 @@ func NewKeeper(cdc *codec.Codec, key, tkey sdk.StoreKey, supplyKeeper types.Supp
 		hooks:              nil,
 		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),
 		validatorCacheList: list.New(),
-		codespace:          codespace,
 	}
 }
 
@@ -73,11 +69,6 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 	}
 	k.hooks = sh
 	return k
-}
-
-// return the codespace
-func (k Keeper) Codespace() sdk.CodespaceType {
-	return k.codespace
 }
 
 // Load the last total validator power.
@@ -107,7 +98,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) {
 
 	if p.MaxValidatorsExtending > p.MaxValidators {
 		e := p.MaxValidatorsExtendingSpeed
-		if p.MaxValidatorsExtending - p.MaxValidators < p.MaxValidatorsExtendingSpeed {
+		if p.MaxValidatorsExtending-p.MaxValidators < p.MaxValidatorsExtendingSpeed {
 			e = p.MaxValidatorsExtending - p.MaxValidators
 		}
 
