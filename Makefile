@@ -50,10 +50,10 @@ get_dev_tools:
 	cd scripts && $(MAKE) get_dev_tools
 
 ### Generate swagger docs for nchd
-update_nchd_swagger_docs:
-    @statik -src=lite/swagger-ui -dest=lite -f
+# update_nchd_swagger_docs:
+#     @statik -src=lite/swagger-ui -dest=lite -f
 
-build: update_nchd_swagger_docs go.sum
+build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build $(BUILD_FLAGS) -o build/nchd.exe ./cmd/nchd
 	go build $(BUILD_FLAGS) -o build/nchcli.exe ./cmd/nchcli
@@ -62,10 +62,10 @@ else
 	go build $(BUILD_FLAGS) -o build/nchcli ./cmd/nchcli
 endif
 
-build-linux: update_nchd_swagger_docs go.sum
+build-linux: go.sum
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
-install: update_nchd_swagger_docs go.sum
+install: go.sum
 	go install $(BUILD_FLAGS) ./cmd/nchd
 	go install $(BUILD_FLAGS) ./cmd/nchcli
 
