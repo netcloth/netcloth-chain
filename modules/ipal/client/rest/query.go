@@ -109,6 +109,11 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 			return
 		}
 
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
 		if err != nil && !strings.Contains(err.Error(), "not found") {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
