@@ -17,7 +17,7 @@ const (
 	// failures due to state changes that might occur between the tx simulation
 	// and the actual run.
 	DefaultGasAdjustment = 1.0
-	DefaultGasLimit      = 100000
+	DefaultGasLimit      = 200000
 	GasFlagAuto          = "auto"
 
 	// BroadcastBlock defines a tx broadcasting mode where the client waits for
