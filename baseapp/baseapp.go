@@ -917,7 +917,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
 
 			// refund unspent fee
-			fmt.Println("++++++++++++++++++++ feeRefundHandler ++++++++++++++++++++")
 			_, err := app.feeRefundHandler(refundCtx, tx, *result)
 			if err != nil {
 				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
