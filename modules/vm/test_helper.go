@@ -69,7 +69,6 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey,
 		auth.StoreKey,
-		auth.RefundKey,
 		staking.StoreKey,
 		supply.StoreKey,
 		mint.StoreKey,

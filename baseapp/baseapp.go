@@ -19,7 +19,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
-	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
@@ -59,9 +58,7 @@ type BaseApp struct {
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
-	anteHandler      sdk.AnteHandler        // ante handler for fee and auth
-	feeRefundHandler types.FeeRefundHandler // fee handler for fee refund
-
+	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
 	beginBlocker   sdk.BeginBlocker // logic to run before any txs
 	endBlocker     sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
@@ -902,28 +899,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		}
 
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
-	}()
-
-	// Add cache in fee refund. If an error is returned or panic happens during refund,
-	// no value will be written into blockchain state
-	defer func() {
-		if mode == runTxModeDeliver && app.feeRefundHandler != nil {
-			result.GasUsed = ctx.GasMeter().GasConsumed()
-			result.GasWanted = gasWanted
-
-			var refundCtx sdk.Context
-			var refundCache sdk.CacheMultiStore
-
-			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
-
-			// refund unspent fee
-			fmt.Println("++++++++++++++++++++ feeRefundHandler ++++++++++++++++++++")
-			_, err := app.feeRefundHandler(refundCtx, tx, *result)
-			if err != nil {
-				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
-			}
-			refundCache.Write()
-		}
 	}()
 
 	// If BlockGasMeter() panics it will be caught by the above recover and will

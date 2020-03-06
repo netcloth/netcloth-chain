@@ -106,7 +106,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 			return ctx, err
 		}
 	}
-	newCtx = WithSigners(ctx, feePayerAcc)
+
 	return next(newCtx, tx, simulate)
 }
 
