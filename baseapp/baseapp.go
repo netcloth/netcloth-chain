@@ -877,6 +877,27 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		startingGas = ctx.BlockGasMeter().GasConsumed()
 	}
 
+	// Add cache in fee refund. If an error is returned or panic happens during refund,
+	// no value will be written into blockchain state
+	defer func() {
+		if mode == runTxModeDeliver && result != nil && app.feeRefundHandler != nil {
+			result.GasUsed = ctx.GasMeter().GasConsumed()
+			result.GasWanted = gasWanted
+
+			var refundCtx sdk.Context
+			var refundCache sdk.CacheMultiStore
+
+			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
+
+			// refund unspent fee
+			_, err := app.feeRefundHandler(refundCtx, tx, *result)
+			if err != nil {
+				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
+			}
+			refundCache.Write()
+		}
+	}()
+
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
@@ -902,27 +923,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		}
 
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
-	}()
-
-	// Add cache in fee refund. If an error is returned or panic happens during refund,
-	// no value will be written into blockchain state
-	defer func() {
-		if mode == runTxModeDeliver && app.feeRefundHandler != nil {
-			result.GasUsed = ctx.GasMeter().GasConsumed()
-			result.GasWanted = gasWanted
-
-			var refundCtx sdk.Context
-			var refundCache sdk.CacheMultiStore
-
-			refundCtx, refundCache = app.cacheTxContext(ctx, txBytes)
-
-			// refund unspent fee
-			_, err := app.feeRefundHandler(refundCtx, tx, *result)
-			if err != nil {
-				panic(sdkerrors.Wrap(sdkerrors.ErrPanic, err.Error()))
-			}
-			refundCache.Write()
-		}
 	}()
 
 	// If BlockGasMeter() panics it will be caught by the above recover and will
