@@ -45,7 +45,7 @@ func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) (*sdk.Result,
 }
 
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
-	k.StateDB.UpdateAccounts() //update account balance for fee refund when create/call contract
+	//k.StateDB.UpdateAccounts() //update account balance for fee refund when create/call contract
 	k.StateDB.WithContext(ctx).Commit(true)
 	return []abci.ValidatorUpdate{}
 }
