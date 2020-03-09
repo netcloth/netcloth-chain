@@ -65,9 +65,10 @@ type ABCIMessageLog struct {
 	Events StringEvents `json:"events"`
 }
 
-func NewABCIMessageLog(i uint16, log string, events Events) ABCIMessageLog {
+func NewABCIMessageLog(i uint16, success bool, log string, events Events) ABCIMessageLog {
 	return ABCIMessageLog{
 		MsgIndex: i,
+		Success:  success,
 		Log:      log,
 		Events:   StringifyEvents(events.ToABCIEvents()),
 	}

@@ -781,12 +781,17 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
-		return sdkerrors.ResponseDeliverTx(err, 0, 0)
+		return sdkerrors.ResponseDeliverTx(err, 0, 0, err.Error())
 	}
 
 	gInfo, result, err := app.runTx(runTxModeDeliver, req.Tx, tx)
+
 	if err != nil {
-		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed)
+		log := err.Error()
+		if result != nil {
+			log = result.Log
+		}
+		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed, log)
 	}
 
 	return abci.ResponseDeliverTx{
@@ -824,6 +829,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		msgResult, err := handler(ctx, msg)
 		if err != nil {
 			idxLog.Success = false
+			idxLog.Log = fmt.Sprintf("failed to execute message; message index: %d. error: %s", i, err.Error())
 			idxLogs = append(idxLogs, idxLog)
 
 			logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
