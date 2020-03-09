@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	mempl "github.com/tendermint/tendermint/mempool"
 	"os"
 	"path/filepath"
 	"time"
@@ -19,6 +20,8 @@ import (
 	"github.com/netcloth/netcloth-chain/app"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
+
+	cfg "github.com/tendermint/tendermint/config"
 )
 
 func replayCmd() *cobra.Command {
@@ -51,6 +54,20 @@ func replayTxs(rootDir string) error {
 	dataDir := filepath.Join(rootDir, "data")
 	ctx := server.NewDefaultContext()
 
+	statedbDir := filepath.Join(dataDir, "state.db")
+	fmt.Fprint(os.Stderr, statedbDir)
+	appdbDir := filepath.Join(dataDir, "application.db")
+	fmt.Fprint(os.Stderr, appdbDir)
+	err := os.RemoveAll(statedbDir)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(appdbDir)
+	if err != nil {
+		return err
+	}
+
 	// App DB
 	// appDB := dbm.NewMemDB()
 	fmt.Fprintln(os.Stderr, "Opening app database")
@@ -76,7 +93,7 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewNCHApp(ctx.Logger, appDB, nil, false, uint(1))
+	myapp := app.NewNCHAppForReplay(ctx.Logger, appDB, nil, false, true, uint(1))
 
 	// Genesis
 	var genDocPath = filepath.Join(configDir, "genesis.json")
@@ -113,7 +130,9 @@ func replayTxs(rootDir string) error {
 			Validators:      validators,
 			AppStateBytes:   genDoc.AppState,
 		}
+		fmt.Fprintln(os.Stderr, "1")
 		res, err := proxyApp.Consensus().InitChainSync(req)
+		fmt.Fprintln(os.Stderr, "2")
 		if err != nil {
 			return err
 		}
@@ -121,17 +140,22 @@ func replayTxs(rootDir string) error {
 		if err != nil {
 			return err
 		}
+		fmt.Fprintln(os.Stderr, "3")
 		newValidators := tm.NewValidatorSet(newValidatorz)
 
 		// Take the genesis state.
 		state = genState
 		state.Validators = newValidators
 		state.NextValidators = newValidators
+
+		tmsm.SaveState(tmDB, state)
 	}
 
 	// Create executor
 	fmt.Fprintln(os.Stderr, "Creating block executor")
-	blockExec := tmsm.NewBlockExecutor(tmDB, ctx.Logger, proxyApp.Consensus(), nil, tmsm.MockEvidencePool{})
+
+	mempoolInstance := mempl.NewCListMempool(cfg.DefaultMempoolConfig(), proxyApp.Mempool(), 1)
+	blockExec := tmsm.NewBlockExecutor(tmDB, ctx.Logger, proxyApp.Consensus(), mempoolInstance, tmsm.MockEvidencePool{})
 
 	// Create block store
 	fmt.Fprintln(os.Stderr, "Creating block store")
