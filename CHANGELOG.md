@@ -4,24 +4,25 @@
 
 ### CLI
 
+* add dist alias for ```nchcli```
+* support "--gas auto" for ```nchcli``` to calculate gas automatically
+
 #### Features
 
 * TODO
-* TODO
+
 
 #### Bug Fixes
 
 * TODO
-* TODO
+
 
 ### Application
 
 #### Features
 
-* TODO
-* TODO
+* add OOG logs in tx-receipt when out of gas
 
 #### Bug Fixes
 
-* TODO
-* TODO
+* fix panic when C-IPAL data is null in genesis files
