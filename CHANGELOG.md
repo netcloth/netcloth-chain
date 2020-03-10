@@ -2,28 +2,22 @@
 
 ## [Unreleased]
 
-### CLI
+### nchcli v1.0.4
 
-* add dist alias for ```nchcli```
+#### [Features]
+
+* add distr alias for ```nchcli```
+
 * support "--gas auto" for ```nchcli``` to calculate gas automatically
 
-#### Features
-
-* TODO
-
-
-#### Bug Fixes
-
-* TODO
-
-
-### Application
-
-#### Features
-
-* export / import IPAL/C-IPAL state
 * add OOG logs in tx-receipt when out of gas
 
-#### Bug Fixes
+### nchd v1.0.4
+
+#### [Features]
+
+* export / import IPAL/C-IPAL state
+
+#### [Bug Fixes]
 
 * fix panic when C-IPAL data is null in genesis files
