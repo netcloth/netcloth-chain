@@ -8,8 +8,8 @@ import (
 	"github.com/tendermint/tendermint/crypto/merkle"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/store/errors"
 	"github.com/netcloth/netcloth-chain/store/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 func TestStoreType(t *testing.T) {
@@ -213,37 +213,37 @@ func TestMultiStoreQuery(t *testing.T) {
 	// Test bad path.
 	query := abci.RequestQuery{Path: "/key", Data: k, Height: ver}
 	qres := multi.Query(query)
-	require.EqualValues(t, errors.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.ABCICode(), qres.Code)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), qres.Codespace)
 
 	query.Path = "h897fy32890rf63296r92"
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.ABCICode(), qres.Code)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), qres.Codespace)
 
 	// Test invalid store name.
 	query.Path = "/garbage/key"
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.ABCICode(), qres.Code)
+	require.EqualValues(t, sdkerrors.ErrUnknownRequest.Codespace(), qres.Codespace)
 
 	// Test valid query with data.
 	query.Path = "/store1/key"
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeOK, qres.Code)
+	require.EqualValues(t, 0, qres.Code)
 	require.Equal(t, v, qres.Value)
 
 	// Test valid but empty query.
 	query.Path = "/store2/key"
 	query.Prove = true
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeOK, qres.Code)
+	require.EqualValues(t, 0, qres.Code)
 	require.Nil(t, qres.Value)
 
 	// Test store2 data.
 	query.Data = k2
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeOK, qres.Code)
+	require.EqualValues(t, 0, qres.Code)
 	require.Equal(t, v2, qres.Value)
 }
 
