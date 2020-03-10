@@ -142,8 +142,8 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		return nil, sdk.AccAddress{}, gas, ErrInsufficientBalance
 	}
 
-	nonce := evm.StateDB.GetNonce(caller.Address())
-	evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	//nonce := evm.StateDB.GetNonce(caller.Address())
+	//evm.StateDB.SetNonce(caller.Address(), nonce+1)
 
 	// Ensure there's no existing contract already at the designated address
 	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
