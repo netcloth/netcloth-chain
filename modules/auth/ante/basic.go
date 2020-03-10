@@ -1,12 +1,13 @@
 package ante
 
 import (
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/multisig"
+
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 var (

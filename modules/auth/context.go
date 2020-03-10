@@ -5,15 +5,15 @@ import sdk "github.com/netcloth/netcloth-chain/types"
 type contextKey int // local to the auth module
 
 const (
-	contextKeySigners contextKey = iota
+	contextKeyFeePayers contextKey = iota
 )
 
-func WithSigners(ctx sdk.Context, account Account) sdk.Context {
-	return ctx.WithValue(contextKeySigners, account)
+func WithFeePayers(ctx sdk.Context, account Account) sdk.Context {
+	return ctx.WithValue(contextKeyFeePayers, account)
 }
 
-func GetSigners(ctx sdk.Context) Account {
-	v := ctx.Value(contextKeySigners)
+func GetFeePayers(ctx sdk.Context) Account {
+	v := ctx.Value(contextKeyFeePayers)
 	if v == nil {
 		return nil
 	}
