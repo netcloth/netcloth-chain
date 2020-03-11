@@ -8,6 +8,7 @@ import (
 
 const (
 	QueryParameters = "params"
+	QueryState      = "state"
 	QueryCode       = "code"
 	QueryStorage    = "storage"
 	QueryTxLogs     = "logs"
@@ -41,4 +42,9 @@ type SimulationResult struct {
 
 func (r SimulationResult) String() string {
 	return fmt.Sprintf("Gas = %d\nRes = %s", r.Gas, r.Res)
+}
+
+type QueryStateParams struct {
+	ShowCode     bool `json:"show_code" yaml:"show_code"`
+	ContractOnly bool `json:"contract_only" yaml:"contract_only"`
 }

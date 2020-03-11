@@ -752,3 +752,32 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 func (csdb *CommitStateDB) setStateObject(so *stateObject) {
 	csdb.stateObjects[so.Address().String()] = so
 }
+
+func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs) {
+	var so SO
+
+	for _, stateObject := range csdb.stateObjects {
+		if params.ContractOnly == true {
+			if len(stateObject.CodeHash()) == 0 {
+				continue
+			}
+		}
+
+		so.Address = stateObject.address
+		so.BaseAccount = *stateObject.account
+		so.OriginStorage = stateObject.originStorage.Copy()
+		so.DirtyStorage = stateObject.dirtyStorage.Copy()
+		so.DirtyCode = stateObject.dirtyCode
+		so.Suicided = stateObject.suicided
+		so.Deleted = stateObject.deleted
+		if params.ShowCode == false {
+			so.Code = nil
+		} else {
+			so.Code = append(so.Code[:], stateObject.code...)
+		}
+
+		sos = append(sos, so)
+	}
+
+	return sos
+}

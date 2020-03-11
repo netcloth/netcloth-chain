@@ -2,9 +2,8 @@ package types
 
 import (
 	"fmt"
-	"math/big"
-
 	"github.com/tendermint/tendermint/crypto"
+	"math/big"
 
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
@@ -64,7 +63,7 @@ type (
 		//
 		// When an object is marked suicided it will be delete from the trie during
 		// the "update" phase of the state transition.
-		dirtyCode bool // true if the code was updated
+		dirtyCode bool
 		suicided  bool
 		deleted   bool
 	}
@@ -374,3 +373,16 @@ func (so stateObject) GetStorageByAddressKey(key []byte) sdk.Hash {
 
 	return sdk.BytesToHash(crypto.Sha256(compositeKey))
 }
+
+type SO struct {
+	Address       sdk.AccAddress    `json:"address" yaml:"address"`
+	BaseAccount   types.BaseAccount `json:"base_account" yaml:"base_account"`
+	OriginStorage sdk.Storage       `json:"origin_storage" yaml:"origin_storage"`
+	DirtyStorage  sdk.Storage       `json:"dirty_storage" yaml:"dirty_storage"`
+	DirtyCode     bool              `json:"dirty_code" yaml:"dirty_code"`
+	Suicided      bool              `json:"suicided" yaml:"suicided"`
+	Deleted       bool              `json:"deleted" yaml:"deleted"`
+	Code          sdk.Code          `json:"code" yaml:"code"`
+}
+
+type SOs []SO

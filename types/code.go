@@ -1,19 +1,40 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/hexutil"
 )
 
-// Code & Storage
 type (
-	Code []byte
-
-	// Storage is account storage type alias
+	Code    []byte
 	Storage map[Hash]Hash
 )
 
 func (c Code) String() string {
-	return string(c)
+	return hexutil.Encode(c)
+}
+
+func (c Code) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
+}
+
+func (c *Code) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+
+	d, err := hexutil.Decode(s)
+
+	if err != nil {
+		return err
+	}
+
+	*c = d
+
+	return nil
 }
 
 func (s Storage) String() (str string) {
@@ -23,7 +44,6 @@ func (s Storage) String() (str string) {
 	return
 }
 
-// Copy returns a copy of storage
 func (s Storage) Copy() Storage {
 	cpy := make(Storage)
 	for key, value := range s {
