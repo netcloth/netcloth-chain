@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"math/big"
+	"os"
 	"sort"
 	"sync"
 
@@ -30,9 +31,10 @@ type CommitStateDB struct {
 	// StateDB interface. Perhaps there is a better way.
 	ctx sdk.Context
 
-	ak         auth.AccountKeeper
-	storageKey sdk.StoreKey
-	codeKey    sdk.StoreKey
+	ak              auth.AccountKeeper
+	storageKey      sdk.StoreKey
+	codeKey         sdk.StoreKey
+	storageDebugKey sdk.StoreKey
 
 	// maps that hold 'live' objects, which will get modified while processing a
 	// state transition
@@ -74,11 +76,12 @@ type CommitStateDB struct {
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
 //func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
 		storageKey:        storageKey,
 		codeKey:           codeKey,
+		storageDebugKey:   storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
@@ -92,6 +95,7 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 		ak:                db.ak,
 		storageKey:        db.storageKey,
 		codeKey:           db.codeKey,
+		storageDebugKey:   db.storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
@@ -780,4 +784,23 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	}
 
 	return sos
+}
+
+func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
+	debug := true // TODO config in stateDB
+
+	if debug {
+		store := csdb.ctx.KVStore(csdb.storageDebugKey)
+		iter := store.Iterator(nil, nil)
+		defer iter.Close()
+
+		var kv DebugAccKV
+		for ; iter.Valid(); iter.Next() {
+			kv.DebugAccKVFromKV(iter.Key(), iter.Value())
+			fmt.Fprintln(os.Stderr, kv.String())
+			kvs = append(kvs, kv)
+		}
+	}
+
+	return
 }

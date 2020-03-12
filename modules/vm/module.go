@@ -76,7 +76,13 @@ func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Val
 	return nil
 }
 
-func (a AppModule) ExportGenesis(sdk.Context) json.RawMessage {
+func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+	kvs := a.k.StateDB.WithContext(ctx).ExportState()
+	d, err := json.Marshal(kvs)
+	if err != nil {
+		return d
+	}
+
 	return nil
 }
 

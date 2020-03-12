@@ -144,6 +144,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		ipal.StoreKey,
 		vm.StoreKey,
 		vm.CodeKey,
+		vm.StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -202,6 +203,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.cdc,
 		keys[vm.StoreKey],
 		keys[vm.CodeKey],
+		keys[vm.StoreDebugKey],
 		vmSubspace,
 		app.accountKeeper)
 
@@ -320,6 +322,7 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		ipal.StoreKey,
 		vm.StoreKey,
 		vm.CodeKey,
+		vm.StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -378,6 +381,7 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		app.cdc,
 		keys[vm.StoreKey],
 		keys[vm.CodeKey],
+		keys[vm.StoreDebugKey],
 		vmSubspace,
 		app.accountKeeper)
 
