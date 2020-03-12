@@ -68,6 +68,8 @@ type CommitStateDB struct {
 
 	// mutex for state deep copying
 	lock sync.Mutex
+
+	debug bool
 }
 
 // NewCommitStateDB returns a reference to a newly initialized CommitStateDB
@@ -87,6 +89,7 @@ func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, storageDebugKe
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
+		debug:             true,
 	}
 }
 
@@ -101,6 +104,7 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
+		debug:             true,
 	}
 }
 

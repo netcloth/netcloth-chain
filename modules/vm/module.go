@@ -2,6 +2,8 @@ package vm
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -78,12 +80,8 @@ func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Val
 
 func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	kvs := a.k.StateDB.WithContext(ctx).ExportState()
-	d, err := json.Marshal(kvs)
-	if err != nil {
-		return d
-	}
-
-	return nil
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("len(kvs)=%d", len(kvs)))
+	return types.ModuleCdc.MustMarshalJSON(kvs)
 }
 
 func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {

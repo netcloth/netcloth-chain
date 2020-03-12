@@ -208,9 +208,9 @@ func (so *stateObject) markSuicided() {
 // commitState commits all dirty storage to a KVStore.
 
 type DebugAccKV struct {
-	AccAddr sdk.AccAddress
-	K       sdk.Hash
-	V       sdk.Hash
+	AccAddr sdk.AccAddress `json:"acc_addr"`
+	K       sdk.Hash       `json:"k"`
+	V       sdk.Hash       `json:"v"`
 }
 
 func (dkv *DebugAccKV) String() string {
@@ -239,21 +239,19 @@ func (dkv *DebugAccKV) DebugAccKVFromKV(k, v []byte) {
 }
 
 func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
-	copy(k[:], DEBUG_KEY_PREFIX)
-	copy(k[len(k):], dkv.AccAddr.Bytes())
-	copy(k[len(k):], dkv.K.Bytes())
+	k = append(k, DEBUG_KEY_PREFIX...)
+	k = append(k, dkv.AccAddr...)
+	k = append(k, dkv.K.Bytes()...)
 	v = dkv.V
 	return
 }
 
 func (so *stateObject) commitState() {
-	debug := true // TODO config in stateDB
-
 	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.storageKey)
 
 	debugStore := (sdk.KVStore)(nil)
-	if debug {
+	if so.stateDB.debug {
 		debugStore = ctx.KVStore(so.stateDB.storageDebugKey)
 	}
 
