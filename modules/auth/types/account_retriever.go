@@ -47,6 +47,10 @@ func (ar AccountRetriever) GetAccountWithHeight(addr sdk.AccAddress) (exported.A
 		return nil, height, err
 	}
 
+	if len(res) == 0 {
+		return nil, height, fmt.Errorf("account %s does not exist", addr.String())
+	}
+
 	var account exported.Account
 	if err := ModuleCdc.UnmarshalJSON(res, &account); err != nil {
 		return nil, height, err
