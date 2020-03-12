@@ -41,7 +41,7 @@ type MsgCIPALClaim struct {
 }
 
 func (i ServiceInfo) String() string {
-	return fmt.Sprintf(`ServiceInfo{Type:%s,Address:%s`, i.Type, i.Address)
+	return fmt.Sprintf(`ServiceInfo{Type:%d, Address:%s`, i.Type, i.Address)
 }
 
 func (p ADParam) GetSignBytes() []byte {
