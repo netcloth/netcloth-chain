@@ -248,11 +248,11 @@ func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
 
 func (so *stateObject) commitState() {
 	ctx := so.stateDB.ctx
-	store := ctx.VMKVStore(so.stateDB.storageKey)
+	store := ctx.KVStoreFree(so.stateDB.storageKey)
 
 	debugStore := (sdk.KVStore)(nil)
 	if so.stateDB.debug {
-		debugStore = ctx.VMKVStore(so.stateDB.storageDebugKey)
+		debugStore = ctx.KVStoreFree(so.stateDB.storageDebugKey)
 	}
 
 	var kv DebugAccKV
@@ -289,7 +289,7 @@ func (so *stateObject) commitState() {
 // commitCode persists the state object's code to the KVStore.
 func (so *stateObject) commitCode() {
 	ctx := so.stateDB.ctx
-	store := ctx.VMKVStore(so.stateDB.codeKey)
+	store := ctx.KVStoreFree(so.stateDB.codeKey)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -328,7 +328,7 @@ func (so *stateObject) Code() []byte {
 	}
 
 	ctx := so.stateDB.ctx
-	store := ctx.VMKVStore(so.stateDB.codeKey)
+	store := ctx.KVStoreFree(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
@@ -367,7 +367,7 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 
 	// otherwise load the value from the KVStore
 	ctx := so.stateDB.ctx
-	store := ctx.VMKVStore(so.stateDB.storageKey)
+	store := ctx.KVStoreFree(so.stateDB.storageKey)
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {

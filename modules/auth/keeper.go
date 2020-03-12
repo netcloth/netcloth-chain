@@ -27,6 +27,8 @@ type AccountKeeper struct {
 	cdc *codec.Codec
 
 	paramSubspace subspace.Subspace
+
+	FeeFree bool
 }
 
 // NewAccountKeeper returns a new sdk.AccountKeeper that uses go-amino to
@@ -41,6 +43,18 @@ func NewAccountKeeper(
 		proto:         proto,
 		cdc:           cdc,
 		paramSubspace: paramstore.WithKeyTable(types.ParamKeyTable()),
+		FeeFree:       false,
+	}
+}
+
+func NewAccountKeeperCopy(ak AccountKeeper, feeFree bool) AccountKeeper {
+
+	return AccountKeeper{
+		key:           ak.key,
+		proto:         ak.proto,
+		cdc:           ak.cdc,
+		paramSubspace: ak.paramSubspace,
+		FeeFree:       feeFree,
 	}
 }
 
@@ -76,6 +90,9 @@ func (ak AccountKeeper) NewAccount(ctx sdk.Context, acc exported.Account) export
 // GetAccount implements sdk.AccountKeeper.
 func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) exported.Account {
 	store := ctx.KVStore(ak.key)
+	if ak.FeeFree {
+		store = ctx.KVStoreFree(ak.key)
+	}
 	bz := store.Get(types.AddressStoreKey(addr))
 	if bz == nil {
 		return nil
@@ -99,6 +116,9 @@ func (ak AccountKeeper) GetAllAccounts(ctx sdk.Context) []exported.Account {
 func (ak AccountKeeper) SetAccount(ctx sdk.Context, acc exported.Account) {
 	addr := acc.GetAddress()
 	store := ctx.KVStore(ak.key)
+	if ak.FeeFree {
+		store = ctx.KVStoreFree(ak.key)
+	}
 	bz, err := ak.cdc.MarshalBinaryBare(acc)
 	if err != nil {
 		panic(err)
@@ -111,12 +131,18 @@ func (ak AccountKeeper) SetAccount(ctx sdk.Context, acc exported.Account) {
 func (ak AccountKeeper) RemoveAccount(ctx sdk.Context, acc exported.Account) {
 	addr := acc.GetAddress()
 	store := ctx.KVStore(ak.key)
+	if ak.FeeFree {
+		store = ctx.KVStoreFree(ak.key)
+	}
 	store.Delete(types.AddressStoreKey(addr))
 }
 
 // IterateAccounts implements sdk.AccountKeeper.
 func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, process func(exported.Account) (stop bool)) {
 	store := ctx.KVStore(ak.key)
+	if ak.FeeFree {
+		store = ctx.KVStoreFree(ak.key)
+	}
 	iter := sdk.KVStorePrefixIterator(store, types.AddressStoreKeyPrefix)
 	defer iter.Close()
 	for {
@@ -154,6 +180,9 @@ func (ak AccountKeeper) GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint6
 func (ak AccountKeeper) GetNextAccountNumber(ctx sdk.Context) uint64 {
 	var accNumber uint64
 	store := ctx.KVStore(ak.key)
+	if ak.FeeFree {
+		store = ctx.KVStoreFree(ak.key)
+	}
 	bz := store.Get(types.GlobalAccountNumberKey)
 	if bz == nil {
 		accNumber = 0

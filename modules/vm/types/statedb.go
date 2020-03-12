@@ -675,7 +675,7 @@ func (csdb *CommitStateDB) ForEachStorage(addr sdk.AccAddress, cb func(key, valu
 		return nil
 	}
 
-	store := csdb.ctx.VMKVStore(csdb.storageKey)
+	store := csdb.ctx.KVStoreFree(csdb.storageKey)
 	iter := sdk.KVStorePrefixIterator(store, so.Address().Bytes())
 
 	for ; iter.Valid(); iter.Next() {
@@ -794,7 +794,7 @@ func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
 	debug := true // TODO config in stateDB
 
 	if debug {
-		store := csdb.ctx.VMKVStore(csdb.storageDebugKey)
+		store := csdb.ctx.KVStoreFree(csdb.storageDebugKey)
 		iter := store.Iterator(nil, nil)
 		defer iter.Close()
 

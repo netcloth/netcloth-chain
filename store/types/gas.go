@@ -175,7 +175,7 @@ func KVGasConfig() GasConfig {
 	}
 }
 
-func VMKVGasConfig() GasConfig {
+func KVGasConfigFree() GasConfig {
 	return GasConfig{
 		HasCost:          0,
 		DeleteCost:       0,
