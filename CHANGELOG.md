@@ -6,6 +6,8 @@
 
 #### [Features]
 
+* update response when query account not exist 
+
 * add distr alias for ```nchcli```
 
 * support "--gas auto" for ```nchcli``` to calculate gas automatically
