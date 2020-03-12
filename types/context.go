@@ -212,6 +212,10 @@ func (c Context) KVStore(key StoreKey) KVStore {
 	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.KVGasConfig())
 }
 
+func (c Context) VMKVStore(key StoreKey) KVStore {
+	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.VMKVGasConfig())
+}
+
 // TransientStore fetches a TransientStore from the MultiStore.
 func (c Context) TransientStore(key StoreKey) KVStore {
 	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.TransientGasConfig())

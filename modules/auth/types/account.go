@@ -150,7 +150,13 @@ func (acc *BaseAccount) SpendableCoins(_ time.Time) sdk.Coins {
 
 // Balance returns the balance of an account
 func (acc *BaseAccount) Balance() sdk.Int {
-	return acc.GetCoins().AmountOf(sdk.NativeTokenName)
+	coins := acc.GetCoins()
+	if coins == nil {
+		return sdk.NewInt(0)
+	}
+	return coins.AmountOf(sdk.NativeTokenName)
+
+	//return acc.GetCoins().AmountOf(sdk.NativeTokenName) TODO CHECK acc.GetCoins() return nil?
 }
 
 // SetBalance sets an account's balance of native token

@@ -175,6 +175,18 @@ func KVGasConfig() GasConfig {
 	}
 }
 
+func VMKVGasConfig() GasConfig {
+	return GasConfig{
+		HasCost:          0,
+		DeleteCost:       0,
+		ReadCostFlat:     0,
+		ReadCostPerByte:  0,
+		WriteCostFlat:    0,
+		WriteCostPerByte: 0,
+		IterNextCostFlat: 0,
+	}
+}
+
 // TransientGasConfig returns a default gas config for TransientStores.
 func TransientGasConfig() GasConfig {
 	// TODO: define gasconfig for transient stores
