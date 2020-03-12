@@ -1,4 +1,4 @@
-package auth
+package ante
 
 import (
 	"github.com/netcloth/netcloth-chain/modules/auth/types"

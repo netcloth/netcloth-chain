@@ -22,7 +22,7 @@ func NewRefundKeeper(cdc *codec.Codec, key sdk.StoreKey) RefundKeeper {
 
 func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk RefundKeeper) types.FeeRefundHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, txResult sdk.Result) (actualCostFee sdk.Coin, err error) {
-		txAccount := GetSigners(ctx)
+		txAccount := GetFeePayers(ctx)
 		if txAccount == nil {
 			return sdk.Coin{}, nil
 		}

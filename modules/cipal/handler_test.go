@@ -13,6 +13,7 @@ import (
 func TestInvalidMsg(t *testing.T) {
 	k := Keeper{}
 	h := NewHandler(k)
+
 	res, err := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
 	require.Nil(t, res)
 	require.NotNil(t, err)

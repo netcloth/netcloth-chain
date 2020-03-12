@@ -1,10 +1,10 @@
-package auth
+package ante
 
 import (
 	"fmt"
 
+	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/exported"
-
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -71,11 +71,11 @@ func (mfd MempoolFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 // Call next AnteHandler if fees successfully deducted
 // CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
 type DeductFeeDecorator struct {
-	ak           AccountKeeper
+	ak           auth.AccountKeeper
 	supplyKeeper types.SupplyKeeper
 }
 
-func NewDeductFeeDecorator(ak AccountKeeper, sk types.SupplyKeeper) DeductFeeDecorator {
+func NewDeductFeeDecorator(ak auth.AccountKeeper, sk types.SupplyKeeper) DeductFeeDecorator {
 	return DeductFeeDecorator{
 		ak:           ak,
 		supplyKeeper: sk,
@@ -106,7 +106,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 			return ctx, err
 		}
 	}
-	newCtx = WithSigners(ctx, feePayerAcc)
+	newCtx = auth.WithFeePayers(ctx, feePayerAcc)
 	return next(newCtx, tx, simulate)
 }
 

@@ -36,9 +36,9 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // SendTxCmd will create a send tx and sign it with the given key.
 func SendTxCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "send [from_key_or_address] [to_address] [amount]",
+		Use:     "send --from [from_key_or_address] --to [to_address] --amount [amount]",
 		Short:   "Create and sign a send tx",
-		Example: "nchcli send --from <key name> --to=<account address> --chain-id=<chain-id> --amount=10nch",
+		Example: "nchcli send --from=<key name> --to=<account address> --chain-id=<chain-id> --amount=<amount>pnch",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
