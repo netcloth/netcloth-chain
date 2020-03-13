@@ -1,23 +1,41 @@
 package rootmulti
 
 import (
-	"testing"
+	"fmt"
+
+	"github.com/netcloth/netcloth-chain/store/iavl"
+	"github.com/netcloth/netcloth-chain/store/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/store/types"
-	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	"testing"
 )
 
 func TestStoreType(t *testing.T) {
 	db := dbm.NewMemDB()
 	store := NewStore(db)
-	store.MountStoreWithDB(
-		types.NewKVStoreKey("store1"), types.StoreTypeIAVL, db)
+	store.MountStoreWithDB(types.NewKVStoreKey("store1"), types.StoreTypeIAVL, db)
+}
 
+func TestGetCommitKVStore(t *testing.T) {
+	var db dbm.DB = dbm.NewMemDB()
+	ms := newMultiStoreWithMounts(db, types.PruneSyncable)
+	err := ms.LoadLatestVersion()
+	require.Nil(t, err)
+
+	key := ms.keysByName["store1"]
+
+	store1 := ms.GetCommitKVStore(key)
+	require.NotNil(t, store1)
+	require.IsType(t, &iavl.Store{}, store1)
+
+	store2 := ms.GetCommitStore(key)
+	require.NotNil(t, store2)
+	require.IsType(t, &iavl.Store{}, store2)
 }
 
 func TestStoreMount(t *testing.T) {
@@ -32,12 +50,13 @@ func TestStoreMount(t *testing.T) {
 	require.NotPanics(t, func() { store.MountStoreWithDB(key2, types.StoreTypeIAVL, db) })
 
 	require.Panics(t, func() { store.MountStoreWithDB(key1, types.StoreTypeIAVL, db) })
+	require.Panics(t, func() { store.MountStoreWithDB(nil, types.StoreTypeIAVL, db) })
 	require.Panics(t, func() { store.MountStoreWithDB(dup1, types.StoreTypeIAVL, db) })
 }
 
 func TestCacheMultiStoreWithVersion(t *testing.T) {
 	var db dbm.DB = dbm.NewMemDB()
-	ms := newMultiStoreWithMounts(db)
+	ms := newMultiStoreWithMounts(db, types.PruneNothing)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -74,7 +93,7 @@ func TestCacheMultiStoreWithVersion(t *testing.T) {
 
 func TestHashStableWithEmptyCommit(t *testing.T) {
 	var db dbm.DB = dbm.NewMemDB()
-	ms := newMultiStoreWithMounts(db)
+	ms := newMultiStoreWithMounts(db, types.PruneNothing)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -98,7 +117,7 @@ func TestHashStableWithEmptyCommit(t *testing.T) {
 
 func TestMultistoreCommitLoad(t *testing.T) {
 	var db dbm.DB = dbm.NewMemDB()
-	store := newMultiStoreWithMounts(db)
+	store := newMultiStoreWithMounts(db, types.PruneNothing)
 	err := store.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -123,7 +142,7 @@ func TestMultistoreCommitLoad(t *testing.T) {
 	}
 
 	// Load the latest multistore again and check version.
-	store = newMultiStoreWithMounts(db)
+	store = newMultiStoreWithMounts(db, types.PruneNothing)
 	err = store.LoadLatestVersion()
 	require.Nil(t, err)
 	commitID = getExpectedCommitID(store, nCommits)
@@ -136,7 +155,7 @@ func TestMultistoreCommitLoad(t *testing.T) {
 
 	// Load an older multistore and check version.
 	ver := nCommits - 1
-	store = newMultiStoreWithMounts(db)
+	store = newMultiStoreWithMounts(db, types.PruneNothing)
 	err = store.LoadVersion(ver)
 	require.Nil(t, err)
 	commitID = getExpectedCommitID(store, ver)
@@ -149,7 +168,7 @@ func TestMultistoreCommitLoad(t *testing.T) {
 
 	// XXX: confirm old commit is overwritten and we have rolled back
 	// LatestVersion
-	store = newMultiStoreWithMounts(db)
+	store = newMultiStoreWithMounts(db, types.PruneSyncable)
 	err = store.LoadLatestVersion()
 	require.Nil(t, err)
 	commitID = getExpectedCommitID(store, ver+1)
@@ -177,9 +196,92 @@ func TestParsePath(t *testing.T) {
 
 }
 
+func TestMultiStoreRestart(t *testing.T) {
+	db := dbm.NewMemDB()
+	pruning := types.PruningOptions{
+		KeepEvery:     3,
+		SnapshotEvery: 6,
+	}
+	multi := newMultiStoreWithMounts(db, pruning)
+	err := multi.LoadLatestVersion()
+	require.Nil(t, err)
+
+	initCid := multi.LastCommitID()
+	fmt.Println(initCid)
+
+	k, v := "wind", "blows"
+	k2, v2 := "water", "flows"
+	k3, v3 := "fire", "burns"
+
+	for i := 1; i < 3; i++ {
+		// Set and commit data in one store.
+		store1 := multi.getStoreByName("store1").(types.KVStore)
+		store1.Set([]byte(k), []byte(fmt.Sprintf("%s:%d", v, i)))
+
+		// ... and another.
+		store2 := multi.getStoreByName("store2").(types.KVStore)
+		store2.Set([]byte(k2), []byte(fmt.Sprintf("%s:%d", v2, i)))
+
+		// ... and another.
+		store3 := multi.getStoreByName("store3").(types.KVStore)
+		store3.Set([]byte(k3), []byte(fmt.Sprintf("%s:%d", v3, i)))
+
+		multi.Commit()
+
+		cinfo, err := getCommitInfo(multi.db, int64(i))
+		require.NotNil(t, err)
+		require.Equal(t, commitInfo{}, cinfo)
+	}
+
+	// Set and commit data in one store.
+	store1 := multi.getStoreByName("store1").(types.KVStore)
+	store1.Set([]byte(k), []byte(fmt.Sprintf("%s:%d", v, 3)))
+
+	// ... and another.
+	store2 := multi.getStoreByName("store2").(types.KVStore)
+	store2.Set([]byte(k2), []byte(fmt.Sprintf("%s:%d", v2, 3)))
+
+	multi.Commit()
+
+	flushedCinfo, err := getCommitInfo(multi.db, 3)
+	require.Nil(t, err)
+	require.NotEqual(t, initCid, flushedCinfo, "CID is different after flush to disk")
+
+	// ... and another.
+	store3 := multi.getStoreByName("store3").(types.KVStore)
+	store3.Set([]byte(k3), []byte(fmt.Sprintf("%s:%d", v3, 3)))
+
+	multi.Commit()
+
+	postFlushCinfo, err := getCommitInfo(multi.db, 4)
+	require.NotNil(t, err)
+	require.Equal(t, commitInfo{}, postFlushCinfo, "Commit changed after in-memory commit")
+
+	multi = newMultiStoreWithMounts(db, pruning)
+	err = multi.LoadLatestVersion()
+	require.Nil(t, err)
+
+	reloadedCid := multi.LastCommitID()
+	require.Equal(t, flushedCinfo.CommitID(), reloadedCid, "Reloaded CID is not the same as last flushed CID")
+
+	// Check that store1 and store2 retained date from 3rd commit
+	store1 = multi.getStoreByName("store1").(types.KVStore)
+	val := store1.Get([]byte(k))
+	require.Equal(t, []byte(fmt.Sprintf("%s:%d", v, 3)), val, "Reloaded value not the same as last flushed value")
+
+	store2 = multi.getStoreByName("store2").(types.KVStore)
+	val2 := store2.Get([]byte(k2))
+	require.Equal(t, []byte(fmt.Sprintf("%s:%d", v2, 3)), val2, "Reloaded value not the same as last flushed value")
+
+	// Check that store3 still has data from last commit even though update happened on 2nd commit
+	store3 = multi.getStoreByName("store3").(types.KVStore)
+	val3 := store3.Get([]byte(k3))
+	require.Equal(t, []byte(fmt.Sprintf("%s:%d", v3, 2)), val3, "Reloaded value not the same as last flushed value")
+}
+
 func TestMultiStoreQuery(t *testing.T) {
 	db := dbm.NewMemDB()
-	multi := newMultiStoreWithMounts(db)
+	multi := newMultiStoreWithMounts(db, types.PruneNothing)
 	err := multi.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -206,7 +308,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	ver := cid.Version
 
 	// Reload multistore from database
-	multi = newMultiStoreWithMounts(db)
+	multi = newMultiStoreWithMounts(db, types.PruneNothing)
 	err = multi.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -250,15 +352,14 @@ func TestMultiStoreQuery(t *testing.T) {
 //-----------------------------------------------------------------------
 // utils
 
-func newMultiStoreWithMounts(db dbm.DB) *Store {
+func newMultiStoreWithMounts(db dbm.DB, pruningOpts types.PruningOptions) *Store {
 	store := NewStore(db)
-	store.pruningOpts = types.PruneSyncable
-	store.MountStoreWithDB(
-		types.NewKVStoreKey("store1"), types.StoreTypeIAVL, nil)
-	store.MountStoreWithDB(
-		types.NewKVStoreKey("store2"), types.StoreTypeIAVL, nil)
-	store.MountStoreWithDB(
-		types.NewKVStoreKey("store3"), types.StoreTypeIAVL, nil)
+	store.pruningOpts = pruningOpts
+
+	store.MountStoreWithDB(types.NewKVStoreKey("store1"), types.StoreTypeIAVL, nil)
+	store.MountStoreWithDB(types.NewKVStoreKey("store2"), types.StoreTypeIAVL, nil)
+	store.MountStoreWithDB(types.NewKVStoreKey("store3"), types.StoreTypeIAVL, nil)
+
 	return store
 }
 
@@ -268,6 +369,24 @@ func checkStore(t *testing.T, store *Store, expect, got types.CommitID) {
 
 }
 
+func checkContains(t testing.TB, info []storeInfo, wanted []string) {
+	t.Helper()
+
+	for _, want := range wanted {
+		checkHas(t, info, want)
+	}
+}
+
+func checkHas(t testing.TB, info []storeInfo, want string) {
+	t.Helper()
+	for _, i := range info {
+		if i.Name == want {
+			return
+		}
+	}
+	t.Fatalf("storeInfo doesn't contain %s", want)
+}
+
 func getExpectedCommitID(store *Store, ver int64) types.CommitID {
 	return types.CommitID{
 		Version: ver,
@@ -275,7 +394,7 @@ func getExpectedCommitID(store *Store, ver int64) types.CommitID {
 	}
 }
 
-func hashStores(stores map[types.StoreKey]types.CommitStore) []byte {
+func hashStores(stores map[types.StoreKey]types.CommitKVStore) []byte {
 	m := make(map[string][]byte, len(stores))
 	for key, store := range stores {
 		name := key.Name()

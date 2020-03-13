@@ -30,13 +30,13 @@ const (
 // cacheMultiStore which is for cache-wrapping other MultiStores. It implements
 // the CommitMultiStore interface.
 type Store struct {
-	db           dbm.DB
-	lastCommitID types.CommitID
-	pruningOpts  types.PruningOptions
-	storesParams map[types.StoreKey]storeParams
-	stores       map[types.StoreKey]types.CommitStore
-	keysByName   map[string]types.StoreKey
-	lazyLoading  bool
+	db             dbm.DB
+	lastCommitInfo commitInfo
+	pruningOpts    types.PruningOptions
+	storesParams   map[types.StoreKey]storeParams
+	stores         map[types.StoreKey]types.CommitKVStore
+	keysByName     map[string]types.StoreKey
+	lazyLoading    bool
 
 	traceWriter  io.Writer
 	traceContext types.TraceContext
@@ -51,7 +51,7 @@ func NewStore(db dbm.DB) *Store {
 		db:           db,
 		pruningOpts:  types.PruneNothing,
 		storesParams: make(map[types.StoreKey]storeParams),
-		stores:       make(map[types.StoreKey]types.CommitStore),
+		stores:       make(map[types.StoreKey]types.CommitKVStore),
 		keysByName:   make(map[string]types.StoreKey),
 	}
 }
@@ -111,55 +111,46 @@ func (rs *Store) LoadLatestVersion() error {
 
 // Implements CommitMultiStore.
 func (rs *Store) LoadVersion(ver int64) error {
-	if ver == 0 {
-		// Special logic for version 0 where there is no need to get commit
-		// information.
-		for key, storeParams := range rs.storesParams {
-			store, err := rs.loadCommitStoreFromParams(key, types.CommitID{}, storeParams)
-			if err != nil {
-				return fmt.Errorf("failed to load Store: %v", err)
-			}
+	infos := make(map[string]storeInfo)
+	var cInfo commitInfo
 
-			rs.stores[key] = store
-		}
-
-		rs.lastCommitID = types.CommitID{}
-		return nil
-	}
-
-	cInfo, err := getCommitInfo(rs.db, ver)
-	if err != nil {
-		return err
-	}
-
-	// convert StoreInfos slice to map
-	infos := make(map[types.StoreKey]storeInfo)
-	for _, storeInfo := range cInfo.StoreInfos {
-		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
-	}
-
-	// load each Store
-	var newStores = make(map[types.StoreKey]types.CommitStore)
-	for key, storeParams := range rs.storesParams {
-		var id types.CommitID
-
-		info, ok := infos[key]
-		if ok {
-			id = info.Core.CommitID
-		}
-
-		store, err := rs.loadCommitStoreFromParams(key, id, storeParams)
+	// load old data if we are not version 0
+	if ver != 0 {
+		var err error
+		cInfo, err = getCommitInfo(rs.db, ver)
 		if err != nil {
-			return fmt.Errorf("failed to load Store: %v", err)
+			return err
 		}
 
+		// convert StoreInfos slice to map
+		for _, storeInfo := range cInfo.StoreInfos {
+			infos[storeInfo.Name] = storeInfo
+		}
+	}
+
+	// load each Store (note this doesn't panic on unmounted keys now)
+	var newStores = make(map[types.StoreKey]types.CommitKVStore)
+	for key, storeParams := range rs.storesParams {
+		// Load it
+		store, err := rs.loadCommitStoreFromParams(key, rs.getCommitID(infos, key.Name()), storeParams)
+		if err != nil {
+			return errors.Wrap(err, "failed to load store")
+		}
 		newStores[key] = store
 	}
 
-	rs.lastCommitID = cInfo.CommitID()
+	rs.lastCommitInfo = cInfo
 	rs.stores = newStores
 
 	return nil
+}
+
+func (rs *Store) getCommitID(infos map[string]storeInfo, name string) types.CommitID {
+	info, ok := infos[name]
+	if !ok {
+		return types.CommitID{}
+	}
+	return info.Core.CommitID
 }
 
 // SetTracer sets the tracer for the MultiStore that the underlying
@@ -195,29 +186,26 @@ func (rs *Store) TracingEnabled() bool {
 
 // Implements Committer/CommitStore.
 func (rs *Store) LastCommitID() types.CommitID {
-	return rs.lastCommitID
+	return rs.lastCommitInfo.CommitID()
 }
 
 // Implements Committer/CommitStore.
 func (rs *Store) Commit() types.CommitID {
 
 	// Commit stores.
-	version := rs.lastCommitID.Version + 1
-	commitInfo := commitStores(version, rs.stores)
+	version := rs.lastCommitInfo.Version + 1
+	rs.lastCommitInfo = commitStores(version, rs.stores)
 
-	// Need to update atomically.
-	batch := rs.db.NewBatch()
-	defer batch.Close()
-	setCommitInfo(batch, version, commitInfo)
-	setLatestVersion(batch, version)
-	batch.Write()
+	// write CommitInfo to disk only if this version was flushed to disk
+	if rs.pruningOpts.FlushVersion(version) {
+		flushCommitInfo(rs.db, version, rs.lastCommitInfo)
+	}
 
 	// Prepare for next version.
 	commitID := types.CommitID{
 		Version: version,
-		Hash:    commitInfo.Hash(),
+		Hash:    rs.lastCommitInfo.Hash(),
 	}
-	rs.lastCommitID = commitID
 	return commitID
 }
 
@@ -381,7 +369,7 @@ func parsePath(path string) (storeName string, subpath string, err error) {
 
 //----------------------------------------
 
-func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID, params storeParams) (store types.CommitStore, err error) {
+func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID, params storeParams) (store types.CommitKVStore, err error) {
 	var db dbm.DB
 
 	if params.db != nil {
@@ -526,7 +514,7 @@ func setLatestVersion(batch dbm.Batch, version int64) {
 }
 
 // Commits each store and returns a new commitInfo.
-func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) commitInfo {
+func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore) commitInfo {
 	storeInfos := make([]storeInfo, 0, len(storeMap))
 
 	for key, store := range storeMap {
@@ -579,4 +567,15 @@ func setCommitInfo(batch dbm.Batch, version int64, cInfo commitInfo) {
 	cInfoBytes := cdc.MustMarshalBinaryLengthPrefixed(cInfo)
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
 	batch.Set([]byte(cInfoKey), cInfoBytes)
+}
+
+// flushCommitInfo flushes a commitInfo for given version to the DB. Note, this
+// needs to happen atomically.
+func flushCommitInfo(db dbm.DB, version int64, cInfo commitInfo) {
+	batch := db.NewBatch()
+	defer batch.Close()
+
+	setCommitInfo(batch, version, cInfo)
+	setLatestVersion(batch, version)
+	batch.Write()
 }
