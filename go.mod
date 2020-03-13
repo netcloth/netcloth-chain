@@ -1,6 +1,6 @@
 module github.com/netcloth/netcloth-chain
 
-go 1.12
+go 1.13
 
 require (
 	github.com/bartekn/go-bip39 v0.0.0-20171116152956-a05967ea095d
