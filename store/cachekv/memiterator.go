@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"container/list"
+	"errors"
 
 	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tm-db"
@@ -82,4 +83,14 @@ func (mi *memIterator) Close() {
 	mi.start = nil
 	mi.end = nil
 	mi.items = nil
+}
+
+// Error returns an error if the memIterator is invalid defined by the Valid
+// method.
+func (mi *memIterator) Error() error {
+	if !mi.Valid() {
+		return errors.New("invalid memIterator")
+	}
+
+	return nil
 }

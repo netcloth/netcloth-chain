@@ -20,7 +20,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case types.QueryServiceNodes:
 			return queryServiceNodes(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown ipal query path: %s", path[0])
 		}
 	}
 }
@@ -61,7 +61,7 @@ func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 		return bz, nil
 	}
 
-	return nil, sdk.ErrInternal("not found")
+	return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "not found")
 }
 
 func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {

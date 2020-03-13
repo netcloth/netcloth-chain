@@ -2,9 +2,14 @@ package context
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/tendermint/tendermint/mempool"
 
 	"github.com/netcloth/netcloth-chain/client/flags"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // BroadcastTx broadcasts a transactions either synchronously or asynchronously
@@ -44,6 +49,10 @@ func (ctx CLIContext) BroadcastTxCommit(txBytes []byte) (sdk.TxResponse, error) 
 
 	res, err := node.BroadcastTxCommit(txBytes)
 	if err != nil {
+		if errRes := CheckTendermintError(err, txBytes); errRes != nil {
+			return *errRes, nil
+		}
+
 		return sdk.NewResponseFormatBroadcastTxCommit(res), err
 	}
 
@@ -67,6 +76,10 @@ func (ctx CLIContext) BroadcastTxSync(txBytes []byte) (sdk.TxResponse, error) {
 	}
 
 	res, err := node.BroadcastTxSync(txBytes)
+	if errRes := CheckTendermintError(err, txBytes); errRes != nil {
+		return *errRes, nil
+	}
+
 	return sdk.NewResponseFormatBroadcastTx(res), err
 }
 
@@ -79,5 +92,48 @@ func (ctx CLIContext) BroadcastTxAsync(txBytes []byte) (sdk.TxResponse, error) {
 	}
 
 	res, err := node.BroadcastTxAsync(txBytes)
+	if errRes := CheckTendermintError(err, txBytes); errRes != nil {
+		return *errRes, nil
+	}
 	return sdk.NewResponseFormatBroadcastTx(res), err
+}
+
+// CheckTendermintError checks if the error returned from BroadcastTx is a
+// Tendermint error that is returned before the tx is submitted due to
+// precondition checks that failed. If an Tendermint error is detected, this
+// function returns the correct code back in TxResponse.
+//
+// TODO: Avoid brittle string matching in favor of error matching. This requires
+// a change to Tendermint's RPCError type to allow retrieval or matching against
+// a concrete error type.
+func CheckTendermintError(err error, txBytes []byte) *sdk.TxResponse {
+	if err == nil {
+		return nil
+	}
+
+	errStr := strings.ToLower(err.Error())
+	txHash := fmt.Sprintf("%X", tmhash.Sum(txBytes))
+
+	switch {
+	case strings.Contains(errStr, strings.ToLower(mempool.ErrTxInCache.Error())):
+		return &sdk.TxResponse{
+			Code:   sdkerrors.ErrTxInMempoolCache.ABCICode(),
+			TxHash: txHash,
+		}
+
+	case strings.Contains(errStr, "mempool is full"):
+		return &sdk.TxResponse{
+			Code:   sdkerrors.ErrMempoolIsFull.ABCICode(),
+			TxHash: txHash,
+		}
+
+	case strings.Contains(errStr, "tx too large"):
+		return &sdk.TxResponse{
+			Code:   sdkerrors.ErrTxTooLarge.ABCICode(),
+			TxHash: txHash,
+		}
+
+	default:
+		return nil
+	}
 }

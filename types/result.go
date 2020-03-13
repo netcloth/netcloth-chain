@@ -22,10 +22,9 @@ type GasInfo struct {
 // Result is the union of ResponseFormat and ResponseCheckTx.
 type Result struct {
 	// Code is the response code, is stored back on the chain.
-	Code CodeType
+	Code uint32
 
-	// Codespace is the string referring to the domain of an error
-	Codespace CodespaceType
+	Codespace string
 
 	// Data is any data returned from the app.
 	// Data has to be length prefixed in order to separate
@@ -48,7 +47,7 @@ type Result struct {
 
 // TODO: In the future, more codes may be OK.
 func (res Result) IsOK() bool {
-	return res.Code.IsOK()
+	return res.Code == 0
 }
 
 // ABCIMessageLogs represents a slice of ABCIMessageLog.

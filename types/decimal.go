@@ -2,11 +2,19 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 	"testing"
+)
+
+// Decimal errors
+var (
+	ErrEmptyDecimalStr      = errors.New("decimal string cannot be empty")
+	ErrInvalidDecimalLength = errors.New("invalid decimal length")
+	ErrInvalidDecimalStr    = errors.New("invalid decimal string")
 )
 
 // NOTE: never use new(Dec) or else we will panic unmarshalling into the
@@ -124,9 +132,9 @@ func NewDecFromIntWithPrec(i Int, prec int64) Dec {
 // are provided in the string than the constant Precision.
 //
 // CONTRACT - This function does not mutate the input str.
-func NewDecFromStr(str string) (d Dec, err Error) {
+func NewDecFromStr(str string) (d Dec, err error) {
 	if len(str) == 0 {
-		return d, ErrUnknownRequest("decimal string is empty")
+		return Dec{}, ErrEmptyDecimalStr
 	}
 
 	// first extract any negative symbol
@@ -137,7 +145,7 @@ func NewDecFromStr(str string) (d Dec, err Error) {
 	}
 
 	if len(str) == 0 {
-		return d, ErrUnknownRequest("decimal string is empty")
+		return Dec{}, ErrEmptyDecimalStr
 	}
 
 	strs := strings.Split(str, ".")
@@ -147,17 +155,16 @@ func NewDecFromStr(str string) (d Dec, err Error) {
 	if len(strs) == 2 { // has a decimal place
 		lenDecs = len(strs[1])
 		if lenDecs == 0 || len(combinedStr) == 0 {
-			return d, ErrUnknownRequest("bad decimal length")
+			return Dec{}, ErrInvalidDecimalLength
 		}
 		combinedStr = combinedStr + strs[1]
 
 	} else if len(strs) > 2 {
-		return d, ErrUnknownRequest("too many periods to be a decimal string")
+		return Dec{}, ErrInvalidDecimalStr
 	}
 
 	if lenDecs > Precision {
-		return d, ErrUnknownRequest(
-			fmt.Sprintf("too much precision, maximum %v, len decimal %v", Precision, lenDecs))
+		return Dec{}, fmt.Errorf("invalid precision; max: %d, got: %d", Precision, lenDecs)
 	}
 
 	// add some extra zero's to correct to the Precision factor
@@ -167,7 +174,7 @@ func NewDecFromStr(str string) (d Dec, err Error) {
 
 	combined, ok := new(big.Int).SetString(combinedStr, 10) // base 10
 	if !ok {
-		return d, ErrUnknownRequest(fmt.Sprintf("bad string to integer conversion, combinedStr: %v", combinedStr))
+		return Dec{}, fmt.Errorf("failed to set decimal string: %s", combinedStr)
 	}
 	if neg {
 		combined = new(big.Int).Neg(combined)

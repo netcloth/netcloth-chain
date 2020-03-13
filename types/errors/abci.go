@@ -16,7 +16,7 @@ const (
 	// All unclassified errors that do not provide an ABCI code are clubbed
 	// under an internal error code and a generic message instead of
 	// detailed error string.
-	internalABCICodespace        = UndefinedCodespace
+	internalABCICodespace        = "undefined"
 	internalABCICode      uint32 = 1
 	internalABCILog       string = "internal error"
 	// multiErrorABCICode uint32 = 1000
@@ -154,10 +154,9 @@ func errIsNil(err error) bool {
 	return false
 }
 
-// Redact replace all errors that do not initialize with a weave error with a
-// generic internal error instance. This function is supposed to hide
-// implementation details errors and leave only those that weave framework
-// originates.
+// Redact replaces an error that is not initialized as an ABCI Error with a
+// generic internal error instance. If the error is an ABCI Error, that error is
+// simply returned.
 func Redact(err error) error {
 	if ErrPanic.Is(err) {
 		return errors.New(internalABCILog)
