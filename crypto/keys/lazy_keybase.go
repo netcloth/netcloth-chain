@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tendermint/tendermint/crypto"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	tmos "github.com/tendermint/tendermint/libs/os"
 
 	"github.com/netcloth/netcloth-chain/crypto/keys/hd"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -19,7 +19,7 @@ type lazyKeybase struct {
 
 // New creates a new instance of a lazy keybase.
 func New(name, dir string) Keybase {
-	if err := cmn.EnsureDir(dir, 0700); err != nil {
+	if err := tmos.EnsureDir(dir, 0700); err != nil {
 		panic(fmt.Sprintf("failed to create Keybase directory: %s", err))
 	}
 

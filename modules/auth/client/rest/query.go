@@ -60,8 +60,10 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest,
-				sdk.AppendMsgToErr("could not parse query parameters", err.Error()))
+			rest.WriteErrorResponse(
+				w, http.StatusBadRequest,
+				fmt.Sprintf("failed to parse query parameters: %s", err),
+			)
 			return
 		}
 
@@ -96,7 +98,7 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		searchResult, err := utils.QueryTxsByEvents(cliCtx, events, page, limit)
+		searchResult, err := utils.QueryTxsByEvents(cliCtx, events, page, limit, "")
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return

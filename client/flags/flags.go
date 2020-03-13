@@ -54,6 +54,9 @@ const (
 	FlagRPCWriteTimeout    = "write-timeout"
 	FlagOutputDocument     = "output-document" // inspired by wget -O
 	FlagSkipConfirmation   = "yes"
+	FlagPage               = "page"
+	FlagLimit              = "limit"
+	FlagUnsafeCORS         = "unsafe-cors"
 )
 
 // LineBreak can be included in a command list to provide a blank line

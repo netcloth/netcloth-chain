@@ -3,6 +3,7 @@ package vm
 import (
 	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // memoryGasCost calculates the quadratic gas for memory expansion. It does so
@@ -78,7 +79,7 @@ var (
 func gasSStore(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
 	// If we fail the minimum gas availability invariant, fail (0)
 	if contract.Gas <= SstoreSentryGas {
-		return 0, sdk.ErrInternal("not enough gas for reentrancy sentry")
+		return 0, sdkerrors.Wrap(sdkerrors.ErrInternal, "not enough gas for reentrancy sentry")
 	}
 	// Gas sentry honoured, do the actual gas calculation based on the stored value
 	var (

@@ -5,6 +5,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -47,6 +49,7 @@ var _ types.Queryable = (*Store)(nil)
 func NewStore(db dbm.DB) *Store {
 	return &Store{
 		db:           db,
+		pruningOpts:  types.PruneNothing,
 		storesParams: make(map[types.StoreKey]storeParams),
 		stores:       make(map[types.StoreKey]types.CommitStore),
 		keysByName:   make(map[string]types.StoreKey),
@@ -392,7 +395,11 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading)
+		store, err := iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading)
+		if err != nil {
+			return nil, err
+		}
+		return store, err
 
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{db}}, nil
@@ -497,12 +504,14 @@ func (si storeInfo) Hash() []byte {
 
 func getLatestVersion(db dbm.DB) int64 {
 	var latest int64
-	latestBytes := db.Get([]byte(latestVersionKey))
-	if latestBytes == nil {
+	latestBytes, err := db.Get([]byte(latestVersionKey))
+	if err != nil {
+		panic(err)
+	} else if latestBytes == nil {
 		return 0
 	}
 
-	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &latest)
+	err = cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &latest)
 	if err != nil {
 		panic(err)
 	}
@@ -548,16 +557,18 @@ func getCommitInfo(db dbm.DB, ver int64) (commitInfo, error) {
 
 	// Get from DB.
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
-	cInfoBytes := db.Get([]byte(cInfoKey))
-	if cInfoBytes == nil {
-		return commitInfo{}, fmt.Errorf("failed to get Store: no data")
+	cInfoBytes, err := db.Get([]byte(cInfoKey))
+	if err != nil {
+		return commitInfo{}, errors.Wrap(err, "failed to get commit info")
+	} else if cInfoBytes == nil {
+		return commitInfo{}, errors.New("failed to get commit info: no data")
 	}
 
 	var cInfo commitInfo
 
-	err := cdc.UnmarshalBinaryLengthPrefixed(cInfoBytes, &cInfo)
+	err = cdc.UnmarshalBinaryLengthPrefixed(cInfoBytes, &cInfo)
 	if err != nil {
-		return commitInfo{}, fmt.Errorf("failed to get Store: %v", err)
+		return commitInfo{}, errors.Wrap(err, "failed to get store")
 	}
 
 	return cInfo, nil

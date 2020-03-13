@@ -16,15 +16,13 @@ const (
 	ModuleName = "gov"
 	RouterKey  = ModuleName
 
-	DefaultCodespace sdk.CodespaceType = "gov"
+	DefaultCodespace string = "gov"
 
 	ProposalTypeText            string = "Text"
 	ProposalTypeSoftwareUpgrade string = "SoftwareUpgrade"
 
 	MaxDescriptionLength int = 5000
 	MaxTitleLength       int = 140
-
-	CodeInvalidContent sdk.CodeType = 6
 )
 
 var (
@@ -133,11 +131,11 @@ func (sup SoftwareUpgradeProposal) String() string {
 `, sup.Title, sup.Description)
 }
 
-func ErrInvalidProposalContent(cs sdk.CodespaceType, msg string) error {
+func ErrInvalidProposalContent(msg string) error {
 	return fmt.Errorf("invalid proposal content: %s", msg)
 }
 
-func ValidateAbstract(codespace sdk.CodespaceType, c Content) error {
+func ValidateAbstract(c Content) error {
 	title := c.GetTitle()
 	if len(strings.TrimSpace(title)) == 0 {
 		return ErrInvalidProposalContent("proposal title cannot be blank")

@@ -13,7 +13,7 @@ func TestResult(t *testing.T) {
 	res.Data = []byte("data")
 	require.True(t, res.IsOK())
 
-	res.Code = CodeType(1)
+	res.Code = uint32(1)
 	require.False(t, res.IsOK())
 }
 

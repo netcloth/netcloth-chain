@@ -6,9 +6,9 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/staking/types"
-	"github.com/netcloth/netcloth-chain/client/context"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )
@@ -32,7 +32,7 @@ func queryTxs(cliCtx context.CLIContext, action string, delegatorAddr string) (*
 		fmt.Sprintf("%s.%s='%s'", sdk.EventTypeMessage, sdk.AttributeKeySender, delegatorAddr),
 	}
 
-	return utils.QueryTxsByEvents(cliCtx, events, page, limit)
+	return utils.QueryTxsByEvents(cliCtx, events, page, limit, "")
 }
 
 func queryBonds(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {

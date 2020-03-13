@@ -1,20 +1,16 @@
 package context
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
 	tmlite "github.com/tendermint/tendermint/lite"
-	tmliteProxy "github.com/tendermint/tendermint/lite/proxy"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 
 	"github.com/netcloth/netcloth-chain/client/flags"
@@ -24,20 +20,17 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-var (
-	verifier     tmlite.Verifier
-	verifierHome string
-)
-
 // CLIContext implements a typical CLI context created in SDK modules for
 // transaction handling and queries.
 type CLIContext struct {
 	Codec         *codec.Codec
 	Client        rpcclient.Client
+	ChainID       string
 	Keybase       cryptokeys.Keybase
 	Output        io.Writer
 	OutputFormat  string
 	Height        int64
+	HomeDir       string
 	NodeURI       string
 	From          string
 	TrustNode     bool
@@ -70,27 +63,26 @@ func NewCLIContextWithFrom(from string) CLIContext {
 	if !genOnly {
 		nodeURI = viper.GetString(flags.FlagNode)
 		if nodeURI != "" {
-			rpc = rpcclient.NewHTTP(nodeURI, "/websocket")
+			rpc, err = rpcclient.NewHTTP(nodeURI, "/websocket")
+			if err != nil {
+				fmt.Printf("failted to get client: %v\n", err)
+				os.Exit(1)
+			}
 		}
 	}
 
-	// We need to use a single verifier for all contexts
-	if verifier == nil || verifierHome != viper.GetString(flags.FlagHome) {
-		verifier = createVerifier()
-		verifierHome = viper.GetString(flags.FlagHome)
-	}
-
-	return CLIContext{
+	ctx := CLIContext{
 		Client:        rpc,
+		ChainID:       viper.GetString(flags.FlagChainID),
 		Output:        os.Stdout,
 		NodeURI:       nodeURI,
 		From:          viper.GetString(flags.FlagFrom),
 		OutputFormat:  viper.GetString(cli.OutputFlag),
 		Height:        viper.GetInt64(flags.FlagHeight),
+		HomeDir:       viper.GetString(flags.FlagHome),
 		TrustNode:     viper.GetBool(flags.FlagTrustNode),
 		UseLedger:     viper.GetBool(flags.FlagUseLedger),
 		BroadcastMode: viper.GetString(flags.FlagBroadcastMode),
-		Verifier:      verifier,
 		Simulate:      viper.GetBool(flags.FlagDryRun),
 		GenerateOnly:  genOnly,
 		FromAddress:   fromAddress,
@@ -98,57 +90,20 @@ func NewCLIContextWithFrom(from string) CLIContext {
 		Indent:        viper.GetBool(flags.FlagIndentResponse),
 		SkipConfirm:   viper.GetBool(flags.FlagSkipConfirmation),
 	}
+
+	// create a verifier for the specific chain ID and RPC client
+	verifier, err := CreateVerifier(ctx, DefaultVerifierCacheSize)
+	if err != nil && viper.IsSet(flags.FlagTrustNode) {
+		fmt.Printf("failed to create verifier: %s\n", err)
+		os.Exit(1)
+	}
+
+	return ctx.WithVerifier(verifier)
 }
 
 // NewCLIContext returns a new initialized CLIContext with parameters from the
 // command line using Viper.
 func NewCLIContext() CLIContext { return NewCLIContextWithFrom(viper.GetString(flags.FlagFrom)) }
-
-func createVerifier() tmlite.Verifier {
-	trustNodeDefined := viper.IsSet(flags.FlagTrustNode)
-	if !trustNodeDefined {
-		return nil
-	}
-
-	trustNode := viper.GetBool(flags.FlagTrustNode)
-	if trustNode {
-		return nil
-	}
-
-	chainID := viper.GetString(flags.FlagChainID)
-	home := viper.GetString(flags.FlagHome)
-	nodeURI := viper.GetString(flags.FlagNode)
-
-	var errMsg bytes.Buffer
-	if chainID == "" {
-		errMsg.WriteString("--chain-id ")
-	}
-	if home == "" {
-		errMsg.WriteString("--home ")
-	}
-	if nodeURI == "" {
-		errMsg.WriteString("--node ")
-	}
-	if errMsg.Len() != 0 {
-		fmt.Printf("Must specify these options: %s when --trust-node is false\n", errMsg.String())
-		os.Exit(1)
-	}
-
-	node := rpcclient.NewHTTP(nodeURI, "/websocket")
-	cacheSize := 10 // TODO: determine appropriate cache size
-	verifier, err := tmliteProxy.NewVerifier(
-		chainID, filepath.Join(home, ".lite_verifier"),
-		node, log.NewNopLogger(), cacheSize,
-	)
-
-	if err != nil {
-		fmt.Printf("Create verifier failed: %s\n", err.Error())
-		fmt.Printf("Please check network connection and verify the address of the node to connect to\n")
-		os.Exit(1)
-	}
-
-	return verifier
-}
 
 // WithCodec returns a copy of the context with an updated codec.
 func (ctx CLIContext) WithCodec(cdc *codec.Codec) CLIContext {
@@ -177,7 +132,12 @@ func (ctx CLIContext) WithTrustNode(trustNode bool) CLIContext {
 // WithNodeURI returns a copy of the context with an updated node URI.
 func (ctx CLIContext) WithNodeURI(nodeURI string) CLIContext {
 	ctx.NodeURI = nodeURI
-	ctx.Client = rpcclient.NewHTTP(nodeURI, "/websocket")
+	client, err := rpcclient.NewHTTP(nodeURI, "/websocket")
+	if err != nil {
+		panic(err)
+	}
+
+	ctx.Client = client
 	return ctx
 }
 
@@ -203,6 +163,12 @@ func (ctx CLIContext) WithUseLedger(useLedger bool) CLIContext {
 // WithVerifier - return a copy of the context with an updated Verifier
 func (ctx CLIContext) WithVerifier(verifier tmlite.Verifier) CLIContext {
 	ctx.Verifier = verifier
+	return ctx
+}
+
+// WithChainID returns a copy of the context with an updated chain ID.
+func (ctx CLIContext) WithChainID(chainID string) CLIContext {
+	ctx.ChainID = chainID
 	return ctx
 }
 

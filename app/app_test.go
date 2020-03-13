@@ -16,12 +16,13 @@ import (
 func TestExport(t *testing.T) {
 	db := db.NewMemDB()
 	app := NewNCHApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
-	setGenesis(app)
+	err := setGenesis(app)
+	require.NoError(t, err)
 
 	// Making a new app object with the db, so that initchain hasn't been called
 	newApp := NewNCHApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
-	_, _, err := newApp.ExportAppStateAndValidators(false, []string{})
-	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
+	_, _, er := newApp.ExportAppStateAndValidators(false, []string{})
+	require.NoError(t, er, "ExportAppStateAndValidators should not have an error")
 }
 
 func setGenesis(app *NCHApp) error {

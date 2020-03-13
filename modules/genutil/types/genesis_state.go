@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/tendermint/tendermint/libs/common"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	"github.com/netcloth/netcloth-chain/codec"
 	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
 	stakingtypes "github.com/netcloth/netcloth-chain/modules/staking/types"
-	"github.com/netcloth/netcloth-chain/codec"
 )
 
 // GenesisState defines the raw genesis transaction in JSON
@@ -73,7 +73,7 @@ func GenesisStateFromGenDoc(cdc *codec.Codec, genDoc tmtypes.GenesisDoc,
 func GenesisStateFromGenFile(cdc *codec.Codec, genFile string,
 ) (genesisState map[string]json.RawMessage, genDoc *tmtypes.GenesisDoc, err error) {
 
-	if !common.FileExists(genFile) {
+	if !tmos.FileExists(genFile) {
 		return genesisState, genDoc,
 			fmt.Errorf("%s does not exist, run `init` first", genFile)
 	}

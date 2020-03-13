@@ -4,16 +4,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/netcloth/netcloth-chain/modules/auth/ante"
-
 	abci "github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	"github.com/netcloth/netcloth-chain/modules/crisis"
@@ -121,7 +120,9 @@ type NCHApp struct {
 }
 
 // NewNCHApp is a constructor function for NCHApp
-func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *NCHApp {
+func NewNCHApp(
+	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *NCHApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := CreateCodec()
@@ -289,7 +290,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	if loadLatest {
 		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 		if err != nil {
-			cmn.Exit(err.Error())
+			tmos.Exit(err.Error())
 		}
 	}
 

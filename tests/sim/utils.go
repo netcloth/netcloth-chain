@@ -110,7 +110,6 @@ func executeWriteRetStreams(t *testing.T, cmdStr string, writes ...string) (bool
 
 	if len(stdout) > 0 {
 		t.Log("Stdout:", string(stdout))
-		//t.Log("Stdout:", cmn.Green(string(stdout)))
 	}
 
 	if len(stderr) > 0 {
