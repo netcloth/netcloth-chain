@@ -18,36 +18,42 @@ const (
 	Storage
 )
 
-func EndpointsFromString(s string) (r Endpoints, e error) {
-	ss := strings.Split(s, ",")
-	for _, v := range ss {
-		v = strings.ReplaceAll(v, " ", "")
-		if len(v) > 0 {
-			es := strings.Split(v, "|")
-			if len(es) != 2 {
-				return nil, ErrEndpointsFormat
+func EndpointsFromString(endpointsStr, endpointDelimiter, endpointTypeDelimiter string) (endpoints Endpoints, e error) {
+	endpointsFormatErr := ErrEndpointsFormat(endpointDelimiter, endpointTypeDelimiter)
+
+	endpointStrings := strings.Split(endpointsStr, endpointDelimiter)
+	for _, endpointString := range endpointStrings {
+		endpointString = strings.Trim(endpointString, " \t")
+
+		if len(endpointString) > 0 {
+			typeAndEndpoint := strings.Split(endpointString, endpointTypeDelimiter)
+			if len(typeAndEndpoint) != 2 {
+				return nil, endpointsFormatErr
 			}
 
-			if len(es[0]) == 0 || len(es[1]) == 0 {
-				return nil, ErrEndpointsFormat
+			typeAndEndpoint[0] = strings.Trim(typeAndEndpoint[0], " \t")
+			typeAndEndpoint[1] = strings.Trim(typeAndEndpoint[1], " \t")
+
+			if len(typeAndEndpoint[0]) == 0 || len(typeAndEndpoint[1]) == 0 {
+				return nil, endpointsFormatErr
 			}
 
-			Type, err := strconv.Atoi(es[0])
+			endpointType, err := strconv.Atoi(typeAndEndpoint[0])
 			if err != nil {
-				return nil, ErrEndpointsFormat
+				return nil, endpointsFormatErr
 			}
 
-			r = append(r, NewEndpoint(uint64(Type), es[1]))
+			endpoints = append(endpoints, NewEndpoint(uint64(endpointType), typeAndEndpoint[1]))
 		} else {
-			return nil, ErrEndpointsFormat
+			return nil, endpointsFormatErr
 		}
 	}
 
-	if err := EndpointsDupCheck(r); err != nil {
+	if err := EndpointsDupCheck(endpoints); err != nil {
 		return nil, err
 	}
 
-	return r, nil
+	return endpoints, nil
 }
 
 type ServiceNode struct {
