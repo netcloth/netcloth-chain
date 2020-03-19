@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -33,18 +34,25 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			moniker := viper.GetString(flagMoniker)
-			website := viper.GetString(flagWebsite)
-			endpointsStr := viper.GetString(flagEndPoints)
-			details := viper.GetString(flagDetails)
-			stakeAmount := viper.GetString(flagBond)
-
-			coin, err := sdk.ParseCoin(stakeAmount)
+			endpointDelimiter := viper.GetString(flagEndpointDelimiter)
+			endpointTypeDelimiter := viper.GetString(flagEndpointTypeDelimiter)
+			endpointsStr := viper.GetString(flagEndpoints)
+			endpoints, err := types.EndpointsFromString(endpointsStr, endpointDelimiter, endpointTypeDelimiter)
 			if err != nil {
 				return err
 			}
 
-			endpoints, err := types.EndpointsFromString(endpointsStr)
+			for _, ep := range endpoints {
+				fmt.Println("---", ep)
+			}
+
+			moniker := viper.GetString(flagMoniker)
+			endpointDelimiter = viper.GetString(flagEndpointDelimiter)
+			website := viper.GetString(flagWebsite)
+			details := viper.GetString(flagDetails)
+			stakeAmount := viper.GetString(flagBond)
+
+			coin, err := sdk.ParseCoin(stakeAmount)
 			if err != nil {
 				return err
 			}
@@ -60,12 +68,14 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().String(flagMoniker, "", "server node moniker")
 	cmd.Flags().String(flagWebsite, "", "server node website")
-	cmd.Flags().String(flagEndPoints, "", "server node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
+	cmd.Flags().String(flagEndpoints, "", "server node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
+	cmd.Flags().String(flagEndpointDelimiter, ",", "endpoints delimiter, e.g. '#' as delimiter: 1|192.168.1.100:10000#2|192.168.1.101:20000")
+	cmd.Flags().String(flagEndpointTypeDelimiter, "|", "endpoint delimiter, e.g. '-' as delimiter: 1-192.168.1.100:10000,2-192.168.1.101:20000")
 	cmd.Flags().String(flagDetails, "", "server node details")
 	cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000pnch)")
 
 	cmd.MarkFlagRequired(flagMoniker)
-	cmd.MarkFlagRequired(flagEndPoints)
+	cmd.MarkFlagRequired(flagEndpoints)
 	cmd.MarkFlagRequired(flagBond)
 
 	cmd = client.PostCommands(cmd)[0]

@@ -2,9 +2,8 @@ package types
 
 import (
 	"fmt"
-	"math/big"
-
 	"github.com/tendermint/tendermint/crypto"
+	"math/big"
 
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
@@ -64,7 +63,7 @@ type (
 		//
 		// When an object is marked suicided it will be delete from the trie during
 		// the "update" phase of the state transition.
-		dirtyCode bool // true if the code was updated
+		dirtyCode bool
 		suicided  bool
 		deleted   bool
 	}
@@ -207,34 +206,90 @@ func (so *stateObject) markSuicided() {
 }
 
 // commitState commits all dirty storage to a KVStore.
+
+type DebugAccKV struct {
+	AccAddr sdk.AccAddress `json:"acc_addr"`
+	K       sdk.Hash       `json:"k"`
+	V       sdk.Hash       `json:"v"`
+}
+
+func (dkv *DebugAccKV) String() string {
+	return fmt.Sprintf(`{"K": "%s_%s", "V": "%s"}`, dkv.AccAddr.String(), dkv.K.String(), dkv.V.String())
+}
+
+func (dkv *DebugAccKV) MarshalJSON() ([]byte, error) {
+	return ([]byte)(dkv.String()), nil
+}
+
+var DEBUG_KEY_PREFIX = ([]byte)("DEBUG:")
+
+func (dkv *DebugAccKV) Reset(accAddr sdk.AccAddress, k, v sdk.Hash) *DebugAccKV {
+	dkv.AccAddr = accAddr
+	dkv.K = k
+	dkv.V = v
+
+	return dkv
+}
+
+func (dkv *DebugAccKV) DebugAccKVFromKV(k, v []byte) {
+	addrByte := k[len(DEBUG_KEY_PREFIX) : len(DEBUG_KEY_PREFIX)+20]
+	dkv.AccAddr = addrByte
+	dkv.K = sdk.BytesToHash(k[len(DEBUG_KEY_PREFIX)+20:])
+	dkv.V = sdk.BytesToHash(v)
+}
+
+func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
+	k = append(k, DEBUG_KEY_PREFIX...)
+	k = append(k, dkv.AccAddr...)
+	k = append(k, dkv.K.Bytes()...)
+	v = dkv.V
+	return
+}
+
 func (so *stateObject) commitState() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
+	store := ctx.KVStoreFree(so.stateDB.storageKey)
 
+	debugStore := (sdk.KVStore)(nil)
+	if so.stateDB.debug {
+		debugStore = ctx.KVStoreFree(so.stateDB.storageDebugKey)
+	}
+
+	var kv DebugAccKV
 	for key, value := range so.dirtyStorage {
 		delete(so.dirtyStorage, key)
 
-		// skip no-op changes, persist actual changes
 		if value == so.originStorage[key] {
 			continue
 		}
 
 		so.originStorage[key] = value
 
-		// delete empty values
 		if (value == sdk.Hash{}) {
 			store.Delete(key.Bytes())
+
+			if debugStore != nil {
+				k, _ := kv.Reset(so.address, key, value).DebugAccKVToKV()
+				debugStore.Delete(k)
+			}
+
 			continue
 		}
 
 		store.Set(key.Bytes(), value.Bytes())
+
+		if debugStore != nil {
+			k, v := kv.Reset(so.address, key, value).DebugAccKVToKV()
+			debugStore.Set(k, v.Bytes())
+		}
 	}
+
 }
 
 // commitCode persists the state object's code to the KVStore.
 func (so *stateObject) commitCode() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
+	store := ctx.KVStoreFree(so.stateDB.codeKey)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -273,7 +328,7 @@ func (so *stateObject) Code() []byte {
 	}
 
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
+	store := ctx.KVStoreFree(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
@@ -312,7 +367,7 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 
 	// otherwise load the value from the KVStore
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
+	store := ctx.KVStoreFree(so.stateDB.storageKey)
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {
@@ -374,3 +429,16 @@ func (so stateObject) GetStorageByAddressKey(key []byte) sdk.Hash {
 
 	return sdk.BytesToHash(crypto.Sha256(compositeKey))
 }
+
+type SO struct {
+	Address       sdk.AccAddress    `json:"address" yaml:"address"`
+	BaseAccount   types.BaseAccount `json:"base_account" yaml:"base_account"`
+	OriginStorage sdk.Storage       `json:"origin_storage" yaml:"origin_storage"`
+	DirtyStorage  sdk.Storage       `json:"dirty_storage" yaml:"dirty_storage"`
+	DirtyCode     bool              `json:"dirty_code" yaml:"dirty_code"`
+	Suicided      bool              `json:"suicided" yaml:"suicided"`
+	Deleted       bool              `json:"deleted" yaml:"deleted"`
+	Code          sdk.Code          `json:"code" yaml:"code"`
+}
+
+type SOs []SO

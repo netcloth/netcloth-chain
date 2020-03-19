@@ -2,14 +2,13 @@ package vm
 
 import (
 	"encoding/hex"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-
+	"encoding/json"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
@@ -21,6 +20,8 @@ func NewQuerier(k keeper.Keeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
+		case types.QueryState:
+			return queryState(ctx, req, k)
 		case types.QueryCode:
 			return queryCode(ctx, path, k)
 		case types.QueryStorage:
@@ -43,6 +44,18 @@ func queryParameters(ctx sdk.Context, k keeper.Keeper) ([]byte, error) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return res, nil
+}
+
+func queryState(ctx sdk.Context, req abci.RequestQuery, k keeper.Keeper) (res []byte, err error) {
+	var params types.QueryStateParams
+	err = codec.Cdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, err
+	}
+
+	stateObjects := k.StateDB.WithContext(ctx).ExportStateObjects(params)
+	res, err = json.Marshal(stateObjects)
+	return
 }
 
 func queryCode(ctx sdk.Context, path []string, k keeper.Keeper) ([]byte, error) {

@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
+	mempl "github.com/tendermint/tendermint/mempool"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	cpm "github.com/otiai10/copy"
@@ -19,20 +22,55 @@ import (
 	"github.com/netcloth/netcloth-chain/app"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
+
+	cfg "github.com/tendermint/tendermint/config"
 )
 
 func replayCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "replay <root-dir>",
+	cmd := &cobra.Command{
+		Use:   "replay <root-dir> --from --to",
 		Short: "Replay nchd transactions",
+
 		RunE: func(_ *cobra.Command, args []string) error {
-			return replayTxs(args[0])
+
+			from := 1
+			fromStr := viper.GetString("from")
+			if len(fromStr) > 0 {
+				newFrom, err := strconv.Atoi(fromStr)
+				if err != nil {
+					return err
+				}
+
+				if newFrom > from {
+					from = newFrom
+				}
+			}
+
+			to := -1
+			toStr := viper.GetString("to")
+			if len(toStr) > 0 {
+				newTo, err := strconv.Atoi(toStr)
+				if err != nil {
+					return err
+				}
+
+				if newTo > from {
+					to = newTo
+				}
+			}
+
+			return replayTxs(args[0], from, to)
 		},
 		Args: cobra.ExactArgs(1),
 	}
+
+	cmd.Flags().String("from", "", "from block")
+	cmd.Flags().String("to", "", "from block")
+
+	return cmd
 }
 
-func replayTxs(rootDir string) error {
+func replayTxs(rootDir string, from, to int) error {
 
 	if false {
 		// Copy the rootDir to a new directory, to preserve the old one.
@@ -50,6 +88,24 @@ func replayTxs(rootDir string) error {
 	configDir := filepath.Join(rootDir, "config")
 	dataDir := filepath.Join(rootDir, "data")
 	ctx := server.NewDefaultContext()
+
+	loadLatest := true
+	if from == 1 {
+		loadLatest = false
+		statedbDir := filepath.Join(dataDir, "state.db")
+		fmt.Fprint(os.Stderr, statedbDir)
+		appdbDir := filepath.Join(dataDir, "application.db")
+		fmt.Fprint(os.Stderr, appdbDir)
+		err := os.RemoveAll(statedbDir)
+		if err != nil {
+			return err
+		}
+
+		err = os.RemoveAll(appdbDir)
+		if err != nil {
+			return err
+		}
+	}
 
 	// App DB
 	// appDB := dbm.NewMemDB()
@@ -76,7 +132,7 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewNCHApp(ctx.Logger, appDB, nil,true, uint(1))
+	myapp := app.NewNCHAppForReplay(ctx.Logger, appDB, nil, loadLatest, true, uint(1))
 
 	// Genesis
 	var genDocPath = filepath.Join(configDir, "genesis.json")
@@ -113,7 +169,9 @@ func replayTxs(rootDir string) error {
 			Validators:      validators,
 			AppStateBytes:   genDoc.AppState,
 		}
+		fmt.Fprintln(os.Stderr, "1")
 		res, err := proxyApp.Consensus().InitChainSync(req)
+		fmt.Fprintln(os.Stderr, "2")
 		if err != nil {
 			return err
 		}
@@ -121,24 +179,29 @@ func replayTxs(rootDir string) error {
 		if err != nil {
 			return err
 		}
+		fmt.Fprintln(os.Stderr, "3")
 		newValidators := tm.NewValidatorSet(newValidatorz)
 
 		// Take the genesis state.
 		state = genState
 		state.Validators = newValidators
 		state.NextValidators = newValidators
+
+		tmsm.SaveState(tmDB, state)
 	}
 
 	// Create executor
 	fmt.Fprintln(os.Stderr, "Creating block executor")
-	blockExec := tmsm.NewBlockExecutor(tmDB, ctx.Logger, proxyApp.Consensus(), nil, tmsm.MockEvidencePool{})
+
+	mempoolInstance := mempl.NewCListMempool(cfg.DefaultMempoolConfig(), proxyApp.Mempool(), 1)
+	blockExec := tmsm.NewBlockExecutor(tmDB, ctx.Logger, proxyApp.Consensus(), mempoolInstance, tmsm.MockEvidencePool{})
 
 	// Create block store
 	fmt.Fprintln(os.Stderr, "Creating block store")
 	blockStore := tmstore.NewBlockStore(bcDB)
 
 	tz := []time.Duration{0, 0, 0}
-	for i := int(state.LastBlockHeight) + 1; ; i++ {
+	for i := int(state.LastBlockHeight) + 1; to == -1 || i <= to; i++ {
 		fmt.Fprintln(os.Stderr, "Running block ", i)
 		t1 := time.Now()
 
@@ -168,4 +231,6 @@ func replayTxs(rootDir string) error {
 		fmt.Fprintf(os.Stderr, "new app hash: %X\n", state.AppHash)
 		fmt.Fprintln(os.Stderr, tz)
 	}
+
+	return nil
 }

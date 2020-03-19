@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
@@ -9,10 +10,13 @@ var (
 	ErrBadDenom           = sdkerrors.Register(ModuleName, 2, "bad denom")
 	ErrBondInsufficient   = sdkerrors.Register(ModuleName, 3, "bond insufficient")
 	ErrMonikerExist       = sdkerrors.Register(ModuleName, 4, "moniker exists")
-	ErrEndpointsFormat    = sdkerrors.Register(ModuleName, 5, "endpoints format err, should be in format: serviceType|endpoint,serviceType|endpoint, serviceType is a number, endpoint is a string")
 	ErrEndpointsEmpty     = sdkerrors.Register(ModuleName, 6, "no endpoints")
 	ErrEndpointsDuplicate = sdkerrors.Register(ModuleName, 7, "endpoints duplicate")
 )
+
+func ErrEndpointsFormat(flagEndpointsDecollator, flagEndpointDecollator string) *sdkerrors.Error {
+	return sdkerrors.Register(ModuleName, 5, fmt.Sprintf("endpoints format err, should be in format: serviceType%sendpoint%sserviceType%sendpoint, serviceType is a number, endpoint is a string", flagEndpointDecollator, flagEndpointsDecollator, flagEndpointDecollator))
+}
 
 type EndpointDuplicateErrDetector struct {
 	V map[int]int

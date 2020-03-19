@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -29,6 +31,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 	vmQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryParams(cdc),
+		GetCmdQueryDBState(cdc),
 		GetCmdQueryCode(cdc),
 		GetCmdGetStorage(cdc),
 		GetCmdGetLogs(cdc),
@@ -62,6 +65,59 @@ $ %s query vm params`, version.ClientName)),
 			return cliCtx.PrintOutput(params)
 		},
 	}
+}
+
+func GetCmdQueryDBState(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "state [--all] [--show_code]",
+		Short: "Query the current vm whole state",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query values set as vm state.
+Example:
+$ %s query vm state [--all] [--show_code]`, version.ClientName)),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			var params types.QueryStateParams
+
+			t := cmd.Flag(flagAll)
+			if t != nil {
+				params.ContractOnly = !t.Changed
+			}
+
+			t = cmd.Flag(flagShowCode)
+			if t != nil {
+				params.ShowCode = t.Changed
+			}
+
+			pd, err := json.Marshal(params)
+
+			fmt.Println(string(pd))
+			if err != nil {
+				return err
+			}
+
+			route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryState)
+			bz, _, err := cliCtx.QueryWithData(route, pd)
+			if err != nil {
+				return err
+			}
+
+			var out bytes.Buffer
+			err = json.Indent(&out, bz, "", "  ")
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(out.String())
+
+			return nil
+		},
+	}
+
+	cmd.Flags().Bool(flagAll, false, "Show all account object, including non contract account object")
+	cmd.Flags().Bool(flagShowCode, false, "Show contract code")
+
+	return cmd
 }
 
 func GetCmdQueryCode(cdc *codec.Codec) *cobra.Command {
@@ -294,7 +350,7 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 			var payload []byte
 			if exist {
 				if len(m.Inputs) != len(argsBin)/32 {
-					return errors.New(fmt.Sprint("args count dismatch"))
+					//return errors.New(fmt.Sprint("args count dismatch"))
 				}
 
 				readyArgs, err := m.Inputs.UnpackValues(argsBin)

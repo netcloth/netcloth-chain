@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"math/big"
+	"os"
 	"sort"
 	"sync"
 
@@ -30,9 +31,10 @@ type CommitStateDB struct {
 	// StateDB interface. Perhaps there is a better way.
 	ctx sdk.Context
 
-	ak         auth.AccountKeeper
-	storageKey sdk.StoreKey
-	codeKey    sdk.StoreKey
+	ak              auth.AccountKeeper
+	storageKey      sdk.StoreKey
+	codeKey         sdk.StoreKey
+	storageDebugKey sdk.StoreKey
 
 	// maps that hold 'live' objects, which will get modified while processing a
 	// state transition
@@ -66,6 +68,8 @@ type CommitStateDB struct {
 
 	// mutex for state deep copying
 	lock sync.Mutex
+
+	debug bool
 }
 
 // NewCommitStateDB returns a reference to a newly initialized CommitStateDB
@@ -74,16 +78,18 @@ type CommitStateDB struct {
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
 //func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
 		storageKey:        storageKey,
 		codeKey:           codeKey,
+		storageDebugKey:   storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
+		debug:             true,
 	}
 }
 
@@ -92,11 +98,13 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 		ak:                db.ak,
 		storageKey:        db.storageKey,
 		codeKey:           db.codeKey,
+		storageDebugKey:   db.storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
+		debug:             true,
 	}
 }
 
@@ -547,7 +555,7 @@ func (csdb *CommitStateDB) UpdateAccounts() {
 		if err != nil {
 			continue
 		}
-		accI := csdb.ak.GetAccount(csdb.ctx, addr)
+		accI := csdb.ak.GetAccount(csdb.ctx, addr) // as len(stateObjects) increasing, the UpdateAccounts() can consume more and more gas for read store. [gs.gasMeter.ConsumeGas(gs.gasConfig.ReadCostFlat, types.GasReadCostFlatDesc)]
 		acc, ok := accI.(*types.BaseAccount)
 		if ok {
 			if (so.Balance() != acc.GetCoins().AmountOf(sdk.NativeTokenName).BigInt()) || (so.Nonce() != acc.GetSequence()) {
@@ -667,7 +675,7 @@ func (csdb *CommitStateDB) ForEachStorage(addr sdk.AccAddress, cb func(key, valu
 		return nil
 	}
 
-	store := csdb.ctx.KVStore(csdb.storageKey)
+	store := csdb.ctx.KVStoreFree(csdb.storageKey)
 	iter := sdk.KVStorePrefixIterator(store, so.Address().Bytes())
 
 	for ; iter.Valid(); iter.Next() {
@@ -751,4 +759,52 @@ func (csdb *CommitStateDB) getStateObject(addr sdk.AccAddress) (stateObject *sta
 
 func (csdb *CommitStateDB) setStateObject(so *stateObject) {
 	csdb.stateObjects[so.Address().String()] = so
+}
+
+func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs) {
+	var so SO
+
+	for _, stateObject := range csdb.stateObjects {
+		if params.ContractOnly == true {
+			if len(stateObject.CodeHash()) == 0 {
+				continue
+			}
+		}
+
+		so.Address = stateObject.address
+		so.BaseAccount = *stateObject.account
+		so.OriginStorage = stateObject.originStorage.Copy()
+		so.DirtyStorage = stateObject.dirtyStorage.Copy()
+		so.DirtyCode = stateObject.dirtyCode
+		so.Suicided = stateObject.suicided
+		so.Deleted = stateObject.deleted
+		if params.ShowCode == false {
+			so.Code = nil
+		} else {
+			so.Code = append(so.Code[:], stateObject.code...)
+		}
+
+		sos = append(sos, so)
+	}
+
+	return sos
+}
+
+func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
+	debug := true // TODO config in stateDB
+
+	if debug {
+		store := csdb.ctx.KVStoreFree(csdb.storageDebugKey)
+		iter := store.Iterator(nil, nil)
+		defer iter.Close()
+
+		var kv DebugAccKV
+		for ; iter.Valid(); iter.Next() {
+			kv.DebugAccKVFromKV(iter.Key(), iter.Value())
+			fmt.Fprintln(os.Stderr, kv.String())
+			kvs = append(kvs, kv)
+		}
+	}
+
+	return
 }
