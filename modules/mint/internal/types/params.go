@@ -1,9 +1,12 @@
 package types
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
 	nchtypes "github.com/netcloth/netcloth-chain/types"
@@ -46,6 +49,13 @@ func NewParams(mintDenom string, inflationRateChange, inflationMax,
 		GoalBonded:          goalBonded,
 		BlocksPerYear:       blocksPerYear,
 	}
+}
+
+// Equal returns a boolean determining if two Params types are identical.
+func (p Params) Equal(p2 Params) bool {
+	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
 }
 
 // default minting module parameters
@@ -95,17 +105,8 @@ func (p Params) Validate() error {
 }
 
 func (p Params) String() string {
-	return fmt.Sprintf(`Minting Params:
-  Mint Denom:             %s
-  Inflation Rate Change:  %s
-  Inflation Max:          %s
-  Inflation Min:          %s
-  Goal Bonded:            %s
-  Blocks Per Year:        %d
-`,
-		p.MintDenom, p.InflationRateChange, p.InflationMax,
-		p.InflationMin, p.GoalBonded, p.BlocksPerYear,
-	)
+	out, _ := yaml.Marshal(p)
+	return string(out)
 }
 
 // Implements params.ParamSet

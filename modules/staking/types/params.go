@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/params"
 	nchtypes "github.com/netcloth/netcloth-chain/types"
@@ -119,23 +121,8 @@ func DefaultParams() Params {
 
 // String returns a human readable string representation of the parameters.
 func (p Params) String() string {
-	return fmt.Sprintf(`Params:
-  Unbonding Time                 : %s
-  Max Validators                 : %d
-  Max Validators Extending       : %d
-  Max Validators Extending Speed : %d
-  Next Extending Time            : %d
-  Max Entries                    : %d
-  Bonded Coin Denom              : %s
-  Max Lever                      : %s`,
-		p.UnbondingTime,
-		p.MaxValidators,
-		p.MaxValidatorsExtending,
-		p.MaxValidatorsExtendingSpeed,
-		p.NextExtendingTime,
-		p.MaxEntries,
-		p.BondDenom,
-		p.MaxLever)
+	out, _ := yaml.Marshal(p)
+	return string(out)
 }
 
 // unmarshal the current staking params value from store key or panic
