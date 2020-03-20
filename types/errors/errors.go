@@ -82,6 +82,10 @@ var (
 	// ErrTxTooLarge defines an ABCI typed error where tx is too large.
 	ErrTxTooLarge = Register(RootCodespace, 21, "tx too large")
 
+	ErrGasLimitError = Register(RootCodespace, 22, "gas limit should be positive")
+
+	ErrGasPriceUnderThreshold = Register(RootCodespace, 23, "gas price should be more than threshold")
+
 	// ErrPanic is only set when we recover from a panic, so we know to
 	// redact potentially sensitive system info
 	ErrPanic = Register(UndefinedCodespace, 111222, "panic")

@@ -21,6 +21,42 @@ type FeeTx interface {
 	FeePayer() sdk.AccAddress
 }
 
+type FeePreprocessDecorator struct {
+	ak auth.AccountKeeper
+}
+
+func NewFeePreprocessDecorator(ak auth.AccountKeeper) FeePreprocessDecorator {
+	return FeePreprocessDecorator{
+		ak: ak,
+	}
+}
+
+func (fpd FeePreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	feeTx, ok := tx.(FeeTx)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+	}
+
+	if ctx.BlockHeight() != 0 {
+		gasLimit := feeTx.GetGas()
+		feeCoins := feeTx.GetFee()
+
+		if gasLimit == 0 || int64(gasLimit) < 0 {
+			return ctx, sdkerrors.Wrapf(sdkerrors.ErrGasLimitError, "%d", int64(gasLimit))
+		}
+
+		feeParams := fpd.ak.GetParams(ctx)
+		gasPriceThreshold := sdk.NewInt(int64(feeParams.GasPriceThreshold))
+		gasPrice := feeCoins.AmountOf(sdk.NativeTokenName).Quo(sdk.NewInt(int64(gasLimit)))
+
+		if gasPrice.LT(gasPriceThreshold) {
+			return ctx, sdkerrors.Wrapf(sdkerrors.ErrGasPriceUnderThreshold, "current gasPrice: %s, gasPriceThreshold: %s", gasPrice.String(), gasPriceThreshold.String())
+		}
+	}
+
+	return next(ctx, tx, simulate)
+}
+
 // MempoolFeeDecorator will check if the transaction's fee is at least as large
 // as the local validator's minimum gasFee (defined in validator config).
 // If fee is too low, decorator returns error and tx is rejected from mempool.
