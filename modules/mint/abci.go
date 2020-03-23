@@ -20,19 +20,19 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 		ctx.Logger().Info(fmt.Sprintf("current token supply: %s, stop inflating", supply.String()))
 
 		params.BlockProvision = sdk.NewDec(0)
-		params.NextInflateHeight = 0
+		params.NextInflationCutBackHeight = 0
 		k.SetParams(ctx, params)
 		return
 	}
 
 	if blockHeight <= 1 {
 		// update next inflate height at chain startup
-		params.NextInflateHeight = params.NextInflateHeight + params.BlocksPerYear
+		params.NextInflationCutBackHeight = params.NextInflationCutBackHeight + params.BlocksPerYear
 		k.SetParams(ctx, params)
-	} else if blockHeight == params.NextInflateHeight {
+	} else if blockHeight == params.NextInflationCutBackHeight {
 		// adjust block provision and next inflate height
-		params.BlockProvision = params.InflationRate.Mul(params.BlockProvision)
-		params.NextInflateHeight = params.NextInflateHeight + params.BlocksPerYear
+		params.BlockProvision = params.InflationCutBackRate.Mul(params.BlockProvision)
+		params.NextInflationCutBackHeight = params.NextInflationCutBackHeight + params.BlocksPerYear
 		k.SetParams(ctx, params)
 	}
 
@@ -55,7 +55,7 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeMint,
-			sdk.NewAttribute(types.AttributeKeyInflation, params.InflationRate.String()),
+			sdk.NewAttribute(types.AttributeKeyInflation, params.InflationCutBackRate.String()),
 			sdk.NewAttribute(types.AttributeKeyBlockProvision, params.BlockProvision.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
 		),

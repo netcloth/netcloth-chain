@@ -41,8 +41,11 @@ func queryParams(ctx sdk.Context, k Keeper) ([]byte, error) {
 
 func queryInflation(ctx sdk.Context, k Keeper) ([]byte, error) {
 	params := k.GetParams(ctx)
+	supply := k.StakingTokenSupply(ctx)
+	blockProvisionPerYear := params.BlockProvision.Mul(sdk.NewDecFromInt(sdk.NewInt(params.BlocksPerYear)))
+	inflation := blockProvisionPerYear.Quo(sdk.NewDecFromInt(supply))
 
-	res, err := codec.MarshalJSONIndent(k.cdc, params.InflationRate)
+	res, err := codec.MarshalJSONIndent(k.cdc, inflation)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

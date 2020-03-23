@@ -34,8 +34,8 @@ var (
 	// variable aliases
 	ModuleCdc             = types.ModuleCdc
 	KeyMintDenom          = types.KeyMintDenom
-	KeyInflationRate      = types.KeyInflationRate
-	KeyNextInflateHeight  = types.KeyNextInflateHeight
+	KeyInflationRate      = types.KeyInflationCutBackRate
+	KeyNextInflateHeight  = types.KeyNextInflationCutBackHeight
 	KeyBlockProvision     = types.KeyBlockProvision
 	KeyBlocksPerYear      = types.KeyBlocksPerYear
 	KeyTotalSupplyCeiling = types.KeyTotalSupplyCeiling
