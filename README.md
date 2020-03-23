@@ -19,8 +19,8 @@ nchcli keys add jack
 nchcli keys add alice
 
 # Add both accounts, with coins to the genesis file
-nchd add-genesis-account $(nchcli keys show jack -a) 10000000000000000000pnch
-nchd add-genesis-account $(nchcli keys show alice -a) 10000000000000000000pnch
+nchd add-genesis-account $(nchcli keys show jack -a) 50000000000000000000pnch
+nchd add-genesis-account $(nchcli keys show alice -a) 50000000000000000000pnch
 
 # create validator
 nchd gentx \
@@ -51,7 +51,6 @@ nchd start --log_level "*:debug" --trace
 transfer asset
 ```cassandraql
 # transfer asset
-nchcli send --from $(nchcli keys show jack -a)  --to $(nchcli keys show alice -a) --amount 1000000000000pnch
 nchcli send --from $(nchcli keys show jack -a)  --to $(nchcli keys show alice -a) --amount 1000000000000pnch
 ```
 
