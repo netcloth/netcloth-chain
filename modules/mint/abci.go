@@ -12,21 +12,34 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 	// fetch stored params
 	params := k.GetParams(ctx)
 	blockHeight := ctx.BlockHeight()
+	supply := k.StakingTokenSupply(ctx)
+
+	// check total inflation ceiling
+	// if total token supply >= TotalSupplyCeiling, stop inflating
+	if supply.GTE(params.TotalSupplyCeiling) {
+		ctx.Logger().Info(fmt.Sprintf("current token supply: %s, stop inflating", supply.String()))
+
+		params.BlockProvision = sdk.NewDec(0)
+		params.NextInflateHeight = 0
+		k.SetParams(ctx, params)
+		return
+	}
 
 	if blockHeight <= 1 {
+		// update next inflate height at chain startup
 		params.NextInflateHeight = params.NextInflateHeight + params.BlocksPerYear
 		k.SetParams(ctx, params)
 	} else if blockHeight == params.NextInflateHeight {
-		//TODO, check inflate ceiling
+		// adjust block provision and next inflate height
 		params.BlockProvision = params.InflationRate.Mul(params.BlockProvision)
 		params.NextInflateHeight = params.NextInflateHeight + params.BlocksPerYear
 		k.SetParams(ctx, params)
 	}
 
-	// mint coins, update supply
+	// mint coins, update token supply
 	mintedCoin := sdk.NewCoin(params.MintDenom, params.BlockProvision.TruncateInt())
 	mintedCoins := sdk.NewCoins(mintedCoin)
-	fmt.Println(fmt.Sprintf("minted coins: %s", mintedCoins.String()))
+	ctx.Logger().Info(fmt.Sprintf("minted coins: %s", mintedCoins.String()))
 
 	err := k.MintCoins(ctx, mintedCoins)
 	if err != nil {

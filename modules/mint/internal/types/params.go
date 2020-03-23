@@ -57,7 +57,7 @@ func DefaultParams() Params {
 		MintDenom:          nchtypes.DefaultBondDenom,
 		InflationRate:      sdk.NewDecWithPrec(90, 2),
 		NextInflateHeight:  int64(0),
-		BlockProvision:     sdk.NewDecWithPrec(int64(11090830734910133), 2),
+		BlockProvision:     sdk.NewDec(1109083073492),
 		BlocksPerYear:      int64(60 * 60 * 8766 / 5), // assuming 5 second block times
 		TotalSupplyCeiling: sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(21), nil)),
 	}
