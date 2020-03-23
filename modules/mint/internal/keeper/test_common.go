@@ -87,7 +87,6 @@ func newTestInput(t *testing.T) testInput {
 	supplyKeeper.SetModuleAccount(ctx, bondPool)
 
 	mintKeeper.SetParams(ctx, types.DefaultParams())
-	mintKeeper.SetMinter(ctx, types.DefaultInitialMinter())
 
 	return testInput{ctx, types.ModuleCdc, mintKeeper}
 }

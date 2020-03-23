@@ -12,7 +12,7 @@ import (
 const (
 	DefaultParamspace           = ModuleName
 	DefaultMaxEvidenceAge       = 60 * 2 * time.Second
-	DefaultSignedBlocksWindow   = int64(100)
+	DefaultSignedBlocksWindow   = int64(10000)
 	DefaultDowntimeJailDuration = 60 * 10 * time.Second
 )
 
