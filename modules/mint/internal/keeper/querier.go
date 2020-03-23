@@ -53,7 +53,7 @@ func queryInflation(ctx sdk.Context, k Keeper) ([]byte, error) {
 func queryAnnualProvisions(ctx sdk.Context, k Keeper) ([]byte, error) {
 	params := k.GetParams(ctx)
 
-	res, err := codec.MarshalJSONIndent(k.cdc, params.BlockProvision.Mul(sdk.NewDec(params.BlocksPerYear)))
+	res, err := codec.MarshalJSONIndent(k.cdc, params.BlockProvision.Mul(sdk.NewDec(params.BlocksPerYear)).TruncateInt())
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
