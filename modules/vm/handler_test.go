@@ -17,9 +17,10 @@ func TestInvalidMsg(t *testing.T) {
 	k := Keeper{}
 	h := NewHandler(k)
 
-	res := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
-	require.False(t, res.IsOK())
-	require.True(t, strings.Contains(res.Log, "Unrecognized Msg type"))
+	res, err := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
+	require.NotNil(t, err)
+	require.Nil(t, res)
+	require.True(t, strings.Contains(err.Error(), "unrecognized vm message type"))
 }
 
 func TestMsgContractCreateAndCall(t *testing.T) {
@@ -39,8 +40,8 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	require.Equal(t, msgCreate.Route(), RouterKey)
 	require.Equal(t, msgCreate.Type(), types.TypeMsgContract)
 
-	resCreate := handler(ctx, msgCreate)
-	require.True(t, resCreate.IsOK())
+	resCreate, err := handler(ctx, msgCreate)
+	require.Nil(t, err)
 	if len(resCreate.Log) > 0 {
 		fmt.Println("logs: ", resCreate.Log)
 	}
