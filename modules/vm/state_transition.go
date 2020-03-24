@@ -39,7 +39,7 @@ func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash 
 	}
 }
 
-func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, *sdk.Result, error) {
+func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params) (*big.Int, *sdk.Result, error) {
 	st.StateDB.UpdateAccounts()
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
@@ -53,7 +53,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	cfg := Config{OpConstGasConfig: constGasConfig, CommonGasConfig: vmCommonGasConfig}
+	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
 
 	currentGasMeter := ctx.GasMeter()
 	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())).WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())), cfg)
@@ -104,8 +104,6 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimi
 		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
 	}
 
-	opGasConfig := k.GetVMOpGasParams(ctx)
-	commonGasConfig := k.GetVMCommonGasParams(ctx)
-
-	return st.TransitionCSDB(ctx, &opGasConfig, &commonGasConfig)
+	params := k.GetParams(ctx)
+	return st.TransitionCSDB(ctx, &params)
 }
