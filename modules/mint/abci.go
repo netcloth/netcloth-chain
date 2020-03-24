@@ -39,8 +39,6 @@ func BeginBlocker(ctx sdk.Context, k Keeper) {
 	// mint coins, update token supply
 	mintedCoin := sdk.NewCoin(params.MintDenom, params.BlockProvision.TruncateInt())
 	mintedCoins := sdk.NewCoins(mintedCoin)
-	ctx.Logger().Info(fmt.Sprintf("minted coins: %s", mintedCoins.String()))
-
 	err := k.MintCoins(ctx, mintedCoins)
 	if err != nil {
 		panic(err)
