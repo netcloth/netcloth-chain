@@ -109,5 +109,12 @@ func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return EndBlocker(ctx, a.k)
+	a.k.StateDB.UpdateAccounts()
+	_, err := a.k.StateDB.WithContext(ctx).Commit(true)
+	if err != nil {
+		panic(err)
+	}
+	a.k.StateDB.ClearStateObjects()
+
+	return []abci.ValidatorUpdate{}
 }
