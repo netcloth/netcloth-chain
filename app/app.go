@@ -285,7 +285,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
-	//app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
@@ -463,7 +463,7 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
-	//app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
