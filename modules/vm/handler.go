@@ -1,9 +1,6 @@
 package vm
 
 import (
-	abci "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/netcloth/netcloth-chain/modules/vm/keeper"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -42,10 +39,4 @@ func handleMsgContract(ctx sdk.Context, msg MsgContract, k Keeper) (*sdk.Result,
 	)
 
 	return &sdk.Result{Data: res.Data, GasUsed: res.GasUsed, Events: ctx.EventManager().Events()}, nil
-}
-
-func EndBlocker(ctx sdk.Context, k keeper.Keeper) []abci.ValidatorUpdate {
-	//k.StateDB.UpdateAccounts() //update account balance for fee refund when create/call contract
-	k.StateDB.WithContext(ctx).Commit(true)
-	return []abci.ValidatorUpdate{}
 }
