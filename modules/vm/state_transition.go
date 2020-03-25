@@ -47,7 +47,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 
 		Origin: st.Sender,
 
-		CoinBase:    ctx.BlockHeader().ProposerAddress,
+		CoinBase:    ctx.BlockHeader().ProposerAddress, // validator consensus address, not account address
 		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
