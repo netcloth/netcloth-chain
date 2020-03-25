@@ -40,7 +40,6 @@ func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash 
 }
 
 func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params) (*big.Int, *sdk.Result, error) {
-	st.StateDB.UpdateAccounts()
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
@@ -48,15 +47,19 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 
 		Origin: st.Sender,
 
-		CoinBase:    ctx.BlockHeader().ProposerAddress,
+		CoinBase:    ctx.BlockHeader().ProposerAddress, // validator consensus address, not account address
 		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
-
+	// This gas meter is set up to consume gas from gaskv during evm execution and be ignored
 	currentGasMeter := ctx.GasMeter()
-	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())).WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())), cfg)
+	csdb := st.StateDB.WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())).WithTxHash(tmhash.Sum(ctx.TxBytes()))
+	// Clear cache of accounts to handle changes outside of the EVM
+	csdb.UpdateAccounts()
+
+	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
+	evm := NewEVM(evmCtx, csdb, cfg)
 
 	var (
 		ret         []byte

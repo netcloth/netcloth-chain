@@ -63,23 +63,23 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 type AppModule struct {
 	AppModuleBasic
-	k Keeper
+	keeper Keeper
 }
 
 func NewAppModule(keeper Keeper) AppModule {
-	return AppModule{k: keeper}
+	return AppModule{keeper: keeper}
 }
 
 func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	a.k.SetParams(ctx, genesisState.Params)
+	a.keeper.SetParams(ctx, genesisState.Params)
 
 	return nil
 }
 
 func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	kvs := a.k.StateDB.WithContext(ctx).ExportState()
+	kvs := a.keeper.StateDB.WithContext(ctx).ExportState()
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("len(kvs)=%d", len(kvs)))
 	return types.ModuleCdc.MustMarshalJSON(kvs)
 }
@@ -93,7 +93,7 @@ func (a AppModule) Route() string {
 }
 
 func (a AppModule) NewHandler() sdk.Handler {
-	return NewHandler(a.k)
+	return NewHandler(a.keeper)
 }
 
 func (a AppModule) QuerierRoute() string {
@@ -101,7 +101,7 @@ func (a AppModule) QuerierRoute() string {
 }
 
 func (a AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(a.k)
+	return NewQuerier(a.keeper)
 }
 
 func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
@@ -109,12 +109,20 @@ func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
-	a.k.StateDB.UpdateAccounts()
-	_, err := a.k.StateDB.WithContext(ctx).Commit(true)
+	// Gas costs are handled within msg handler so costs should be ignored
+	ebCtx := ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+
+	// Update account balances before committing other parts of state
+	a.keeper.StateDB.UpdateAccounts()
+
+	// Commit state objects to KV store
+	_, err := a.keeper.StateDB.WithContext(ebCtx).Commit(true)
 	if err != nil {
 		panic(err)
 	}
-	a.k.StateDB.ClearStateObjects()
+
+	// Clear accounts cache after account data has been committed
+	a.keeper.StateDB.ClearStateObjects()
 
 	return []abci.ValidatorUpdate{}
 }
