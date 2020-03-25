@@ -1,4 +1,4 @@
-package gov
+package ipal
 
 import (
 	"strings"
@@ -21,5 +21,5 @@ func TestInvalidMsg(t *testing.T) {
 	require.Nil(t, res)
 
 	_, _, log := sdkerrors.ABCIInfo(err, false)
-	require.True(t, strings.Contains(res.Log, "unrecognized gov message type"))
+	require.True(t, strings.Contains(log, "unrecognized ipal message type"))
 }

@@ -120,7 +120,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 			} else {
 			}
 
-			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
+			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
 			k.updateServiceNode(ctx, n, serviceNode)
 		} else {
 			k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
@@ -133,7 +133,7 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 				return err
 			}
 
-			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Endpoints, m.Bond)
+			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
 			k.CreateServiceNode(ctx, serviceNode)
 		} else {
 			return sdkerrors.Wrapf(types.ErrBondInsufficient, "bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String())

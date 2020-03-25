@@ -1,8 +1,9 @@
 package types
 
 import (
-	"fmt"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -11,6 +12,8 @@ import (
 var (
 	_ sdk.Msg = MsgServiceNodeClaim{}
 )
+
+const TypeMsgServiceNodeClaim = "serviceNodeClaim"
 
 type Endpoint struct {
 	Type     uint64 `json:"type" yaml:"type"`
@@ -24,9 +27,8 @@ func NewEndpoint(endpointType uint64, endpoint string) Endpoint {
 	}
 }
 func (e Endpoint) String() string {
-	return fmt.Sprintf(`Endpoint
-type: %d
-endpoint: %s`, e.Type, e.Endpoint)
+	out, _ := yaml.Marshal(e)
+	return string(out)
 }
 
 type Endpoints []Endpoint
@@ -43,16 +45,18 @@ type MsgServiceNodeClaim struct {
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	Details         string         `json:"details" yaml:"details"`                   // optional details
+	Extension       string         `json:"extension" yaml:"extension"`               // for future extension
 	Endpoints       Endpoints      `json:"endpoints" yaml:"endpoints"`               // server endpoint for app client
-	Bond            sdk.Coin       `json:"bond" yaml:"bond"`
+	Bond            sdk.Coin       `json:"bond" yaml:"bond"`                         // bond coin for ranking
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details string, endpoints Endpoints, Bond sdk.Coin) MsgServiceNodeClaim {
+func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin) MsgServiceNodeClaim {
 	return MsgServiceNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
 		Website:         website,
 		Details:         details,
+		Extension:       extension,
 		Endpoints:       endpoints,
 		Bond:            Bond,
 	}
@@ -60,12 +64,13 @@ func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details s
 
 func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
 
-func (msg MsgServiceNodeClaim) Type() string { return "serviceNodeClaim" }
+func (msg MsgServiceNodeClaim) Type() string { return TypeMsgServiceNodeClaim }
 
 func (msg *MsgServiceNodeClaim) TrimSpace() {
 	msg.Moniker = strings.TrimSpace(msg.Moniker)
 	msg.Website = strings.TrimSpace(msg.Website)
 	msg.Details = strings.TrimSpace(msg.Details)
+	msg.Extension = strings.TrimSpace(msg.Extension)
 }
 
 func (msg MsgServiceNodeClaim) ValidateBasic() error {

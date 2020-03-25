@@ -7,5 +7,6 @@ const (
 	flagEndpointDelimiter     = "endpoint_delimiter"
 	flagEndpointTypeDelimiter = "endpoint_type_delimiter"
 	flagDetails               = "details"
+	flagExtension             = "extension"
 	flagBond                  = "bond"
 )
