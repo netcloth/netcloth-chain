@@ -30,84 +30,84 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.Suppl
 	}
 }
 
-func (k Keeper) GetServiceNode(ctx sdk.Context, operator sdk.AccAddress) (obj types.ServiceNode, found bool) {
+func (k Keeper) GetIPALNode(ctx sdk.Context, operator sdk.AccAddress) (obj types.IPALNode, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.GetServiceNodeKey(operator))
+	value := store.Get(types.GetIPALNodeKey(operator))
 	if value == nil {
 		return obj, false
 	}
 
-	obj = types.MustUnmarshalServiceNode(k.cdc, value)
+	obj = types.MustUnmarshalIPALNode(k.cdc, value)
 	return obj, true
 }
 
-func (k Keeper) setServiceNode(ctx sdk.Context, obj types.ServiceNode) {
+func (k Keeper) setIPALNode(ctx sdk.Context, obj types.IPALNode) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalServiceNode(k.cdc, obj)
-	store.Set(types.GetServiceNodeKey(obj.OperatorAddress), bz)
+	bz := types.MustMarshalIPALNode(k.cdc, obj)
+	store.Set(types.GetIPALNodeKey(obj.OperatorAddress), bz)
 }
 
-func (k Keeper) delServiceNode(ctx sdk.Context, accAddress sdk.AccAddress) {
+func (k Keeper) delIPALNode(ctx sdk.Context, accAddress sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetServiceNodeKey(accAddress))
+	store.Delete(types.GetIPALNodeKey(accAddress))
 }
 
-func (k Keeper) setServiceNodeByBond(ctx sdk.Context, obj types.ServiceNode) {
+func (k Keeper) setIPALNodeByBond(ctx sdk.Context, obj types.IPALNode) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalServiceNode(k.cdc, obj)
-	store.Set(types.GetServiceNodeByBondKey(obj), bz)
+	bz := types.MustMarshalIPALNode(k.cdc, obj)
+	store.Set(types.GetIPALNodeByBondKey(obj), bz)
 }
 
-func (k Keeper) delServiceNodeByBond(ctx sdk.Context, obj types.ServiceNode) {
+func (k Keeper) delIPALNodeByBond(ctx sdk.Context, obj types.IPALNode) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetServiceNodeByBondKey(obj))
+	store.Delete(types.GetIPALNodeByBondKey(obj))
 }
 
-func (k Keeper) setServiceNodeByMonikerIndex(ctx sdk.Context, obj types.ServiceNode) {
+func (k Keeper) setIPALNodeByMonikerIndex(ctx sdk.Context, obj types.IPALNode) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetServiceNodeByMonikerKey(obj.Moniker), obj.OperatorAddress)
+	store.Set(types.GetIPALNodeByMonikerKey(obj.Moniker), obj.OperatorAddress)
 }
 
-func (k Keeper) GetServiceNodeAddByMoniker(ctx sdk.Context, moniker string) (acc sdk.AccAddress, exist bool) {
+func (k Keeper) GetIPALNodeAddByMoniker(ctx sdk.Context, moniker string) (acc sdk.AccAddress, exist bool) {
 	store := ctx.KVStore(k.storeKey)
-	v := store.Get(types.GetServiceNodeByMonikerKey(moniker))
+	v := store.Get(types.GetIPALNodeByMonikerKey(moniker))
 	return v, v != nil
 }
 
-func (k Keeper) delServiceNodeByMonikerIndex(ctx sdk.Context, moniker string) {
+func (k Keeper) delIPALNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetServiceNodeByMonikerKey(moniker))
+	store.Delete(types.GetIPALNodeByMonikerKey(moniker))
 }
 
-func (k Keeper) CreateServiceNode(ctx sdk.Context, node types.ServiceNode) {
-	k.setServiceNode(ctx, node)
-	k.setServiceNodeByBond(ctx, node)
-	k.setServiceNodeByMonikerIndex(ctx, node)
+func (k Keeper) CreateIPALNode(ctx sdk.Context, node types.IPALNode) {
+	k.setIPALNode(ctx, node)
+	k.setIPALNodeByBond(ctx, node)
+	k.setIPALNodeByMonikerIndex(ctx, node)
 }
 
-func (k Keeper) updateServiceNode(ctx sdk.Context, old types.ServiceNode, new types.ServiceNode) {
-	k.setServiceNode(ctx, new)
+func (k Keeper) updateIPALNode(ctx sdk.Context, old types.IPALNode, new types.IPALNode) {
+	k.setIPALNode(ctx, new)
 
-	k.delServiceNodeByBond(ctx, old)
-	k.setServiceNodeByBond(ctx, new)
+	k.delIPALNodeByBond(ctx, old)
+	k.setIPALNodeByBond(ctx, new)
 
-	k.delServiceNodeByMonikerIndex(ctx, old.Moniker)
-	k.setServiceNodeByMonikerIndex(ctx, new)
+	k.delIPALNodeByMonikerIndex(ctx, old.Moniker)
+	k.setIPALNodeByMonikerIndex(ctx, new)
 }
 
-func (k Keeper) deleteServiceNode(ctx sdk.Context, obj types.ServiceNode) {
-	k.delServiceNode(ctx, obj.OperatorAddress)
-	k.delServiceNodeByBond(ctx, obj)
-	k.delServiceNodeByMonikerIndex(ctx, obj.Moniker)
+func (k Keeper) deleteIPALNode(ctx sdk.Context, obj types.IPALNode) {
+	k.delIPALNode(ctx, obj.OperatorAddress)
+	k.delIPALNodeByBond(ctx, obj)
+	k.delIPALNodeByMonikerIndex(ctx, obj.Moniker)
 }
 
 func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
-func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim) (err error) {
+func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err error) {
 	minBond := k.GetMinBond(ctx)
-	n, found := k.GetServiceNode(ctx, m.OperatorAddress)
+	n, found := k.GetIPALNode(ctx, m.OperatorAddress)
 	if found {
 		if m.Bond.IsGTE(minBond) {
 			if n.Bond.IsLT(m.Bond) {
@@ -120,11 +120,11 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 			} else {
 			}
 
-			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
-			k.updateServiceNode(ctx, n, serviceNode)
+			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
+			k.updateIPALNode(ctx, n, ipalNode)
 		} else {
 			k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
-			k.deleteServiceNode(ctx, n)
+			k.deleteIPALNode(ctx, n)
 		}
 	} else {
 		if m.Bond.IsGTE(minBond) {
@@ -133,8 +133,8 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 				return err
 			}
 
-			serviceNode := types.NewServiceNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
-			k.CreateServiceNode(ctx, serviceNode)
+			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
+			k.CreateIPALNode(ctx, ipalNode)
 		} else {
 			return sdkerrors.Wrapf(types.ErrBondInsufficient, "bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String())
 		}
@@ -143,14 +143,14 @@ func (k Keeper) DoServiceNodeClaim(ctx sdk.Context, m types.MsgServiceNodeClaim)
 	return nil
 }
 
-func (k Keeper) GetAllServiceNodes(ctx sdk.Context) (serviceNodes types.ServiceNodes) {
+func (k Keeper) GetAllIPALNodes(ctx sdk.Context) (ipalNodes types.IPALNodes) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.ServiceNodeByBondKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.IPALNodeByBondKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		n := types.MustUnmarshalServiceNode(k.cdc, iterator.Value())
-		serviceNodes = append(serviceNodes, n)
+		n := types.MustUnmarshalIPALNode(k.cdc, iterator.Value())
+		ipalNodes = append(ipalNodes, n)
 	}
-	return serviceNodes
+	return ipalNodes
 }

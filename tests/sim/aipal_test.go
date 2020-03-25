@@ -36,7 +36,7 @@ func accountQueryCmd(t *testing.T, acc, nchcliHome, port string) string {
 	return fmt.Sprintf("nchcli query account %s --home=%s --node localhost:%s -o json", fooAddr, nchcliHome, port)
 }
 
-func executeGetServiceNodes(t *testing.T, cmdStr string) (nodes itypes.ServiceNodes) {
+func executeGetServiceNodes(t *testing.T, cmdStr string) (nodes itypes.IPALNodes) {
 	out, _ := tests.ExecuteT(t, cmdStr, "")
 
 	cdc := MakeCodec()

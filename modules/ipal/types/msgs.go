@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	_ sdk.Msg = MsgServiceNodeClaim{}
+	_ sdk.Msg = MsgIPALNodeClaim{}
 )
 
-const TypeMsgServiceNodeClaim = "serviceNodeClaim"
+const TypeMsgIPALNodeClaim = "ipalNodeClaim"
 
 type Endpoint struct {
 	Type     uint64 `json:"type" yaml:"type"`
@@ -40,8 +40,8 @@ func (e Endpoints) String() (out string) {
 	return strings.TrimSpace(out)
 }
 
-type MsgServiceNodeClaim struct {
-	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+type MsgIPALNodeClaim struct {
+	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the IPALNode's operator
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	Details         string         `json:"details" yaml:"details"`                   // optional details
@@ -50,8 +50,8 @@ type MsgServiceNodeClaim struct {
 	Bond            sdk.Coin       `json:"bond" yaml:"bond"`                         // bond coin for ranking
 }
 
-func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin) MsgServiceNodeClaim {
-	return MsgServiceNodeClaim{
+func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin) MsgIPALNodeClaim {
+	return MsgIPALNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
 		Website:         website,
@@ -62,18 +62,18 @@ func NewMsgServiceNodeClaim(operator sdk.AccAddress, moniker, website, details, 
 	}
 }
 
-func (msg MsgServiceNodeClaim) Route() string { return RouterKey }
+func (msg MsgIPALNodeClaim) Route() string { return RouterKey }
 
-func (msg MsgServiceNodeClaim) Type() string { return TypeMsgServiceNodeClaim }
+func (msg MsgIPALNodeClaim) Type() string { return TypeMsgIPALNodeClaim }
 
-func (msg *MsgServiceNodeClaim) TrimSpace() {
+func (msg *MsgIPALNodeClaim) TrimSpace() {
 	msg.Moniker = strings.TrimSpace(msg.Moniker)
 	msg.Website = strings.TrimSpace(msg.Website)
 	msg.Details = strings.TrimSpace(msg.Details)
 	msg.Extension = strings.TrimSpace(msg.Extension)
 }
 
-func (msg MsgServiceNodeClaim) ValidateBasic() error {
+func (msg MsgIPALNodeClaim) ValidateBasic() error {
 	if msg.OperatorAddress.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing operator address")
 	}
@@ -101,11 +101,11 @@ func (msg MsgServiceNodeClaim) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgServiceNodeClaim) GetSigners() []sdk.AccAddress {
+func (msg MsgIPALNodeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.OperatorAddress}
 }
 
-func (msg MsgServiceNodeClaim) GetSignBytes() []byte {
+func (msg MsgIPALNodeClaim) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }

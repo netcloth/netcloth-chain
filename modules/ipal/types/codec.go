@@ -5,7 +5,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgServiceNodeClaim{}, "nch/IPALClaim", nil)
+	cdc.RegisterConcrete(MsgIPALNodeClaim{}, "nch/IPALClaim", nil)
 }
 
 var ModuleCdc *codec.Codec

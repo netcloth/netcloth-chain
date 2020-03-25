@@ -17,8 +17,8 @@ var (
 	NewKeeper              = keeper.NewKeeper
 	NewQuerier             = keeper.NewQuerier
 	RegisterCodec          = types.RegisterCodec
-	NewServerNodeObject    = types.NewServiceNode
-	NewMsgServiceNodeClaim = types.NewMsgServiceNodeClaim
+	NewIPALNodeObject      = types.NewIPALNode
+	NewMsgIPALNodeClaim    = types.NewMsgIPALNodeClaim
 	ModuleCdc              = types.ModuleCdc
 	AttributeValueCategory = types.AttributeValueCategory
 	NewEndpoint            = types.NewEndpoint
@@ -32,8 +32,8 @@ var (
 )
 
 type (
-	Keeper              = keeper.Keeper
-	MsgServiceNodeClaim = types.MsgServiceNodeClaim
-	Endpoint            = types.Endpoint
-	Endpoints           = types.Endpoints
+	Keeper           = keeper.Keeper
+	MsgIPALNodeClaim = types.MsgIPALNodeClaim
+	Endpoint         = types.Endpoint
+	Endpoints        = types.Endpoints
 )

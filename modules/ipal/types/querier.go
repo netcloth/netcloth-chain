@@ -5,28 +5,28 @@ import (
 )
 
 const (
-	QueryServiceNodeList = "list"
-	QueryServiceNode     = "node"
-	QueryServiceNodes    = "nodes"
-	QueryParameters      = "params"
+	QueryIPALNodeList = "list"
+	QueryIPALNode     = "node"
+	QueryIPALNodes    = "nodes"
+	QueryParameters   = "params"
 )
 
-type QueryServiceNodeParams struct {
+type QueryIPALNodeParams struct {
 	AccAddr sdk.AccAddress
 }
 
-type QueryServiceNodesParams struct {
+type QueryIPALNodesParams struct {
 	AccAddrs []sdk.AccAddress `json:"acc_addrs"`
 }
 
-func NewQueryServiceNodeParams(AccAddr sdk.AccAddress) QueryServiceNodeParams {
-	return QueryServiceNodeParams{
+func NewQueryIPALNodeParams(AccAddr sdk.AccAddress) QueryIPALNodeParams {
+	return QueryIPALNodeParams{
 		AccAddr: AccAddr,
 	}
 }
 
-func NewQueryServiceNodesParams(AccAddrs []sdk.AccAddress) QueryServiceNodesParams {
-	return QueryServiceNodesParams{
+func NewQueryIPALNodesParams(AccAddrs []sdk.AccAddress) QueryIPALNodesParams {
+	return QueryIPALNodesParams{
 		AccAddrs: AccAddrs,
 	}
 }
