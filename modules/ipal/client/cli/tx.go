@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -29,7 +30,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
 		Short:   "Create and sign a ServiceNodeClaim tx",
-		Example: "nchcli ipal claim --from=<user key name> --moniker=<name> --website=<website> --endpoints=<endpoints> --details=<details> --bond=<bond>",
+		Example: "nchcli ipal claim --from=<user key name> --moniker=<name> --website=<website> --endpoints=<endpoints> --details=<details> --extension=<extension> --bond=<bond>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -50,6 +51,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 			endpointDelimiter = viper.GetString(flagEndpointDelimiter)
 			website := viper.GetString(flagWebsite)
 			details := viper.GetString(flagDetails)
+			extension := viper.GetString(flagExtension)
 			stakeAmount := viper.GetString(flagBond)
 
 			coin, err := sdk.ParseCoin(stakeAmount)
@@ -57,7 +59,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, endpoints, coin)
+			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, extension, endpoints, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -72,6 +74,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagEndpointDelimiter, ",", "endpoints delimiter, e.g. '#' as delimiter: 1|192.168.1.100:10000#2|192.168.1.101:20000")
 	cmd.Flags().String(flagEndpointTypeDelimiter, "|", "endpoint delimiter, e.g. '-' as delimiter: 1-192.168.1.100:10000,2-192.168.1.101:20000")
 	cmd.Flags().String(flagDetails, "", "server node details")
+	cmd.Flags().String(flagExtension, "", "extension for future user define")
 	cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000pnch)")
 
 	cmd.MarkFlagRequired(flagMoniker)

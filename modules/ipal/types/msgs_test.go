@@ -1,0 +1,76 @@
+package types
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
+)
+
+var (
+	addr1        = sdk.AccAddress([]byte("from"))
+	moniker      = "moniker"
+	website      = "website"
+	details      = "details"
+	extension    = ""
+	endpoints, _ = EndpointsFromString("1|http://1.1.1.1,3|http://2.2.2.2", ",", "|")
+	bond         = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(sdk.NativeTokenFraction))
+)
+
+func TestMsgServiceNodeClaimRoute(t *testing.T) {
+	var msg = NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+
+	require.Equal(t, msg.Route(), RouterKey)
+	require.Equal(t, msg.Type(), TypeMsgServiceNodeClaim)
+}
+
+func TestMsgServiceNodeClaimValidation(t *testing.T) {
+	var emptyAddr sdk.AccAddress
+
+	// duplicate endpoints
+	ep := Endpoint{1, "http://1.1.1.1"}
+	var dupEndPoints = Endpoints{}
+	dupEndPoints = append(dupEndPoints, ep)
+	dupEndPoints = append(dupEndPoints, ep)
+
+	cases := []struct {
+		valid bool
+		tx    MsgServiceNodeClaim
+	}{
+		{true, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)}, // valid
+
+		{false, NewMsgServiceNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)},                                            // empty from addr
+		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, bond)},                                                     // empty moniker
+		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, sdk.NewCoin("xnch", sdk.NewInt(sdk.NativeTokenFraction)))}, //  other bond coins
+		//{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(int64(-1))))},  //  negative coins
+		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)}, // duplicate endpoints                                                // empty moniker
+
+	}
+
+	for _, tc := range cases {
+		err := tc.tx.ValidateBasic()
+		if tc.valid {
+			require.Nil(t, err)
+		} else {
+			require.NotNil(t, err)
+		}
+
+	}
+}
+
+func TestMsgServiceNodeClaimGetSignBytes(t *testing.T) {
+	var msg = NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+	res := msg.GetSignBytes()
+
+	expected := `{"type":"nch/IPALClaim","value":{"bond":{"amount":"1000000000000","denom":"pnch"},"details":"details","endpoints":[{"endpoint":"http://1.1.1.1","type":"1"},{"endpoint":"http://2.2.2.2","type":"3"}],"extension":"","moniker":"moniker","operator_address":"nch1veex7mg3k0xqr","website":"website"}}`
+	require.Equal(t, expected, string(res))
+}
+
+func TestMsgServiceNodeClaimGetSigners(t *testing.T) {
+	var msg = NewMsgServiceNodeClaim(sdk.AccAddress([]byte("input1")), moniker, website, details, extension, endpoints, bond)
+	res := msg.GetSigners()
+
+	require.Equal(t, fmt.Sprintf("%v", res), "[696E70757431]")
+}
