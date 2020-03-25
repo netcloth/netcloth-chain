@@ -29,6 +29,9 @@ func TestMsgServiceNodeClaimRoute(t *testing.T) {
 func TestMsgServiceNodeClaimValidation(t *testing.T) {
 	var emptyAddr sdk.AccAddress
 
+	var negativeCoin = sdk.Coin{Denom: sdk.NativeTokenName, Amount: sdk.NewInt(int64(-1))}
+	var xnchCoin = sdk.NewCoin("xnch", sdk.NewInt(sdk.NativeTokenFraction))
+
 	// duplicate endpoints
 	ep := Endpoint{1, "http://1.1.1.1"}
 	var dupEndPoints = Endpoints{}
@@ -41,11 +44,12 @@ func TestMsgServiceNodeClaimValidation(t *testing.T) {
 	}{
 		{true, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)}, // valid
 
-		{false, NewMsgServiceNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)},                                            // empty from addr
-		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, bond)},                                                     // empty moniker
-		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, sdk.NewCoin("xnch", sdk.NewInt(sdk.NativeTokenFraction)))}, //  other bond coins
-		//{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(int64(-1))))},  //  negative coins
-		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)}, // duplicate endpoints                                                // empty moniker
+		{false, NewMsgServiceNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)}, // empty from addr
+		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, bond)},          // empty moniker
+		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, xnchCoin)},      //  other bond coins
+		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin)},  //  negative coins
+		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond)},   // empty endpoints
+		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)},  // duplicate endpoints
 
 	}
 
