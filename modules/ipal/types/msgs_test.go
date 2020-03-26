@@ -50,7 +50,6 @@ func TestMsgIPALNodeClaimValidation(t *testing.T) {
 		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin)},  //  negative coins
 		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond)},   // empty endpoints
 		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)},  // duplicate endpoints
-
 	}
 
 	for _, tc := range cases {
@@ -60,7 +59,6 @@ func TestMsgIPALNodeClaimValidation(t *testing.T) {
 		} else {
 			require.NotNil(t, err)
 		}
-
 	}
 }
 
