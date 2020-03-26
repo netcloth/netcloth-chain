@@ -112,8 +112,8 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-	ipalKeeper     cipal.Keeper
-	aipalKeeper    ipal.Keeper
+	cipalKeeper    cipal.Keeper
+	ipalKeeper     ipal.Keeper
 	vmKeeper       vm.Keeper
 
 	// the module manager
@@ -171,8 +171,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
 
 	// add keepers
@@ -190,16 +190,16 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
-	app.ipalKeeper = cipal.NewKeeper(
+	app.cipalKeeper = cipal.NewKeeper(
 		keys[cipal.StoreKey],
 		app.cdc,
-		ipalSubspace)
+		cipalSubspace)
 
-	app.aipalKeeper = ipal.NewKeeper(
+	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
-		aipalSubspace)
+		ipalSubspace)
 
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc,
@@ -241,8 +241,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.ipalKeeper),
-		ipal.NewAppModule(app.aipalKeeper),
+		cipal.NewAppModule(app.cipalKeeper),
+		ipal.NewAppModule(app.ipalKeeper),
 		vm.NewAppModule(app.vmKeeper),
 	)
 
@@ -349,8 +349,8 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
 
 	// add keepers
@@ -368,16 +368,16 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
-	app.ipalKeeper = cipal.NewKeeper(
+	app.cipalKeeper = cipal.NewKeeper(
 		keys[cipal.StoreKey],
 		app.cdc,
-		ipalSubspace)
+		cipalSubspace)
 
-	app.aipalKeeper = ipal.NewKeeper(
+	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
-		aipalSubspace)
+		ipalSubspace)
 
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc,
@@ -419,8 +419,8 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.ipalKeeper),
-		ipal.NewAppModule(app.aipalKeeper),
+		cipal.NewAppModule(app.cipalKeeper),
+		ipal.NewAppModule(app.ipalKeeper),
 		vm.NewAppModule(app.vmKeeper),
 	)
 
