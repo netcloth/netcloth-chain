@@ -19,14 +19,14 @@ var (
 	bond         = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(sdk.NativeTokenFraction))
 )
 
-func TestMsgServiceNodeClaimRoute(t *testing.T) {
-	var msg = NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+func TestMsgIPALNodeClaimRoute(t *testing.T) {
+	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
 
 	require.Equal(t, msg.Route(), RouterKey)
-	require.Equal(t, msg.Type(), TypeMsgServiceNodeClaim)
+	require.Equal(t, msg.Type(), TypeMsgIPALNodeClaim)
 }
 
-func TestMsgServiceNodeClaimValidation(t *testing.T) {
+func TestMsgIPALNodeClaimValidation(t *testing.T) {
 	var emptyAddr sdk.AccAddress
 
 	var negativeCoin = sdk.Coin{Denom: sdk.NativeTokenName, Amount: sdk.NewInt(int64(-1))}
@@ -40,17 +40,16 @@ func TestMsgServiceNodeClaimValidation(t *testing.T) {
 
 	cases := []struct {
 		valid bool
-		tx    MsgServiceNodeClaim
+		tx    MsgIPALNodeClaim
 	}{
-		{true, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)}, // valid
+		{true, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)}, // valid
 
-		{false, NewMsgServiceNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)}, // empty from addr
-		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, bond)},          // empty moniker
-		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, xnchCoin)},      //  other bond coins
-		{false, NewMsgServiceNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin)},  //  negative coins
-		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond)},   // empty endpoints
-		{false, NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)},  // duplicate endpoints
-
+		{false, NewMsgIPALNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)}, // empty from addr
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, bond)},          // empty moniker
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, xnchCoin)},      //  other bond coins
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin)},  //  negative coins
+		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond)},   // empty endpoints
+		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)},  // duplicate endpoints
 	}
 
 	for _, tc := range cases {
@@ -60,20 +59,19 @@ func TestMsgServiceNodeClaimValidation(t *testing.T) {
 		} else {
 			require.NotNil(t, err)
 		}
-
 	}
 }
 
-func TestMsgServiceNodeClaimGetSignBytes(t *testing.T) {
-	var msg = NewMsgServiceNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+func TestMsgIPALNodeClaimGetSignBytes(t *testing.T) {
+	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
 	res := msg.GetSignBytes()
 
 	expected := `{"type":"nch/IPALClaim","value":{"bond":{"amount":"1000000000000","denom":"pnch"},"details":"details","endpoints":[{"endpoint":"http://1.1.1.1","type":"1"},{"endpoint":"http://2.2.2.2","type":"3"}],"extension":"","moniker":"moniker","operator_address":"nch1veex7mg3k0xqr","website":"website"}}`
 	require.Equal(t, expected, string(res))
 }
 
-func TestMsgServiceNodeClaimGetSigners(t *testing.T) {
-	var msg = NewMsgServiceNodeClaim(sdk.AccAddress([]byte("input1")), moniker, website, details, extension, endpoints, bond)
+func TestMsgIPALNodeClaimGetSigners(t *testing.T) {
+	var msg = NewMsgIPALNodeClaim(sdk.AccAddress([]byte("input1")), moniker, website, details, extension, endpoints, bond)
 	res := msg.GetSigners()
 
 	require.Equal(t, fmt.Sprintf("%v", res), "[696E70757431]")

@@ -54,8 +54,8 @@ func EndpointsFromString(endpointsStr, endpointDelimiter, endpointTypeDelimiter 
 	return endpoints, nil
 }
 
-type ServiceNode struct {
-	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the ServiceNode's operator
+type IPALNode struct {
+	OperatorAddress sdk.AccAddress `json:"operator_address" yaml:"operator_address"` // address of the IPALNode's operator
 	Moniker         string         `json:"moniker" yaml:"moniker"`                   // name
 	Website         string         `json:"website" yaml:"website"`                   // optional website link
 	Details         string         `json:"details" yaml:"details"`                   // optional details
@@ -64,17 +64,17 @@ type ServiceNode struct {
 	Bond            sdk.Coin       `json:"bond" yaml:"bond"`
 }
 
-type ServiceNodes []ServiceNode
+type IPALNodes []IPALNode
 
-func (v ServiceNodes) String() (out string) {
+func (v IPALNodes) String() (out string) {
 	for _, val := range v {
 		out += val.String() + "\n"
 	}
 	return strings.TrimSpace(out)
 }
 
-func NewServiceNode(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, amount sdk.Coin) ServiceNode {
-	return ServiceNode{
+func NewIPALNode(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, amount sdk.Coin) IPALNode {
+	return IPALNode{
 		OperatorAddress: operator,
 		Moniker:         moniker,
 		Website:         website,
@@ -85,7 +85,7 @@ func NewServiceNode(operator sdk.AccAddress, moniker, website, details, extensio
 	}
 }
 
-func (obj ServiceNode) MarshalYAML() (interface{}, error) {
+func (obj IPALNode) MarshalYAML() (interface{}, error) {
 	bs, err := yaml.Marshal(struct {
 		OperatorAddress sdk.AccAddress
 		Moniker         string
@@ -111,24 +111,24 @@ func (obj ServiceNode) MarshalYAML() (interface{}, error) {
 	return string(bs), nil
 }
 
-func MustMarshalServiceNode(cdc *codec.Codec, obj ServiceNode) []byte {
+func MustMarshalIPALNode(cdc *codec.Codec, obj IPALNode) []byte {
 	return cdc.MustMarshalBinaryLengthPrefixed(obj)
 }
 
-func MustUnmarshalServiceNode(cdc *codec.Codec, value []byte) ServiceNode {
-	obj, err := UnmarshalServiceNode(cdc, value)
+func MustUnmarshalIPALNode(cdc *codec.Codec, value []byte) IPALNode {
+	obj, err := UnmarshalIPALNode(cdc, value)
 	if err != nil {
 		panic(err)
 	}
 	return obj
 }
 
-func UnmarshalServiceNode(cdc *codec.Codec, value []byte) (obj ServiceNode, err error) {
+func UnmarshalIPALNode(cdc *codec.Codec, value []byte) (obj IPALNode, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(value, &obj)
 	return obj, err
 }
 
-func (obj ServiceNode) String() string {
+func (obj IPALNode) String() string {
 	out, _ := yaml.Marshal(obj)
 	return string(out)
 }

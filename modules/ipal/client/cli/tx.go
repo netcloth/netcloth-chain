@@ -21,15 +21,15 @@ func IPALCmd(cdc *codec.Codec) *cobra.Command {
 		Short: "IPAL transaction subcommands",
 	}
 	txCmd.AddCommand(
-		ServiceNodeClaimCmd(cdc),
+		IPALNodeClaimCmd(cdc),
 	)
 	return txCmd
 }
 
-func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
+func IPALNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "claim",
-		Short:   "Create and sign a ServiceNodeClaim tx",
+		Short:   "Create and sign a IPALNodeClaim tx",
 		Example: "nchcli ipal claim --from=<user key name> --moniker=<name> --website=<website> --endpoints=<endpoints> --details=<details> --extension=<extension> --bond=<bond>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -59,7 +59,7 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgServiceNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, extension, endpoints, coin)
+			msg := types.NewMsgIPALNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, extension, endpoints, coin)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -68,12 +68,12 @@ func ServiceNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flagMoniker, "", "server node moniker")
-	cmd.Flags().String(flagWebsite, "", "server node website")
-	cmd.Flags().String(flagEndpoints, "", "server node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
+	cmd.Flags().String(flagMoniker, "", "ipal node moniker")
+	cmd.Flags().String(flagWebsite, "", "ipal node website")
+	cmd.Flags().String(flagEndpoints, "", "ipal node endpoints, in format: serviceType|endpoint,serviceType|endpoint (e.g. 1|192.168.1.100:10000,2|192.168.1.101:20000)")
 	cmd.Flags().String(flagEndpointDelimiter, ",", "endpoints delimiter, e.g. '#' as delimiter: 1|192.168.1.100:10000#2|192.168.1.101:20000")
 	cmd.Flags().String(flagEndpointTypeDelimiter, "|", "endpoint delimiter, e.g. '-' as delimiter: 1-192.168.1.100:10000,2-192.168.1.101:20000")
-	cmd.Flags().String(flagDetails, "", "server node details")
+	cmd.Flags().String(flagDetails, "", "ipal node details")
 	cmd.Flags().String(flagExtension, "", "extension for future user define")
 	cmd.Flags().String(flagBond, "", "stake amount (e.g. 1000000pnch)")
 

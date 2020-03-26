@@ -38,20 +38,20 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		resKVs, height, err := cliCtx.QuerySubspace(types.ServiceNodeByBondKey, types.StoreKey)
+		resKVs, height, err := cliCtx.QuerySubspace(types.IPALNodeByBondKey, types.StoreKey)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		var serverNodes types.ServiceNodes
+		var ipalNodes types.IPALNodes
 		if len(resKVs) > 0 {
 			for i := len(resKVs) - 1; i >= 0; i-- {
-				serverNodes = append(serverNodes, types.MustUnmarshalServiceNode(cliCtx.Codec, resKVs[i].Value))
+				ipalNodes = append(ipalNodes, types.MustUnmarshalIPALNode(cliCtx.Codec, resKVs[i].Value))
 			}
 		}
 
-		res, err := cliCtx.Codec.MarshalJSONIndent(serverNodes, "", "  ")
+		res, err := cliCtx.Codec.MarshalJSONIndent(ipalNodes, "", "  ")
 
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
@@ -74,7 +74,7 @@ func queryNode(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 			return
 		}
 
-		params := types.NewQueryServiceNodeParams(accAddr)
+		params := types.NewQueryIPALNodeParams(accAddr)
 
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
@@ -96,7 +96,7 @@ func queryNode(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var params types.QueryServiceNodesParams
+		var params types.QueryIPALNodesParams
 
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
 			fmt.Fprint(os.Stderr, fmt.Sprintf("params = %v\n", params))
@@ -113,7 +113,7 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		
+
 		res, height, err := cliCtx.QueryWithData(endpoint, bz)
 		if err != nil && !strings.Contains(err.Error(), "not found") {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -126,9 +126,9 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 }
 
 func nodeHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
-	return queryNode(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryServiceNode))
+	return queryNode(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryIPALNode))
 }
 
 func nodesHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
-	return queryNodes(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryServiceNodes))
+	return queryNodes(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryIPALNodes))
 }

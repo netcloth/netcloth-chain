@@ -25,8 +25,8 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 	ipalQueryCmd.AddCommand(client.GetCommands(
 		GetCmdQueryParams(queryRoute, cdc),
-		GetCmdQueryServiceNodeList(cdc),
-		GetCmdQueryServiceNode(cdc),
+		GetCmdQueryIPALNodeList(cdc),
+		GetCmdQueryIPALNode(cdc),
 	)...)
 
 	return ipalQueryCmd
@@ -58,38 +58,38 @@ $ %s query ipal params`, version.ClientName)),
 	}
 }
 
-func GetCmdQueryServiceNodeList(cdc *codec.Codec) *cobra.Command {
+func GetCmdQueryIPALNodeList(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "Querying commands for ServiceNodes",
-		Long: strings.TrimSpace(fmt.Sprintf(`List all ServiceNodes.
+		Short: "Querying commands for IPALNodes",
+		Long: strings.TrimSpace(fmt.Sprintf(`List all IPALNodes.
 Example:
 $ %s query ipal list`, version.ClientName)),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			resKVs, _, err := cliCtx.QuerySubspace(types.ServiceNodeByBondKey, types.StoreKey)
+			resKVs, _, err := cliCtx.QuerySubspace(types.IPALNodeByBondKey, types.StoreKey)
 			if err != nil {
 				return err
 			}
 
-			var serverNodes types.ServiceNodes
+			var ipalNodes types.IPALNodes
 			if len(resKVs) > 0 {
 				for i := len(resKVs) - 1; i >= 0; i-- {
-					serverNodes = append(serverNodes, types.MustUnmarshalServiceNode(cdc, resKVs[i].Value))
+					ipalNodes = append(ipalNodes, types.MustUnmarshalIPALNode(cdc, resKVs[i].Value))
 				}
 			}
 
-			return cliCtx.PrintOutput(serverNodes)
+			return cliCtx.PrintOutput(ipalNodes)
 		},
 	}
 }
 
-func GetCmdQueryServiceNode(cdc *codec.Codec) *cobra.Command {
+func GetCmdQueryIPALNode(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "node",
-		Short: "Querying commands for ipal ServiceNode",
-		Long: strings.TrimSpace(fmt.Sprintf(`Query ipal  ServiceNode by accAddr.
+		Short: "Querying commands for IPALNode",
+		Long: strings.TrimSpace(fmt.Sprintf(`Query IPALNode by accAddr.
 Example:
 $ %s query ipal node [address]`, version.ClientName)),
 		Args: cobra.ExactArgs(1),
@@ -102,16 +102,16 @@ $ %s query ipal node [address]`, version.ClientName)),
 				return err
 			}
 
-			res, _, err := cliCtx.QueryStore(types.GetServiceNodeKey(addr), types.StoreKey)
+			res, _, err := cliCtx.QueryStore(types.GetIPALNodeKey(addr), types.StoreKey)
 			if err != nil {
 				return err
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No ServiceNode found with address %s", addr)
+				return fmt.Errorf("No IPALNode found with address %s", addr)
 			}
 
-			return cliCtx.PrintOutput(types.MustUnmarshalServiceNode(cdc, res))
+			return cliCtx.PrintOutput(types.MustUnmarshalIPALNode(cdc, res))
 		},
 	}
 }
