@@ -143,20 +143,6 @@ func executeGetAccAddress(t *testing.T, cmdStr string) (accAddress string) {
 	return
 }
 
-//func executeGetAddrPK(t *testing.T, cmdStr string) (sdk.AccAddress, crypto.PubKey) {
-//	out, _ := tests.ExecuteT(t, cmdStr, "")
-//	var ko KeyOutput
-//	keys.UnmarshalJSON([]byte(out), &ko)
-//
-//	pk, err := sdk.GetAccPubKeyBech32(ko.PubKey)
-//	require.NoError(t, err)
-//
-//	accAddr, err := sdk.AccAddressFromBech32(ko.Address)
-//	require.NoError(t, err)
-//
-//	return accAddr, pk
-//}
-
 func executeGetAccount(t *testing.T, cmdStr string) (acc auth.BaseAccount) {
 	out, _ := tests.ExecuteT(t, cmdStr, "")
 
