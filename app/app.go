@@ -61,8 +61,8 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		cipal.AppModuleBasic{},
 		ipal.AppModuleBasic{},
+		cipal.AppModuleBasic{},
 		vm.AppModuleBasic{},
 	)
 
@@ -236,13 +236,13 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
+		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.cipalKeeper),
 		ipal.NewAppModule(app.ipalKeeper),
+		cipal.NewAppModule(app.cipalKeeper),
 		vm.NewAppModule(app.vmKeeper),
 	)
 
