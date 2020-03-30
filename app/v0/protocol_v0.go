@@ -122,11 +122,23 @@ func (p *ProtocolV0) GetVersion() uint64 {
 	return p.version
 }
 
+func (p *ProtocolV0) GetRouter() sdk.Router {
+	panic("implement me")
+}
+
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState protocol.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.mm.InitGenesis(ctx, genesisState)
+}
+
+func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
+	return p.beginBlocker
+}
+
+func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
+	return p.endBlocker
 }
 
 func (p *ProtocolV0) Load() {

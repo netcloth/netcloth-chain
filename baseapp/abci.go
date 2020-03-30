@@ -180,6 +180,50 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 	return
 }
 
+func (app *BaseApp) BeginBlock1(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
+	if app.cms.TracingEnabled() {
+		app.cms.SetTracingContext(sdk.TraceContext(
+			map[string]interface{}{"blockHeight": req.Header.Height},
+		))
+	}
+
+	if err := app.validateHeight(req); err != nil {
+		panic(err)
+	}
+
+	// Initialize the DeliverTx state. If this is the first block, it should
+	// already be initialized in InitChain. Otherwise app.deliverState will be
+	// nil, since it is reset on Commit.
+	if app.deliverState == nil {
+		app.setDeliverState(req.Header)
+	} else {
+		// In the first block, app.deliverState.ctx will already be initialized
+		// by InitChain. Context is now updated with Header information.
+		app.deliverState.ctx = app.deliverState.ctx.
+			WithBlockHeader(req.Header).
+			WithBlockHeight(req.Header.Height)
+	}
+
+	// add block gas meter
+	var gasMeter sdk.GasMeter
+	if maxGas := app.getMaximumBlockGas(); maxGas > 0 {
+		gasMeter = sdk.NewGasMeter(maxGas)
+	} else {
+		gasMeter = sdk.NewInfiniteGasMeter()
+	}
+
+	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(gasMeter)
+
+	beginBlocker := app.Engine.GetCurrentProtocol().GetBeginBlocker()
+	if beginBlocker != nil {
+		res = beginBlocker(app.deliverState.ctx, req)
+	}
+
+	// set the signed validators for addition to context in deliverTx
+	app.voteInfos = req.LastCommitInfo.GetVotes()
+	return
+}
+
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
 	if app.deliverState.ms.TracingEnabled() {
@@ -189,6 +233,21 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}
+
+	return
+}
+
+func (app *BaseApp) EndBlock1(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
+	if app.deliverState.ms.TracingEnabled() {
+		app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
+	}
+
+	endBlocker := app.Engine.GetCurrentProtocol().GetEndBlocker()
+	if endBlocker != nil {
+		res = endBlocker(app.deliverState.ctx, req)
+	}
+
+	//TODO add protocol switch logic
 
 	return
 }
