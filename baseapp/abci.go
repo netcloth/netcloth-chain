@@ -60,6 +60,38 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	return
 }
 
+func (app *BaseApp) InitChain1(req abci.RequestInitChain) (res abci.ResponseInitChain) {
+	// Stash the consensus params in the cms main store and memoize.
+	if req.ConsensusParams != nil {
+		app.setConsensusParams(req.ConsensusParams)
+		app.storeConsensusParams(req.ConsensusParams)
+	}
+
+	// Initialize the deliver state and check state with ChainID and run initChain
+	app.setDeliverState(abci.Header{ChainID: req.ChainId})
+	app.setCheckState(abci.Header{ChainID: req.ChainId})
+
+	initChainer := app.Engine.GetCurrentProtocol().GetInitChainer()
+	if initChainer == nil {
+		return
+	}
+
+	// add block gas meter for any genesis transactions (allow infinite gas)
+	app.deliverState.ctx = app.deliverState.ctx.
+		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+
+	//res = initChainer(app.deliverState.ctx, app.DeliverTx, req)
+	res = initChainer(app.deliverState.ctx, req)
+
+	// There may be some application state in the genesis file, so always init the metrics.
+	//app.Engine.GetCurrentProtocol().InitMetrics(app.cms)
+
+	// TODO: sanity check
+	// NOTE: we don't commit, but BeginBlock for block 1
+	// starts from this deliverState
+	return
+}
+
 // Info implements the ABCI interface.
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()

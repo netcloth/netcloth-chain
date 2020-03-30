@@ -2,6 +2,7 @@ package baseapp
 
 import (
 	"fmt"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -54,6 +55,8 @@ type BaseApp struct {
 	router      sdk.Router           // handle any kind of message
 	queryRouter sdk.QueryRouter      // router for redirecting query calls
 	txDecoder   sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+
+	Engine *protocol.ProtocolEngine
 
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
@@ -259,6 +262,13 @@ func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
 	return nil
 }
 
+func (app *BaseApp) SetProtocolEngine(pe *protocol.ProtocolEngine) {
+	if app.sealed {
+		panic("SetProtocolEngine() on sealed BaseApp")
+	}
+	app.Engine = pe
+}
+
 func (app *BaseApp) setMinGasPrices(gasPrices sdk.DecCoins) {
 	fmt.Fprintf(os.Stdout, "minimus gas prices: %s\n", gasPrices.String())
 	app.minGasPrices = gasPrices
@@ -440,7 +450,8 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		}
 
 		msgRoute := msg.Route()
-		handler := app.router.Route(ctx, msgRoute)
+		//handler := app.router.Route(ctx, msgRoute)
+		handler := app.Engine.GetCurrentProtocol().GetRouter().Route(ctx, msgRoute) //TODO ctx is not needed
 		if handler == nil {
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
 		}
