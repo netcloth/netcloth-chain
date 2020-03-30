@@ -67,8 +67,8 @@ type ProtocolV0 struct {
 	cdc            *codec.Codec
 	logger         log.Logger
 	invariantLevel string
-	checkInvariant bool
-	trackCoinFlow  bool
+	//checkInvariant bool
+	//trackCoinFlow  bool
 
 	// Manage getting and setting accounts
 	accountKeeper  auth.AccountKeeper
@@ -106,14 +106,14 @@ type ProtocolV0 struct {
 	mm *module.Manager
 }
 
-func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, checkInvariant bool, trackCoinFlow bool, config *cfg.InstrumentationConfig) *ProtocolV0 {
+func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
 		logger:         log,
 		protocolKeeper: pk,
-		checkInvariant: checkInvariant,
-		trackCoinFlow:  trackCoinFlow,
-		config:         config,
+		//checkInvariant: checkInvariant,
+		//trackCoinFlow:  trackCoinFlow,
+		config: config,
 	}
 
 	return &p0
@@ -143,6 +143,10 @@ func (p *ProtocolV0) Load() {
 }
 
 func (p *ProtocolV0) Init(ctx sdk.Context) {
+}
+
+func (p *ProtocolV0) GetCodec() *codec.Codec {
+	return p.cdc
 }
 
 func (p *ProtocolV0) GetInitChainer() sdk.InitChainer {

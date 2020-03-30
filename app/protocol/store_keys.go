@@ -5,9 +5,10 @@ import (
 )
 
 const (
+	MainStoreKey     = "main"
 	paramsStoreKey   = "params"
 	supplyStoreKey   = "supply"
-	stakingStoreKey  = "staking"
+	StakingStoreKey  = "staking"
 	mintStoreKey     = "mint"
 	distrStoreKey    = "distribution"
 	slashingStoreKey = "slashing"
@@ -23,10 +24,13 @@ const (
 )
 
 var (
+	MainKVStoreKey = sdk.NewKVStoreKey(MainStoreKey)
+
 	Keys = sdk.NewKVStoreKeys(
+		MainStoreKey,
 		paramsStoreKey,
 		supplyStoreKey,
-		stakingStoreKey,
+		StakingStoreKey,
 		mintStoreKey,
 		distrStoreKey,
 		slashingStoreKey,

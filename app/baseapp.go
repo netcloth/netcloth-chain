@@ -100,15 +100,7 @@ type BaseApp struct {
 	appVersion string
 }
 
-// NewBaseApp returns a reference to an initialized BaseApp. It accepts a
-// variadic number of option functions, which act on the BaseApp to set
-// configuration choices.
-//
-// NOTE: The db is used to store the version number for now.
-func NewBaseApp(
-	name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, options ...func(*BaseApp),
-) *BaseApp {
-
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
 	app := &BaseApp{
 		logger:         logger,
 		name:           name,
@@ -116,9 +108,9 @@ func NewBaseApp(
 		cms:            store.NewCommitMultiStore(db),
 		router:         NewRouter(),
 		queryRouter:    NewQueryRouter(),
-		txDecoder:      txDecoder,
 		fauxMerkleMode: false,
 	}
+
 	for _, option := range options {
 		option(app)
 	}

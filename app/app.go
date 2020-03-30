@@ -1,6 +1,9 @@
 package app
 
 import (
+	"fmt"
+	"github.com/netcloth/netcloth-chain/app/protocol"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"io"
 	"os"
 
@@ -39,10 +42,7 @@ const (
 )
 
 var (
-	// default home directories for nchcli
-	DefaultCLIHome = os.ExpandEnv("$HOME/.nchcli")
-
-	// default home directories for nchd
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.nchcli")
 	DefaultNodeHome = os.ExpandEnv("$HOME/.nchd")
 
 	// The module BasicManager is in charge of setting up basic,
@@ -66,7 +66,6 @@ var (
 		vm.AppModuleBasic{},
 	)
 
-	// module account permissions
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		distr.ModuleName:          nil,
@@ -78,7 +77,6 @@ var (
 	}
 )
 
-// CreateCodec generates the necessary codecs for Amino
 func CreateCodec() *codec.Codec {
 	var cdc = codec.New()
 
@@ -92,13 +90,13 @@ func CreateCodec() *codec.Codec {
 
 type NCHApp struct {
 	*BaseApp
-	cdc *codec.Codec
+	//cdc *codec.Codec
 
 	invCheckPeriod uint
 
 	// keys to access the substores
-	keys  map[string]*sdk.KVStoreKey
-	tkeys map[string]*sdk.TransientStoreKey
+	//keys  map[string]*sdk.KVStoreKey
+	//tkeys map[string]*sdk.TransientStoreKey
 
 	// keepers
 	accountKeeper  auth.AccountKeeper
@@ -116,180 +114,48 @@ type NCHApp struct {
 	ipalKeeper     ipal.Keeper
 	vmKeeper       vm.Keeper
 
-	// the module manager
 	mm *module.Manager
 }
 
-// NewNCHApp is a constructor function for NCHApp
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
+	bApp := NewBaseApp(appName, logger, db, baseAppOptions...)
 
-	// First define the top level codec that will be shared by the different modules
-	cdc := CreateCodec()
+	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
+	engine := protocol.NewProtocolEngine(protocolKeeper)
+	bApp.SetProtocolEngine(&engine)
 
-	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	if !bApp.fauxMerkleMode {
+		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeIAVL)
+	} else {
+		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
+	}
+
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, nil))
+	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.MainKVStoreKey))
+	if !loaded {
+		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!", current))
+	}
+
+	bApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
-	keys := sdk.NewKVStoreKeys(
-		MainStoreKey,
-		auth.StoreKey,
-		auth.RefundKey,
-		staking.StoreKey,
-		supply.StoreKey,
-		mint.StoreKey,
-		distr.StoreKey,
-		slashing.StoreKey,
-		gov.StoreKey,
-		params.StoreKey,
-		cipal.StoreKey,
-		ipal.StoreKey,
-		vm.StoreKey,
-		vm.CodeKey,
-		vm.StoreDebugKey,
-	)
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
-
-	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
 		BaseApp:        bApp,
-		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
-		keys:           keys,
-		tkeys:          tkeys,
 	}
 
-	// init params keeper
-	// The ParamsKeeper handles parameter storage for the application
-	// init params keeper and subspaces
-	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey])
-	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
-	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
-	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
-	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
-	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
-	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
-	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
-	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
+	app.MountKVStores(protocol.Keys)
+	app.MountTransientStores(protocol.TKeys)
 
-	// add keepers
-	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	app.refundKeeper = auth.NewRefundKeeper(app.cdc, keys[auth.RefundKey])
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, app.ModuleAccountAddrs())
-	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
-	stakingKeeper := staking.NewKeeper(
-		app.cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey],
-		app.supplyKeeper, stakingSubspace)
-	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
-	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
-		app.supplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
-	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
-	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
-
-	app.cipalKeeper = cipal.NewKeeper(
-		keys[cipal.StoreKey],
-		app.cdc,
-		cipalSubspace)
-
-	app.ipalKeeper = ipal.NewKeeper(
-		keys[ipal.StoreKey],
-		app.cdc,
-		app.supplyKeeper,
-		ipalSubspace)
-
-	app.vmKeeper = vm.NewKeeper(
-		app.cdc,
-		keys[vm.StoreKey],
-		keys[vm.CodeKey],
-		keys[vm.StoreDebugKey],
-		vmSubspace,
-		auth.NewAccountKeeperCopy(app.accountKeeper, true))
-
-	// register the proposal types
-	govRouter := gov.NewRouter()
-	govRouter.
-		AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
-		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
-
-	app.govKeeper = gov.NewKeeper(
-		app.cdc, keys[gov.StoreKey], govSubspace, app.supplyKeeper,
-		&stakingKeeper, govRouter,
-	)
-
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
-	)
-
-	// NOTE: Any module instantiated in the module manager that is later modified
-	// must be passed by reference here.
-	app.mm = module.NewManager(
-		genaccounts.NewAppModule(app.accountKeeper),
-		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
-		auth.NewAppModule(app.accountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		crisis.NewAppModule(&app.crisisKeeper),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
-		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
-		mint.NewAppModule(app.mintKeeper),
-		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
-		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.cipalKeeper),
-		ipal.NewAppModule(app.ipalKeeper),
-		vm.NewAppModule(app.vmKeeper),
-	)
-
-	// During begin block slashing happens after distr.BeginBlocker so that
-	// there is nothing left over in the validator fee pool, so as to keep the
-	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
-
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName)
-
-	// NOTE: The genutils module must occur after staking so that pools are
-	// properly initialized with tokens from genesis accounts.
-	app.mm.SetOrderInitGenesis(
-		genaccounts.ModuleName,
-		distr.ModuleName,
-		staking.ModuleName,
-		auth.ModuleName,
-		bank.ModuleName,
-		slashing.ModuleName,
-		gov.ModuleName,
-		mint.ModuleName,
-		supply.ModuleName,
-		crisis.ModuleName,
-		genutil.ModuleName,
-		ipal.ModuleName,
-		cipal.ModuleName,
-		vm.ModuleName,
-	)
-
-	//app.mm.RegisterInvariants(&app.crisisKeeper)
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
-
-	// initialize stores
-	app.MountKVStores(keys)
-	app.MountTransientStores(tkeys)
-
-	// The initChainer handles translating the genesis.json file into initial state for the network
-	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
-	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
-	// Fee refund handler
 	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[MainStoreKey])
+		err := app.LoadLatestVersion(protocol.MainKVStoreKey)
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
@@ -298,181 +164,50 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	return app
 }
 
-// NewNCHApp is a constructor function for NCHApp
-func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest, loadInit bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
+func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, loadInit, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
+	bApp := NewBaseApp(appName, logger, db, baseAppOptions...)
 
-	// First define the top level codec that will be shared by the different modules
-	cdc := CreateCodec()
+	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
+	engine := protocol.NewProtocolEngine(protocolKeeper)
+	bApp.SetProtocolEngine(&engine)
 
-	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	if !bApp.fauxMerkleMode {
+		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeIAVL)
+	} else {
+		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
+	}
+
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, nil))
+	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.Keys[MainStoreKey]))
+	if !loaded {
+		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!", current))
+	}
+
+	bApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
-	keys := sdk.NewKVStoreKeys(
-		MainStoreKey,
-		auth.StoreKey,
-		auth.RefundKey,
-		staking.StoreKey,
-		supply.StoreKey,
-		mint.StoreKey,
-		distr.StoreKey,
-		slashing.StoreKey,
-		gov.StoreKey,
-		params.StoreKey,
-		cipal.StoreKey,
-		ipal.StoreKey,
-		vm.StoreKey,
-		vm.CodeKey,
-		vm.StoreDebugKey,
-	)
-	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
-
-	// Here you initialize your application with the store keys it requires
 	var app = &NCHApp{
 		BaseApp:        bApp,
-		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
-		keys:           keys,
-		tkeys:          tkeys,
 	}
 
-	// init params keeper
-	// The ParamsKeeper handles parameter storage for the application
-	// init params keeper and subspaces
-	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tkeys[params.TStoreKey])
-	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
-	bankSubspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
-	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
-	mintSubspace := app.paramsKeeper.Subspace(mint.DefaultParamspace)
-	distrSubspace := app.paramsKeeper.Subspace(distr.DefaultParamspace)
-	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
-	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
-	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
+	app.MountKVStores(protocol.Keys)
+	app.MountTransientStores(protocol.TKeys)
 
-	// add keepers
-	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	app.refundKeeper = auth.NewRefundKeeper(app.cdc, keys[auth.RefundKey])
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, bankSubspace, app.ModuleAccountAddrs())
-	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
-	stakingKeeper := staking.NewKeeper(
-		app.cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey],
-		app.supplyKeeper, stakingSubspace)
-	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], mintSubspace, &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
-	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], distrSubspace, &stakingKeeper,
-		app.supplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
-	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
-	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
-
-	app.cipalKeeper = cipal.NewKeeper(
-		keys[cipal.StoreKey],
-		app.cdc,
-		cipalSubspace)
-
-	app.ipalKeeper = ipal.NewKeeper(
-		keys[ipal.StoreKey],
-		app.cdc,
-		app.supplyKeeper,
-		ipalSubspace)
-
-	app.vmKeeper = vm.NewKeeper(
-		app.cdc,
-		keys[vm.StoreKey],
-		keys[vm.CodeKey],
-		keys[vm.StoreDebugKey],
-		vmSubspace,
-		app.accountKeeper)
-
-	// register the proposal types
-	govRouter := gov.NewRouter()
-	govRouter.
-		AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
-		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.distrKeeper))
-
-	app.govKeeper = gov.NewKeeper(
-		app.cdc, keys[gov.StoreKey], govSubspace, app.supplyKeeper,
-		&stakingKeeper, govRouter,
-	)
-
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
-	)
-
-	// NOTE: Any module instantiated in the module manager that is later modified
-	// must be passed by reference here.
-	app.mm = module.NewManager(
-		genaccounts.NewAppModule(app.accountKeeper),
-		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
-		auth.NewAppModule(app.accountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		crisis.NewAppModule(&app.crisisKeeper),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
-		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
-		mint.NewAppModule(app.mintKeeper),
-		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
-		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.cipalKeeper),
-		ipal.NewAppModule(app.ipalKeeper),
-		vm.NewAppModule(app.vmKeeper),
-	)
-
-	// During begin block slashing happens after distr.BeginBlocker so that
-	// there is nothing left over in the validator fee pool, so as to keep the
-	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
-
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName)
-
-	// NOTE: The genutils module must occur after staking so that pools are
-	// properly initialized with tokens from genesis accounts.
-	app.mm.SetOrderInitGenesis(
-		genaccounts.ModuleName,
-		distr.ModuleName,
-		staking.ModuleName,
-		auth.ModuleName,
-		bank.ModuleName,
-		slashing.ModuleName,
-		gov.ModuleName,
-		mint.ModuleName,
-		supply.ModuleName,
-		crisis.ModuleName,
-		genutil.ModuleName,
-		ipal.ModuleName,
-		cipal.ModuleName,
-		vm.ModuleName,
-	)
-
-	//app.mm.RegisterInvariants(&app.crisisKeeper)
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
-
-	// initialize stores
-	app.MountKVStores(keys)
-	app.MountTransientStores(tkeys)
-
-	// The initChainer handles translating the genesis.json file into initial state for the network
-	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
-	// The AnteHandler handles signature verification and transaction pre-processing
 	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
-	// Fee refund handler
 	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[MainStoreKey])
+		err := app.LoadLatestVersion(protocol.MainKVStoreKey)
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
 	} else if loadInit {
-		err := app.LoadVersion(0, app.keys[MainStoreKey])
+		err := app.LoadVersion(0, protocol.MainKVStoreKey)
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
@@ -481,22 +216,12 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	return app
 }
 
-// application updates every begin block
 func (app *NCHApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
-// application updates every end block
 func (app *NCHApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
-}
-
-// application update at chain initialization
-func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
-	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
-
-	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 func SetBech32AddressPrefixes(config *sdk.Config) {
@@ -505,12 +230,10 @@ func SetBech32AddressPrefixes(config *sdk.Config) {
 	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 }
 
-// load a particular height
 func (app *NCHApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, app.keys[MainStoreKey])
+	return app.LoadVersion(height, protocol.MainKVStoreKey)
 }
 
-// ModuleAccountAddrs returns all the app's module account addresses.
 func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {

@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -24,7 +25,7 @@ func (app *NCHApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList
 	}
 
 	genState := app.mm.ExportGenesis(ctx)
-	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
+	appState, err = codec.MarshalJSONIndent(app.Engine.GetCurrentProtocol().GetCodec(), genState)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -124,7 +125,7 @@ func (app *NCHApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []str
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
-	store := ctx.KVStore(app.keys[staking.StoreKey])
+	store := ctx.KVStore(protocol.Keys[protocol.StakingStoreKey])
 	iter := sdk.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
 	counter := int16(0)
 

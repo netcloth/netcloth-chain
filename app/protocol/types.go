@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -13,4 +14,5 @@ type Protocol interface {
 
 	Load()
 	Init(ctx sdk.Context)
+	GetCodec() *codec.Codec
 }

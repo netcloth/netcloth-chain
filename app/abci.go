@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -14,53 +13,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-// InitChain implements the ABCI interface. It runs the initialization logic
-// directly on the CommitMultiStore.
 func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitChain) {
-	// stash the consensus params in the cms main store and memoize
-	if req.ConsensusParams != nil {
-		app.setConsensusParams(req.ConsensusParams)
-		app.storeConsensusParams(req.ConsensusParams)
-	}
-
-	initHeader := abci.Header{ChainID: req.ChainId, Time: req.Time}
-
-	// initialize the deliver state and check state with a correct header
-	app.setDeliverState(initHeader)
-	app.setCheckState(initHeader)
-
-	if app.initChainer == nil {
-		return
-	}
-
-	// add block gas meter for any genesis transactions (allow infinite gas)
-	app.deliverState.ctx = app.deliverState.ctx.
-		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
-
-	res = app.initChainer(app.deliverState.ctx, req)
-
-	// sanity check
-	if len(req.Validators) > 0 {
-		if len(req.Validators) != len(res.Validators) {
-			panic(fmt.Errorf(
-				"len(RequestInitChain.Validators) != len(validators) (%d != %d)",
-				len(req.Validators), len(res.Validators)))
-		}
-		sort.Sort(abci.ValidatorUpdates(req.Validators))
-		sort.Sort(abci.ValidatorUpdates(res.Validators))
-		for i, val := range res.Validators {
-			if !val.Equal(req.Validators[i]) {
-				panic(fmt.Errorf("validators[%d] != req.Validators[%d] ", i, i))
-			}
-		}
-	}
-
-	// NOTE: We don't commit, but BeginBlock for block 1 starts from this
-	// deliverState.
-	return
-}
-
-func (app *BaseApp) InitChain1(req abci.RequestInitChain) (res abci.ResponseInitChain) {
 	// Stash the consensus params in the cms main store and memoize.
 	if req.ConsensusParams != nil {
 		app.setConsensusParams(req.ConsensusParams)
