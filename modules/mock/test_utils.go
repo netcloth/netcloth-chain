@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"github.com/netcloth/netcloth-chain/app"
 	"math/big"
 	"math/rand"
 	"testing"
@@ -9,7 +10,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -52,7 +52,7 @@ func CheckBalance(t *testing.T, app *App, addr sdk.AccAddress, exp sdk.Coins) {
 // compared against the parameter 'expPass'. A test assertion is made using the
 // parameter 'expPass' against the result. A corresponding result is returned.
 func CheckGenTx(
-	t *testing.T, app *baseapp.BaseApp, msgs []sdk.Msg, accNums []uint64,
+	t *testing.T, app *app.BaseApp, msgs []sdk.Msg, accNums []uint64,
 	seq []uint64, expPass bool, priv ...crypto.PrivKey,
 ) (sdk.GasInfo, *sdk.Result, error) {
 	tx := GenTx(msgs, accNums, seq, priv...)
@@ -74,7 +74,7 @@ func CheckGenTx(
 // the parameter 'expPass' against the result. A corresponding result is
 // returned.
 func SignCheckDeliver(
-	t *testing.T, cdc *codec.Codec, app *baseapp.BaseApp, header abci.Header, msgs []sdk.Msg,
+	t *testing.T, cdc *codec.Codec, app *app.BaseApp, header abci.Header, msgs []sdk.Msg,
 	accNums, seq []uint64, expSimPass, expPass bool, priv ...crypto.PrivKey,
 ) (sdk.GasInfo, *sdk.Result, error) {
 

@@ -2,11 +2,11 @@ package simulation
 
 import (
 	"fmt"
+	"github.com/netcloth/netcloth-chain/app"
 	"math"
 	"math/rand"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/modules/gov"
 	"github.com/netcloth/netcloth-chain/modules/simulation"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -14,7 +14,7 @@ import (
 
 // ContentSimulator defines a function type alias for generating random proposal
 // content.
-type ContentSimulator func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simulation.Account) gov.Content
+type ContentSimulator func(r *rand.Rand, app *app.BaseApp, ctx sdk.Context, accs []simulation.Account) gov.Content
 
 // SimulateSubmittingVotingAndSlashingForProposal simulates creating a msg Submit Proposal
 // voting on the proposal, and subsequently slashing the proposal. It is implemented using
@@ -46,7 +46,7 @@ func SimulateSubmittingVotingAndSlashingForProposal(k gov.Keeper, contentSim Con
 	curNumVotesState := 1
 
 	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simulation.Account,
+		r *rand.Rand, app *app.BaseApp, ctx sdk.Context, accs []simulation.Account,
 	) (opMsg simulation.OperationMsg, fOps []simulation.FutureOperation, err error) {
 
 		// 1) submit proposal now
@@ -107,7 +107,7 @@ func simulateHandleMsgSubmitProposal(msg gov.MsgSubmitProposal, handler sdk.Hand
 }
 
 // SimulateTextProposalContent returns random text proposal content.
-func SimulateTextProposalContent(r *rand.Rand, _ *baseapp.BaseApp, _ sdk.Context, _ []simulation.Account) gov.Content {
+func SimulateTextProposalContent(r *rand.Rand, _ *app.BaseApp, _ sdk.Context, _ []simulation.Account) gov.Content {
 	return gov.NewTextProposal(
 		simulation.RandStringOfLength(r, 140),
 		simulation.RandStringOfLength(r, 5000),
@@ -124,7 +124,7 @@ func simulationCreateMsgSubmitProposal(r *rand.Rand, c gov.Content, s simulation
 
 // SimulateMsgDeposit generates a MsgDeposit with random values.
 func SimulateMsgDeposit(k gov.Keeper) simulation.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simulation.Account) (
+	return func(r *rand.Rand, app *app.BaseApp, ctx sdk.Context, accs []simulation.Account) (
 		opMsg simulation.OperationMsg, fOps []simulation.FutureOperation, err error) {
 
 		acc := simulation.RandomAcc(r, accs)
@@ -155,7 +155,7 @@ func SimulateMsgVote(k gov.Keeper) simulation.Operation {
 
 // nolint: unparam
 func operationSimulateMsgVote(k gov.Keeper, acc simulation.Account, proposalID uint64) simulation.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simulation.Account) (
+	return func(r *rand.Rand, app *app.BaseApp, ctx sdk.Context, accs []simulation.Account) (
 		opMsg simulation.OperationMsg, fOps []simulation.FutureOperation, err error) {
 
 		if acc.Equals(simulation.Account{}) {

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/netcloth/netcloth-chain/app"
-	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/modules/genaccounts"
 	genaccscli "github.com/netcloth/netcloth-chain/modules/genaccounts/client/cli"
@@ -78,7 +77,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 	minGasPrices := viper.GetString(flagMinGasPrices)
 	return app.NewNCHApp(
 		logger, db, traceStore, true, invCheckPeriod,
-		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices),
+		app.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), app.SetMinGasPrices(minGasPrices),
 	)
 }
 

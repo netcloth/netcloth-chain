@@ -5,12 +5,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
-	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
-	"github.com/netcloth/netcloth-chain/modules/gov"
+	//"github.com/netcloth/netcloth-chain/modules/gov"
 	govrest "github.com/netcloth/netcloth-chain/modules/gov/client/rest"
 )
 
@@ -40,14 +39,14 @@ func postProposalHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		content := types.NewCommunityPoolSpendProposal(req.Title, req.Description, req.Recipient, req.Amount)
+		//content := types.NewCommunityPoolSpendProposal(req.Title, req.Description, req.Recipient, req.Amount)
+		//
+		//msg := gov.NewMsgSubmitProposal(content, req.Deposit, req.Proposer)
+		//if err := msg.ValidateBasic(); err != nil {
+		//	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		//	return
+		//}
 
-		msg := gov.NewMsgSubmitProposal(content, req.Deposit, req.Proposer)
-		if err := msg.ValidateBasic(); err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{msg})
+		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{})
 	}
 }

@@ -11,13 +11,13 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	"github.com/netcloth/netcloth-chain/modules/crisis"
 	distr "github.com/netcloth/netcloth-chain/modules/distribution"
+	distrclient "github.com/netcloth/netcloth-chain/modules/distribution/client"
 	"github.com/netcloth/netcloth-chain/modules/genaccounts"
 	"github.com/netcloth/netcloth-chain/modules/genutil"
 	"github.com/netcloth/netcloth-chain/modules/gov"
@@ -56,7 +56,7 @@ var (
 		staking.AppModuleBasic{},
 		mint.AppModuleBasic{},
 		distr.AppModuleBasic{},
-		gov.NewAppModuleBasic(paramsclient.ProposalHandler, distr.ProposalHandler),
+		gov.NewAppModuleBasic(paramsclient.ProposalHandler, distrclient.ProposalHandler),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
@@ -91,7 +91,7 @@ func CreateCodec() *codec.Codec {
 }
 
 type NCHApp struct {
-	*bam.BaseApp
+	*BaseApp
 	cdc *codec.Codec
 
 	invCheckPeriod uint
@@ -121,18 +121,18 @@ type NCHApp struct {
 }
 
 // NewNCHApp is a constructor function for NCHApp
-func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *NCHApp {
+func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := CreateCodec()
 
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(
-		bam.MainStoreKey,
+		MainStoreKey,
 		auth.StoreKey,
 		auth.RefundKey,
 		staking.StoreKey,
@@ -289,7 +289,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+		err := app.LoadLatestVersion(app.keys[MainStoreKey])
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
@@ -299,18 +299,18 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 }
 
 // NewNCHApp is a constructor function for NCHApp
-func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest, loadInit bool, invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *NCHApp {
+func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest, loadInit bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := CreateCodec()
 
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(
-		bam.MainStoreKey,
+		MainStoreKey,
 		auth.StoreKey,
 		auth.RefundKey,
 		staking.StoreKey,
@@ -467,12 +467,12 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+		err := app.LoadLatestVersion(app.keys[MainStoreKey])
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
 	} else if loadInit {
-		err := app.LoadVersion(0, app.keys[bam.MainStoreKey])
+		err := app.LoadVersion(0, app.keys[MainStoreKey])
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
@@ -507,7 +507,7 @@ func SetBech32AddressPrefixes(config *sdk.Config) {
 
 // load a particular height
 func (app *NCHApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
+	return app.LoadVersion(height, app.keys[MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.

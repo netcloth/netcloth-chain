@@ -8,6 +8,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	"github.com/netcloth/netcloth-chain/modules/crisis"
 	distr "github.com/netcloth/netcloth-chain/modules/distribution"
+	distrclient "github.com/netcloth/netcloth-chain/modules/distribution/client"
 	"github.com/netcloth/netcloth-chain/modules/genaccounts"
 	"github.com/netcloth/netcloth-chain/modules/genutil"
 	"github.com/netcloth/netcloth-chain/modules/gov"
@@ -39,7 +40,7 @@ var ModuleBasics = module.NewBasicManager(
 	staking.AppModuleBasic{},
 	mint.AppModuleBasic{},
 	distr.AppModuleBasic{},
-	gov.NewAppModuleBasic(paramsclient.ProposalHandler, distr.ProposalHandler),
+	gov.NewAppModuleBasic(paramsclient.ProposalHandler, distrclient.ProposalHandler),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
@@ -133,14 +134,6 @@ func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 	return p.mm.InitGenesis(ctx, genesisState)
 }
 
-func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
-	return p.beginBlocker
-}
-
-func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
-	return p.endBlocker
-}
-
 func (p *ProtocolV0) Load() {
 	p.configCodec()
 	p.configKeepers()
@@ -154,6 +147,14 @@ func (p *ProtocolV0) Init(ctx sdk.Context) {
 
 func (p *ProtocolV0) GetInitChainer() sdk.InitChainer {
 	return p.InitChainer
+}
+
+func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
+	return p.beginBlocker
+}
+
+func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
+	return p.endBlocker
 }
 
 func (p *ProtocolV0) configCodec() {

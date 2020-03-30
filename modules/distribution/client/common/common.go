@@ -3,8 +3,8 @@ package common
 import (
 	"fmt"
 
-	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	"github.com/netcloth/netcloth-chain/client/context"
+	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

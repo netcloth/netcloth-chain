@@ -3,17 +3,17 @@ package simulation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/app"
 	"math/rand"
 	"testing"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/netcloth/netcloth-chain/baseapp"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 // assertAll asserts the all invariants against application state
-func assertAllInvariants(t *testing.T, app *baseapp.BaseApp, invs sdk.Invariants,
+func assertAllInvariants(t *testing.T, app *app.BaseApp, invs sdk.Invariants,
 	event string, logWriter LogWriter, allInvariants bool) {
 
 	ctx := app.NewContext(false, abci.Header{Height: app.LastBlockHeight() + 1})

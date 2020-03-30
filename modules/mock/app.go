@@ -3,6 +3,7 @@ package mock
 import (
 	"bytes"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/app"
 	"math/rand"
 	"os"
 	"sort"
@@ -16,7 +17,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	bam "github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
@@ -30,7 +30,7 @@ const chainID = ""
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
 type App struct {
-	*bam.BaseApp
+	*app.BaseApp
 	Cdc        *codec.Codec // Cdc is public since the codec is passed into the module anyways
 	KeyMain    *sdk.KVStoreKey
 	KeyAccount *sdk.KVStoreKey
@@ -56,9 +56,9 @@ func NewApp() *App {
 
 	// Create your application object
 	app := &App{
-		BaseApp:          bam.NewBaseApp("mock", logger, db, auth.DefaultTxDecoder(cdc)),
+		BaseApp:          app.NewBaseApp("mock", logger, db, auth.DefaultTxDecoder(cdc)),
 		Cdc:              cdc,
-		KeyMain:          sdk.NewKVStoreKey(bam.MainStoreKey),
+		KeyMain:          sdk.NewKVStoreKey(app.MainStoreKey),
 		KeyAccount:       sdk.NewKVStoreKey(auth.StoreKey),
 		KeyParams:        sdk.NewKVStoreKey("params"),
 		TKeyParams:       sdk.NewTransientStoreKey("transient_params"),

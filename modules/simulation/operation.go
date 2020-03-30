@@ -2,11 +2,11 @@ package simulation
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/app"
 	"math/rand"
 	"sort"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/baseapp"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -19,7 +19,7 @@ import (
 //
 // Operations can optionally provide a list of "FutureOperations" to run later
 // These will be ran at the beginning of the corresponding block.
-type Operation func(r *rand.Rand, app *baseapp.BaseApp,
+type Operation func(r *rand.Rand, app *app.BaseApp,
 	ctx sdk.Context, accounts []Account) (
 	OperationMsg OperationMsg, futureOps []FutureOperation, err error)
 

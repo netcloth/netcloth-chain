@@ -15,7 +15,7 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/modules/distribution/client/common"
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
-	"github.com/netcloth/netcloth-chain/modules/gov"
+	//"github.com/netcloth/netcloth-chain/modules/gov"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
@@ -235,20 +235,20 @@ Where proposal.json contains:
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			proposal, err := ParseCommunityPoolSpendProposalJSON(cdc, args[0])
-			if err != nil {
-				return err
-			}
+			//proposal, err := ParseCommunityPoolSpendProposalJSON(cdc, args[0])
+			//if err != nil {
+			//	return err
+			//}
 
-			from := cliCtx.GetFromAddress()
-			content := types.NewCommunityPoolSpendProposal(proposal.Title, proposal.Description, proposal.Recipient, proposal.Amount)
+			//from := cliCtx.GetFromAddress()
+			//content := types.NewCommunityPoolSpendProposal(proposal.Title, proposal.Description, proposal.Recipient, proposal.Amount)
+			//
+			//msg := gov.NewMsgSubmitProposal(content, proposal.Deposit, from)
+			//if err := msg.ValidateBasic(); err != nil {
+			//	return err
+			//}
 
-			msg := gov.NewMsgSubmitProposal(content, proposal.Deposit, from)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{})
 		},
 	}
 

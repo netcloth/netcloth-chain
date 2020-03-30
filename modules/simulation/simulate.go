@@ -3,6 +3,7 @@ package simulation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/app"
 	"io"
 	"math/rand"
 	"os"
@@ -14,7 +15,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/baseapp"
 )
 
 // AppStateFn returns the app state json bytes, the genesis accounts, and the chain identifier
@@ -24,7 +24,7 @@ type AppStateFn func(
 
 // initialize the chain for the simulation
 func initChain(
-	r *rand.Rand, params Params, accounts []Account, app *baseapp.BaseApp, appStateFn AppStateFn,
+	r *rand.Rand, params Params, accounts []Account, app *app.BaseApp, appStateFn AppStateFn,
 ) (mockValidators, time.Time, []Account) {
 
 	appState, accounts, chainID, genesisTimestamp := appStateFn(r, accounts)
@@ -43,7 +43,7 @@ func initChain(
 // operations, testing the provided invariants, but using the provided seed.
 // TODO: split this monster function up
 func SimulateFromSeed(
-	tb testing.TB, w io.Writer, app *baseapp.BaseApp,
+	tb testing.TB, w io.Writer, app *app.BaseApp,
 	appStateFn AppStateFn, seed int64,
 	ops WeightedOperations, invariants sdk.Invariants,
 	initialHeight, numBlocks, exportParamsHeight, blockSize int,
@@ -245,7 +245,7 @@ func SimulateFromSeed(
 
 //______________________________________________________________________________
 
-type blockSimFn func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
+type blockSimFn func(r *rand.Rand, app *app.BaseApp, ctx sdk.Context,
 	accounts []Account, header abci.Header) (opCount int)
 
 // Returns a function to simulate blocks. Written like this to avoid constant
@@ -260,7 +260,7 @@ func createBlockSimulator(testingMode bool, tb testing.TB, t *testing.T, w io.Wr
 	selectOp := ops.getSelectOpFn()
 
 	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accounts []Account, header abci.Header,
+		r *rand.Rand, app *app.BaseApp, ctx sdk.Context, accounts []Account, header abci.Header,
 	) (opCount int) {
 
 		_, _ = fmt.Fprintf(
@@ -320,7 +320,7 @@ func createBlockSimulator(testingMode bool, tb testing.TB, t *testing.T, w io.Wr
 
 // nolint: errcheck
 func runQueuedOperations(queueOps map[int][]Operation,
-	height int, tb testing.TB, r *rand.Rand, app *baseapp.BaseApp,
+	height int, tb testing.TB, r *rand.Rand, app *app.BaseApp,
 	ctx sdk.Context, accounts []Account, logWriter LogWriter, event func(route, op, evResult string), lean bool) (numOpsRan int) {
 
 	queuedOp, ok := queueOps[height]
@@ -350,7 +350,7 @@ func runQueuedOperations(queueOps map[int][]Operation,
 
 func runQueuedTimeOperations(queueOps []FutureOperation,
 	height int, currentTime time.Time, tb testing.TB, r *rand.Rand,
-	app *baseapp.BaseApp, ctx sdk.Context, accounts []Account,
+	app *app.BaseApp, ctx sdk.Context, accounts []Account,
 	logWriter LogWriter, event func(route, op, evResult string), lean bool) (numOpsRan int) {
 
 	numOpsRan = 0

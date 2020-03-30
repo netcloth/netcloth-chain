@@ -5,7 +5,7 @@
 package distribution
 
 import (
-	"github.com/netcloth/netcloth-chain/modules/distribution/client"
+	//"github.com/netcloth/netcloth-chain/modules/distribution/client"
 	"github.com/netcloth/netcloth-chain/modules/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/modules/distribution/types"
 )
@@ -125,7 +125,7 @@ var (
 	AttributeKeyWithdrawAddress          = types.AttributeKeyWithdrawAddress
 	AttributeKeyValidator                = types.AttributeKeyValidator
 	AttributeValueCategory               = types.AttributeValueCategory
-	ProposalHandler                      = client.ProposalHandler
+	//ProposalHandler                      = client.ProposalHandler
 )
 
 type (
