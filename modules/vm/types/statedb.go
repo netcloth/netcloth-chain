@@ -555,7 +555,7 @@ func (csdb *CommitStateDB) UpdateAccounts() {
 		if err != nil {
 			continue
 		}
-		accI := csdb.ak.GetAccount(csdb.ctx, addr) // as len(stateObjects) increasing, the UpdateAccounts() can consume more and more gas for read store. [gs.gasMeter.ConsumeGas(gs.gasConfig.ReadCostFlat, types.GasReadCostFlatDesc)]
+		accI := csdb.ak.GetAccount(csdb.ctx, addr)
 		acc, ok := accI.(*types.BaseAccount)
 		if ok {
 			if (so.Balance() != acc.GetCoins().AmountOf(sdk.NativeTokenName).BigInt()) || (so.Nonce() != acc.GetSequence()) {
@@ -675,7 +675,7 @@ func (csdb *CommitStateDB) ForEachStorage(addr sdk.AccAddress, cb func(key, valu
 		return nil
 	}
 
-	store := csdb.ctx.KVStoreFree(csdb.storageKey)
+	store := csdb.ctx.KVStore(csdb.storageKey)
 	iter := sdk.KVStorePrefixIterator(store, so.Address().Bytes())
 
 	for ; iter.Valid(); iter.Next() {
@@ -794,7 +794,7 @@ func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
 	debug := true // TODO config in stateDB
 
 	if debug {
-		store := csdb.ctx.KVStoreFree(csdb.storageDebugKey)
+		store := csdb.ctx.KVStore(csdb.storageDebugKey)
 		iter := store.Iterator(nil, nil)
 		defer iter.Close()
 

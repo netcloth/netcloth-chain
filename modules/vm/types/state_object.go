@@ -2,8 +2,9 @@ package types
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/crypto"
 	"math/big"
+
+	"github.com/tendermint/tendermint/crypto"
 
 	authexported "github.com/netcloth/netcloth-chain/modules/auth/exported"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
@@ -248,11 +249,11 @@ func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
 
 func (so *stateObject) commitState() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStoreFree(so.stateDB.storageKey)
+	store := ctx.KVStore(so.stateDB.storageKey)
 
 	debugStore := (sdk.KVStore)(nil)
 	if so.stateDB.debug {
-		debugStore = ctx.KVStoreFree(so.stateDB.storageDebugKey)
+		debugStore = ctx.KVStore(so.stateDB.storageDebugKey)
 	}
 
 	var kv DebugAccKV
@@ -289,7 +290,7 @@ func (so *stateObject) commitState() {
 // commitCode persists the state object's code to the KVStore.
 func (so *stateObject) commitCode() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStoreFree(so.stateDB.codeKey)
+	store := ctx.KVStore(so.stateDB.codeKey)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -328,7 +329,7 @@ func (so *stateObject) Code() []byte {
 	}
 
 	ctx := so.stateDB.ctx
-	store := ctx.KVStoreFree(so.stateDB.codeKey)
+	store := ctx.KVStore(so.stateDB.codeKey)
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
@@ -367,7 +368,7 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 
 	// otherwise load the value from the KVStore
 	ctx := so.stateDB.ctx
-	store := ctx.KVStoreFree(so.stateDB.storageKey)
+	store := ctx.KVStore(so.stateDB.storageKey)
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {

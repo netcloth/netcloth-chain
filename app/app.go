@@ -207,7 +207,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		keys[vm.CodeKey],
 		keys[vm.StoreDebugKey],
 		vmSubspace,
-		auth.NewAccountKeeperCopy(app.accountKeeper, true))
+		app.accountKeeper)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
