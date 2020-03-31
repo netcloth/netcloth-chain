@@ -368,21 +368,16 @@ func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.
 }
 
 func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res abci.ResponseQuery) {
-	// path[0] should be "custom" because "/custom" prefix is required for keeper
-	// queries.
-	//
-	// The queryRouter routes using path[1]. For example, in the path
-	// "custom/gov/proposal", queryRouter routes using "gov".
 	if len(path) < 2 || path[1] == "" {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "no route for custom query specified"))
 	}
 
-	querier := app.queryRouter.Route(path[1])
+	router := app.Engine.GetCurrentProtocol().GetQueryRouter()
+	querier := router.Route(path[1])
 	if querier == nil {
 		return sdkerrors.QueryResult(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "no custom querier found for route %s", path[1]))
 	}
 
-	// when a client did not provide a query height, manually inject the latest
 	if req.Height == 0 {
 		req.Height = app.LastBlockHeight()
 	}
