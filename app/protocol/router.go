@@ -1,9 +1,12 @@
-package app
+package protocol
 
 import (
 	"fmt"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"regexp"
 )
+
+var isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
 
 type Router struct {
 	routes map[string]sdk.Handler

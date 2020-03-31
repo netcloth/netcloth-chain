@@ -106,8 +106,8 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*Base
 		name:           name,
 		db:             db,
 		cms:            store.NewCommitMultiStore(db),
-		router:         NewRouter(),
-		queryRouter:    NewQueryRouter(),
+		router:         protocol.NewRouter(),
+		queryRouter:    protocol.NewQueryRouter(),
 		fauxMerkleMode: false,
 	}
 

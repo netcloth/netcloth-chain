@@ -17,7 +17,6 @@ func init() {
 	Cmd.Flags().Bool(flagLong, false, "Print long version information")
 }
 
-// Cmd prints out the application's version information passed via build flags.
 var Cmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the app version",
@@ -25,7 +24,7 @@ var Cmd = &cobra.Command{
 		verInfo := NewInfo()
 
 		if !viper.GetBool(flagLong) {
-			fmt.Println(verInfo.Version)
+			fmt.Println(fmt.Sprintf("%s-%d", verInfo.Version, verInfo.AppVersion))
 			return nil
 		}
 

@@ -87,11 +87,11 @@ func ValidateAccountInGenesis(appGenesisState map[string]json.RawMessage,
 	return nil
 }
 
-type deliverTxfn func(abci.RequestDeliverTx) abci.ResponseDeliverTx
+type DeliverTxfn func(abci.RequestDeliverTx) abci.ResponseDeliverTx
 
 // DeliverGenTxs - deliver a genesis transaction
 func DeliverGenTxs(ctx sdk.Context, cdc *codec.Codec, genTxs []json.RawMessage,
-	stakingKeeper types.StakingKeeper, deliverTx deliverTxfn) []abci.ValidatorUpdate {
+	stakingKeeper types.StakingKeeper, deliverTx DeliverTxfn) []abci.ValidatorUpdate {
 
 	for _, genTx := range genTxs {
 		var tx authtypes.StdTx

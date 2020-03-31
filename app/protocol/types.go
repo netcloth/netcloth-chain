@@ -8,6 +8,7 @@ import (
 type Protocol interface {
 	GetVersion() uint64
 	GetRouter() sdk.Router
+	GetQueryRouter() sdk.QueryRouter
 	GetInitChainer() sdk.InitChainer
 	GetBeginBlocker() sdk.BeginBlocker
 	GetEndBlocker() sdk.EndBlocker

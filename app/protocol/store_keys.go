@@ -18,6 +18,7 @@ const (
 	vmCodeKey        = "vm_code"
 	vmStoreDebugKey  = "vm_decode"
 	govStoreKey      = "gov"
+	authStoreKey     = "acc"
 
 	paramsTStoreKey  = "transient_params"
 	stakingTStoreKey = "transient_staking"
@@ -27,7 +28,6 @@ var (
 	MainKVStoreKey = sdk.NewKVStoreKey(MainStoreKey)
 
 	Keys = sdk.NewKVStoreKeys(
-		MainStoreKey,
 		paramsStoreKey,
 		supplyStoreKey,
 		StakingStoreKey,
@@ -40,6 +40,7 @@ var (
 		vmCodeKey,
 		vmStoreDebugKey,
 		govStoreKey,
+		authStoreKey,
 	)
 
 	TKeys = sdk.NewTransientStoreKeys(

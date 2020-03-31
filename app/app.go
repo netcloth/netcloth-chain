@@ -2,20 +2,19 @@ package app
 
 import (
 	"fmt"
-	"github.com/netcloth/netcloth-chain/app/protocol"
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"io"
 	"os"
-
-	"github.com/netcloth/netcloth-chain/modules/auth/ante"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	"github.com/netcloth/netcloth-chain/modules/crisis"
@@ -90,15 +89,9 @@ func CreateCodec() *codec.Codec {
 
 type NCHApp struct {
 	*BaseApp
-	//cdc *codec.Codec
 
 	invCheckPeriod uint
 
-	// keys to access the substores
-	//keys  map[string]*sdk.KVStoreKey
-	//tkeys map[string]*sdk.TransientStoreKey
-
-	// keepers
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper
 	bankKeeper     bank.Keeper
@@ -120,6 +113,12 @@ type NCHApp struct {
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
 	bApp := NewBaseApp(appName, logger, db, baseAppOptions...)
 
+	bApp.SetCommitMultiStoreTracer(traceStore)
+	bApp.SetAppVersion(version.Version)
+
+	//bApp.SetAnteHandler(ante.NewAnteHandler(bApp.accountKeeper, bApp.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
+	//bApp.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+
 	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
 	engine := protocol.NewProtocolEngine(protocolKeeper)
 	bApp.SetProtocolEngine(&engine)
@@ -130,35 +129,26 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
 	}
 
-	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, nil))
+	bApp.MountKVStores(protocol.Keys)
+	bApp.MountTransientStores(protocol.TKeys)
+
+	if loadLatest {
+		err := bApp.LoadLatestVersion(protocol.MainKVStoreKey)
+		if err != nil {
+			cmn.Exit(err.Error())
+		}
+	}
+
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, bApp.DeliverTx, nil))
 	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.MainKVStoreKey))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!", current))
 	}
-
 	bApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
-
-	bApp.SetCommitMultiStoreTracer(traceStore)
-	bApp.SetAppVersion(version.Version)
 
 	var app = &NCHApp{
 		BaseApp:        bApp,
 		invCheckPeriod: invCheckPeriod,
-	}
-
-	app.MountKVStores(protocol.Keys)
-	app.MountTransientStores(protocol.TKeys)
-
-	app.SetBeginBlocker(app.BeginBlocker)
-	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
-	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
-	app.SetEndBlocker(app.EndBlocker)
-
-	if loadLatest {
-		err := app.LoadLatestVersion(protocol.MainKVStoreKey)
-		if err != nil {
-			cmn.Exit(err.Error())
-		}
 	}
 
 	return app
@@ -177,7 +167,7 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
 	}
 
-	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, nil))
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, bApp.DeliverTx, nil))
 	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.Keys[MainStoreKey]))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!", current))

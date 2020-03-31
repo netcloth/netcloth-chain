@@ -103,17 +103,19 @@ type ProtocolV0 struct {
 	endBlocker   sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
 	config       *cfg.InstrumentationConfig
 
-	mm *module.Manager
+	mm        *module.Manager
+	deliverTx genutil.DeliverTxfn
 }
 
-func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, config *cfg.InstrumentationConfig) *ProtocolV0 {
+func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
 		logger:         log,
 		protocolKeeper: pk,
-		//checkInvariant: checkInvariant,
-		//trackCoinFlow:  trackCoinFlow,
-		config: config,
+		router:         protocol.NewRouter(),
+		queryRouter:    protocol.NewQueryRouter(),
+		config:         config,
+		deliverTx:      deliverTx,
 	}
 
 	return &p0
@@ -124,7 +126,11 @@ func (p *ProtocolV0) GetVersion() uint64 {
 }
 
 func (p *ProtocolV0) GetRouter() sdk.Router {
-	panic("implement me")
+	return p.router
+}
+
+func (p *ProtocolV0) GetQueryRouter() sdk.QueryRouter {
+	return p.queryRouter
 }
 
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
@@ -134,9 +140,18 @@ func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 	return p.mm.InitGenesis(ctx, genesisState)
 }
 
+func (p *ProtocolV0) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	return p.mm.BeginBlock(ctx, req)
+}
+
+func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	return p.mm.EndBlock(ctx, req)
+}
+
 func (p *ProtocolV0) Load() {
 	p.configCodec()
 	p.configKeepers()
+	p.LoadMM()
 	//p.configRouters()
 	//p.configFeeHandlers()
 	//p.configParams()
@@ -154,11 +169,11 @@ func (p *ProtocolV0) GetInitChainer() sdk.InitChainer {
 }
 
 func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
-	return p.beginBlocker
+	return p.BeginBlocker
 }
 
 func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
-	return p.endBlocker
+	return p.EndBlocker
 }
 
 func (p *ProtocolV0) configCodec() {
@@ -250,7 +265,7 @@ func (p *ProtocolV0) configKeepers() {
 func (p *ProtocolV0) LoadMM() {
 	mm := module.NewManager(
 		genaccounts.NewAppModule(p.accountKeeper),
-		//genutil.NewAppModule(p.accountKeeper, p.stakingKeeper, app.Basep.DeliverTx),
+		genutil.NewAppModule(p.accountKeeper, p.stakingKeeper, p.deliverTx),
 		auth.NewAppModule(p.accountKeeper),
 		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
 		crisis.NewAppModule(&p.crisisKeeper),
