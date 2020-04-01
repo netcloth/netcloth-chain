@@ -14,9 +14,9 @@ const (
 	slashingStoreKey = "slashing"
 	cipalStoreKey    = "cipal"
 	ipalStoreKey     = "ipal"
-	vmStoreKey       = "vm"
-	vmCodeKey        = "vm_code"
-	vmStoreDebugKey  = "vm_decode"
+	VMStoreKey       = "vm" //TODO merge keys here and modules key
+	VMCodeKey        = "vm_code"
+	VMStoreDebugKey  = "vm_decode"
 	govStoreKey      = "gov"
 	authStoreKey     = "acc"
 
@@ -36,9 +36,9 @@ var (
 		slashingStoreKey,
 		cipalStoreKey,
 		ipalStoreKey,
-		vmStoreKey,
-		vmCodeKey,
-		vmStoreDebugKey,
+		VMStoreKey,
+		VMCodeKey,
+		VMStoreDebugKey,
 		govStoreKey,
 		authStoreKey,
 	)
