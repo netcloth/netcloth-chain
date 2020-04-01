@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"io"
 	"io/ioutil"
 	"os"
@@ -28,7 +29,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/genutil/types"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 // StakingMsgBuildingHelpers helpers for message building gen-tx command
@@ -40,7 +40,7 @@ type StakingMsgBuildingHelpers interface {
 
 // GenTxCmd builds the application's gentx command.
 // nolint: errcheck
-func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, smbh StakingMsgBuildingHelpers,
+func GenTxCmd(ctx *server.Context, cdc *codec.Codec, smbh StakingMsgBuildingHelpers,
 	genAccIterator types.GenesisAccountsIterator, defaultNodeHome, defaultCLIHome string) *cobra.Command {
 
 	ipDefault, _ := server.ExternalIP()
@@ -87,7 +87,7 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 				return err
 			}
 
-			if err = mbm.ValidateGenesis(genesisState); err != nil {
+			if err = v0.ModuleBasics.ValidateGenesis(genesisState); err != nil {
 				return err
 			}
 

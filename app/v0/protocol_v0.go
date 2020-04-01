@@ -177,6 +177,10 @@ func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
 }
 
 func (p *ProtocolV0) configCodec() {
+	p.cdc = MakeCodec()
+}
+
+func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
 	ModuleBasics.RegisterCodec(cdc)
@@ -184,7 +188,7 @@ func (p *ProtocolV0) configCodec() {
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
 
-	p.cdc = cdc
+	return cdc
 }
 
 func ModuleAccountAddrs() map[string]bool {

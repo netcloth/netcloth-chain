@@ -1,8 +1,10 @@
 package protocol
 
 import (
+	"encoding/json"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 type Protocol interface {
@@ -12,6 +14,8 @@ type Protocol interface {
 	GetInitChainer() sdk.InitChainer
 	GetBeginBlocker() sdk.BeginBlocker
 	GetEndBlocker() sdk.EndBlocker
+
+	ExportAppStateAndValidators(ctx sdk.Context, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error)
 
 	Load()
 	Init(ctx sdk.Context)

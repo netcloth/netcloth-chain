@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"path/filepath"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/netcloth/netcloth-chain/modules/genutil"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 const (
@@ -56,10 +56,7 @@ func displayInfo(cdc *codec.Codec, info printInfo) error {
 	return err
 }
 
-// InitCmd returns a command that initializes all files needed for Tendermint
-// and the respective application.
-func InitCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager,
-	defaultNodeHome string) *cobra.Command { // nolint: golint
+func InitCmd(ctx *server.Context, cdc *codec.Codec, defaultNodeHome string) *cobra.Command { // nolint: golint
 	cmd := &cobra.Command{
 		Use:   "init [moniker]",
 		Short: "Initialize private validator, p2p, genesis, and application configuration files",
@@ -85,7 +82,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager,
 			if !viper.GetBool(flagOverwrite) && common.FileExists(genFile) {
 				return fmt.Errorf("genesis.json file already exists: %v", genFile)
 			}
-			appState, err := codec.MarshalJSONIndent(cdc, mbm.DefaultGenesis())
+			appState, err := codec.MarshalJSONIndent(cdc, v0.ModuleBasics.DefaultGenesis())
 			if err != nil {
 				return err
 			}

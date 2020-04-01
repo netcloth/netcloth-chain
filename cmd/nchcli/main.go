@@ -1,6 +1,7 @@
 package main
 
 import (
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"path"
 
@@ -31,7 +32,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	// Instantiate the codec for the command line application
-	cdc := app.CreateCodec()
+	cdc := app.MakeLatestCodec()
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
@@ -78,7 +79,7 @@ func main() {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+	v0.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func queryCmd(cdc *amino.Codec) *cobra.Command {
@@ -98,7 +99,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 	// add modules' query commands
-	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
+	v0.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
 }
@@ -120,7 +121,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	)
 
 	// add modules' tx commands
-	app.ModuleBasics.AddTxCommands(txCmd, cdc)
+	v0.ModuleBasics.AddTxCommands(txCmd, cdc)
 
 	// remove auth and bank commands as they're mounted under the root tx command
 	var cmdsToRemove []*cobra.Command
