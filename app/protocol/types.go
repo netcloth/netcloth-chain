@@ -14,6 +14,7 @@ type Protocol interface {
 	GetRouter() sdk.Router
 	GetQueryRouter() sdk.QueryRouter
 	GetAnteHandler() sdk.AnteHandler
+	GetFeeRefundHandler() sdk.FeeRefundHandler
 	GetInitChainer() sdk.InitChainer
 	GetBeginBlocker() sdk.BeginBlocker
 	GetEndBlocker() sdk.EndBlocker

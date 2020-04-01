@@ -138,6 +138,10 @@ func (p *ProtocolV0) GetAnteHandler() sdk.AnteHandler {
 	return p.anteHandler
 }
 
+func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
+	return p.feeRefundHandler
+}
+
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -164,6 +168,7 @@ func (p *ProtocolV0) Load() {
 
 func (p *ProtocolV0) configFeeHandlers() {
 	p.anteHandler = ante.NewAnteHandler(p.accountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
+	p.feeRefundHandler = auth.NewFeeRefundHandler(p.accountKeeper, p.supplyKeeper, p.refundKeeper)
 }
 
 func (p *ProtocolV0) Init(ctx sdk.Context) {

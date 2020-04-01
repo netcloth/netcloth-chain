@@ -64,39 +64,18 @@ func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
 	app.cms = cms
 }
 
-func (app *BaseApp) SetInitChainer(initChainer sdk.InitChainer) {
-	if app.sealed {
-		panic("SetInitChainer() on sealed BaseApp")
-	}
-	app.initChainer = initChainer
-}
-
-func (app *BaseApp) SetBeginBlocker(beginBlocker sdk.BeginBlocker) {
-	if app.sealed {
-		panic("SetBeginBlocker() on sealed BaseApp")
-	}
-	app.beginBlocker = beginBlocker
-}
-
-func (app *BaseApp) SetEndBlocker(endBlocker sdk.EndBlocker) {
-	if app.sealed {
-		panic("SetEndBlocker() on sealed BaseApp")
-	}
-	app.endBlocker = endBlocker
-}
-
 func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	if app.sealed {
 		panic("SetAnteHandler() on sealed BaseApp")
 	}
-	//app.anteHandler = ah //TODO remove SetAnteHandler hand caller
+	//app.anteHandler = ah //TODO remove SetAnteHandler and caller
 }
 
 func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {
 	if app.sealed {
 		panic("SetFeeRefundHandler on sealed BaseApp")
 	}
-	app.feeRefundHandler = fh
+	//app.feeRefundHandler = fh TODO remove SetFeeRefundHandler and caller
 }
 
 func (app *BaseApp) SetAddrPeerFilter(pf sdk.PeerFilter) {
