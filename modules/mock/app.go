@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/netcloth/netcloth-chain/app"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"math/rand"
 	"os"
 	"sort"
@@ -58,7 +59,7 @@ func NewApp() *App {
 	app := &App{
 		BaseApp:          app.NewBaseApp("mock", logger, db, auth.DefaultTxDecoder(cdc)),
 		Cdc:              cdc,
-		KeyMain:          sdk.NewKVStoreKey(app.MainStoreKey),
+		KeyMain:          sdk.NewKVStoreKey(protocol.MainStoreKey),
 		KeyAccount:       sdk.NewKVStoreKey(auth.StoreKey),
 		KeyParams:        sdk.NewKVStoreKey("params"),
 		TKeyParams:       sdk.NewTransientStoreKey("transient_params"),

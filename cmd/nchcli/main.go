@@ -28,15 +28,11 @@ import (
 )
 
 func main() {
-	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
 
-	// Instantiate the codec for the command line application
 	cdc := app.MakeLatestCodec()
 
-	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	app.SetBech32AddressPrefixes(config)
 	config.Seal()
 
 	rootCmd := &cobra.Command{
@@ -44,13 +40,11 @@ func main() {
 		Short: "NCHNetwork Client",
 	}
 
-	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initConfig(rootCmd)
 	}
 
-	// Construct Root Command
 	rootCmd.AddCommand(
 		bankcmd.SendTxCmd(cdc),
 		cipalcli.CIPALCmd(cdc),
@@ -98,7 +92,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		client.LineBreak,
 	)
-	// add modules' query commands
+
 	v0.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
@@ -120,18 +114,15 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	// add modules' tx commands
 	v0.ModuleBasics.AddTxCommands(txCmd, cdc)
 
 	// remove auth and bank commands as they're mounted under the root tx command
 	var cmdsToRemove []*cobra.Command
-
 	for _, cmd := range txCmd.Commands() {
 		if cmd.Use == auth.ModuleName || cmd.Use == bank.ModuleName {
 			cmdsToRemove = append(cmdsToRemove, cmd)
 		}
 	}
-
 	txCmd.RemoveCommand(cmdsToRemove...)
 
 	return txCmd

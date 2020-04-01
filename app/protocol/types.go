@@ -2,15 +2,18 @@ package protocol
 
 import (
 	"encoding/json"
+
+	tmtypes "github.com/tendermint/tendermint/types"
+
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 type Protocol interface {
 	GetVersion() uint64
 	GetRouter() sdk.Router
 	GetQueryRouter() sdk.QueryRouter
+	GetAnteHandler() sdk.AnteHandler
 	GetInitChainer() sdk.InitChainer
 	GetBeginBlocker() sdk.BeginBlocker
 	GetEndBlocker() sdk.EndBlocker

@@ -32,7 +32,6 @@ func (pe *ProtocolEngine) LoadProtocol(version uint64) {
 }
 
 func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64) {
-	// find the current version from store
 	current := pe.ProtocolKeeper.GetCurrentVersionByStore(kvStore)
 	p, flag := pe.protocols[current]
 	if flag == true {

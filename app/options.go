@@ -89,7 +89,7 @@ func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
 	if app.sealed {
 		panic("SetAnteHandler() on sealed BaseApp")
 	}
-	app.anteHandler = ah
+	//app.anteHandler = ah //TODO remove SetAnteHandler hand caller
 }
 
 func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {

@@ -1,14 +1,12 @@
 package app
 
 import (
+	"errors"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/app/protocol"
 	"os"
 	"reflect"
 	"runtime/debug"
 	"strings"
-
-	"errors"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -17,6 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
 	"github.com/netcloth/netcloth-chain/types"
@@ -24,7 +23,6 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-// Enum mode for app.runTx
 type runTxMode uint8
 
 const (
@@ -32,9 +30,6 @@ const (
 	runTxModeReCheck                   // Recheck a (pending) transaction after a commit
 	runTxModeSimulate                  // Simulate a transaction
 	runTxModeDeliver                   // Deliver a transaction
-
-	// MainStoreKey is the string representation of the main store
-	MainStoreKey = "main"
 )
 
 var (
@@ -61,7 +56,7 @@ type BaseApp struct {
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
-	anteHandler      sdk.AnteHandler        // ante handler for fee and auth
+	//anteHandler      sdk.AnteHandler        // ante handler for fee and auth
 	feeRefundHandler types.FeeRefundHandler // fee handler for fee refund
 
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
@@ -118,17 +113,14 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*Base
 	return app
 }
 
-// Name returns the name of the BaseApp.
 func (app *BaseApp) Name() string {
 	return app.name
 }
 
-// AppVersion returns the application's version string.
 func (app *BaseApp) AppVersion() string {
 	return app.appVersion
 }
 
-// Logger returns the logger of the BaseApp.
 func (app *BaseApp) Logger() log.Logger {
 	return app.logger
 }
@@ -578,7 +570,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		return gInfo, nil, err
 	}
 
-	if app.anteHandler != nil {
+	anteHandler := app.Engine.GetCurrentProtocol().GetAnteHandler()
+	if anteHandler != nil {
 		var anteCtx sdk.Context
 		var msCache sdk.CacheMultiStore
 
@@ -591,7 +584,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 		// performance benefits, but it'll be more difficult to get right.
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
 
-		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
+		newCtx, err := anteHandler(anteCtx, tx, mode == runTxModeSimulate)
 		if !newCtx.IsZero() {
 			// At this point, newCtx.MultiStore() is cache-wrapped, or something else
 			// replaced by the AnteHandler. We want the original multistore, not one

@@ -133,7 +133,7 @@ func replayTxs(rootDir string, from, to int) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewNCHAppForReplay(ctx.Logger, appDB, nil, loadLatest, true, uint(1))
+	myapp := app.NewNCHApp(ctx.Logger, appDB, nil, loadLatest, 0)
 
 	// Genesis
 	var genDocPath = filepath.Join(configDir, "genesis.json")

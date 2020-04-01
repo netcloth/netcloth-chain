@@ -4,6 +4,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	"github.com/netcloth/netcloth-chain/modules/cipal"
 	"github.com/netcloth/netcloth-chain/modules/crisis"
@@ -60,8 +61,6 @@ var maccPerms = map[string][]string{
 	ipal.ModuleName:           {supply.Staking},
 }
 
-var invCheckPeriod uint
-
 type ProtocolV0 struct {
 	version        uint64
 	cdc            *codec.Codec
@@ -93,7 +92,7 @@ type ProtocolV0 struct {
 	router      sdk.Router      // handle any kind of message
 	queryRouter sdk.QueryRouter // router for redirecting query calls
 
-	anteHandlers     []sdk.AnteHandler    // ante handlers for fee and auth
+	anteHandler      sdk.AnteHandler      // ante handlers for fee and auth
 	feeRefundHandler sdk.FeeRefundHandler // fee handler for fee refund
 	//feePreprocessHandler sdk.FeePreprocessHandler // fee handler for fee preprocessor
 
@@ -103,11 +102,12 @@ type ProtocolV0 struct {
 	endBlocker   sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
 	config       *cfg.InstrumentationConfig
 
-	mm        *module.Manager
-	deliverTx genutil.DeliverTxfn
+	mm             *module.Manager
+	deliverTx      genutil.DeliverTxfn
+	invCheckPeriod uint
 }
 
-func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, config *cfg.InstrumentationConfig) *ProtocolV0 {
+func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
 		logger:         log,
@@ -116,6 +116,7 @@ func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, delive
 		queryRouter:    protocol.NewQueryRouter(),
 		config:         config,
 		deliverTx:      deliverTx,
+		invCheckPeriod: invCheckPeriod,
 	}
 
 	return &p0
@@ -133,8 +134,12 @@ func (p *ProtocolV0) GetQueryRouter() sdk.QueryRouter {
 	return p.queryRouter
 }
 
+func (p *ProtocolV0) GetAnteHandler() sdk.AnteHandler {
+	return p.anteHandler
+}
+
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState protocol.GenesisState
+	var genesisState GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.mm.InitGenesis(ctx, genesisState)
@@ -153,8 +158,12 @@ func (p *ProtocolV0) Load() {
 	p.configKeepers()
 	p.LoadMM()
 	//p.configRouters()
-	//p.configFeeHandlers()
+	p.configFeeHandlers()
 	//p.configParams()
+}
+
+func (p *ProtocolV0) configFeeHandlers() {
+	p.anteHandler = ante.NewAnteHandler(p.accountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
 }
 
 func (p *ProtocolV0) Init(ctx sdk.Context) {
@@ -226,7 +235,7 @@ func (p *ProtocolV0) configKeepers() {
 		p.supplyKeeper, auth.FeeCollectorName, ModuleAccountAddrs())
 	p.slashingKeeper = slashing.NewKeeper(
 		p.cdc, protocol.Keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
-	p.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, p.supplyKeeper, auth.FeeCollectorName)
+	p.crisisKeeper = crisis.NewKeeper(crisisSubspace, p.invCheckPeriod, p.supplyKeeper, auth.FeeCollectorName)
 
 	p.cipalKeeper = cipal.NewKeeper(
 		protocol.Keys[cipal.StoreKey],

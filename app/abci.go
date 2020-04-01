@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/netcloth/netcloth-chain/codec"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	"github.com/netcloth/netcloth-chain/version"
 )
 
 func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitChain) {
@@ -20,7 +20,6 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		app.storeConsensusParams(req.ConsensusParams)
 	}
 
-	// Initialize the deliver state and check state with ChainID and run initChain
 	app.setDeliverState(abci.Header{ChainID: req.ChainId})
 	app.setCheckState(abci.Header{ChainID: req.ChainId})
 
@@ -29,40 +28,31 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		return
 	}
 
-	// add block gas meter for any genesis transactions (allow infinite gas)
-	app.deliverState.ctx = app.deliverState.ctx.
-		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
-	//res = initChainer(app.deliverState.ctx, app.DeliverTx, req)
 	res = initChainer(app.deliverState.ctx, req)
 
 	// There may be some application state in the genesis file, so always init the metrics.
 	//app.Engine.GetCurrentProtocol().InitMetrics(app.cms)
 
-	// TODO: sanity check
-	// NOTE: we don't commit, but BeginBlock for block 1
-	// starts from this deliverState
 	return
 }
 
-// Info implements the ABCI interface.
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
 	return abci.ResponseInfo{
+		AppVersion:       version.AppVersion,
 		Data:             app.name,
 		LastBlockHeight:  lastCommitID.Version,
 		LastBlockAppHash: lastCommitID.Hash,
 	}
 }
 
-// SetOption implements the ABCI interface.
 func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
-	// TODO: Implement!
 	return
 }
 
-// FilterPeerByAddrPort filters peers by address/port.
 func (app *BaseApp) FilterPeerByAddrPort(info string) abci.ResponseQuery {
 	if app.addrPeerFilter != nil {
 		return app.addrPeerFilter(info)
@@ -70,7 +60,6 @@ func (app *BaseApp) FilterPeerByAddrPort(info string) abci.ResponseQuery {
 	return abci.ResponseQuery{}
 }
 
-// FilterPeerByIDfilters peers by node ID.
 func (app *BaseApp) FilterPeerByID(info string) abci.ResponseQuery {
 	if app.idPeerFilter != nil {
 		return app.idPeerFilter(info)
@@ -78,11 +67,8 @@ func (app *BaseApp) FilterPeerByID(info string) abci.ResponseQuery {
 	return abci.ResponseQuery{}
 }
 
-// Splits a string path using the delimiter '/'.
-// e.g. "this/is/funny" becomes []string{"this", "is", "funny"}
 func splitPath(requestPath string) (path []string) {
 	path = strings.Split(requestPath, "/")
-	// first element is empty string
 	if len(path) > 0 && path[0] == "" {
 		path = path[1:]
 	}
@@ -113,7 +99,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 			WithBlockHeight(req.Header.Height)
 	}
 
-	// add block gas meter
 	var gasMeter sdk.GasMeter
 	if maxGas := app.getMaximumBlockGas(); maxGas > 0 {
 		gasMeter = sdk.NewGasMeter(maxGas)
@@ -128,7 +113,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		res = beginBlocker(app.deliverState.ctx, req)
 	}
 
-	// set the signed validators for addition to context in deliverTx
 	app.voteInfos = req.LastCommitInfo.GetVotes()
 	return
 }
@@ -178,15 +162,14 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	}
 
 	return abci.ResponseCheckTx{
-		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
+		GasWanted: int64(gInfo.GasWanted),
+		GasUsed:   int64(gInfo.GasUsed),
 		Log:       result.Log,
 		Data:      result.Data,
 		Events:    result.Events.ToABCIEvents(),
 	}
 }
 
-// DeliverTx implements the ABCI interface.
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
@@ -204,8 +187,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	}
 
 	return abci.ResponseDeliverTx{
-		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
+		GasWanted: int64(gInfo.GasWanted),
+		GasUsed:   int64(gInfo.GasUsed),
 		Log:       result.Log,
 		Data:      result.Data,
 		Events:    result.Events.ToABCIEvents(),
@@ -257,7 +240,6 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	}
 
 	switch path[0] {
-	// "/app" prefix for special application queries
 	case "app":
 		return handleQueryApp(app, path, req)
 
@@ -313,7 +295,6 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 }
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
-	// "/store" prefix for store queries
 	queryable, ok := app.cms.(sdk.Queryable)
 	if !ok {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "multistore doesn't support queries"))
@@ -321,7 +302,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 
 	req.Path = "/" + strings.Join(path[1:], "/")
 
-	// when a client did not provide a query height, manually inject the latest
 	if req.Height == 0 {
 		req.Height = app.LastBlockHeight()
 	}
@@ -342,7 +322,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 }
 
 func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.ResponseQuery) {
-	// "/p2p" prefix for p2p queries
 	if len(path) >= 4 {
 		cmd, typ, arg := path[1], path[2], path[3]
 		switch cmd {
