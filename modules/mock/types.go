@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/netcloth/netcloth-chain/modules/auth"
-	"github.com/netcloth/netcloth-chain/modules/supply"
-	"github.com/netcloth/netcloth-chain/modules/supply/exported"
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	"github.com/netcloth/netcloth-chain/app/v0/supply"
+	"github.com/netcloth/netcloth-chain/app/v0/supply/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 

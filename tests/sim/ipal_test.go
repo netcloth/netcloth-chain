@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	itypes "github.com/netcloth/netcloth-chain/modules/ipal/types"
+	itypes "github.com/netcloth/netcloth-chain/app/v0/ipal/types"
 	"github.com/netcloth/netcloth-chain/tests"
 	"github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"

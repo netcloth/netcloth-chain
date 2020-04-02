@@ -15,7 +15,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
-	"github.com/netcloth/netcloth-chain/modules/auth"
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
