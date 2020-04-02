@@ -7,6 +7,8 @@ import (
 	"os"
 	"sort"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -78,7 +80,7 @@ func NewApp() *App {
 	// Initialize the app. The chainers and blockers can be overwritten before
 	// calling complete setup.
 	app.SetInitChainer(app.InitChainer)
-	app.SetAnteHandler(auth.NewAnteHandler(app.AccountKeeper, supplyKeeper, auth.DefaultSigVerificationGasConsumer))
+	app.SetAnteHandler(ante.NewAnteHandler(app.AccountKeeper, supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 
 	// Not sealing for custom extension
 

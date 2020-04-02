@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
-	mempl "github.com/tendermint/tendermint/mempool"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/spf13/viper"
+	mempl "github.com/tendermint/tendermint/mempool"
 
 	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"
@@ -169,9 +170,7 @@ func replayTxs(rootDir string, from, to int) error {
 			Validators:      validators,
 			AppStateBytes:   genDoc.AppState,
 		}
-		fmt.Fprintln(os.Stderr, "1")
 		res, err := proxyApp.Consensus().InitChainSync(req)
-		fmt.Fprintln(os.Stderr, "2")
 		if err != nil {
 			return err
 		}
@@ -179,7 +178,6 @@ func replayTxs(rootDir string, from, to int) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(os.Stderr, "3")
 		newValidators := tm.NewValidatorSet(newValidatorz)
 
 		// Take the genesis state.

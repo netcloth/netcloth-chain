@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	defaultMinGasPrices = "1000.0" + sdk.NativeTokenName
+	defaultMinGasPrices = "1.0" + sdk.NativeTokenName
 )
 
 // BaseConfig defines the server's basic configuration

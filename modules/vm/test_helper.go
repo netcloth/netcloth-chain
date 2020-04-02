@@ -81,6 +81,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		ipal.StoreKey,
 		StoreKey,
 		CodeKey,
+		StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -96,6 +97,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		cdc,
 		keys[StoreKey],
 		keys[CodeKey],
+		keys[StoreDebugKey],
 		vmSubspace,
 		accountKeeper)
 
@@ -131,7 +133,7 @@ func newEVM() *EVM {
 	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams)
 	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 
-	keys := sdk.NewKVStoreKeys(auth.StoreKey, StoreKey, CodeKey)
+	keys := sdk.NewKVStoreKeys(auth.StoreKey, StoreKey, CodeKey, StoreDebugKey)
 
-	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, keys[StoreKey], keys[CodeKey]), Config{})
+	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, keys[StoreKey], keys[CodeKey], keys[StoreDebugKey]), Config{})
 }

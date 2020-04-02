@@ -13,15 +13,15 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case MsgServiceNodeClaim:
-			return handleMsgServiceNodeClaim(ctx, k, msg)
+		case MsgIPALNodeClaim:
+			return handleMsgIPALNodeClaim(ctx, k, msg)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
 
-func handleMsgServiceNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim) (*sdk.Result, error) {
+func handleMsgIPALNodeClaim(ctx sdk.Context, k Keeper, m MsgIPALNodeClaim) (*sdk.Result, error) {
 	m.TrimSpace()
 
 	err := m.ValidateBasic()
@@ -29,12 +29,12 @@ func handleMsgServiceNodeClaim(ctx sdk.Context, k Keeper, m MsgServiceNodeClaim)
 		return nil, err
 	}
 
-	acc, monikerExist := k.GetServiceNodeAddByMoniker(ctx, m.Moniker)
+	acc, monikerExist := k.GetIPALNodeAddByMoniker(ctx, m.Moniker)
 	if monikerExist && !acc.Equals(m.OperatorAddress) {
 		return nil, sdkerrors.Wrapf(ErrMonikerExist, "moniker: [%s] already exist", m.Moniker)
 	}
 
-	err = k.DoServiceNodeClaim(ctx, m)
+	err = k.DoIPALNodeClaim(ctx, m)
 	if err != nil {
 		return nil, err
 	}

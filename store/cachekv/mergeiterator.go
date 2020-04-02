@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/netcloth/netcloth-chain/store/types"
 )
@@ -231,4 +232,14 @@ func (iter *cacheMergeIterator) assertValid() {
 	if !iter.Valid() {
 		panic("iterator is invalid")
 	}
+}
+
+// Error returns an error if the cacheMergeIterator is invalid defined by the
+// Valid method.
+func (iter *cacheMergeIterator) Error() error {
+	if !iter.Valid() {
+		return errors.New("invalid cacheMergeIterator")
+	}
+
+	return nil
 }

@@ -38,13 +38,14 @@ func TestStoreCapture(t *testing.T) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams, params.DefaultCodespace)
+
+	paramsKeeper := params.NewKeeper(types.ModuleCdc, keyParams, tkeyParams)
 	accountKeeper := auth.NewAccountKeeper(types.ModuleCdc, keyAcc, paramsKeeper.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	vmKeeper := NewKeeper(
 		types.ModuleCdc,
 		sdk.NewKVStoreKey(StoreKey),
 		sdk.NewKVStoreKey(CodeKey),
-		DefaultCodespace,
+		sdk.NewKVStoreKey(StoreDebugKey),
 		paramsKeeper.Subspace(bank.DefaultParamspace),
 		accountKeeper)
 

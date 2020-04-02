@@ -39,8 +39,7 @@ func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash 
 	}
 }
 
-func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]uint64, vmCommonGasConfig *types.VMCommonGasParams) (*big.Int, *sdk.Result, error) {
-	st.StateDB.UpdateAccounts()
+func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params) (*big.Int, *sdk.Result, error) {
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
@@ -48,15 +47,19 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 		Origin: st.Sender,
 
-		CoinBase:    ctx.BlockHeader().ProposerAddress,
+		CoinBase:    ctx.BlockHeader().ProposerAddress, // validator consensus address, not account address
 		GasLimit:    st.GasLimit,
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	cfg := Config{OpConstGasConfig: constGasConfig, CommonGasConfig: vmCommonGasConfig}
-
+	// This gas meter is set up to consume gas from gaskv during evm execution and be ignored
 	currentGasMeter := ctx.GasMeter()
-	evm := NewEVM(evmCtx, st.StateDB.WithTxHash(tmhash.Sum(ctx.TxBytes())).WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())), cfg)
+	csdb := st.StateDB.WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())).WithTxHash(tmhash.Sum(ctx.TxBytes()))
+	// Clear cache of accounts to handle changes outside of the EVM
+	csdb.UpdateAccounts()
+
+	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
+	evm := NewEVM(evmCtx, csdb, cfg)
 
 	var (
 		ret         []byte
@@ -67,11 +70,11 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, constGasConfig *[256]u
 
 	if st.Recipient.Empty() {
 		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
+		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v , leftOverGas = %v, err = %v\n", st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
+		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	}
-
-	ctx.Logger().Debug(fmt.Sprintf("ret = %x, \nconsumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
 	if vmerr != nil {
@@ -104,8 +107,6 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimi
 		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
 	}
 
-	opGasConfig := k.GetVMOpGasParams(ctx)
-	commonGasConfig := k.GetVMCommonGasParams(ctx)
-
-	return st.TransitionCSDB(ctx, &opGasConfig, &commonGasConfig)
+	params := k.GetParams(ctx)
+	return st.TransitionCSDB(ctx, &params)
 }

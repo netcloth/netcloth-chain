@@ -145,7 +145,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// Get the operation from the jump table and validate the stack to ensure there are
 		// enough stack items available to perform the operation.
 		op = contract.GetOp(pc)
-		fmt.Fprintf(os.Stderr, fmt.Sprintf("op code = %d, op = %s\n", op, op))
+		fmt.Fprintf(os.Stderr, fmt.Sprintf("op code = %s\n", op))
 		operation := in.cfg.JumpTable[op]
 		operation.constantGas = in.cfg.OpConstGasConfig[op]
 		if !operation.valid {
@@ -210,8 +210,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			logged = true
 		}
 
-		stack.Print()
-		mem.Print()
+		// dump stack and memory
+		//stack.Print()
+		//mem.Print()
+
 		// execute the operation
 		res, err = operation.execute(&pc, in, contract, mem, stack)
 		// verifyPool is a build flag. Pool verification makes sure the integrity

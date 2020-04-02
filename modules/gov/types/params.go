@@ -1,8 +1,11 @@
 package types
 
 import (
+	"bytes"
 	"fmt"
 	"time"
+
+	"gopkg.in/yaml.v2"
 
 	params "github.com/netcloth/netcloth-chain/modules/params/subspace"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -51,6 +54,14 @@ func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration) Depo
 	}
 }
 
+// Equal returns a boolean determining if two Param types are identical.
+// TODO: This is slower than comparing struct fields directly
+func (p Params) Equal(p2 Params) bool {
+	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
+}
+
 // DefaultDepositParams default parameters for deposits
 func DefaultDepositParams() DepositParams {
 	return NewDepositParams(
@@ -60,9 +71,8 @@ func DefaultDepositParams() DepositParams {
 }
 
 func (dp DepositParams) String() string {
-	return fmt.Sprintf(`Deposit Params:
-  Min Deposit:        %s
-  Max Deposit Period: %s`, dp.MinDeposit, dp.MaxDepositPeriod)
+	out, _ := yaml.Marshal(dp)
+	return string(out)
 }
 
 // Checks equality of DepositParams

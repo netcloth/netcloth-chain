@@ -1,9 +1,13 @@
 package types
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
 	nchtypes "github.com/netcloth/netcloth-chain/types"
@@ -12,22 +16,22 @@ import (
 
 // Parameter store keys
 var (
-	KeyMintDenom           = []byte("MintDenom")
-	KeyInflationRateChange = []byte("InflationRateChange")
-	KeyInflationMax        = []byte("InflationMax")
-	KeyInflationMin        = []byte("InflationMin")
-	KeyGoalBonded          = []byte("GoalBonded")
-	KeyBlocksPerYear       = []byte("BlocksPerYear")
+	KeyMintDenom                  = []byte("MintDenom")
+	KeyInflationCutBackRate       = []byte("InflationCutBackRate")
+	KeyNextInflationCutBackHeight = []byte("NextInflationCutBackHeight")
+	KeyBlockProvision             = []byte("BlockProvision")
+	KeyBlocksPerYear              = []byte("BlocksPerYear")
+	KeyTotalSupplyCeiling         = []byte("TotalSupplyCeiling")
 )
 
 // mint parameters
 type Params struct {
-	MintDenom           string  `json:"mint_denom" yaml:"mint_denom"`                       // type of coin to mint
-	InflationRateChange sdk.Dec `json:"inflation_rate_change" yaml:"inflation_rate_change"` // maximum annual change in inflation rate
-	InflationMax        sdk.Dec `json:"inflation_max" yaml:"inflation_max"`                 // maximum inflation rate
-	InflationMin        sdk.Dec `json:"inflation_min" yaml:"inflation_min"`                 // minimum inflation rate
-	GoalBonded          sdk.Dec `json:"goal_bonded" yaml:"goal_bonded"`                     // goal of percent bonded atoms
-	BlocksPerYear       uint64  `json:"blocks_per_year" yaml:"blocks_per_year"`             // expected blocks per year
+	MintDenom                  string  `json:"mint_denom" yaml:"mint_denom"`                         // type of coin to mint
+	InflationCutBackRate       sdk.Dec `json:"inflation_cutback_rate" yaml:"inflation_cutback_rate"` // current annual inflate cutback  rate
+	NextInflationCutBackHeight int64   `json:"next_inflation_cutback_height" yaml:"next_inflation_cutback_height"`
+	BlockProvision             sdk.Dec `json:"block_provision" yaml:"block_provision"`
+	BlocksPerYear              int64   `json:"blocks_per_year" yaml:"blocks_per_year"` // expected blocks per year
+	TotalSupplyCeiling         sdk.Int `json:"total_supply_ceiling" yaml:"total_supply_ceiling"`
 }
 
 // ParamTable for minting module.
@@ -35,95 +39,83 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(mintDenom string, inflationRateChange, inflationMax,
-	inflationMin, goalBonded sdk.Dec, blocksPerYear uint64) Params {
+func NewParams(mintDenom string, inflationCutBackRate sdk.Dec, nextInflationCutBackHeight int64,
+	blockProvision sdk.Dec, blocksPerYear int64, totalSupplyCeiling sdk.Int) Params {
 
 	return Params{
-		MintDenom:           mintDenom,
-		InflationRateChange: inflationRateChange,
-		InflationMax:        inflationMax,
-		InflationMin:        inflationMin,
-		GoalBonded:          goalBonded,
-		BlocksPerYear:       blocksPerYear,
+		MintDenom:                  mintDenom,
+		InflationCutBackRate:       inflationCutBackRate,
+		NextInflationCutBackHeight: nextInflationCutBackHeight,
+		BlockProvision:             blockProvision,
+		BlocksPerYear:              blocksPerYear,
+		TotalSupplyCeiling:         totalSupplyCeiling,
 	}
+}
+
+// Equal returns a boolean determining if two Params types are identical.
+func (p Params) Equal(p2 Params) bool {
+	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
 }
 
 // default minting module parameters
 func DefaultParams() Params {
 	return Params{
-		MintDenom:           nchtypes.DefaultBondDenom,
-		InflationRateChange: sdk.NewDecWithPrec(13, 2),
-		InflationMax:        sdk.NewDecWithPrec(20, 2),
-		InflationMin:        sdk.NewDecWithPrec(7, 2),
-		GoalBonded:          sdk.NewDecWithPrec(67, 2),
-		BlocksPerYear:       uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
+		MintDenom:                  nchtypes.DefaultBondDenom,
+		InflationCutBackRate:       sdk.NewDecWithPrec(90, 2),
+		NextInflationCutBackHeight: int64(0),
+		BlockProvision:             sdk.NewDec(11090830734911),
+		BlocksPerYear:              int64(60 * 60 * 8766 / 5), // assuming 5 second block times
+		TotalSupplyCeiling:         sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(21), nil)),
 	}
 }
 
 // validate params
 func (p Params) Validate() error {
-	if p.InflationMax.LT(p.InflationMin) {
-		return fmt.Errorf("mint parameter Max inflation must be greater than or equal to min inflation")
-	}
-
 	if err := validateMintDenom(p.MintDenom); err != nil {
 		return err
 	}
-	if err := validateInflationRateChange(p.InflationRateChange); err != nil {
+	if err := validateInflationCutBackRate(p.InflationCutBackRate); err != nil {
 		return err
 	}
-	if err := validateInflationMax(p.InflationMax); err != nil {
+	if err := validateNextInflationCutBackHeight(p.NextInflationCutBackHeight); err != nil {
 		return err
 	}
-	if err := validateInflationMin(p.InflationMin); err != nil {
-		return err
-	}
-	if err := validateGoalBonded(p.GoalBonded); err != nil {
+	if err := validateBlockProvision(p.BlockProvision); err != nil {
 		return err
 	}
 	if err := validateBlocksPerYear(p.BlocksPerYear); err != nil {
 		return err
 	}
-	if p.InflationMax.LT(p.InflationMin) {
-		return fmt.Errorf(
-			"max inflation (%s) must be greater than or equal to min inflation (%s)",
-			p.InflationMax, p.InflationMin,
-		)
+	if err := validateTotalSupplyCeiling(p.TotalSupplyCeiling); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (p Params) String() string {
-	return fmt.Sprintf(`Minting Params:
-  Mint Denom:             %s
-  Inflation Rate Change:  %s
-  Inflation Max:          %s
-  Inflation Min:          %s
-  Goal Bonded:            %s
-  Blocks Per Year:        %d
-`,
-		p.MintDenom, p.InflationRateChange, p.InflationMax,
-		p.InflationMin, p.GoalBonded, p.BlocksPerYear,
-	)
+	out, _ := yaml.Marshal(p)
+	return string(out)
 }
 
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		params.NewParamSetPair(KeyMintDenom, &p.MintDenom, validateMintDenom),
-		params.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRateChange),
-		params.NewParamSetPair(KeyInflationMax, &p.InflationMax, validateInflationMax),
-		params.NewParamSetPair(KeyInflationMin, &p.InflationMin, validateInflationMin),
-		params.NewParamSetPair(KeyGoalBonded, &p.GoalBonded, validateGoalBonded),
+		params.NewParamSetPair(KeyInflationCutBackRate, &p.InflationCutBackRate, validateInflationCutBackRate),
+		params.NewParamSetPair(KeyNextInflationCutBackHeight, &p.NextInflationCutBackHeight, validateNextInflationCutBackHeight),
+		params.NewParamSetPair(KeyBlockProvision, &p.BlockProvision, validateBlockProvision),
 		params.NewParamSetPair(KeyBlocksPerYear, &p.BlocksPerYear, validateBlocksPerYear),
+		params.NewParamSetPair(KeyTotalSupplyCeiling, &p.TotalSupplyCeiling, validateTotalSupplyCeiling),
 	}
 }
 
 func validateMintDenom(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("validateMintDenom invalid parameter type: %T", i)
 	}
 
 	if strings.TrimSpace(v) == "" {
@@ -136,78 +128,69 @@ func validateMintDenom(i interface{}) error {
 	return nil
 }
 
-func validateInflationRateChange(i interface{}) error {
+func validateInflationCutBackRate(i interface{}) error {
 	v, ok := i.(sdk.Dec)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("validateInflationCutBackRate invalid parameter type: %T", i)
 	}
 
 	if v.IsNegative() {
-		return fmt.Errorf("inflation rate change cannot be negative: %s", v)
+		return fmt.Errorf("inflation cutback rate cannot be negative: %s", v)
 	}
 	if v.GT(sdk.OneDec()) {
-		return fmt.Errorf("inflation rate change too large: %s", v)
+		return fmt.Errorf("inflation cutback rate too large: %s", v)
 	}
 
 	return nil
 }
 
-func validateInflationMax(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+func validateNextInflationCutBackHeight(i interface{}) error {
+	v, ok := i.(int64)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("validateNextInflationCutBackHeight invalid parameter type: %T", i)
 	}
 
-	if v.IsNegative() {
-		return fmt.Errorf("max inflation cannot be negative: %s", v)
-	}
-	if v.GT(sdk.OneDec()) {
-		return fmt.Errorf("max inflation too large: %s", v)
+	if v < 0 {
+		return fmt.Errorf("next inflation cutback height must be positive: %d", v)
 	}
 
 	return nil
 }
 
-func validateInflationMin(i interface{}) error {
+func validateBlockProvision(i interface{}) error {
 	v, ok := i.(sdk.Dec)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("validateBlockProvision invalid parameter type: %T", i)
 	}
 
 	if v.IsNegative() {
-		return fmt.Errorf("min inflation cannot be negative: %s", v)
-	}
-	if v.GT(sdk.OneDec()) {
-		return fmt.Errorf("min inflation too large: %s", v)
-	}
-
-	return nil
-}
-
-func validateGoalBonded(i interface{}) error {
-	v, ok := i.(sdk.Dec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.IsNegative() {
-		return fmt.Errorf("goal bonded cannot be negative: %s", v)
-	}
-	if v.GT(sdk.OneDec()) {
-		return fmt.Errorf("goal bonded must be <= 1: %s", v)
+		return fmt.Errorf("block provision cannot be negative: %s", v)
 	}
 
 	return nil
 }
 
 func validateBlocksPerYear(i interface{}) error {
-	v, ok := i.(uint64)
+	v, ok := i.(int64)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("validateBlocksPerYear invalid parameter type: %T", i)
 	}
 
-	if v == 0 {
+	if v <= 0 {
 		return fmt.Errorf("blocks per year must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateTotalSupplyCeiling(i interface{}) error {
+	v, ok := i.(sdk.Int)
+	if !ok {
+		return fmt.Errorf("validateTotalSupplyCeiling invalid parameter type: %T", i)
+	}
+
+	if v.LTE(sdk.NewInt(int64(0))) {
+		return fmt.Errorf("total supply ceiling must be positive: %d", v)
 	}
 
 	return nil

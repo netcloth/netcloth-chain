@@ -1,10 +1,10 @@
-package auth
+package ante
 
 import (
 	"fmt"
 
+	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/exported"
-
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -19,6 +19,42 @@ type FeeTx interface {
 	GetGas() uint64
 	GetFee() sdk.Coins
 	FeePayer() sdk.AccAddress
+}
+
+type FeePreprocessDecorator struct {
+	ak auth.AccountKeeper
+}
+
+func NewFeePreprocessDecorator(ak auth.AccountKeeper) FeePreprocessDecorator {
+	return FeePreprocessDecorator{
+		ak: ak,
+	}
+}
+
+func (fpd FeePreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	feeTx, ok := tx.(FeeTx)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+	}
+
+	if ctx.BlockHeight() != 0 {
+		gasLimit := feeTx.GetGas()
+		feeCoins := feeTx.GetFee()
+
+		if gasLimit == 0 || int64(gasLimit) < 0 {
+			return ctx, sdkerrors.Wrapf(sdkerrors.ErrGasLimitError, "%d", int64(gasLimit))
+		}
+
+		feeParams := fpd.ak.GetParams(ctx)
+		gasPriceThreshold := sdk.NewInt(int64(feeParams.GasPriceThreshold))
+		gasPrice := feeCoins.AmountOf(sdk.NativeTokenName).Quo(sdk.NewInt(int64(gasLimit)))
+
+		if gasPrice.LT(gasPriceThreshold) {
+			return ctx, sdkerrors.Wrapf(sdkerrors.ErrGasPriceUnderThreshold, "current gasPrice: %s, gasPriceThreshold: %s", gasPrice.String(), gasPriceThreshold.String())
+		}
+	}
+
+	return next(ctx, tx, simulate)
 }
 
 // MempoolFeeDecorator will check if the transaction's fee is at least as large
@@ -71,11 +107,11 @@ func (mfd MempoolFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 // Call next AnteHandler if fees successfully deducted
 // CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
 type DeductFeeDecorator struct {
-	ak           AccountKeeper
+	ak           auth.AccountKeeper
 	supplyKeeper types.SupplyKeeper
 }
 
-func NewDeductFeeDecorator(ak AccountKeeper, sk types.SupplyKeeper) DeductFeeDecorator {
+func NewDeductFeeDecorator(ak auth.AccountKeeper, sk types.SupplyKeeper) DeductFeeDecorator {
 	return DeductFeeDecorator{
 		ak:           ak,
 		supplyKeeper: sk,
@@ -106,7 +142,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 			return ctx, err
 		}
 	}
-	newCtx = WithSigners(ctx, feePayerAcc)
+	newCtx = auth.WithFeePayers(ctx, feePayerAcc)
 	return next(newCtx, tx, simulate)
 }
 

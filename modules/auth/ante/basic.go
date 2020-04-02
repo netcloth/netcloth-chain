@@ -1,11 +1,13 @@
-package auth
+package ante
 
 import (
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/multisig"
+
+	"github.com/netcloth/netcloth-chain/modules/auth"
 	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 var (
@@ -44,10 +46,10 @@ type TxWithMemo interface {
 // If memo is too large decorator returns with error, otherwise call next AnteHandler
 // CONTRACT: Tx must implement TxWithMemo interface
 type ValidateMemoDecorator struct {
-	ak AccountKeeper
+	ak auth.AccountKeeper
 }
 
-func NewValidateMemoDecorator(ak AccountKeeper) ValidateMemoDecorator {
+func NewValidateMemoDecorator(ak auth.AccountKeeper) ValidateMemoDecorator {
 	return ValidateMemoDecorator{
 		ak: ak,
 	}
@@ -81,10 +83,10 @@ func (vmd ValidateMemoDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 // CONTRACT: To use this decorator, signatures of transaction must be represented
 // as types.StdSignature otherwise simulate mode will incorrectly estimate gas cost.
 type ConsumeTxSizeGasDecorator struct {
-	ak AccountKeeper
+	ak auth.AccountKeeper
 }
 
-func NewConsumeGasForTxSizeDecorator(ak AccountKeeper) ConsumeTxSizeGasDecorator {
+func NewConsumeGasForTxSizeDecorator(ak auth.AccountKeeper) ConsumeTxSizeGasDecorator {
 	return ConsumeTxSizeGasDecorator{
 		ak: ak,
 	}

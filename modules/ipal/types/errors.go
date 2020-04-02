@@ -9,9 +9,9 @@ var (
 	ErrBadDenom           = sdkerrors.Register(ModuleName, 2, "bad denom")
 	ErrBondInsufficient   = sdkerrors.Register(ModuleName, 3, "bond insufficient")
 	ErrMonikerExist       = sdkerrors.Register(ModuleName, 4, "moniker exists")
-	ErrEndpointsFormat    = sdkerrors.Register(ModuleName, 5, "endpoints format err, should be in format: serviceType|endpoint,serviceType|endpoint, serviceType is a number, endpoint is a string")
 	ErrEndpointsEmpty     = sdkerrors.Register(ModuleName, 6, "no endpoints")
 	ErrEndpointsDuplicate = sdkerrors.Register(ModuleName, 7, "endpoints duplicate")
+	ErrEndpointsFormat    = sdkerrors.Register(ModuleName, 8, "endpoints format error")
 )
 
 type EndpointDuplicateErrDetector struct {

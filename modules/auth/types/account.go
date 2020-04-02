@@ -3,12 +3,13 @@ package types
 import (
 	"errors"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/hexutil"
 	"time"
 
-	"github.com/tendermint/tendermint/crypto"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
+	"github.com/tendermint/tendermint/crypto"
+
+	"github.com/netcloth/netcloth-chain/hexutil"
 	"github.com/netcloth/netcloth-chain/modules/auth/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -150,7 +151,13 @@ func (acc *BaseAccount) SpendableCoins(_ time.Time) sdk.Coins {
 
 // Balance returns the balance of an account
 func (acc *BaseAccount) Balance() sdk.Int {
-	return acc.GetCoins().AmountOf(sdk.NativeTokenName)
+	coins := acc.GetCoins()
+	if coins == nil {
+		return sdk.NewInt(0)
+	}
+	return coins.AmountOf(sdk.NativeTokenName)
+
+	//return acc.GetCoins().AmountOf(sdk.NativeTokenName) TODO CHECK acc.GetCoins() return nil?
 }
 
 // SetBalance sets an account's balance of native token

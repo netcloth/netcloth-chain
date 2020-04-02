@@ -1,9 +1,7 @@
 package types
 
 import (
-	"fmt"
 	"math"
-	"os"
 )
 
 // Gas consumption descriptors.
@@ -81,26 +79,16 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 }
 
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	fp, err := os.OpenFile("/tmp/gaslog", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-	if err != nil {
-		fmt.Printf(err.Error())
-	} else {
-		defer fp.Close()
-	}
-	fmt.Fprintf(fp, "******** [%s-%d]\n", descriptor, amount)
-	fmt.Fprintf(fp, "before g.consumed = %d\n", g.consumed)
 	var overflow bool
 	// TODO: Should we set the consumed field after overflow checking?
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
 	if overflow {
 		panic(ErrorGasOverflow{descriptor})
 	}
-	fmt.Fprintf(fp, "after g.consumed = %d\n", g.consumed)
 
 	if g.consumed > g.limit {
 		panic(ErrorOutOfGas{descriptor})
 	}
-
 }
 
 func (g *basicGasMeter) IsPastLimit() bool {

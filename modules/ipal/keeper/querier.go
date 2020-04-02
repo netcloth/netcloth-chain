@@ -13,14 +13,14 @@ func NewQuerier(k Keeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
-		case types.QueryServiceNodeList:
-			return queryServiceNodeList(ctx, k)
-		case types.QueryServiceNode:
-			return queryServiceNode(ctx, req, k)
-		case types.QueryServiceNodes:
-			return queryServiceNodes(ctx, req, k)
+		case types.QueryIPALNodeList:
+			return queryIPALNodeList(ctx, k)
+		case types.QueryIPALNode:
+			return queryIPALNode(ctx, req, k)
+		case types.QueryIPALNodes:
+			return queryIPALNodes(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown ipal query endpoint")
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown ipal query path: %s", path[0])
 		}
 	}
 }
@@ -35,52 +35,52 @@ func queryParameters(ctx sdk.Context, k Keeper) ([]byte, error) {
 	return res, nil
 }
 
-func queryServiceNodeList(ctx sdk.Context, k Keeper) ([]byte, error) {
-	serviceNodes := k.GetAllServiceNodes(ctx)
-	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNodes)
+func queryIPALNodeList(ctx sdk.Context, k Keeper) ([]byte, error) {
+	ipalNodes := k.GetAllIPALNodes(ctx)
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, ipalNodes)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return bz, nil
 }
 
-func queryServiceNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
-	var queryParams types.QueryServiceNodeParams
+func queryIPALNode(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
+	var queryParams types.QueryIPALNodeParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &queryParams)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	serviceNode, found := k.GetServiceNode(ctx, queryParams.AccAddr)
+	ipalNode, found := k.GetIPALNode(ctx, queryParams.AccAddr)
 	if found {
-		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, serviceNode)
+		bz, err := codec.MarshalJSONIndent(types.ModuleCdc, ipalNode)
 		if err != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 		}
 		return bz, nil
 	}
 
-	return nil, sdk.ErrInternal("not found")
+	return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "not found")
 }
 
-func queryServiceNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
-	var params types.QueryServiceNodesParams
+func queryIPALNodes(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error) {
+	var params types.QueryIPALNodesParams
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	servcieNodes := types.ServiceNodes{}
+	ipalNodes := types.IPALNodes{}
 	for _, accAddr := range params.AccAddrs {
-		serviceNode, found := k.GetServiceNode(ctx, accAddr)
+		node, found := k.GetIPALNode(ctx, accAddr)
 		if found {
-			servcieNodes = append(servcieNodes, serviceNode)
+			ipalNodes = append(ipalNodes, node)
 		}
 	}
 
-	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, servcieNodes)
+	bz, err := codec.MarshalJSONIndent(types.ModuleCdc, ipalNodes)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

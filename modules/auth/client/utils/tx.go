@@ -10,12 +10,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
-	"github.com/netcloth/netcloth-chain/codec"
-	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/client/flags"
 	"github.com/netcloth/netcloth-chain/client/input"
 	"github.com/netcloth/netcloth-chain/client/keys"
+	"github.com/netcloth/netcloth-chain/codec"
+	authtypes "github.com/netcloth/netcloth-chain/modules/auth/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -288,12 +288,12 @@ func adjustGasEstimate(estimate uint64, adjustment float64) uint64 {
 }
 
 func parseQueryResponse(cdc *codec.Codec, rawRes []byte) (uint64, error) {
-	var simulationResult sdk.Result
-	if err := cdc.UnmarshalBinaryLengthPrefixed(rawRes, &simulationResult); err != nil {
+	var gasUsed uint64
+	if err := cdc.UnmarshalBinaryLengthPrefixed(rawRes, &gasUsed); err != nil {
 		return 0, err
 	}
 
-	return simulationResult.GasUsed, nil
+	return gasUsed, nil
 }
 
 // PrepareTxBuilder populates a TxBuilder in preparation for the build of a Tx.

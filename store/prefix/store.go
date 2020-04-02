@@ -2,6 +2,7 @@ package prefix
 
 import (
 	"bytes"
+	"errors"
 	"io"
 
 	"github.com/netcloth/netcloth-chain/store/cachekv"
@@ -187,4 +188,14 @@ func stripPrefix(key []byte, prefix []byte) []byte {
 // wrapping types.PrefixEndBytes
 func cpIncr(bz []byte) []byte {
 	return types.PrefixEndBytes(bz)
+}
+
+// Error returns an error if the prefixIterator is invalid defined by the Valid
+// method.
+func (pi *prefixIterator) Error() error {
+	if !pi.Valid() {
+		return errors.New("invalid prefixIterator")
+	}
+
+	return nil
 }

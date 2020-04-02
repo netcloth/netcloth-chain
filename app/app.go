@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/netcloth/netcloth-chain/modules/auth/ante"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -59,8 +61,8 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		cipal.AppModuleBasic{},
 		ipal.AppModuleBasic{},
+		cipal.AppModuleBasic{},
 		vm.AppModuleBasic{},
 	)
 
@@ -110,8 +112,8 @@ type NCHApp struct {
 	govKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-	ipalKeeper     cipal.Keeper
-	aipalKeeper    ipal.Keeper
+	cipalKeeper    cipal.Keeper
+	ipalKeeper     ipal.Keeper
 	vmKeeper       vm.Keeper
 
 	// the module manager
@@ -144,6 +146,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		ipal.StoreKey,
 		vm.StoreKey,
 		vm.CodeKey,
+		vm.StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -168,8 +171,8 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
 
 	// add keepers
@@ -187,21 +190,22 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
-	app.ipalKeeper = cipal.NewKeeper(
+	app.cipalKeeper = cipal.NewKeeper(
 		keys[cipal.StoreKey],
 		app.cdc,
-		ipalSubspace)
+		cipalSubspace)
 
-	app.aipalKeeper = ipal.NewKeeper(
+	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
-		aipalSubspace)
+		ipalSubspace)
 
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc,
 		keys[vm.StoreKey],
 		keys[vm.CodeKey],
+		keys[vm.StoreDebugKey],
 		vmSubspace,
 		app.accountKeeper)
 
@@ -232,13 +236,13 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		gov.NewAppModule(app.govKeeper, app.supplyKeeper),
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
+		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.ipalKeeper),
-		ipal.NewAppModule(app.aipalKeeper),
+		ipal.NewAppModule(app.ipalKeeper),
+		cipal.NewAppModule(app.cipalKeeper),
 		vm.NewAppModule(app.vmKeeper),
 	)
 
@@ -279,9 +283,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	// The AnteHandler handles signature verification and transaction pre-processing
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
+	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
-	//app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
@@ -320,6 +324,7 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		ipal.StoreKey,
 		vm.StoreKey,
 		vm.CodeKey,
+		vm.StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -344,8 +349,8 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	ipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
-	aipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
+	cipalSubspace := app.paramsKeeper.Subspace(cipal.DefaultParamspace)
+	ipalSubspace := app.paramsKeeper.Subspace(ipal.DefaultParamspace)
 	vmSubspace := app.paramsKeeper.Subspace(vm.DefaultParamspace)
 
 	// add keepers
@@ -363,21 +368,22 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
 	app.crisisKeeper = crisis.NewKeeper(crisisSubspace, invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
 
-	app.ipalKeeper = cipal.NewKeeper(
+	app.cipalKeeper = cipal.NewKeeper(
 		keys[cipal.StoreKey],
 		app.cdc,
-		ipalSubspace)
+		cipalSubspace)
 
-	app.aipalKeeper = ipal.NewKeeper(
+	app.ipalKeeper = ipal.NewKeeper(
 		keys[ipal.StoreKey],
 		app.cdc,
 		app.supplyKeeper,
-		aipalSubspace)
+		ipalSubspace)
 
 	app.vmKeeper = vm.NewKeeper(
 		app.cdc,
 		keys[vm.StoreKey],
 		keys[vm.CodeKey],
+		keys[vm.StoreDebugKey],
 		vmSubspace,
 		app.accountKeeper)
 
@@ -413,8 +419,8 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.distrKeeper, app.accountKeeper, app.supplyKeeper),
-		cipal.NewAppModule(app.ipalKeeper),
-		ipal.NewAppModule(app.aipalKeeper),
+		cipal.NewAppModule(app.cipalKeeper),
+		ipal.NewAppModule(app.ipalKeeper),
 		vm.NewAppModule(app.vmKeeper),
 	)
 
@@ -455,9 +461,9 @@ func NewNCHAppForReplay(logger log.Logger, db dbm.DB, traceStore io.Writer, load
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	// The AnteHandler handles signature verification and transaction pre-processing
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
+	app.SetAnteHandler(ante.NewAnteHandler(app.accountKeeper, app.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 	// Fee refund handler
-	//app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+	app.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {

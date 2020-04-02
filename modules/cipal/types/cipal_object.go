@@ -69,5 +69,5 @@ func getServiceInfosString(infos []ServiceInfo) string {
 func (obj CIPALObject) String() string {
 	return fmt.Sprintf(`CIPALObject
 User Address:			%s
-Service Infos:		    %s`, getServiceInfosString(obj.ServiceInfos))
+Service Infos:		    %s`, obj.UserAddress, getServiceInfosString(obj.ServiceInfos))
 }

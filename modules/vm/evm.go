@@ -3,7 +3,6 @@ package vm
 import (
 	"fmt"
 	"math/big"
-	"os"
 	"time"
 
 	"github.com/tendermint/tendermint/crypto"
@@ -143,9 +142,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		return nil, sdk.AccAddress{}, gas, ErrInsufficientBalance
 	}
 
-	//nonce := evm.StateDB.GetNonce(caller.Address())
-	//evm.StateDB.SetNonce(caller.Address(), nonce+1)
-
 	// Ensure there's no existing contract already at the designated address
 	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
 	contractHash := evm.StateDB.GetCodeHash(address)
@@ -164,8 +160,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	contract := NewContract(caller, AccountRef(address), value, gas)
 	contract.SetCodeOptionalHash(&address, codeAndHash)
 
-	fmt.Fprintf(os.Stderr, "$$$$$$ raw code:[%x], raw code len:[%d], raw code hash[%x]\n", codeAndHash.code, len(codeAndHash.code), codeAndHash.hash)
-
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
 		return nil, address, gas, nil
 	}
@@ -173,7 +167,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	start := time.Now()
 	ret, err := run(evm, contract, nil, false)
 
-	fmt.Fprintf(os.Stderr, "$$$$$$ ret code:[%x], ret code len:[%d]\n", ret, len(ret))
 	maxCodeSizeExceeded := len(ret) > MaxCodeSize // TODO: use vm config
 	if err == nil && !maxCodeSizeExceeded {
 		createGas := evm.vmConfig.CommonGasConfig.ContractCreationGas + uint64(len(ret))*evm.vmConfig.CommonGasConfig.CreateDataGas

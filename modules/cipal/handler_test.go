@@ -14,7 +14,8 @@ func TestInvalidMsg(t *testing.T) {
 	k := Keeper{}
 	h := NewHandler(k)
 
-	res := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
-	require.False(t, res.IsOK())
-	require.True(t, strings.Contains(res.Log, "Unrecognized Msg type"))
+	res, err := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
+	require.Nil(t, res)
+	require.NotNil(t, err)
+	require.True(t, strings.Contains(err.Error(), "unrecognized cipal message type"))
 }

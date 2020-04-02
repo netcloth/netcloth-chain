@@ -41,7 +41,7 @@ func queryCIPAL(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, error
 		return bz, nil
 	}
 
-	return nil, sdk.ErrInternal("not found")
+	return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "not found")
 }
 
 type CIPALCount struct {

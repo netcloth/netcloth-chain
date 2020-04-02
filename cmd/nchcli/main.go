@@ -19,8 +19,8 @@ import (
 	authrest "github.com/netcloth/netcloth-chain/modules/auth/client/rest"
 	"github.com/netcloth/netcloth-chain/modules/bank"
 	bankcmd "github.com/netcloth/netcloth-chain/modules/bank/client/cli"
-	ipalcli "github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
-	aipalcli "github.com/netcloth/netcloth-chain/modules/ipal/client/cli"
+	cipalcli "github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
+	ipalcli "github.com/netcloth/netcloth-chain/modules/ipal/client/cli"
 	vmcli "github.com/netcloth/netcloth-chain/modules/vm/client/cli"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
@@ -52,8 +52,8 @@ func main() {
 	// Construct Root Command
 	rootCmd.AddCommand(
 		bankcmd.SendTxCmd(cdc),
-		ipalcli.CIPALCmd(cdc),
-		aipalcli.IPALCmd(cdc),
+		cipalcli.CIPALCmd(cdc),
+		ipalcli.IPALCmd(cdc),
 		vmcli.VMCmd(cdc),
 		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),

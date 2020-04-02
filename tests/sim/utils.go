@@ -24,7 +24,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/types"
 
-	"github.com/netcloth/netcloth-chain/client/keys"
 	"github.com/netcloth/netcloth-chain/tests"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
@@ -32,7 +31,8 @@ import (
 )
 
 const (
-	DefaultKeyPass = "12345678"
+	DefaultKeyPass                = "12345678"
+	DefaultGenAccountAmount int64 = 100000000000000000
 )
 
 type KeyOutput struct {
@@ -52,17 +52,16 @@ type GenesisFileAccount struct {
 
 func getTestingHomeDirs(name string) (string, string) {
 	tmpDir := os.TempDir()
-	nchdHome := fmt.Sprintf("%s%s%s%s.test_nchd", tmpDir, string(os.PathSeparator), name, string(os.PathSeparator))
-	nchcliHome := fmt.Sprintf("%s%s%s%s.test_nchcli", tmpDir, string(os.PathSeparator), name, string(os.PathSeparator))
+	nchdHome := fmt.Sprintf("%s%s%s.test_nchd", tmpDir, name, string(os.PathSeparator))
+	nchcliHome := fmt.Sprintf("%s%s%s.test_nchcli", tmpDir, name, string(os.PathSeparator))
 	return nchdHome, nchcliHome
 }
 
 func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, p2p2Addr string) {
 	nchdHome, nchcliHome = getTestingHomeDirs(t.Name())
 	tests.ExecuteT(t, fmt.Sprintf("rm -rf %s ", nchdHome), "")
+	tests.ExecuteT(t, fmt.Sprintf("rm -rf %s ", nchcliHome), "")
 
-	executeWrite(t, fmt.Sprintf("nchcli keys delete --home=%s foo", nchcliHome), DefaultKeyPass)
-	executeWrite(t, fmt.Sprintf("nchcli keys delete --home=%s bar", nchcliHome), DefaultKeyPass)
 	executeWriteCheckErr(t, fmt.Sprintf("nchcli keys add --home=%s foo", nchcliHome), DefaultKeyPass)
 	executeWriteCheckErr(t, fmt.Sprintf("nchcli keys add --home=%s bar", nchcliHome), DefaultKeyPass)
 
@@ -71,10 +70,10 @@ func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, 
 	tests.ExecuteT(t, fmt.Sprintf("nchcli config trust-node true --home=%s", nchcliHome), "")
 
 	fooAccAddress := executeGetAccAddress(t, fmt.Sprintf("nchcli keys show foo -a --home=%s", nchcliHome))
-	executeWrite(t, fmt.Sprintf("nchd add-genesis-account %s 11000000pnch --home=%s", fooAccAddress, nchdHome), DefaultKeyPass)
+	executeWrite(t, fmt.Sprintf("nchd add-genesis-account %s %d%s --home=%s", fooAccAddress, DefaultGenAccountAmount, sdk.NativeTokenName, nchdHome), DefaultKeyPass)
 
 	fooPubkey := executeGetAccAddress(t, fmt.Sprintf("nchd tendermint show-validator --home=%s", nchdHome)) //TODO refact executeGetAccAddress
-	executeWrite(t, fmt.Sprintf("nchd gentx --amount 1000000pnch --commission-rate 0.10 --commission-max-rate 0.20 --commission-max-change-rate 0.10 --pubkey %s --name foo --home=%s --home-client=%s", fooPubkey, nchdHome, nchcliHome), DefaultKeyPass)
+	executeWrite(t, fmt.Sprintf("nchd gentx --amount 1000000000000pnch --commission-rate 0.10 --commission-max-rate 0.20 --commission-max-change-rate 0.10 --pubkey %s --name foo --home=%s --home-client=%s", fooPubkey, nchdHome, nchcliHome), DefaultKeyPass)
 	tests.ExecuteT(t, fmt.Sprintf("nchd collect-gentxs --home=%s", nchdHome), "")
 
 	servAddr, port, err := server.FreeTCPAddr()
@@ -110,7 +109,6 @@ func executeWriteRetStreams(t *testing.T, cmdStr string, writes ...string) (bool
 
 	if len(stdout) > 0 {
 		t.Log("Stdout:", string(stdout))
-		//t.Log("Stdout:", cmn.Green(string(stdout)))
 	}
 
 	if len(stderr) > 0 {
@@ -143,20 +141,6 @@ func executeGetAccAddress(t *testing.T, cmdStr string) (accAddress string) {
 
 	accAddress = string([]byte(stdout))
 	return
-}
-
-func executeGetAddrPK(t *testing.T, cmdStr string) (sdk.AccAddress, crypto.PubKey) {
-	out, _ := tests.ExecuteT(t, cmdStr, "")
-	var ko KeyOutput
-	keys.UnmarshalJSON([]byte(out), &ko)
-
-	pk, err := sdk.GetAccPubKeyBech32(ko.PubKey)
-	require.NoError(t, err)
-
-	accAddr, err := sdk.AccAddressFromBech32(ko.Address)
-	require.NoError(t, err)
-
-	return accAddr, pk
 }
 
 func executeGetAccount(t *testing.T, cmdStr string) (acc auth.BaseAccount) {

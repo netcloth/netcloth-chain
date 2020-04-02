@@ -3,10 +3,10 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/modules/params"
-
 	"github.com/netcloth/netcloth-chain/modules/params/subspace"
 )
 
@@ -15,6 +15,7 @@ const DefaultParamspace = ModuleName
 
 // Default parameter values
 const (
+	DefaultGasPriceThreshold      uint64 = 1000
 	DefaultMaxMemoCharacters      uint64 = 256
 	DefaultTxSigLimit             uint64 = 7
 	DefaultTxSizeCostPerByte      uint64 = 10
@@ -24,6 +25,7 @@ const (
 
 // Parameter keys
 var (
+	KeyGasPriceThreshold      = []byte("GasPriceThreshold")
 	KeyMaxMemoCharacters      = []byte("MaxMemoCharacters")
 	KeyTxSigLimit             = []byte("TxSigLimit")
 	KeyTxSizeCostPerByte      = []byte("TxSizeCostPerByte")
@@ -35,6 +37,7 @@ var _ subspace.ParamSet = &Params{}
 
 // Params defines the parameters for the auth module.
 type Params struct {
+	GasPriceThreshold      uint64 `json:"gas_price_threshold" yaml:"gas_price_threshold"`
 	MaxMemoCharacters      uint64 `json:"max_memo_characters" yaml:"max_memo_characters"`
 	TxSigLimit             uint64 `json:"tx_sig_limit" yaml:"tx_sig_limit"`
 	TxSizeCostPerByte      uint64 `json:"tx_size_cost_per_byte" yaml:"tx_size_cost_per_byte"`
@@ -43,10 +46,11 @@ type Params struct {
 }
 
 // NewParams creates a new Params object
-func NewParams(maxMemoCharacters, txSigLimit, txSizeCostPerByte,
+func NewParams(gasPriceThreshold, maxMemoCharacters, txSigLimit, txSizeCostPerByte,
 	sigVerifyCostED25519, sigVerifyCostSecp256k1 uint64) Params {
 
 	return Params{
+		GasPriceThreshold:      gasPriceThreshold,
 		MaxMemoCharacters:      maxMemoCharacters,
 		TxSigLimit:             txSigLimit,
 		TxSizeCostPerByte:      txSizeCostPerByte,
@@ -65,6 +69,7 @@ func ParamKeyTable() subspace.KeyTable {
 // nolint
 func (p *Params) ParamSetPairs() subspace.ParamSetPairs {
 	return subspace.ParamSetPairs{
+		params.NewParamSetPair(KeyGasPriceThreshold, &p.GasPriceThreshold, validateGasPriceThreshold),
 		params.NewParamSetPair(KeyMaxMemoCharacters, &p.MaxMemoCharacters, validateMaxMemoCharacters),
 		params.NewParamSetPair(KeyTxSigLimit, &p.TxSigLimit, validateTxSigLimit),
 		params.NewParamSetPair(KeyTxSizeCostPerByte, &p.TxSizeCostPerByte, validateTxSizeCostPerByte),
@@ -83,6 +88,7 @@ func (p Params) Equal(p2 Params) bool {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
+		GasPriceThreshold:      DefaultGasPriceThreshold,
 		MaxMemoCharacters:      DefaultMaxMemoCharacters,
 		TxSigLimit:             DefaultTxSigLimit,
 		TxSizeCostPerByte:      DefaultTxSizeCostPerByte,
@@ -93,14 +99,21 @@ func DefaultParams() Params {
 
 // String implements the stringer interface.
 func (p Params) String() string {
-	var sb strings.Builder
-	sb.WriteString("Params: \n")
-	sb.WriteString(fmt.Sprintf("MaxMemoCharacters: %d\n", p.MaxMemoCharacters))
-	sb.WriteString(fmt.Sprintf("TxSigLimit: %d\n", p.TxSigLimit))
-	sb.WriteString(fmt.Sprintf("TxSizeCostPerByte: %d\n", p.TxSizeCostPerByte))
-	sb.WriteString(fmt.Sprintf("SigVerifyCostED25519: %d\n", p.SigVerifyCostED25519))
-	sb.WriteString(fmt.Sprintf("SigVerifyCostSecp256k1: %d\n", p.SigVerifyCostSecp256k1))
-	return sb.String()
+	out, _ := yaml.Marshal(p)
+	return string(out)
+}
+
+func validateGasPriceThreshold(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("invalid gasPrice: %d", v)
+	}
+
+	return nil
 }
 
 func validateTxSigLimit(i interface{}) error {
