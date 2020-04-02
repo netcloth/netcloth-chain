@@ -29,7 +29,7 @@ else
 fi
 nchd add-genesis-account $(nchcli keys show alice -a) 30000000000000000000pnch
 nchd add-genesis-account $(nchcli keys show bob -a) 40000000000000000000pnch --vesting-amount 5000000000000000000pnch --vesting-start-time ${vesting_start_time} --vesting-end-time ${vesting_end_time}
-nchd add-genesis-account $(nchcli keys show jack -a) 40000000000000000000pnch --vesting-amount 5000000000000000000pnch  --vesting-end-time ${vesting_end_time}
+nchd add-genesis-account $(nchcli keys show jack -a) 30000000000000000000pnch --vesting-amount 5000000000000000000pnch  --vesting-end-time ${vesting_end_time}
 
 echo "${passwd}" | nchd gentx \
   --amount 1000000000000pnch \
