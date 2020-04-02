@@ -52,8 +52,6 @@ func (a AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
-var _ module.AppModuleBasic = AppModuleBasic{}
-
 type AppModule struct {
 	AppModuleBasic
 	keeper Keeper

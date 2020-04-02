@@ -19,6 +19,8 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/slashing"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/app/v0/supply"
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade"
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/app/v0/vm"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -49,6 +51,7 @@ var ModuleBasics = module.NewBasicManager(
 	cipal.AppModuleBasic{},
 	ipal.AppModuleBasic{},
 	vm.AppModuleBasic{},
+	upgrade.AppModuleBasic{},
 )
 
 var maccPerms = map[string][]string{
@@ -62,14 +65,10 @@ var maccPerms = map[string][]string{
 }
 
 type ProtocolV0 struct {
-	version        uint64
-	cdc            *codec.Codec
-	logger         log.Logger
-	invariantLevel string
-	//checkInvariant bool
-	//trackCoinFlow  bool
+	version uint64
+	cdc     *codec.Codec
+	logger  log.Logger
 
-	// Manage getting and setting accounts
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper
 	bankKeeper     bank.Keeper
@@ -86,21 +85,18 @@ type ProtocolV0 struct {
 	ipalKeeper     ipal.Keeper
 	cipalKeeper    cipal.Keeper
 	vmKeeper       vm.Keeper
+	upgradeKeeper  upgrade.Keeper
 
-	//router      protocol.Router      // handle any kind of message
-	//queryRouter protocol.QueryRouter // router for redirecting query calls
-	router      sdk.Router      // handle any kind of message
-	queryRouter sdk.QueryRouter // router for redirecting query calls
+	router      sdk.Router
+	queryRouter sdk.QueryRouter
 
-	anteHandler      sdk.AnteHandler      // ante handlers for fee and auth
-	feeRefundHandler sdk.FeeRefundHandler // fee handler for fee refund
-	//feePreprocessHandler sdk.FeePreprocessHandler // fee handler for fee preprocessor
+	anteHandler      sdk.AnteHandler
+	feeRefundHandler sdk.FeeRefundHandler
+	initChainer      sdk.InitChainer
+	beginBlocker     sdk.BeginBlocker
+	endBlocker       sdk.EndBlocker
 
-	// may be nil
-	initChainer  sdk.InitChainer  // initialize state with validators and state blob
-	beginBlocker sdk.BeginBlocker // logic to run before any txs
-	endBlocker   sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
-	config       *cfg.InstrumentationConfig
+	config *cfg.InstrumentationConfig
 
 	mm             *module.Manager
 	deliverTx      genutil.DeliverTxfn
@@ -261,6 +257,12 @@ func (p *ProtocolV0) configKeepers() {
 		vmSubspace,
 		auth.NewAccountKeeperCopy(p.accountKeeper, true))
 
+	p.upgradeKeeper = upgrade.NewKeeper(
+		p.cdc,
+		protocol.Keys[protocol.UpgradeStoreKey],
+		p.protocolKeeper,
+		p.stakingKeeper)
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
@@ -273,8 +275,6 @@ func (p *ProtocolV0) configKeepers() {
 		&stakingKeeper, govRouter,
 	)
 
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	p.stakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(p.distrKeeper.Hooks(), p.slashingKeeper.Hooks()),
 	)
@@ -296,11 +296,12 @@ func (p *ProtocolV0) LoadMM() {
 		cipal.NewAppModule(p.cipalKeeper),
 		ipal.NewAppModule(p.ipalKeeper),
 		vm.NewAppModule(p.vmKeeper),
+		upgrade.NewAppModule(p.upgradeKeeper),
 	)
 
 	mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName)
+	mm.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -319,6 +320,7 @@ func (p *ProtocolV0) LoadMM() {
 		ipal.ModuleName,
 		cipal.ModuleName,
 		vm.ModuleName,
+		types.ModuleName,
 	)
 
 	mm.RegisterRoutes(p.router, p.queryRouter)

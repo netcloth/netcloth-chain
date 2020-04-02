@@ -23,7 +23,7 @@ var ZeroAmount = sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	vmQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for ipal",
+		Short:                      "Querying commands for vm",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

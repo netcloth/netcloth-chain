@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	AppVersionTag = "app_version"
-	MainStore     = "main"
+	AppVersionEvent = "app_version"
+	MainStore       = "main"
 )
 
 var (

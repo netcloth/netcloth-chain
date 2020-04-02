@@ -19,6 +19,7 @@ const (
 	VMStoreDebugKey  = "vm_decode"
 	govStoreKey      = "gov"
 	authStoreKey     = "acc"
+	UpgradeStoreKey  = "upgrade"
 
 	paramsTStoreKey  = "transient_params"
 	stakingTStoreKey = "transient_staking"
@@ -41,6 +42,7 @@ var (
 		VMStoreDebugKey,
 		govStoreKey,
 		authStoreKey,
+		UpgradeStoreKey,
 	)
 
 	TKeys = sdk.NewTransientStoreKeys(
