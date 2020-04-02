@@ -8,7 +8,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/store"
-	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -62,20 +61,6 @@ func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
 		panic("SetEndBlocker() on sealed BaseApp")
 	}
 	app.cms = cms
-}
-
-func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
-	if app.sealed {
-		panic("SetAnteHandler() on sealed BaseApp")
-	}
-	//app.anteHandler = ah //TODO remove SetAnteHandler and caller
-}
-
-func (app *BaseApp) SetFeeRefundHandler(fh types.FeeRefundHandler) {
-	if app.sealed {
-		panic("SetFeeRefundHandler on sealed BaseApp")
-	}
-	//app.feeRefundHandler = fh TODO remove SetFeeRefundHandler and caller
 }
 
 func (app *BaseApp) SetAddrPeerFilter(pf sdk.PeerFilter) {

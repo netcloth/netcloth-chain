@@ -9,8 +9,6 @@ import (
 	"os"
 	"sort"
 
-	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -19,6 +17,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/params"
 	"github.com/netcloth/netcloth-chain/codec"

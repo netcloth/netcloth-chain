@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"github.com/netcloth/netcloth-chain/app"
 	"math/big"
 	"math/rand"
 	"testing"
@@ -10,6 +9,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/app"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )

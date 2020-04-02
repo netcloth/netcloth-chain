@@ -72,7 +72,7 @@ func TestCheckAndDeliverGenTx(t *testing.T) {
 
 	// Signing a tx with the wrong privKey should result in an auth error
 	header = abci.Header{Height: mApp.LastBlockHeight() + 1}
-	res := SignCheckDeliver(
+	res, _, _ := SignCheckDeliver(
 		t, mApp.Cdc, mApp.BaseApp, header, []sdk.Msg{msg},
 		[]uint64{accs[1].GetAccountNumber()}, []uint64{accs[1].GetSequence() + 1},
 		true, false, privKeys[1],
