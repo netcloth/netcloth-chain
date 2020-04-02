@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -71,12 +73,12 @@ func GetTxCmd(storeKey string, cdc *codec.Codec, pcmds []*cobra.Command) *cobra.
 		GetCmdDeposit(cdc),
 		GetCmdVote(cdc),
 		cmdSubmitProp,
+		GetCmdSubmitSoftwareUpgradeProposal(cdc),
 	)...)
 
 	return govTxCmd
 }
 
-// GetCmdSubmitProposal implements submitting a proposal transaction command.
 func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "submit-proposal",
@@ -138,7 +140,63 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 	return cmd
 }
 
-// GetCmdDeposit implements depositing tokens for an active proposal.
+func GetCmdSubmitSoftwareUpgradeProposal(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "submit-software-upgrade-proposal",
+		Short: "Submit a proposal along with an initial deposit",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Submit a proposal along with an initial deposit.
+Proposal title, description, type and deposit can be given directly or through a proposal JSON file.
+
+Example:
+$ %s tx gov submit-software-upgrade-proposal --proposal="path/to/proposal.json" --from mykey
+
+Where proposal.json contains:
+
+{
+    "title":"testnet-v1.1.0 upgrade",
+    "description":"upgrade for smart contract",
+    "type":"SoftwareUpgrade",
+    "deposit":{
+        "denom":"pnch",
+        "amount":"1000000"
+    },
+    "version":1,
+    "software":"https://github.com/netcloth/netcloth-chain/releases/tag/testnet-v1.1.0",
+    "switch_height":100000,
+    "threshold":"90.000000000000000000"
+}
+`,
+				version.ClientName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			contents, err := ioutil.ReadFile(args[0])
+			if err != nil {
+				return err
+			}
+
+			var p types.SoftwareUpgradeProposal1
+			err = json.Unmarshal(contents, &p)
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSoftwareUpgradeProposal(cliCtx.GetFromAddress(), p)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	return cmd
+}
+
 func GetCmdDeposit(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "deposit [proposal-id] [deposit]",
@@ -164,10 +222,8 @@ $ %s tx gov deposit 1 10stake --from mykey
 				return fmt.Errorf("proposal-id %s not a valid uint, please input a valid proposal-id", args[0])
 			}
 
-			// Get depositor address
 			from := cliCtx.GetFromAddress()
 
-			// Get amount of coins
 			amount, err := sdk.ParseCoins(args[1])
 			if err != nil {
 				return err
@@ -184,7 +240,6 @@ $ %s tx gov deposit 1 10stake --from mykey
 	}
 }
 
-// GetCmdVote implements creating a new vote command.
 func GetCmdVote(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "vote [proposal-id] [option]",
@@ -205,7 +260,6 @@ $ %s tx gov vote 1 yes --from mykey
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			// Get voting address
 			from := cliCtx.GetFromAddress()
 
 			// validate that the proposal id is a uint

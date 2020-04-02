@@ -9,12 +9,51 @@ import (
 
 // Governance message types and routes
 const (
-	TypeMsgDeposit        = "deposit"
-	TypeMsgVote           = "vote"
-	TypeMsgSubmitProposal = "submit_proposal"
+	TypeMsgDeposit                 = "deposit"
+	TypeMsgVote                    = "vote"
+	TypeMsgSubmitProposal          = "submit_proposal"
+	TypeMsgSoftwareUpgradeProposal = "software_upgrade_proposal"
 )
 
-var _, _, _ sdk.Msg = MsgSubmitProposal{}, MsgDeposit{}, MsgVote{}
+var _, _, _, _ sdk.Msg = MsgSoftwareUpgradeProposal{}, MsgSubmitProposal{}, MsgDeposit{}, MsgVote{}
+
+type MsgSoftwareUpgradeProposal struct {
+	Proposer sdk.AccAddress           `json:"proposer" yaml:"proposer"`
+	Proposal SoftwareUpgradeProposal1 `json:"proposal" yaml:"proposal"`
+}
+
+func NewMsgSoftwareUpgradeProposal(proposer sdk.AccAddress, proposal SoftwareUpgradeProposal1) MsgSoftwareUpgradeProposal {
+	return MsgSoftwareUpgradeProposal{
+		Proposer: proposer,
+		Proposal: proposal,
+	}
+}
+
+func (m MsgSoftwareUpgradeProposal) Route() string {
+	return RouterKey
+}
+
+func (m MsgSoftwareUpgradeProposal) Type() string {
+	return TypeMsgSoftwareUpgradeProposal
+}
+
+func (m MsgSoftwareUpgradeProposal) ValidateBasic() error {
+	if m.Proposer.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Proposer.String())
+	}
+
+	//return m.Proposal.ValidateBasic() //TODO
+	return nil
+}
+
+func (m MsgSoftwareUpgradeProposal) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return sdk.MustSortJSON(bz)
+}
+
+func (m MsgSoftwareUpgradeProposal) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{m.Proposer}
+}
 
 // MsgSubmitProposal
 type MsgSubmitProposal struct {

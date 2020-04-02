@@ -281,6 +281,17 @@ func (tp TextProposal) String() string {
 `, tp.Title, tp.Description)
 }
 
+type SoftwareUpgradeProposal1 struct {
+	Title        string   `json:"title"`
+	Description  string   `json:"description"`
+	Type         string   `json:"type"`
+	Deposit      sdk.Coin `json:"deposit"`
+	Version      uint64   `json:"version"`
+	Software     string   `json:"software"`
+	SwitchHeight uint64   `json:"switch_height"`
+	Threshold    sdk.Dec  `json:"threshold"`
+}
+
 // Software Upgrade Proposals
 // TODO: We have to add fields for SUP specific arguments e.g. commit hash,
 // upgrade date, etc.
