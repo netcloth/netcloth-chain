@@ -15,6 +15,10 @@ func NewQuerier(keeper AccountKeeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryAccount:
 			return queryAccount(ctx, req, keeper)
+
+		case types.QueryParams:
+			return queryParams(ctx, keeper)
+
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
 		}
@@ -38,4 +42,15 @@ func queryAccount(ctx sdk.Context, req abci.RequestQuery, keeper AccountKeeper) 
 	}
 
 	return bz, nil
+}
+
+func queryParams(ctx sdk.Context, k AccountKeeper) ([]byte, error) {
+	params := k.GetParams(ctx)
+
+	res, err := codec.MarshalJSONIndent(k.cdc, params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
+	return res, nil
 }
