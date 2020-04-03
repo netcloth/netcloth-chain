@@ -2,14 +2,11 @@ package gov
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-// Handle all "gov" type messages.
 func NewHandler(keeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
@@ -111,6 +108,8 @@ func handleMsgSubmitSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, msg 
 	//	Data: proposalIDBytes,
 	//	Tags: resTags,
 	//}
+
+	return nil, nil
 }
 
 func handleMsgDeposit(ctx sdk.Context, keeper Keeper, msg MsgDeposit) (*sdk.Result, error) {

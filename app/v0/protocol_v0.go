@@ -12,6 +12,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/genaccounts"
 	"github.com/netcloth/netcloth-chain/app/v0/genutil"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
+	"github.com/netcloth/netcloth-chain/app/v0/guardian"
 	"github.com/netcloth/netcloth-chain/app/v0/ipal"
 	"github.com/netcloth/netcloth-chain/app/v0/mint"
 	"github.com/netcloth/netcloth-chain/app/v0/params"
@@ -52,6 +53,7 @@ var ModuleBasics = module.NewBasicManager(
 	ipal.AppModuleBasic{},
 	vm.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
+	guardian.AppModuleBasic{},
 )
 
 var maccPerms = map[string][]string{
@@ -86,6 +88,7 @@ type ProtocolV0 struct {
 	cipalKeeper    cipal.Keeper
 	vmKeeper       vm.Keeper
 	upgradeKeeper  upgrade.Keeper
+	guardianKeeper guardian.Keeper
 
 	router      sdk.Router
 	queryRouter sdk.QueryRouter
@@ -263,6 +266,8 @@ func (p *ProtocolV0) configKeepers() {
 		p.protocolKeeper,
 		p.stakingKeeper)
 
+	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
@@ -297,6 +302,7 @@ func (p *ProtocolV0) LoadMM() {
 		ipal.NewAppModule(p.ipalKeeper),
 		vm.NewAppModule(p.vmKeeper),
 		upgrade.NewAppModule(p.upgradeKeeper),
+		guardian.NewAppModule(p.guardianKeeper),
 	)
 
 	mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
@@ -321,6 +327,7 @@ func (p *ProtocolV0) LoadMM() {
 		cipal.ModuleName,
 		vm.ModuleName,
 		types.ModuleName,
+		guardian.ModuleName,
 	)
 
 	mm.RegisterRoutes(p.router, p.queryRouter)

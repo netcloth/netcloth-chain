@@ -20,6 +20,7 @@ const (
 	govStoreKey      = "gov"
 	authStoreKey     = "acc"
 	UpgradeStoreKey  = "upgrade"
+	GuardianStoreKey = "guardian"
 
 	paramsTStoreKey  = "transient_params"
 	stakingTStoreKey = "transient_staking"
@@ -43,6 +44,7 @@ var (
 		govStoreKey,
 		authStoreKey,
 		UpgradeStoreKey,
+		GuardianStoreKey,
 	)
 
 	TKeys = sdk.NewTransientStoreKeys(
