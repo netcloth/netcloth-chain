@@ -3,10 +3,9 @@
 ## [Unreleased]
 ### nchd
 
+* #27 fix "--gas=auto" not available
 * update inflation model and related query api
-
 * add gas_price_threshold param for tx gas price limit
-
 
 ### nchcli v1.0.4
 
