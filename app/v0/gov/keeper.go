@@ -51,7 +51,7 @@ type Keeper struct {
 // CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
 	cdc *codec.Codec, key sdk.StoreKey, paramSpace ParamSubspace,
-	supplyKeeper SupplyKeeper, sk StakingKeeper, gk guardian.Keeper, rtr Router,
+	supplyKeeper SupplyKeeper, sk StakingKeeper, gk guardian.Keeper, pk sdk.ProtocolKeeper,
 ) Keeper {
 
 	// ensure governance module account is set
@@ -62,7 +62,6 @@ func NewKeeper(
 	// It is vital to seal the governance proposal router here as to not allow
 	// further handlers to be registered after the keeper is created since this
 	// could create invalid or non-deterministic behavior.
-	rtr.Seal()
 
 	return Keeper{
 		storeKey:     key,
@@ -71,8 +70,13 @@ func NewKeeper(
 		sk:           sk,
 		gk:           gk,
 		cdc:          cdc,
-		router:       rtr,
+		pk:           pk,
 	}
+}
+
+func (keeper *Keeper) SetRouter(rtr Router) {
+	keeper.router = rtr
+	rtr.Seal()
 }
 
 // Logger returns a module-specific logger.

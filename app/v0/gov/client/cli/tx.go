@@ -188,12 +188,14 @@ Where proposal.json contains:
 			}
 
 			var proposal types.SoftwareUpgradeProposal
-			proposal.Threshold = proposalJson.Threshold
+
 			proposal.Title = proposalJson.Title
-			proposal.SwitchHeight = proposalJson.SwitchHeight
+			proposal.Description = proposalJson.Description
+			proposal.Proposer = cliCtx.FromAddress //FIXME critical proposal.Proposer should eq NewMsgSubmitProposal.Proposer
 			proposal.Version = proposalJson.Version
 			proposal.Software = proposalJson.Software
-			proposal.Description = proposalJson.Description
+			proposal.SwitchHeight = proposalJson.SwitchHeight
+			proposal.Threshold = proposalJson.Threshold
 
 			msg := types.NewMsgSubmitProposal(proposal, sdk.NewCoins(proposalJson.Deposit), cliCtx.FromAddress)
 			if err := msg.ValidateBasic(); err != nil {

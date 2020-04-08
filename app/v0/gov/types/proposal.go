@@ -302,6 +302,9 @@ func (sup SoftwareUpgradeProposal) GetDescription() string { return sup.Descript
 func (sup SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (sup SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
 func (sup SoftwareUpgradeProposal) ValidateBasic() error {
+	if sup.Threshold.LT(sdk.NewDec(80)) {
+		return ErrSoftwareUpgradeThresholdLowerThan80
+	}
 	return ValidateAbstract(sup)
 }
 

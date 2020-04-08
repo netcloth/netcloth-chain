@@ -6,14 +6,14 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-func NewParamChangeProposalHandler(k Keeper) Handler {
-	return func(ctx sdk.Context, content Content) error {
+func NewGovProposalHandler(k Keeper) Handler {
+	return func(ctx sdk.Context, content Content, pid uint64) error {
 		switch c := content.(type) {
 		case TextProposal:
 			return nil
 
 		case SoftwareUpgradeProposal:
-			return handleSoftwareUpgradeProposal(ctx, k, c)
+			return handleSoftwareUpgradeProposal(ctx, k, c, pid)
 
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
@@ -21,9 +21,9 @@ func NewParamChangeProposalHandler(k Keeper) Handler {
 	}
 }
 
-func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalContent SoftwareUpgradeProposal) error {
-	if keeper.SoftwareUpgradeProposalExist(ctx) {
-		return types.ErrSoftwareUpgradeProposalExist
+func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalContent SoftwareUpgradeProposal, pid uint64) error {
+	if err := proposalContent.ValidateBasic(); err != nil {
+		return err
 	}
 
 	if !keeper.pk.IsValidVersion(ctx, proposalContent.Version) {
@@ -43,10 +43,8 @@ func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalConte
 		return types.ErrSoftwareUpgradeSwitchPeriodInProcess
 	}
 
-	keeper.SoftwareUpgradeSet(ctx)
-
 	pd := sdk.NewProtocolDefinition(proposalContent.Version, proposalContent.Software, proposalContent.SwitchHeight, proposalContent.Threshold)
-	uc := sdk.NewUpgradeConfig(1, pd) // TODO proposalID
+	uc := sdk.NewUpgradeConfig(pid, pd)
 	keeper.pk.SetUpgradeConfig(ctx, uc)
 
 	return nil

@@ -110,6 +110,7 @@ func (a AppModule) EndBlock(ctx sdk.Context, b types.RequestEndBlock) []types.Va
 
 	upgradeConfig, ok := a.keeper.protocolKeeper.GetUpgradeConfig(ctx)
 	if ok {
+		ctx.Logger().Error(fmt.Sprintf("----upgrade: yes upgradeinfo:%s", upgradeConfig.String()))
 		//uk.metrics.SetVersion(upgradeConfig.Protocol.Version)
 
 		validator, found := a.keeper.sk.GetValidatorByConsAddr(ctx, (sdk.ConsAddress)(ctx.BlockHeader().ProposerAddress))
@@ -147,9 +148,18 @@ func (a AppModule) EndBlock(ctx sdk.Context, b types.RequestEndBlock) []types.Va
 
 			a.keeper.AddNewVersionInfo(ctx, upgtypes.NewVersionInfo(upgradeConfig, success))
 			a.keeper.protocolKeeper.ClearUpgradeConfig(ctx)
+			a.keeper.gk.SoftwareUpgradeClear(ctx)
+		}
+
+		if uint64(ctx.BlockHeight())+1 > upgradeConfig.Protocol.Height {
+			ctx.Logger().Info(fmt.Sprintf("current height[%d] is big than switch height[%d], failed to switch", ctx.BlockHeight()+1, upgradeConfig.Protocol.Height))
+			a.keeper.AddNewVersionInfo(ctx, upgtypes.NewVersionInfo(upgradeConfig, false))
+			a.keeper.protocolKeeper.ClearUpgradeConfig(ctx)
+			a.keeper.gk.SoftwareUpgradeClear(ctx)
 		}
 	} else {
 		//uk.metrics.DeleteVersion()
+		ctx.Logger().Error("----upgrade: no upgradeinfo")
 	}
 
 	e := sdk.NewEvent(

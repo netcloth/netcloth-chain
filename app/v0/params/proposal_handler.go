@@ -9,7 +9,7 @@ import (
 )
 
 func NewParamChangeProposalHandler(k Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
+	return func(ctx sdk.Context, content govtypes.Content, pid uint64) error {
 		switch c := content.(type) {
 		case ParameterChangeProposal:
 			return handleParameterChangeProposal(ctx, k, c)

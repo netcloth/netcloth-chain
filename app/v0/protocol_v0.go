@@ -260,28 +260,31 @@ func (p *ProtocolV0) configKeepers() {
 		vmSubspace,
 		auth.NewAccountKeeperCopy(p.accountKeeper, true))
 
-	p.upgradeKeeper = upgrade.NewKeeper(
-		p.cdc,
-		protocol.Keys[protocol.UpgradeStoreKey],
-		p.protocolKeeper,
-		p.stakingKeeper)
-
 	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
-
-	govRouter := gov.NewRouter()
-	govRouter.
-		AddRoute(gov.RouterKey, gov.NewParamChangeProposalHandler(p.govKeeper)).
-		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(p.paramsKeeper)).
-		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(p.distrKeeper))
 
 	p.govKeeper = gov.NewKeeper(
 		p.cdc, protocol.Keys[gov.StoreKey], govSubspace, p.supplyKeeper,
-		&stakingKeeper, p.guardianKeeper, govRouter,
+		&stakingKeeper, p.guardianKeeper, p.protocolKeeper,
 	)
+
+	govRouter := gov.NewRouter()
+	govRouter.
+		AddRoute(gov.RouterKey, gov.NewGovProposalHandler(p.govKeeper)).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(p.paramsKeeper)).
+		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(p.distrKeeper))
+
+	p.govKeeper.SetRouter(govRouter)
 
 	p.stakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(p.distrKeeper.Hooks(), p.slashingKeeper.Hooks()),
 	)
+
+	p.upgradeKeeper = upgrade.NewKeeper(
+		p.cdc,
+		protocol.Keys[protocol.UpgradeStoreKey],
+		p.protocolKeeper,
+		p.stakingKeeper,
+		p.govKeeper)
 }
 
 func (p *ProtocolV0) LoadMM() {

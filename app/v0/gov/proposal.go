@@ -13,18 +13,24 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal,
 		return types.Proposal{}, sdkerrors.Wrap(types.ErrNoProposalHandlerExists, content.ProposalRoute())
 	}
 
-	// Execute the proposal content in a cache-wrapped context to validate the
-	// actual parameter changes before the proposal proceeds through the
-	// governance process. State is not persisted.
-	cacheCtx, _ := ctx.CacheContext()
-	handler := keeper.router.GetRoute(content.ProposalRoute())
-	if err := handler(cacheCtx, content); err != nil {
-		return types.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalContent, err.Error())
+	if ProposalTypeSoftwareUpgrade == content.ProposalType() {
+		if keeper.SoftwareUpgradeProposalExist(ctx) {
+			return types.Proposal{}, types.ErrSoftwareUpgradeProposalExist
+		}
 	}
 
 	proposalID, err := keeper.GetProposalID(ctx)
 	if err != nil {
 		return Proposal{}, err
+	}
+
+	// Execute the proposal content in a cache-wrapped context to validate the
+	// actual parameter changes before the proposal proceeds through the
+	// governance process. State is not persisted.
+	cacheCtx, _ := ctx.CacheContext()
+	handler := keeper.router.GetRoute(content.ProposalRoute())
+	if err := handler(cacheCtx, content, proposalID); err != nil {
+		return types.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalContent, err.Error())
 	}
 
 	submitTime := ctx.BlockHeader().Time
@@ -42,6 +48,10 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal,
 			sdk.NewAttribute(types.AttributeKeyProposalID, fmt.Sprintf("%d", proposalID)),
 		),
 	)
+
+	if ProposalTypeSoftwareUpgrade == content.ProposalType() {
+		keeper.SoftwareUpgradeSet(ctx)
+	}
 
 	return proposal, nil
 }

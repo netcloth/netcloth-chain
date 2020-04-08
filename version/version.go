@@ -29,7 +29,7 @@ var (
 	Version    = ""
 	Commit     = ""
 	BuildTags  = ""
-	AppVersion = uint64(0)
+	AppVersion = uint64(1)
 )
 
 type Info struct {
