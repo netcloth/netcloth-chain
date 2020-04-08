@@ -7,7 +7,6 @@ import (
 	"time"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
-	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 // Proposal defines a struct used by the governance module to allow for voting
@@ -248,13 +247,11 @@ func (tr TallyResult) String() string {
   NoWithVeto: %s`, tr.Yes, tr.Abstain, tr.No, tr.NoWithVeto)
 }
 
-// Proposal types
 const (
 	ProposalTypeText            string = "Text"
 	ProposalTypeSoftwareUpgrade string = "SoftwareUpgrade"
 )
 
-// Text Proposal
 type TextProposal struct {
 	Title       string `json:"title" yaml:"title"`
 	Description string `json:"description" yaml:"description"`
@@ -264,7 +261,6 @@ func NewTextProposal(title, description string) Content {
 	return TextProposal{title, description}
 }
 
-// Implements Proposal Interface
 var _ Content = TextProposal{}
 
 // nolint
@@ -281,30 +277,23 @@ func (tp TextProposal) String() string {
 `, tp.Title, tp.Description)
 }
 
-type SoftwareUpgradeProposal1 struct {
-	Title        string   `json:"title"`
-	Description  string   `json:"description"`
-	Type         string   `json:"type"`
-	Deposit      sdk.Coin `json:"deposit"`
-	Version      uint64   `json:"version"`
-	Software     string   `json:"software"`
-	SwitchHeight uint64   `json:"switch_height"`
-	Threshold    sdk.Dec  `json:"threshold"`
-}
-
-// Software Upgrade Proposals
-// TODO: We have to add fields for SUP specific arguments e.g. commit hash,
-// upgrade date, etc.
 type SoftwareUpgradeProposal struct {
-	Title       string `json:"title" yaml:"title"`
-	Description string `json:"description" yaml:"description"`
+	Title        string         `json:"title" yaml:"title"`
+	Description  string         `json:"description" yaml:"description"`
+	Proposer     sdk.AccAddress `json:"proposer"`
+	Version      uint64         `json:"version"`
+	Software     string         `json:"software"`
+	SwitchHeight uint64         `json:"switch_height"`
+	Threshold    sdk.Dec        `json:"threshold"`
 }
 
 func NewSoftwareUpgradeProposal(title, description string) Content {
-	return SoftwareUpgradeProposal{title, description}
+	return SoftwareUpgradeProposal{
+		Title:       title,
+		Description: description,
+	}
 }
 
-// Implements Proposal Interface
 var _ Content = SoftwareUpgradeProposal{}
 
 // nolint
@@ -338,7 +327,6 @@ func RegisterProposalType(ty string) {
 	validProposalTypes[ty] = struct{}{}
 }
 
-// ContentFromProposalType returns a Content object based on the proposal type.
 func ContentFromProposalType(title, desc, ty string) Content {
 	switch ty {
 	case ProposalTypeText:
@@ -365,13 +353,13 @@ func IsValidProposalType(ty string) bool {
 // proposals (ie. TextProposal and SoftwareUpgradeProposal). Since these are
 // merely signaling mechanisms at the moment and do not affect state, it
 // performs a no-op.
-func ProposalHandler(_ sdk.Context, c Content) error {
-	switch c.ProposalType() {
-	case ProposalTypeText, ProposalTypeSoftwareUpgrade:
-		// both proposal types do not change state so this performs a no-op
-		return nil
-
-	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
-	}
-}
+//func ProposalHandler(ctx sdk.Context, c Content) error {
+//	switch c.ProposalType() {
+//	case ProposalTypeText:
+//		return nil
+//	case ProposalTypeSoftwareUpgrade:
+//
+//	default:
+//		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
+//	}
+//}

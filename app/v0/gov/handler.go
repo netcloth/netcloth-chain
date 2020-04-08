@@ -18,9 +18,6 @@ func NewHandler(keeper Keeper) sdk.Handler {
 		case MsgSubmitProposal:
 			return handleMsgSubmitProposal(ctx, keeper, msg)
 
-		case MsgSoftwareUpgradeProposal:
-			return handleMsgSubmitSoftwareUpgradeProposal(ctx, keeper, msg)
-
 		case MsgVote:
 			return handleMsgVote(ctx, keeper, msg)
 
@@ -62,54 +59,6 @@ func handleMsgSubmitProposal(ctx sdk.Context, keeper Keeper, msg MsgSubmitPropos
 		Data:   keeper.cdc.MustMarshalBinaryLengthPrefixed(proposal.ProposalID),
 		Events: ctx.EventManager().Events(),
 	}, nil
-}
-
-func handleMsgSubmitSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, msg MsgSoftwareUpgradeProposal) (*sdk.Result, error) {
-	//proposalLevel := GetProposalLevelByProposalKind(msg.Proposal.Type)
-	//if num, ok := keeper.HasReachedTheMaxProposalNum(ctx, proposalLevel); ok {
-	//	return ErrMoreThanMaxProposal(keeper.codespace, num, proposalLevel.string()).Result()
-	//}
-	//
-	//if !keeper.protocolKeeper.IsValidVersion(ctx, msg.Version) {
-	//	return ErrCodeInvalidVersion(keeper.codespace, msg.Version).Result()
-	//}
-	//
-	//if uint64(ctx.BlockHeight()) > msg.SwitchHeight {
-	//	return ErrCodeInvalidSwitchHeight(keeper.codespace, uint64(ctx.BlockHeight()), msg.SwitchHeight).Result()
-	//}
-	//_, found := keeper.guardianKeeper.GetProfiler(ctx, msg.Proposer)
-	//if !found {
-	//	return ErrNotProfiler(keeper.codespace, msg.Proposer).Result()
-	//}
-	//
-	//if _, ok := keeper.protocolKeeper.GetUpgradeConfig(ctx); ok {
-	//	return ErrSwitchPeriodInProcess(keeper.codespace).Result()
-	//}
-	//
-	//proposal := keeper.NewSoftwareUpgradeProposal(ctx, msg)
-	//
-	//err, votingStarted := keeper.AddInitialDeposit(ctx, proposal, msg.Proposer, msg.InitialDeposit)
-	//if err != nil {
-	//	return err.Result()
-	//}
-	//proposalIDBytes := []byte(strconv.FormatUint(proposal.GetProposalID(), 10))
-	//
-	//resTags := sdk.NewTags(
-	//	tags.Proposer, []byte(msg.Proposer.String()),
-	//	tags.ProposalID, proposalIDBytes,
-	//)
-	//
-	//if votingStarted {
-	//	resTags = resTags.AppendTag(tags.VotingPeriodStart, proposalIDBytes)
-	//}
-	//
-	//keeper.AddProposalNum(ctx, proposal)
-	//return sdk.Result{
-	//	Data: proposalIDBytes,
-	//	Tags: resTags,
-	//}
-
-	return nil, nil
 }
 
 func handleMsgDeposit(ctx sdk.Context, keeper Keeper, msg MsgDeposit) (*sdk.Result, error) {

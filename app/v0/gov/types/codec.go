@@ -13,13 +13,11 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*Content)(nil), nil)
 
 	cdc.RegisterConcrete(MsgSubmitProposal{}, "nch/MsgSubmitProposal", nil)
-	cdc.RegisterConcrete(MsgSoftwareUpgradeProposal{}, "nch/MsgSoftwareUpgradeProposal", nil)
 	cdc.RegisterConcrete(MsgDeposit{}, "nch/MsgDeposit", nil)
 	cdc.RegisterConcrete(MsgVote{}, "nch/MsgVote", nil)
 
 	cdc.RegisterConcrete(TextProposal{}, "nch/TextProposal", nil)
 	cdc.RegisterConcrete(SoftwareUpgradeProposal{}, "nch/SoftwareUpgradeProposal", nil)
-	cdc.RegisterConcrete(SoftwareUpgradeProposal1{}, "nch/SoftwareUpgradeProposal1", nil)
 }
 
 // RegisterProposalTypeCodec registers an external proposal content type defined

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
+	"github.com/netcloth/netcloth-chain/app/v0/guardian"
 	"github.com/netcloth/netcloth-chain/app/v0/supply/exported"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -31,6 +32,9 @@ type Keeper struct {
 
 	// Proposal router
 	router Router
+
+	gk guardian.Keeper
+	pk sdk.ProtocolKeeper
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -47,7 +51,7 @@ type Keeper struct {
 // CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
 	cdc *codec.Codec, key sdk.StoreKey, paramSpace ParamSubspace,
-	supplyKeeper SupplyKeeper, sk StakingKeeper, rtr Router,
+	supplyKeeper SupplyKeeper, sk StakingKeeper, gk guardian.Keeper, rtr Router,
 ) Keeper {
 
 	// ensure governance module account is set
@@ -65,6 +69,7 @@ func NewKeeper(
 		paramSpace:   paramSpace,
 		supplyKeeper: supplyKeeper,
 		sk:           sk,
+		gk:           gk,
 		cdc:          cdc,
 		router:       rtr,
 	}
@@ -271,4 +276,20 @@ func (keeper Keeper) ActiveProposalQueueIterator(ctx sdk.Context, endTime time.T
 func (keeper Keeper) InactiveProposalQueueIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(keeper.storeKey)
 	return store.Iterator(InactiveProposalQueuePrefix, sdk.PrefixEndBytes(types.InactiveProposalByTimeKey(endTime)))
+}
+
+func (keeper Keeper) SoftwareUpgradeProposalExist(ctx sdk.Context) bool {
+	store := ctx.KVStore(keeper.storeKey)
+	bz := store.Get(types.SoftwareUpgradeKey)
+	return len(bz) != 0
+}
+
+func (keeper Keeper) SoftwareUpgradeSet(ctx sdk.Context) {
+	store := ctx.KVStore(keeper.storeKey)
+	store.Set(types.SoftwareUpgradeKey, types.SoftwareUpgradeValue)
+}
+
+func (keeper Keeper) SoftwareUpgradeClear(ctx sdk.Context) {
+	store := ctx.KVStore(keeper.storeKey)
+	store.Delete(types.SoftwareUpgradeKey)
 }

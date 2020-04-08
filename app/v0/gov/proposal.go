@@ -8,7 +8,6 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-// SubmitProposal create new proposal given a content
 func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal, error) {
 	if !keeper.router.HasRoute(content.ProposalRoute()) {
 		return types.Proposal{}, sdkerrors.Wrap(types.ErrNoProposalHandlerExists, content.ProposalRoute())

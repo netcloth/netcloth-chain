@@ -268,16 +268,15 @@ func (p *ProtocolV0) configKeepers() {
 
 	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
 
-	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
-		AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(gov.RouterKey, gov.NewParamChangeProposalHandler(p.govKeeper)).
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(p.paramsKeeper)).
 		AddRoute(distr.RouterKey, distr.NewCommunityPoolSpendProposalHandler(p.distrKeeper))
 
 	p.govKeeper = gov.NewKeeper(
 		p.cdc, protocol.Keys[gov.StoreKey], govSubspace, p.supplyKeeper,
-		&stakingKeeper, govRouter,
+		&stakingKeeper, p.guardianKeeper, govRouter,
 	)
 
 	p.stakingKeeper = *stakingKeeper.SetHooks(

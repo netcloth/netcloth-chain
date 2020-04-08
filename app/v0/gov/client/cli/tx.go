@@ -69,11 +69,12 @@ func GetTxCmd(storeKey string, cdc *codec.Codec, pcmds []*cobra.Command) *cobra.
 		cmdSubmitProp.AddCommand(client.PostCommands(pcmd)[0])
 	}
 
+	cmdSubmitProp.AddCommand(client.PostCommands(GetCmdSubmitSoftwareUpgradeProposal(cdc))[0])
+
 	govTxCmd.AddCommand(client.PostCommands(
 		GetCmdDeposit(cdc),
 		GetCmdVote(cdc),
 		cmdSubmitProp,
-		GetCmdSubmitSoftwareUpgradeProposal(cdc),
 	)...)
 
 	return govTxCmd
@@ -142,14 +143,15 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 
 func GetCmdSubmitSoftwareUpgradeProposal(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "submit-software-upgrade-proposal",
-		Short: "Submit a proposal along with an initial deposit",
+		Use:   "software-upgrade [proposal-file]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Submit a software upgrade proposal",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Submit a proposal along with an initial deposit.
-Proposal title, description, type and deposit can be given directly or through a proposal JSON file.
+			fmt.Sprintf(`Submit a software upgrade proposal along with an initial deposit.
+The proposal details must be supplied via a JSON file.
 
 Example:
-$ %s tx gov submit-software-upgrade-proposal --proposal="path/to/proposal.json" --from mykey
+$ %s tx gov submit-proposal software-upgrade <path/to/proposal.json> --from=<key_or_address>
 
 Where proposal.json contains:
 
@@ -179,13 +181,21 @@ Where proposal.json contains:
 				return err
 			}
 
-			var p types.SoftwareUpgradeProposal1
-			err = json.Unmarshal(contents, &p)
+			var proposalJson SoftwareUpgradeProposalJson
+			err = json.Unmarshal(contents, &proposalJson)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgSoftwareUpgradeProposal(cliCtx.GetFromAddress(), p)
+			var proposal types.SoftwareUpgradeProposal
+			proposal.Threshold = proposalJson.Threshold
+			proposal.Title = proposalJson.Title
+			proposal.SwitchHeight = proposalJson.SwitchHeight
+			proposal.Version = proposalJson.Version
+			proposal.Software = proposalJson.Software
+			proposal.Description = proposalJson.Description
+
+			msg := types.NewMsgSubmitProposal(proposal, sdk.NewCoins(proposalJson.Deposit), cliCtx.FromAddress)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

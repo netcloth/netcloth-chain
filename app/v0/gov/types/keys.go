@@ -48,6 +48,9 @@ var (
 	DepositsKeyPrefix = []byte{0x10}
 
 	VotesKeyPrefix = []byte{0x20}
+
+	SoftwareUpgradeKey   = []byte{0x30}
+	SoftwareUpgradeValue = []byte{0x00}
 )
 
 var lenTime = len(sdk.FormatTimeBytes(time.Now()))

@@ -1,4 +1,4 @@
-package upgrade
+package client
 
 import (
 	"fmt"
