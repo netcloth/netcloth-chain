@@ -2,11 +2,14 @@ package app
 
 import (
 	"fmt"
+
 	"os"
+	"strconv"
 	"strings"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -127,7 +130,32 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 		res = endBlocker(app.deliverState.ctx, req)
 	}
 
-	//TODO add protocol switch logic
+	appVersion := app.Engine.GetCurrentVersion()
+	events := app.deliverState.ctx.EventManager().Events()
+	for _, event := range events {
+		if event.Type == sdk.AppVersionEvent {
+			for _, attr := range event.Attributes {
+				if string(attr.Key) == sdk.AppVersionEvent {
+					appVersion, _ = strconv.ParseUint(string(attr.Value), 10, 64)
+					break
+				}
+			}
+
+			break
+		}
+	}
+
+	if appVersion <= app.Engine.GetCurrentVersion() {
+		return
+	}
+
+	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
+	if success {
+		app.txDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
+		return
+	} else {
+		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
+	}
 
 	return
 }
