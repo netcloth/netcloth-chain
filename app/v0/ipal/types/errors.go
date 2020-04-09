@@ -5,13 +5,13 @@ import (
 )
 
 var (
-	ErrEmptyInputs        = sdkerrors.Register(ModuleName, 1, "input empty")
-	ErrBadDenom           = sdkerrors.Register(ModuleName, 2, "bad denom")
-	ErrBondInsufficient   = sdkerrors.Register(ModuleName, 3, "bond insufficient")
-	ErrMonikerExist       = sdkerrors.Register(ModuleName, 4, "moniker exists")
-	ErrEndpointsEmpty     = sdkerrors.Register(ModuleName, 6, "no endpoints")
-	ErrEndpointsDuplicate = sdkerrors.Register(ModuleName, 7, "endpoints duplicate")
-	ErrEndpointsFormat    = sdkerrors.Register(ModuleName, 8, "endpoints format error")
+	ErrEmptyInputs        = sdkerrors.New(ModuleName, 1, "input empty")
+	ErrBadDenom           = sdkerrors.New(ModuleName, 2, "bad denom")
+	ErrBondInsufficient   = sdkerrors.New(ModuleName, 3, "bond insufficient")
+	ErrMonikerExist       = sdkerrors.New(ModuleName, 4, "moniker exists")
+	ErrEndpointsEmpty     = sdkerrors.New(ModuleName, 6, "no endpoints")
+	ErrEndpointsDuplicate = sdkerrors.New(ModuleName, 7, "endpoints duplicate")
+	ErrEndpointsFormat    = sdkerrors.New(ModuleName, 8, "endpoints format error")
 )
 
 type EndpointDuplicateErrDetector struct {
