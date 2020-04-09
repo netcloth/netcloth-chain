@@ -1,6 +1,10 @@
 package v0
 
 import (
+	abci "github.com/tendermint/tendermint/abci/types"
+	cfg "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/libs/log"
+
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
@@ -26,9 +30,6 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
-	abci "github.com/tendermint/tendermint/abci/types"
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 var _ protocol.Protocol = (*ProtocolV0)(nil)
@@ -71,6 +72,8 @@ type ProtocolV0 struct {
 	cdc     *codec.Codec
 	logger  log.Logger
 
+	moduleManager *module.Manager
+
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper
 	bankKeeper     bank.Keeper
@@ -98,11 +101,10 @@ type ProtocolV0 struct {
 	initChainer      sdk.InitChainer
 	beginBlocker     sdk.BeginBlocker
 	endBlocker       sdk.EndBlocker
+	deliverTx        genutil.DeliverTxfn
 
 	config *cfg.InstrumentationConfig
 
-	mm             *module.Manager
-	deliverTx      genutil.DeliverTxfn
 	invCheckPeriod uint
 }
 
@@ -141,33 +143,13 @@ func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
 }
 
-func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
-	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
-
-	return p.mm.InitGenesis(ctx, genesisState)
-}
-
-func (p *ProtocolV0) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return p.mm.BeginBlock(ctx, req)
-}
-
-func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return p.mm.EndBlock(ctx, req)
-}
-
 func (p *ProtocolV0) Load() {
 	p.configCodec()
 	p.configKeepers()
-	p.LoadMM()
-	//p.configRouters()
+	p.configModuleManager()
+	p.configRouters()
 	p.configFeeHandlers()
 	//p.configParams()
-}
-
-func (p *ProtocolV0) configFeeHandlers() {
-	p.anteHandler = ante.NewAnteHandler(p.accountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
-	p.feeRefundHandler = auth.NewFeeRefundHandler(p.accountKeeper, p.supplyKeeper, p.refundKeeper)
 }
 
 func (p *ProtocolV0) Init(ctx sdk.Context) {
@@ -287,8 +269,8 @@ func (p *ProtocolV0) configKeepers() {
 		p.govKeeper)
 }
 
-func (p *ProtocolV0) LoadMM() {
-	mm := module.NewManager(
+func (p *ProtocolV0) configModuleManager() {
+	moduleManager := module.NewManager(
 		genaccounts.NewAppModule(p.accountKeeper),
 		genutil.NewAppModule(p.accountKeeper, p.stakingKeeper, p.deliverTx),
 		auth.NewAppModule(p.accountKeeper),
@@ -307,13 +289,13 @@ func (p *ProtocolV0) LoadMM() {
 		guardian.NewAppModule(p.guardianKeeper),
 	)
 
-	mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+	moduleManager.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
 
-	mm.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
+	moduleManager.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	mm.SetOrderInitGenesis(
+	moduleManager.SetOrderInitGenesis(
 		genaccounts.ModuleName,
 		distr.ModuleName,
 		staking.ModuleName,
@@ -332,7 +314,29 @@ func (p *ProtocolV0) LoadMM() {
 		guardian.ModuleName,
 	)
 
-	mm.RegisterRoutes(p.router, p.queryRouter)
+	p.moduleManager = moduleManager
+}
 
-	p.mm = mm
+func (p *ProtocolV0) configRouters() {
+	p.moduleManager.RegisterRoutes(p.router, p.queryRouter)
+}
+
+func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	var genesisState GenesisState
+	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
+
+	return p.moduleManager.InitGenesis(ctx, genesisState)
+}
+
+func (p *ProtocolV0) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	return p.moduleManager.BeginBlock(ctx, req)
+}
+
+func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	return p.moduleManager.EndBlock(ctx, req)
+}
+
+func (p *ProtocolV0) configFeeHandlers() {
+	p.anteHandler = ante.NewAnteHandler(p.accountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
+	p.feeRefundHandler = auth.NewFeeRefundHandler(p.accountKeeper, p.supplyKeeper, p.refundKeeper)
 }

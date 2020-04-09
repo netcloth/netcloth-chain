@@ -18,7 +18,7 @@ func (p *ProtocolV0) ExportAppStateAndValidators(ctx sdk.Context, forZeroHeight 
 		p.prepForZeroHeightGenesis(ctx, jailWhiteList)
 	}
 
-	genState := p.mm.ExportGenesis(ctx)
+	genState := p.moduleManager.ExportGenesis(ctx)
 	appState, err = codec.MarshalJSONIndent(p.GetCodec(), genState)
 	if err != nil {
 		return nil, nil, err
