@@ -1,24 +1,25 @@
 package main
 
 import (
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"path"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/netcloth/netcloth-chain/app"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	authcmd "github.com/netcloth/netcloth-chain/app/v0/auth/client/cli"
 	authrest "github.com/netcloth/netcloth-chain/app/v0/auth/client/rest"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
 	bankcmd "github.com/netcloth/netcloth-chain/app/v0/bank/client/cli"
 	cipalcli "github.com/netcloth/netcloth-chain/app/v0/cipal/client/cli"
-	ipalcli "github.com/netcloth/netcloth-chain/app/v0/ipal/client/cli"
 	vmcli "github.com/netcloth/netcloth-chain/app/v0/vm/client/cli"
+	ipalcli "github.com/netcloth/netcloth-chain/app/v1/ipal/client/cli"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/keys"
 	"github.com/netcloth/netcloth-chain/client/lcd"
