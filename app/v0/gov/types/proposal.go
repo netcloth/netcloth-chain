@@ -22,11 +22,12 @@ type Proposal struct {
 	DepositEndTime time.Time `json:"deposit_end_time" yaml:"deposit_end_time"` // Time that the Proposal would expire if deposit amount isn't met
 	TotalDeposit   sdk.Coins `json:"total_deposit" yaml:"total_deposit"`       // Current deposit on this proposal. Initial value is set at InitialDeposit
 
-	VotingStartTime time.Time `json:"voting_start_time" yaml:"voting_start_time"` // Time of the block where MinDeposit was reached. -1 if MinDeposit is not reached
-	VotingEndTime   time.Time `json:"voting_end_time" yaml:"voting_end_time"`     // Time that the VotingPeriod for this proposal will end and votes will be tallied
+	VotingStartTime time.Time      `json:"voting_start_time" yaml:"voting_start_time"` // Time of the block where MinDeposit was reached. -1 if MinDeposit is not reached
+	VotingEndTime   time.Time      `json:"voting_end_time" yaml:"voting_end_time"`     // Time that the VotingPeriod for this proposal will end and votes will be tallied
+	Proposer        sdk.AccAddress `json:"proposer"`
 }
 
-func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time) Proposal {
+func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time, proposer sdk.AccAddress) Proposal {
 	return Proposal{
 		Content:          content,
 		ProposalID:       id,
@@ -35,6 +36,7 @@ func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Tim
 		TotalDeposit:     sdk.NewCoins(),
 		SubmitTime:       submitTime,
 		DepositEndTime:   depositEndTime,
+		Proposer:         proposer,
 	}
 }
 
@@ -49,10 +51,11 @@ func (p Proposal) String() string {
   Total Deposit:      %s
   Voting Start Time:  %s
   Voting End Time:    %s
-  Description:        %s`,
+  Description:        %s
+  Proposer:           %s`,
 		p.ProposalID, p.GetTitle(), p.ProposalType(),
 		p.Status, p.SubmitTime, p.DepositEndTime,
-		p.TotalDeposit, p.VotingStartTime, p.VotingEndTime, p.GetDescription(),
+		p.TotalDeposit, p.VotingStartTime, p.VotingEndTime, p.GetDescription(), p.Proposer.String(),
 	)
 }
 
@@ -278,13 +281,12 @@ func (tp TextProposal) String() string {
 }
 
 type SoftwareUpgradeProposal struct {
-	Title        string         `json:"title" yaml:"title"`
-	Description  string         `json:"description" yaml:"description"`
-	Proposer     sdk.AccAddress `json:"proposer"`
-	Version      uint64         `json:"version"`
-	Software     string         `json:"software"`
-	SwitchHeight uint64         `json:"switch_height"`
-	Threshold    sdk.Dec        `json:"threshold"`
+	Title        string  `json:"title" yaml:"title"`
+	Description  string  `json:"description" yaml:"description"`
+	Version      uint64  `json:"version"`
+	Software     string  `json:"software"`
+	SwitchHeight uint64  `json:"switch_height"`
+	Threshold    sdk.Dec `json:"threshold"`
 }
 
 func NewSoftwareUpgradeProposal(title, description string) Content {

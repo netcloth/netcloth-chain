@@ -8,7 +8,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
-func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal, error) {
+func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content, proposer sdk.AccAddress) (Proposal, error) {
 	if !keeper.router.HasRoute(content.ProposalRoute()) {
 		return types.Proposal{}, sdkerrors.Wrap(types.ErrNoProposalHandlerExists, content.ProposalRoute())
 	}
@@ -29,14 +29,14 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content) (Proposal,
 	// governance process. State is not persisted.
 	cacheCtx, _ := ctx.CacheContext()
 	handler := keeper.router.GetRoute(content.ProposalRoute())
-	if err := handler(cacheCtx, content, proposalID); err != nil {
-		return types.Proposal{}, sdkerrors.Wrap(types.ErrInvalidProposalContent, err.Error())
+	if err := handler(cacheCtx, content, proposalID, proposer); err != nil {
+		return types.Proposal{}, err
 	}
 
 	submitTime := ctx.BlockHeader().Time
 	depositPeriod := keeper.GetDepositParams(ctx).MaxDepositPeriod
 
-	proposal := NewProposal(content, proposalID, submitTime, submitTime.Add(depositPeriod))
+	proposal := NewProposal(content, proposalID, submitTime, submitTime.Add(depositPeriod), proposer)
 
 	keeper.SetProposal(ctx, proposal)
 	keeper.InsertInactiveProposalQueue(ctx, proposalID, proposal.DepositEndTime)

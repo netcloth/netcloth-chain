@@ -191,7 +191,6 @@ Where proposal.json contains:
 
 			proposal.Title = proposalJson.Title
 			proposal.Description = proposalJson.Description
-			proposal.Proposer = cliCtx.FromAddress //FIXME critical proposal.Proposer should eq NewMsgSubmitProposal.Proposer
 			proposal.Version = proposalJson.Version
 			proposal.Software = proposalJson.Software
 			proposal.SwitchHeight = proposalJson.SwitchHeight

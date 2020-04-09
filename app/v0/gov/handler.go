@@ -28,7 +28,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 }
 
 func handleMsgSubmitProposal(ctx sdk.Context, keeper Keeper, msg MsgSubmitProposal) (*sdk.Result, error) {
-	proposal, err := keeper.SubmitProposal(ctx, msg.Content)
+	proposal, err := keeper.SubmitProposal(ctx, msg.Content, msg.Proposer)
 	if err != nil {
 		return nil, err
 	}

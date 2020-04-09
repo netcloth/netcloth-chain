@@ -7,13 +7,13 @@ import (
 )
 
 func NewGovProposalHandler(k Keeper) Handler {
-	return func(ctx sdk.Context, content Content, pid uint64) error {
+	return func(ctx sdk.Context, content Content, pid uint64, proposer sdk.AccAddress) error {
 		switch c := content.(type) {
 		case TextProposal:
 			return nil
 
 		case SoftwareUpgradeProposal:
-			return handleSoftwareUpgradeProposal(ctx, k, c, pid)
+			return handleSoftwareUpgradeProposal(ctx, k, c, pid, proposer)
 
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
@@ -21,7 +21,7 @@ func NewGovProposalHandler(k Keeper) Handler {
 	}
 }
 
-func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalContent SoftwareUpgradeProposal, pid uint64) error {
+func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalContent SoftwareUpgradeProposal, pid uint64, proposer sdk.AccAddress) error {
 	if err := proposalContent.ValidateBasic(); err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func handleSoftwareUpgradeProposal(ctx sdk.Context, keeper Keeper, proposalConte
 		return types.ErrSoftwareUpgradeInvalidSwitchHeight
 	}
 
-	_, found := keeper.gk.GetProfiler(ctx, proposalContent.Proposer)
+	_, found := keeper.gk.GetProfiler(ctx, proposer)
 	if !found {
 		return types.ErrSoftwareUpgradeInvalidProfiler
 	}

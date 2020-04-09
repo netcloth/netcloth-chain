@@ -21,7 +21,7 @@ type Content interface {
 	String() string
 }
 
-type Handler func(ctx sdk.Context, content Content, pid uint64) error
+type Handler func(ctx sdk.Context, content Content, pid uint64, proposer sdk.AccAddress) error
 
 func ValidateAbstract(c Content) error {
 	title := c.GetTitle()
