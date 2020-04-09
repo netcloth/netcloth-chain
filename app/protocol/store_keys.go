@@ -1,29 +1,42 @@
 package protocol
 
 import (
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal"
+	"github.com/netcloth/netcloth-chain/app/v0/distribution"
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
+	"github.com/netcloth/netcloth-chain/app/v0/guardian"
+	"github.com/netcloth/netcloth-chain/app/v0/ipal"
+	"github.com/netcloth/netcloth-chain/app/v0/mint"
+	"github.com/netcloth/netcloth-chain/app/v0/params"
+	"github.com/netcloth/netcloth-chain/app/v0/slashing"
+	"github.com/netcloth/netcloth-chain/app/v0/staking"
+	"github.com/netcloth/netcloth-chain/app/v0/supply"
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade"
+	"github.com/netcloth/netcloth-chain/app/v0/vm"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
 	MainStoreKey     = "main"
-	paramsStoreKey   = "params"
-	supplyStoreKey   = "supply"
-	StakingStoreKey  = "staking"
-	mintStoreKey     = "mint"
-	distrStoreKey    = "distribution"
-	slashingStoreKey = "slashing"
-	cipalStoreKey    = "cipal"
-	ipalStoreKey     = "ipal"
-	VMStoreKey       = "vm" //TODO merge keys here and modules key
-	VMCodeKey        = "vm_code"
-	VMStoreDebugKey  = "vm_decode"
-	govStoreKey      = "gov"
-	authStoreKey     = "acc"
-	UpgradeStoreKey  = "upgrade"
-	GuardianStoreKey = "guardian"
+	paramsStoreKey   = params.StoreKey
+	supplyStoreKey   = supply.StoreKey
+	StakingStoreKey  = staking.StoreKey
+	mintStoreKey     = mint.StoreKey
+	distrStoreKey    = distribution.StoreKey
+	slashingStoreKey = slashing.StoreKey
+	cipalStoreKey    = cipal.StoreKey
+	ipalStoreKey     = ipal.StoreKey
+	VMStoreKey       = vm.StoreKey
+	VMCodeKey        = vm.CodeKey
+	VMStoreDebugKey  = vm.StoreDebugKey
+	govStoreKey      = gov.StoreKey
+	authStoreKey     = auth.StoreKey
+	UpgradeStoreKey  = upgrade.StoreKey
+	GuardianStoreKey = guardian.StoreKey
 
-	paramsTStoreKey  = "transient_params"
-	stakingTStoreKey = "transient_staking"
+	paramsTStoreKey  = params.TStoreKey
+	stakingTStoreKey = staking.TStoreKey
 )
 
 var (

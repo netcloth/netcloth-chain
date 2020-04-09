@@ -41,7 +41,6 @@ func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64
 	return flag, current
 }
 
-// To be used for Protocol with version > 0
 func (pe *ProtocolEngine) Activate(version uint64, ctx sdk.Context) bool {
 	p, flag := pe.protocols[version]
 	if flag == true {
@@ -72,33 +71,4 @@ func (pe *ProtocolEngine) Add(p Protocol) Protocol {
 func (pe *ProtocolEngine) GetByVersion(v uint64) (Protocol, bool) {
 	p, flag := pe.protocols[v]
 	return p, flag
-}
-
-func (pe *ProtocolEngine) GetKVStoreKeys() []*sdk.KVStoreKey {
-	return []*sdk.KVStoreKey{
-		//KeyMain,
-		//KeyAccount,
-		//KeyStake,
-		//KeyMint,
-		//KeyDistr,
-		//KeySlashing,
-		//KeyGov,
-		//KeyFee,
-		//KeyParams,
-		//KeyUpgrade,
-		//KeyService,
-		//KeyGuardian,
-		//KeyAsset,
-		//KeyRand,
-		//KeySwap,
-		//KeyHtlc,
-	}
-}
-
-func (pe *ProtocolEngine) GetTransientStoreKeys() []*sdk.TransientStoreKey {
-	return []*sdk.TransientStoreKey{
-		//TkeyStake,
-		//TkeyDistr,
-		//TkeyParams,
-	}
 }

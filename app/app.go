@@ -35,45 +35,44 @@ type NCHApp struct {
 }
 
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
-	bApp := NewBaseApp(appName, logger, db, baseAppOptions...)
+	baseApp := NewBaseApp(appName, logger, db, baseAppOptions...)
 
-	bApp.SetCommitMultiStoreTracer(traceStore)
-	bApp.SetAppVersion(version.Version)
-
-	//bApp.SetAnteHandler(ante.NewAnteHandler(bApp.accountKeeper, bApp.supplyKeeper, ante.DefaultSigVerificationGasConsumer))
-	//bApp.SetFeeRefundHandler(auth.NewFeeRefundHandler(app.accountKeeper, app.supplyKeeper, app.refundKeeper))
+	baseApp.SetCommitMultiStoreTracer(traceStore)
+	baseApp.SetAppVersion(version.Version)
 
 	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
 	engine := protocol.NewProtocolEngine(protocolKeeper)
-	bApp.SetProtocolEngine(&engine)
+	baseApp.SetProtocolEngine(&engine)
 
-	if !bApp.fauxMerkleMode {
-		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeIAVL)
+	if !baseApp.fauxMerkleMode {
+		baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeIAVL)
 	} else {
-		bApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
+		baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
 	}
 
-	bApp.MountKVStores(protocol.Keys)
-	bApp.MountTransientStores(protocol.TKeys)
+	baseApp.MountKVStores(protocol.Keys)
+	baseApp.MountTransientStores(protocol.TKeys)
 
 	if loadLatest {
-		err := bApp.LoadLatestVersion(protocol.MainKVStoreKey)
+		err := baseApp.LoadLatestVersion(protocol.MainKVStoreKey)
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
 	}
 
-	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, bApp.DeliverTx, invCheckPeriod, nil))
-	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.MainKVStoreKey))
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
+
+	loaded, current := engine.LoadCurrentProtocol(baseApp.cms.GetKVStore(protocol.MainKVStoreKey))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
 	} else {
 		fmt.Println(fmt.Sprintf("blockchain current protocol version :%d", current))
 	}
-	bApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+
+	baseApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
 	var app = &NCHApp{
-		BaseApp:        bApp,
+		BaseApp:        baseApp,
 		invCheckPeriod: invCheckPeriod,
 	}
 

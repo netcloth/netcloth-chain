@@ -12,6 +12,7 @@ const (
 	RouterKey      = types.RouterKey
 	QuerierRoute   = types.QuerierRoute
 	QueryProfilers = types.QueryProfilers
+	StoreKey       = types.StoreKey
 )
 
 type (
