@@ -62,7 +62,7 @@ type IPALNode struct {
 	Extension           string         `json:"extension" yaml:"extension"`
 	Endpoints           Endpoints      `json:"endpoints" yaml:"endpoints"`
 	Bond                sdk.Coin       `json:"bond" yaml:"bond"`
-	TestSoftwareUpgrade string         `json:"test_software_upgrade`
+	TestSoftwareUpgrade string         `json:"test_software_upgrade yaml:"test_software_upgrade`
 }
 
 type IPALNodes []IPALNode

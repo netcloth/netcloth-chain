@@ -1,6 +1,7 @@
 package main
 
 import (
+	v1 "github.com/netcloth/netcloth-chain/app/v1"
 	"os"
 	"path"
 
@@ -74,7 +75,7 @@ func main() {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	v0.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+	v1.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func queryCmd(cdc *amino.Codec) *cobra.Command {
@@ -94,7 +95,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	v0.ModuleBasics.AddQueryCommands(queryCmd, cdc)
+	v1.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
 }
