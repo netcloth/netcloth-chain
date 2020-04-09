@@ -5,6 +5,6 @@ import (
 )
 
 var (
-	ErrNoSender         = sdkerrors.Register(ModuleName, 1, "sender address is empty")
-	ErrUnknownInvariant = sdkerrors.Register(ModuleName, 2, "unknown invariant")
+	ErrNoSender         = sdkerrors.New(ModuleName, 1, "sender address is empty")
+	ErrUnknownInvariant = sdkerrors.New(ModuleName, 2, "unknown invariant")
 )

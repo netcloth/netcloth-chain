@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	ErrEmptyInputs                    = sdkerrors.Register(ModuleName, 1, "empty input")
-	ErrStringTooLong                  = sdkerrors.Register(ModuleName, 2, "input string to long")
-	ErrInvalidSignature               = sdkerrors.Register(ModuleName, 3, "CIPAL invalid user_request signature")
-	ErrIPALClaimUserRequestExpired    = sdkerrors.Register(ModuleName, 4, "CIPAL user_request time expired")
-	ErrCIPALClaimUserRequestSigVerify = sdkerrors.Register(ModuleName, 5, "CIPAL user_request signature verify failed")
+	ErrEmptyInputs                    = sdkerrors.New(ModuleName, 1, "empty input")
+	ErrStringTooLong                  = sdkerrors.New(ModuleName, 2, "input string to long")
+	ErrInvalidSignature               = sdkerrors.New(ModuleName, 3, "CIPAL invalid user_request signature")
+	ErrIPALClaimUserRequestExpired    = sdkerrors.New(ModuleName, 4, "CIPAL user_request time expired")
+	ErrCIPALClaimUserRequestSigVerify = sdkerrors.New(ModuleName, 5, "CIPAL user_request signature verify failed")
 )
