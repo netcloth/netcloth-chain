@@ -66,7 +66,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, bApp.DeliverTx, invCheckPeriod, nil))
 	loaded, current := engine.LoadCurrentProtocol(bApp.cms.GetKVStore(protocol.MainKVStoreKey))
 	if !loaded {
-		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!", current))
+		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
+	} else {
+		fmt.Println(fmt.Sprintf("blockchain current protocol version :%d", current))
 	}
 	bApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 

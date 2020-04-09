@@ -197,6 +197,10 @@ Where proposal.json contains:
 			proposal.SwitchHeight = proposalJson.SwitchHeight
 			proposal.Threshold = proposalJson.Threshold
 
+			if err = proposal.ValidateBasic(); err != nil {
+				return err
+			}
+
 			msg := types.NewMsgSubmitProposal(proposal, sdk.NewCoins(proposalJson.Deposit), cliCtx.FromAddress)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

@@ -19,5 +19,5 @@ var (
 	ErrSoftwareUpgradeInvalidSwitchHeight   = sdkerrors.Register(ModuleName, 11, "invalid software upgrade switch height")
 	ErrSoftwareUpgradeInvalidProfiler       = sdkerrors.Register(ModuleName, 12, "invalid software upgrade profiler")
 	ErrSoftwareUpgradeSwitchPeriodInProcess = sdkerrors.Register(ModuleName, 13, "software upgrade already in switch period")
-	ErrSoftwareUpgradeThresholdLowerThan80  = sdkerrors.Register(ModuleName, 14, "software upgrade Threshold can not lower than 80%")
+	ErrSoftwareUpgradeInvalidThreshold      = sdkerrors.Register(ModuleName, 14, "software upgrade Threshold should be in range [0.8, 1.0]")
 )
