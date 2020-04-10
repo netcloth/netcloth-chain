@@ -265,8 +265,7 @@ func (p *ProtocolV1) configKeepers() {
 		p.cdc,
 		protocol.Keys[protocol.UpgradeStoreKey],
 		p.protocolKeeper,
-		p.stakingKeeper,
-		p.govKeeper)
+		p.stakingKeeper)
 }
 
 func (p *ProtocolV1) configModuleManager() {
