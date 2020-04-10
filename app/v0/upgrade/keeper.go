@@ -1,7 +1,6 @@
 package upgrade
 
 import (
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -13,16 +12,14 @@ type Keeper struct {
 	cdc            *codec.Codec
 	protocolKeeper sdk.ProtocolKeeper
 	sk             staking.Keeper
-	gk             gov.Keeper
 }
 
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, protocolKeeper sdk.ProtocolKeeper, sk staking.Keeper, gk gov.Keeper) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, protocolKeeper sdk.ProtocolKeeper, sk staking.Keeper) Keeper {
 	keeper := Keeper{
 		key,
 		cdc,
 		protocolKeeper,
 		sk,
-		gk,
 	}
 	return keeper
 }

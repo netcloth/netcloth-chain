@@ -32,6 +32,11 @@ func EndBlocker(ctx sdk.Context, keeper Keeper) {
 				proposal.TotalDeposit,
 			),
 		)
+
+		if ProposalTypeSoftwareUpgrade == proposal.ProposalType() {
+			keeper.SoftwareUpgradeClear(ctx)
+		}
+
 		return false
 	})
 
@@ -92,6 +97,11 @@ func EndBlocker(ctx sdk.Context, keeper Keeper) {
 				sdk.NewAttribute(types.AttributeKeyProposalResult, tagValue),
 			),
 		)
+
+		if ProposalTypeSoftwareUpgrade == proposal.ProposalType() {
+			keeper.SoftwareUpgradeClear(ctx)
+		}
+
 		return false
 	})
 }
