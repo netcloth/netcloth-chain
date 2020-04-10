@@ -106,11 +106,11 @@ func (a AppModule) BeginBlock(sdk.Context, types.RequestBeginBlock) {
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, b types.RequestEndBlock) []types.ValidatorUpdate {
-	ctx = ctx.WithLogger(ctx.Logger().With("handler", "endBlock").With("module", "nch/upgrade"))
+	ctx = ctx.WithLogger(ctx.Logger().With("handler", "EndBlock").With("module", "nch/upgrade"))
 
 	upgradeConfig, ok := a.keeper.protocolKeeper.GetUpgradeConfig(ctx)
 	if ok {
-		ctx.Logger().Error(fmt.Sprintf("----upgrade: yes upgradeinfo:%s", upgradeConfig.String()))
+		ctx.Logger().Error(fmt.Sprintf("----upgrade: new upgradeinfo:%s", upgradeConfig.String()))
 		//uk.metrics.SetVersion(upgradeConfig.Protocol.Version)
 
 		validator, found := a.keeper.sk.GetValidatorByConsAddr(ctx, (sdk.ConsAddress)(ctx.BlockHeader().ProposerAddress))
@@ -119,55 +119,46 @@ func (a AppModule) EndBlock(ctx sdk.Context, b types.RequestEndBlock) []types.Va
 		}
 
 		if ctx.BlockHeader().Version.App == upgradeConfig.Protocol.Version {
-			a.keeper.SetSignal(ctx, upgradeConfig.Protocol.Version, validator.ConsAddress().String())
 			//uk.metrics.SetSignal(validator.GetOperator().String(), upgradeConfig.Protocol.Version)
-
-			ctx.Logger().Info("Validator has downloaded the latest software ", "validator", validator.GetOperator().String(), "version", upgradeConfig.Protocol.Version)
-
+			a.keeper.SetSignal(ctx, upgradeConfig.Protocol.Version, validator.ConsAddress().String())
+			ctx.Logger().Info("Validator has downloaded the latest software", ", validator", validator.GetOperator().String(), ", version", upgradeConfig.Protocol.Version)
 		} else {
-
-			ok := a.keeper.DeleteSignal(ctx, upgradeConfig.Protocol.Version, validator.ConsAddress().String())
 			//uk.metrics.DeleteSignal(validator.GetOperator().String(), upgradeConfig.Protocol.Version)
-
+			ok := a.keeper.DeleteSignal(ctx, upgradeConfig.Protocol.Version, validator.ConsAddress().String())
 			if ok {
-				ctx.Logger().Info("Validator has restarted the old software ",
-					"validator", validator.GetOperator().String(), "version", upgradeConfig.Protocol.Version)
+				ctx.Logger().Info("Validator has restarted the old software", ", validator", validator.GetOperator().String(), ", version", upgradeConfig.Protocol.Version)
 			}
 		}
 
-		if uint64(ctx.BlockHeight())+1 == upgradeConfig.Protocol.Height {
+		curHeight := uint64(ctx.BlockHeight())
+		if curHeight == upgradeConfig.Protocol.Height {
 			success := tally(ctx, upgradeConfig.Protocol.Version, a.keeper, upgradeConfig.Protocol.Threshold)
-
 			if success {
-				ctx.Logger().Info("Software Upgrade is successful.", "version", upgradeConfig.Protocol.Version)
+				ctx.Logger().Info("Software Upgrade is successful, ", "version", upgradeConfig.Protocol.Version)
 				a.keeper.protocolKeeper.SetCurrentVersion(ctx, upgradeConfig.Protocol.Version)
+
+				ctx.EventManager().EmitEvent(sdk.NewEvent(
+					sdk.AppVersionEvent,
+					sdk.NewAttribute(sdk.AppVersionEvent, strconv.FormatUint(a.keeper.protocolKeeper.GetCurrentVersion(ctx), 10)),
+				))
 			} else {
-				ctx.Logger().Info("Software Upgrade is failure.", "version", upgradeConfig.Protocol.Version)
+				ctx.Logger().Info("Software Upgrade is failure, ", "version", upgradeConfig.Protocol.Version)
 				a.keeper.protocolKeeper.SetLastFailedVersion(ctx, upgradeConfig.Protocol.Version)
 			}
 
 			a.keeper.AddNewVersionInfo(ctx, upgtypes.NewVersionInfo(upgradeConfig, success))
 			a.keeper.protocolKeeper.ClearUpgradeConfig(ctx)
-			a.keeper.gk.SoftwareUpgradeClear(ctx)
 		}
 
-		if uint64(ctx.BlockHeight())+1 > upgradeConfig.Protocol.Height {
-			ctx.Logger().Info(fmt.Sprintf("current height[%d] is big than switch height[%d], failed to switch", ctx.BlockHeight()+1, upgradeConfig.Protocol.Height))
+		if curHeight > upgradeConfig.Protocol.Height {
+			ctx.Logger().Info(fmt.Sprintf("current height[%d] is big than switch height[%d], failed to switch", ctx.BlockHeight(), upgradeConfig.Protocol.Height))
 			a.keeper.AddNewVersionInfo(ctx, upgtypes.NewVersionInfo(upgradeConfig, false))
 			a.keeper.protocolKeeper.ClearUpgradeConfig(ctx)
-			a.keeper.gk.SoftwareUpgradeClear(ctx)
 		}
 	} else {
 		//uk.metrics.DeleteVersion()
 		ctx.Logger().Error("----upgrade: no upgradeinfo")
 	}
-
-	e := sdk.NewEvent(
-		sdk.AppVersionEvent,
-		sdk.NewAttribute(sdk.AppVersionEvent, strconv.FormatUint(a.keeper.protocolKeeper.GetCurrentVersion(ctx), 10)),
-	)
-
-	ctx.EventManager().EmitEvent(e)
 
 	return nil
 }
