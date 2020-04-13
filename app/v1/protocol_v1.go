@@ -109,7 +109,7 @@ type ProtocolV1 struct {
 }
 
 func NewProtocolV1(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV1 {
-	p0 := ProtocolV1{
+	p1 := ProtocolV1{
 		version:        version,
 		logger:         log,
 		protocolKeeper: pk,
@@ -120,7 +120,7 @@ func NewProtocolV1(version uint64, log log.Logger, pk sdk.ProtocolKeeper, delive
 		invCheckPeriod: invCheckPeriod,
 	}
 
-	return &p0
+	return &p1
 }
 
 func (p *ProtocolV1) GetVersion() uint64 {
