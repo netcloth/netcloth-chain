@@ -131,8 +131,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	}
 
 	appVersion := app.Engine.GetCurrentVersion()
-	events := app.deliverState.ctx.EventManager().Events()
-	for _, event := range events {
+	for _, event := range res.Events {
 		if event.Type == sdk.AppVersionEvent {
 			for _, attr := range event.Attributes {
 				if string(attr.Key) == sdk.AppVersionEvent {
