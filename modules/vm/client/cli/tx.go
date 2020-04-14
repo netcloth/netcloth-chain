@@ -225,19 +225,40 @@ func ContractCallCmd2(cdc *codec.Codec) *cobra.Command {
 
 				case abi.AddressTy:
 					addrStr := a
-					if addrStr[:2] == "0x" {
-						addrStr = addrStr[2:]
+					if len(addrStr) <= 2 {
+						return errors.New(fmt.Sprintf("wrong address format, actual address[%s]", addrStr))
 					}
-					if len(addrStr) != 40 {
-						return errors.New(fmt.Sprintf("address must have 40 chars except the prefix '0x', actual %d chars\n", len(addrStr)))
+
+					if addrStr[:3] == "nch" {
+						addr, err := sdk.AccAddressFromBech32(addrStr)
+						if err != nil {
+							return err
+						}
+
+						if len(addr) != 20 {
+							return errors.New(fmt.Sprintf("wrong bech32 address format, actual address[%s]", addrStr))
+						}
+
+						var addrBin [20]byte
+						copy(addrBin[:], addr)
+						readyArgs = append(readyArgs, addrBin)
+					} else {
+						if addrStr[:2] == "0x" {
+							addrStr = addrStr[2:]
+						}
+
+						if len(addrStr) != 40 {
+							return errors.New(fmt.Sprintf("address must have 40 chars except the prefix '0x', actual %d chars\n", len(addrStr)))
+						}
+
+						addrV, err := hexutil.Decode(addrStr)
+						if err != nil {
+							return err
+						}
+						var v = [20]byte{}
+						copy(v[:], addrV)
+						readyArgs = append(readyArgs, v)
 					}
-					addrV, err := hexutil.Decode(addrStr)
-					if err != nil {
-						return err
-					}
-					var v = [20]byte{}
-					copy(v[:], addrV)
-					readyArgs = append(readyArgs, v)
 
 				case abi.StringTy:
 					readyArgs = append(readyArgs, a)
