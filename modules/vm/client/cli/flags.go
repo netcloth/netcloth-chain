@@ -4,7 +4,6 @@ const (
 	flagCodeFile     = "code_file"
 	flagAmount       = "amount"
 	flagArgs         = "args"
-	flagArgList      = "arglist"
 	flagMethod       = "method"
 	flagContractAddr = "contract_addr"
 	flagAbiFile      = "abi_file"

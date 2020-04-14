@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -42,6 +43,19 @@ type SimulationResult struct {
 
 func (r SimulationResult) String() string {
 	return fmt.Sprintf("Gas = %d\nRes = %s", r.Gas, r.Res)
+}
+
+type VMQueryResult struct {
+	Gas    uint64
+	Values []interface{}
+}
+
+func (r VMQueryResult) String() string {
+	j, err := json.Marshal(r)
+	if err != nil {
+		return fmt.Sprintf("Gas = %d\nValues = %s", r.Gas, err.Error())
+	}
+	return string(j)
 }
 
 type QueryStateParams struct {

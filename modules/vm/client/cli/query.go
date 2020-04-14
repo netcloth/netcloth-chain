@@ -9,10 +9,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
@@ -38,6 +40,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdQueryCreateFee(cdc),
 		GetCmdQueryCallFee(cdc),
 		GetCmdQueryCall(cdc),
+		GetCmdQueryCall2(cdc),
 	)...)
 	return vmQueryCmd
 }
@@ -382,4 +385,67 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 			return cliCtx.PrintOutput(out)
 		},
 	}
+}
+
+func GetCmdQueryCall2(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "call2 [from] [to] [method] [args] [amount] [abi_file]",
+		Short: "Querying fee to call2 contract",
+		Long: strings.TrimSpace(fmt.Sprintf(`call contract for local query.
+Example:
+$ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf --args '' 0pnch ./demo.abi`, version.ClientName)),
+		Args: cobra.ExactArgs(5),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			fromAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			toAddr, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			argList := viper.GetStringSlice(flagArgs)
+			payload, m, err := GenPayload(args[4], args[2], argList)
+
+			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
+			data, err := cliCtx.Codec.MarshalJSON(msg)
+			if err != nil {
+				return err
+			}
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), data)
+			if err != nil {
+				return err
+			}
+
+			var out types.SimulationResult
+			cdc.MustUnmarshalJSON(res, &out)
+
+			d, err := hexutil.Decode(out.Res)
+			if err != nil {
+				return cliCtx.PrintOutput(out)
+			}
+
+			var result types.VMQueryResult
+			result.Gas = out.Gas
+			result.Values, err = m.Outputs.UnpackValues(d)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(result)
+
+			return nil
+
+		},
+	}
+
+	cmd.Flags().String(flagArgs, "", "contract method arg list")
+	cmd.MarkFlagRequired(flagArgs)
+
+	return cmd
 }

@@ -6,10 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/big"
+	"os"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+
+	"github.com/netcloth/netcloth-chain/hexutil"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func CodeFromFile(codeFile string) ([]byte, error) {
@@ -54,4 +61,153 @@ func AbiFromFile(abiFile string) (abiObj abi.ABI, err error) {
 	}
 
 	return abi.JSON(strings.NewReader(string(abiData)))
+}
+
+func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Method, err error) {
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("abiFile = %s, method = %s, args = %v, len=%d\n", abiFile, method, args, len(args)))
+
+	emptyMethod := abi.Method{}
+	abiObj, err := AbiFromFile(abiFile)
+	if err != nil {
+		return nil, emptyMethod, err
+	}
+
+	m, exist := abiObj.Methods[method]
+	if !exist {
+		return nil, emptyMethod, errors.New(fmt.Sprintf("method %s not exist\n", method))
+	}
+
+	var readyArgs []interface{}
+
+	if len(args) != len(m.Inputs) {
+		return nil, emptyMethod, errors.New(fmt.Sprintf("args number dismatch expected %d args, actual %d args\n", len(m.Inputs), len(args)))
+	}
+
+	for i, a := range args {
+		switch m.Inputs[i].Type.T {
+		case abi.BoolTy:
+			boolV, err := strconv.ParseBool(a)
+			if err != nil {
+				return nil, emptyMethod, err
+			}
+			readyArgs = append(readyArgs, boolV)
+
+		case abi.AddressTy:
+			addrStr := a
+			if len(addrStr) <= 2 {
+				return nil, emptyMethod, errors.New(fmt.Sprintf("wrong address format, actual address[%s]", addrStr))
+			}
+
+			if addrStr[:3] == "nch" {
+				addr, err := sdk.AccAddressFromBech32(addrStr)
+				if err != nil {
+					return nil, emptyMethod, err
+				}
+
+				if len(addr) != 20 {
+					return nil, emptyMethod, errors.New(fmt.Sprintf("wrong bech32 address format, actual address[%s]", addrStr))
+				}
+
+				var addrBin [20]byte
+				copy(addrBin[:], addr)
+				readyArgs = append(readyArgs, addrBin)
+			} else {
+				if addrStr[:2] == "0x" {
+					addrStr = addrStr[2:]
+				}
+
+				if len(addrStr) != 40 {
+					return nil, emptyMethod, errors.New(fmt.Sprintf("address must have 40 chars except the prefix '0x', actual %d chars\n", len(addrStr)))
+				}
+
+				addrV, err := hexutil.Decode(addrStr)
+				if err != nil {
+					return nil, emptyMethod, err
+				}
+				var v = [20]byte{}
+				copy(v[:], addrV)
+				readyArgs = append(readyArgs, v)
+			}
+
+		case abi.StringTy:
+			readyArgs = append(readyArgs, a)
+
+		case abi.BytesTy:
+			v, err := hexutil.Decode(a)
+			if err != nil {
+				return nil, emptyMethod, err
+			}
+			readyArgs = append(readyArgs, v)
+
+		case abi.FixedBytesTy:
+			bytes := a
+			if bytes[:2] == "0x" {
+				bytes = bytes[2:]
+			}
+			if len(bytes) != m.Inputs[i].Type.Size*2 {
+				return nil, emptyMethod, errors.New(fmt.Sprintf("must have %d chars except the prefix '0x', actual %d chars\n", m.Inputs[i].Type.Size*2, len(bytes)))
+			}
+			dv, err := hexutil.Decode(bytes)
+			if err != nil {
+				return nil, emptyMethod, err
+			}
+
+			var byteValue byte
+			byteType := reflect.TypeOf(byteValue)
+			byteArrayType := reflect.ArrayOf(m.Inputs[i].Type.Size, byteType)
+			byteArrayValue := reflect.New(byteArrayType).Elem()
+			for j := 0; j < m.Inputs[i].Type.Size; j++ {
+				byteArrayValue.Index(j).Set(reflect.ValueOf(dv[j]))
+			}
+
+			readyArgs = append(readyArgs, byteArrayValue.Interface())
+
+		case abi.IntTy, abi.UintTy: //TODO add overflow check
+			v, success := big.NewInt(0).SetString(a, 10)
+			if !success {
+				return nil, emptyMethod, errors.New(fmt.Sprintf("parse int failed"))
+			}
+
+			unsignedUint64 := v.Uint64()
+			if m.Inputs[i].Type.Size == 8 {
+				if m.Inputs[i].Type.T == abi.IntTy {
+					readyArgs = append(readyArgs, int8(unsignedUint64))
+				} else {
+					readyArgs = append(readyArgs, uint8(unsignedUint64))
+				}
+			} else if m.Inputs[i].Type.Size == 16 {
+				if m.Inputs[i].Type.T == abi.IntTy {
+					readyArgs = append(readyArgs, int16(unsignedUint64))
+				} else {
+					readyArgs = append(readyArgs, uint16(unsignedUint64))
+				}
+			} else if m.Inputs[i].Type.Size == 32 {
+				if m.Inputs[i].Type.T == abi.IntTy {
+					readyArgs = append(readyArgs, int32(unsignedUint64))
+				} else {
+					readyArgs = append(readyArgs, uint32(unsignedUint64))
+				}
+			} else if m.Inputs[i].Type.Size == 64 {
+				if m.Inputs[i].Type.T == abi.IntTy {
+					readyArgs = append(readyArgs, int64(unsignedUint64))
+				} else {
+					readyArgs = append(readyArgs, uint64(unsignedUint64))
+				}
+			} else {
+				readyArgs = append(readyArgs, v)
+			}
+
+		default:
+			return nil, emptyMethod, errors.New(fmt.Sprintf("no supported type [%s:%d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.T))
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, fmt.Sprintf("readyArgs = %v\n", readyArgs))
+
+	payload, err = abiObj.Pack(method, readyArgs...)
+	if err != nil {
+		return nil, emptyMethod, err
+	}
+
+	return
 }
