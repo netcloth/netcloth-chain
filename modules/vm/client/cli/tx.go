@@ -33,7 +33,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create and sign a create contract tx",
-		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code_file=<code file> --args='arg1 arg2 arg3' --abi_file=<abi_file>",
+		Example: "nchcli vm create --from=<user key name> --code_file=<code file> --amount=<amount> --args='arg1 arg2 arg3' --abi_file=<abi_file>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -80,7 +80,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(flagCodeFile, "", "contract code file path")
 	cmd.Flags().String(flagAbiFile, "", "contract abi file")
 	cmd.Flags().String(flagArgs, "", "contract method arg list (e.g. --args='arg1 arg2 arg3')")
-	cmd.Flags().String(flagAmount, "", "amount of coins to send (e.g. 1000000pnch)")
+	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. 100pnch)")
 
 	cmd.MarkFlagRequired(flagCodeFile)
 
