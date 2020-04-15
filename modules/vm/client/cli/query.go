@@ -42,7 +42,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdQueryCreateFee(cdc),
 		GetCmdQueryCallFee(cdc),
 		GetCmdQueryCall(cdc),
-		GetCmdQueryCall2(cdc),
 	)...)
 	return vmQueryCmd
 }
@@ -320,82 +319,12 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 }
 
 func GetCmdQueryCall(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "call [from] [to] [method] [args] [amount] [abi_file]",
 		Short: "Querying fee to call contract",
 		Long: strings.TrimSpace(fmt.Sprintf(`call contract for local query.
 Example:
-$ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf 0000000000000000000000000000000000000000000000000000000000000001 0pnch ./demo.abi`, version.ClientName)),
-		Args: cobra.ExactArgs(6),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			fromAddr, err := sdk.AccAddressFromBech32(args[0])
-			if err != nil {
-				return err
-			}
-
-			toAddr, err := sdk.AccAddressFromBech32(args[1])
-			if err != nil {
-				return err
-			}
-
-			abiObj, err := AbiFromFile(args[5])
-			if err != nil {
-				return err
-			}
-
-			argsBin, err := hex.DecodeString(args[3])
-			if err != nil {
-				return err
-			}
-
-			method := args[2]
-			m, exist := abiObj.Methods[method]
-			var payload []byte
-			if exist {
-				if len(m.Inputs) != len(argsBin)/32 {
-					//return errors.New(fmt.Sprint("args count dismatch"))
-				}
-
-				readyArgs, err := m.Inputs.UnpackValues(argsBin)
-				if err != nil {
-					return err
-				}
-
-				payload, err = abiObj.Pack(method, readyArgs...)
-				if err != nil {
-					return err
-				}
-			} else {
-				return errors.New(fmt.Sprintf("method %s not exist\n", method))
-			}
-
-			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
-			data, err := cliCtx.Codec.MarshalJSON(msg)
-			if err != nil {
-				return err
-			}
-
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/vm/%s", types.QueryCall), data)
-			if err != nil {
-				return err
-			}
-
-			var out types.SimulationResult
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(out)
-		},
-	}
-}
-
-func GetCmdQueryCall2(cdc *codec.Codec) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "call2 [from] [to] [method] [args] [amount] [abi_file]",
-		Short: "Querying fee to call2 contract",
-		Long: strings.TrimSpace(fmt.Sprintf(`call contract for local query.
-Example:
-$ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf --args '' 0pnch ./demo.abi`, version.ClientName)),
+$ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf --args '' 0pnch ./demo.abi`, version.ClientName)),
 		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
