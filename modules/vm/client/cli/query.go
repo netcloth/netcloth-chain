@@ -437,7 +437,7 @@ $ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz47
 
 			var result types.VMQueryResult
 			result.Gas = out.Gas
-			result.Values, err = m.Outputs.UnpackValues(d)
+			result.Result, err = m.Outputs.UnpackValues(d)
 			if err != nil {
 				return err
 			}
@@ -445,9 +445,9 @@ $ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz47
 			for i := 0; i < len(m.Outputs); i++ {
 				if m.Outputs[i].Type.String() == "address" {
 					var addr sdk.AccAddress
-					if ethAddr, ok := result.Values[i].(common.Address); ok {
+					if ethAddr, ok := result.Result[i].(common.Address); ok {
 						addr = append(addr[:], ethAddr.Bytes()...)
-						result.Values[i] = addr.String()
+						result.Result[i] = addr.String()
 					}
 				}
 			}

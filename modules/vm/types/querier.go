@@ -47,7 +47,7 @@ func (r SimulationResult) String() string {
 
 type VMQueryResult struct {
 	Gas    uint64
-	Values []interface{}
+	Result []interface{}
 }
 
 func (r VMQueryResult) String() string {
