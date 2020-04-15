@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -435,6 +437,16 @@ $ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz47
 			result.Values, err = m.Outputs.UnpackValues(d)
 			if err != nil {
 				return err
+			}
+
+			for i := 0; i < len(m.Outputs); i++ {
+				if m.Outputs[i].Type.String() == "address" {
+					var addr sdk.AccAddress
+					if ethAddr, ok := result.Values[i].(common.Address); ok {
+						addr = append(addr[:], ethAddr.Bytes()...)
+						result.Values[i] = addr.String()
+					}
+				}
 			}
 
 			fmt.Println(result)
