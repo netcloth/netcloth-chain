@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/netcloth/netcloth-chain/hexutil"
+	"github.com/netcloth/netcloth-chain/modules/vm/common/math"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -162,10 +163,27 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 
 			readyArgs = append(readyArgs, byteArrayValue.Interface())
 
-		case abi.IntTy, abi.UintTy: //TODO add overflow check
+		case abi.IntTy, abi.UintTy:
+			var typeMinValue *big.Int
+			var typeMaxValue *big.Int
+			if abi.IntTy == m.Inputs[i].Type.T {
+				typeMinValue = math.BigPow(2, int64(m.Inputs[i].Type.Size)-1)
+				typeMinValue.Neg(typeMinValue)
+				typeMaxValue = math.BigPow(2, int64(m.Inputs[i].Type.Size)-1)
+				typeMaxValue = typeMaxValue.Sub(typeMaxValue, big.NewInt(1))
+			} else {
+				typeMinValue = big.NewInt(0)
+				typeMaxValue = math.BigPow(2, int64(m.Inputs[i].Type.Size))
+			}
+			fmt.Println(fmt.Sprintf("type:%s, bit size:%d, [%d, %d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.Size, typeMinValue, typeMaxValue))
+
 			v, success := big.NewInt(0).SetString(a, 10)
 			if !success {
 				return nil, emptyMethod, errors.New(fmt.Sprintf("parse int failed"))
+			}
+
+			if v.Cmp(typeMinValue) == -1 || v.Cmp(typeMaxValue) == 1 {
+				return nil, emptyMethod, errors.New(fmt.Sprintf("value of type[%s] must be in range [%d, %d]", m.Inputs[i].Type.String(), typeMinValue, typeMaxValue))
 			}
 
 			unsignedUint64 := v.Uint64()

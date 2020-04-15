@@ -412,6 +412,9 @@ $ %s query vm call2 nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz47
 
 			argList := viper.GetStringSlice(flagArgs)
 			payload, m, err := GenPayload(args[4], args[2], argList)
+			if err != nil {
+				return err
+			}
 
 			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
 			data, err := cliCtx.Codec.MarshalJSON(msg)
