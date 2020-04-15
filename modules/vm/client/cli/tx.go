@@ -64,7 +64,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				}
 				payload, _, err = GenPayload(abiFile, "", argList)
 				if err != nil {
-					return nil
+					return err
 				}
 				code = append(code, payload...)
 			}
