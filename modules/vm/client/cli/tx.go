@@ -25,6 +25,7 @@ func VMCmd(cdc *codec.Codec) *cobra.Command {
 	}
 	txCmd.AddCommand(
 		ContractCreateCmd(cdc),
+		ContractCreateCmd2(cdc),
 		ContractCallCmd(cdc),
 		ContractCallCmd2(cdc),
 	)
@@ -75,6 +76,66 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagCodeFile, "", "contract code file")
+	cmd.Flags().String(flagArgs, "", "contract construct function arg list, e.g. [constructor(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
+	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
+
+	cmd.MarkFlagRequired(flagCodeFile)
+
+	cmd = client.PostCommands(cmd)[0]
+
+	return cmd
+}
+
+func ContractCreateCmd2(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "create2",
+		Short:   "Create a contract",
+		Example: "nchcli vm create2 --from=<user key name> --amount=<amount> --code_file=<code file> --args=<args> --abi_file=<abi_file>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			coin := sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(0))
+			amount := viper.GetString(flagAmount)
+			if len(amount) > 0 {
+				coinInput, err := sdk.ParseCoin(amount)
+				if err != nil {
+					return err
+				}
+				coin = coinInput
+			}
+
+			codeFile := viper.GetString(flagCodeFile)
+			code, err := CodeFromFile(codeFile)
+			if err != nil {
+				return err
+			}
+
+			var payload []byte
+			argList := viper.GetStringSlice(flagArgs)
+			if len(argList) != 0 {
+				abiFile := viper.GetString(flagAbiFile)
+				if len(abiFile) == 0 {
+					return errors.New(fmt.Sprintf("must use --abi_file to appoint abi file when use constructor params\n"))
+				}
+				payload, _, err = GenPayload(abiFile, "", argList)
+				if err != nil {
+					return nil
+				}
+				code = append(code, payload...)
+			}
+
+			msg := types.NewMsgContract(cliCtx.GetFromAddress(), nil, code, coin)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	cmd.Flags().String(flagCodeFile, "", "contract code file")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file")
 	cmd.Flags().String(flagArgs, "", "contract construct function arg list, e.g. [constructor(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
 	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
 

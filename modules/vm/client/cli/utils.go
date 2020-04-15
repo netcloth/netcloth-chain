@@ -73,9 +73,14 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 		return nil, emptyMethod, err
 	}
 
-	m, exist := abiObj.Methods[method]
-	if !exist {
-		return nil, emptyMethod, errors.New(fmt.Sprintf("method %s not exist\n", method))
+	exist := false
+	if len(method) == 0 { //constructor
+		m = abiObj.Constructor
+	} else {
+		m, exist = abiObj.Methods[method]
+		if !exist {
+			return nil, emptyMethod, errors.New(fmt.Sprintf("method %s not exist\n", method))
+		}
 	}
 
 	var readyArgs []interface{}
