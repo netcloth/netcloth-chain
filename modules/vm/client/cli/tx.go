@@ -93,7 +93,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "call",
 		Short:   "Create and sign a call contract tx",
-		Example: `nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --amount=<amount> --args='arg1 arg2 arg3' --abi_file=<abi_file> --method=<method>`,
+		Example: `nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --method=<method> --abi_file=<abi_file>  --args='arg1 arg2 arg3' --amount=<amount> `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
