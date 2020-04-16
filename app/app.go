@@ -31,7 +31,6 @@ var (
 
 type NCHApp struct {
 	*BaseApp
-	invCheckPeriod uint
 }
 
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*BaseApp)) *NCHApp {
@@ -71,10 +70,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	baseApp.txDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	var app = &NCHApp{
-		BaseApp:        baseApp,
-		invCheckPeriod: invCheckPeriod,
-	}
+	var app = &NCHApp{baseApp}
 
 	return app
 }
