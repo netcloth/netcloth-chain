@@ -179,7 +179,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 				typeMinValue = big.NewInt(0)
 				typeMaxValue = math.BigPow(2, int64(m.Inputs[i].Type.Size))
 			}
-			fmt.Println(fmt.Sprintf("type:%s, bit size:%d, [%d, %d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.Size, typeMinValue, typeMaxValue))
+			//fmt.Println(fmt.Sprintf("type:%s, bit size:%d, [%d, %d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.Size, typeMinValue, typeMaxValue))
 
 			v, success := big.NewInt(0).SetString(a, 10)
 			if !success {
