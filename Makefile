@@ -88,3 +88,14 @@ draw-deps:
 
 clean:
 	rm -rf  build/
+
+
+
+##############################################
+### Test
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v '/tests')
+
+test: test_unit
+
+test_unit:
+	@go test -mod=readonly $(PACKAGES_NOSIMULATION)
