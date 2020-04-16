@@ -114,7 +114,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			argList := viper.GetStringSlice(flagArgs)
 			payload, _, err := GenPayload(abiFile, method, argList)
 			if err != nil {
-				return nil
+				return err
 			}
 
 			dump := make([]byte, len(payload)*2)
