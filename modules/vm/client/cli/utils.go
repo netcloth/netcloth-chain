@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -65,7 +64,7 @@ func AbiFromFile(abiFile string) (abiObj abi.ABI, err error) {
 }
 
 func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Method, err error) {
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("abiFile = %s, method = %s, args = %v, len=%d\n", abiFile, method, args, len(args)))
+	//fmt.Fprintf(os.Stderr, fmt.Sprintf("abiFile = %s, method = %s, args = %v, len=%d\n", abiFile, method, args, len(args)))
 
 	emptyMethod := abi.Method{}
 	abiObj, err := AbiFromFile(abiFile)
@@ -86,7 +85,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 	var readyArgs []interface{}
 
 	if len(args) != len(m.Inputs) {
-		return nil, emptyMethod, errors.New(fmt.Sprintf("args number dismatch expected %d args, actual %d args\n", len(m.Inputs), len(args)))
+		return nil, emptyMethod, errors.New(fmt.Sprintf("args number dismatch,  expected %d args, actual %d args\n", len(m.Inputs), len(args)))
 	}
 
 	for i, a := range args {
@@ -225,7 +224,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("readyArgs = %v\n", readyArgs))
+	//fmt.Fprintf(os.Stderr, fmt.Sprintf("readyArgs = %v\n", readyArgs))
 
 	payload, err = abiObj.Pack(method, readyArgs...)
 	if err != nil {
