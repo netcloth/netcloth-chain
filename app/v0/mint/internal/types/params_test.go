@@ -13,7 +13,7 @@ func TestParamsEqual(t *testing.T) {
 	ok := p1.Equal(p2)
 	require.True(t, ok)
 
-	p2.BlocksPerYear = uint64(10 * 60 * 8766 / 5)
+	p2.BlocksPerYear = int64(10 * 60 * 8766 / 5)
 
 	ok = p1.Equal(p2)
 	require.False(t, ok)

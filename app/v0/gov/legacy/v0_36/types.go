@@ -1,5 +1,3 @@
-// DONTCOVER
-// nolint
 package v0_36
 
 import (
@@ -103,7 +101,7 @@ func (tp TextProposal) GetTitle() string       { return tp.Title }
 func (tp TextProposal) GetDescription() string { return tp.Description }
 func (tp TextProposal) ProposalRoute() string  { return RouterKey }
 func (tp TextProposal) ProposalType() string   { return ProposalTypeText }
-func (tp TextProposal) ValidateBasic() error   { return ValidateAbstract(DefaultCodespace, tp) }
+func (tp TextProposal) ValidateBasic() error   { return ValidateAbstract(tp) }
 
 func (tp TextProposal) String() string {
 	return fmt.Sprintf(`Text Proposal:
@@ -121,7 +119,7 @@ func (sup SoftwareUpgradeProposal) GetDescription() string { return sup.Descript
 func (sup SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (sup SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
 func (sup SoftwareUpgradeProposal) ValidateBasic() error {
-	return ValidateAbstract(DefaultCodespace, sup)
+	return ValidateAbstract(sup)
 }
 
 func (sup SoftwareUpgradeProposal) String() string {

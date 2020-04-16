@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
-	"github.com/netcloth/netcloth-chain/app/v0/simulation"
+	"github.com/netcloth/netcloth-chain/mock/simulation"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -99,8 +99,8 @@ func SimulateSubmittingVotingAndSlashingForProposal(k gov.Keeper, contentSim Con
 
 func simulateHandleMsgSubmitProposal(msg gov.MsgSubmitProposal, handler sdk.Handler, ctx sdk.Context) (ok bool) {
 	ctx, write := ctx.CacheContext()
-	ok = handler(ctx, msg).IsOK()
-	if ok {
+	result, _ := handler(ctx, msg)
+	if result.IsOK() {
 		write()
 	}
 	return ok
@@ -138,8 +138,8 @@ func SimulateMsgDeposit(k gov.Keeper) simulation.Operation {
 			return simulation.NoOpMsg(gov.ModuleName), nil, fmt.Errorf("expected msg to pass ValidateBasic: %s", msg.GetSignBytes())
 		}
 		ctx, write := ctx.CacheContext()
-		ok = gov.NewHandler(k)(ctx, msg).IsOK()
-		if ok {
+		result, _ := gov.NewHandler(k)(ctx, msg)
+		if result.IsOK() {
 			write()
 		}
 
@@ -177,7 +177,8 @@ func operationSimulateMsgVote(k gov.Keeper, acc simulation.Account, proposalID u
 		}
 
 		ctx, write := ctx.CacheContext()
-		ok := gov.NewHandler(k)(ctx, msg).IsOK()
+		result, _ := gov.NewHandler(k)(ctx, msg)
+		ok := result.IsOK()
 		if ok {
 			write()
 		}
