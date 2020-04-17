@@ -78,7 +78,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagCodeFile, "", "contract code file path")
-	cmd.Flags().String(flagAbiFile, "", "contract abi file")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file path")
 	cmd.Flags().String(flagArgs, "", "contract method arg list (e.g. --args='arg1 arg2 arg3')")
 	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. 100pnch)")
 
@@ -135,14 +135,14 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagContractAddr, "", "contract bech32 addr")
-	cmd.Flags().String(flagAmount, "", "amount of coins to send (e.g. 1000000pnch)")
+	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. 1000000pnch)")
 	cmd.Flags().String(flagMethod, "", "contract method")
 	cmd.Flags().String(flagArgs, "", "contract method arg list")
 	cmd.Flags().String(flagAbiFile, "", "contract abi file path")
 
 	cmd.MarkFlagRequired(flagContractAddr)
 	cmd.MarkFlagRequired(flagMethod)
-	cmd.MarkFlagRequired(flagArgs)
+	cmd.MarkFlagRequired(flagAbiFile)
 
 	cmd = client.PostCommands(cmd)[0]
 

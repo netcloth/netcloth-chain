@@ -388,8 +388,6 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 		},
 	}
 
-	cmd.Flags().String(flagCodeFile, "", "contract code file path")
-	cmd.Flags().String(flagAbiFile, "", "contract abi file")
 	cmd.Flags().String(flagArgs, "", "contract method arg list (e.g. --args='arg1 arg2 arg3')(default \"\")")
 	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. --amount=100pnch)")
 
