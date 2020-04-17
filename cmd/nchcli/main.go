@@ -51,13 +51,14 @@ func main() {
 
 	// Construct Root Command
 	rootCmd.AddCommand(
-		bankcmd.SendTxCmd(cdc),
-		cipalcli.CIPALCmd(cdc),
-		ipalcli.IPALCmd(cdc),
-		vmcli.VMCmd(cdc),
-		rpc.StatusCommand(),
 		client.ConfigCmd(app.DefaultCLIHome),
+		rpc.StatusCommand(),
 		queryCmd(cdc),
+		client.LineBreak,
+		bankcmd.SendTxCmd(cdc),
+		ipalcli.IPALCmd(cdc),
+		cipalcli.CIPALCmd(cdc),
+		vmcli.VMCmd(cdc),
 		txCmd(cdc),
 		client.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
