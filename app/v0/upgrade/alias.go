@@ -5,5 +5,6 @@ import (
 )
 
 const (
-	StoreKey = types.StoreKey
+	StoreKey   = types.StoreKey
+	ModuleName = types.ModuleName
 )

@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
 	"os"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/codec"
 	store "github.com/netcloth/netcloth-chain/store/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -35,33 +37,28 @@ func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
 	db := dbm.NewMemDB()
 	codec := codec.New()
 	registerTestCodec(codec)
-	return NewBaseApp(name, logger, db, testTxDecoder(codec), options...)
+	return NewBaseApp(name, logger, db, options...)
 }
 
 func registerTestCodec(cdc *codec.Codec) {
-	// register Tx, Msg
 	sdk.RegisterCodec(cdc)
 
-	// register test types
 	cdc.RegisterConcrete(&txTest{}, "nch/codec/baseapp/txTest", nil)
 	cdc.RegisterConcrete(&msgCounter{}, "nch/baseapp/msgCounter", nil)
 	cdc.RegisterConcrete(&msgCounter2{}, "nch/baseapp/msgCounter2", nil)
 	cdc.RegisterConcrete(&msgNoRoute{}, "nch/baseapp/msgNoRoute", nil)
 }
 
-// simple one store baseapp
 func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
 	app := newBaseApp(t.Name(), options...)
 	require.Equal(t, t.Name(), app.Name())
 
-	// no stores are mounted
 	require.Panics(t, func() {
 		app.LoadLatestVersion(capKey1)
 	})
 
 	app.MountStores(capKey1, capKey2)
 
-	// stores are mounted
 	err := app.LoadLatestVersion(capKey1)
 	require.Nil(t, err)
 	return app
@@ -70,24 +67,20 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
 func TestMountStores(t *testing.T) {
 	app := setupBaseApp(t)
 
-	// check both stores
 	store1 := app.cms.GetCommitKVStore(capKey1)
 	require.NotNil(t, store1)
 	store2 := app.cms.GetCommitKVStore(capKey2)
 	require.NotNil(t, store2)
 }
 
-// Test that we can make commits and then reload old versions.
-// Test that LoadLatestVersion actually does.
 func TestLoadVersion(t *testing.T) {
 	logger := defaultLogger()
 	pruningOpt := SetPruning(store.PruneSyncable)
 	db := dbm.NewMemDB()
 	name := t.Name()
-	app := NewBaseApp(name, logger, db, nil, pruningOpt)
+	app := NewBaseApp(name, logger, db, pruningOpt)
 
-	// make a cap key and mount the store
-	capKey := sdk.NewKVStoreKey(MainStoreKey)
+	capKey := sdk.NewKVStoreKey("main")
 	app.MountStores(capKey)
 	err := app.LoadLatestVersion(capKey) // needed to make stores non-nil
 	require.Nil(t, err)
@@ -113,7 +106,7 @@ func TestLoadVersion(t *testing.T) {
 	commitID2 := sdk.CommitID{2, res.Data}
 
 	// reload with LoadLatestVersion
-	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app = NewBaseApp(name, logger, db, pruningOpt)
 	app.MountStores(capKey)
 	err = app.LoadLatestVersion(capKey)
 	require.Nil(t, err)
@@ -121,7 +114,7 @@ func TestLoadVersion(t *testing.T) {
 
 	// reload with LoadVersion, see if you can commit the same block and get
 	// the same result
-	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app = NewBaseApp(name, logger, db, pruningOpt)
 	app.MountStores(capKey)
 	err = app.LoadVersion(1, capKey)
 	require.Nil(t, err)
@@ -158,7 +151,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
 
-	capKey := sdk.NewKVStoreKey(MainStoreKey)
+	capKey := sdk.NewKVStoreKey("main")
 	app.MountStores(capKey)
 	err := app.LoadLatestVersion(capKey)
 	require.Nil(t, err)
@@ -206,8 +199,6 @@ func testChangeNameHelper(name string) func(*BaseApp) {
 	}
 }
 
-// Test that txs can be unmarshalled and read and that
-// correct error codes are returned when not
 func TestTxDecoder(t *testing.T) {
 	codec := codec.New()
 	registerTestCodec(codec)
@@ -257,18 +248,6 @@ func TestBaseAppOptionSeal(t *testing.T) {
 		app.SetCMS(nil)
 	})
 	require.Panics(t, func() {
-		app.SetInitChainer(nil)
-	})
-	require.Panics(t, func() {
-		app.SetBeginBlocker(nil)
-	})
-	require.Panics(t, func() {
-		app.SetEndBlocker(nil)
-	})
-	require.Panics(t, func() {
-		app.SetAnteHandler(nil)
-	})
-	require.Panics(t, func() {
 		app.SetAddrPeerFilter(nil)
 	})
 	require.Panics(t, func() {
@@ -292,7 +271,7 @@ func TestInitChainer(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := defaultLogger()
 	app := NewBaseApp(name, logger, db, nil)
-	capKey := sdk.NewKVStoreKey(MainStoreKey)
+	capKey := sdk.NewKVStoreKey("main")
 	capKey2 := sdk.NewKVStoreKey("key2")
 	app.MountStores(capKey, capKey2)
 
@@ -309,13 +288,20 @@ func TestInitChainer(t *testing.T) {
 		Data: key,
 	}
 
+	prot := v0.NewProtocolV0()
+
+	pk := sdk.NewProtocolKeeper(sdk.NewKVStoreKey("protocol"))
+	engine := protocol.NewProtocolEngine(pk)
+	engine.Add(prot)
+	app.SetProtocolEngine(&engine)
+
 	// initChainer is nil - nothing happens
 	app.InitChain(abci.RequestInitChain{})
 	res := app.Query(query)
 	require.Equal(t, 0, len(res.Value))
 
 	// set initChainer and try again - should see the value
-	app.SetInitChainer(initChainer)
+	prot.initChainer = initChainer
 
 	// stores are mounted and private members are set - sealing baseapp
 	err := app.LoadLatestVersion(capKey) // needed to make stores non-nil
@@ -338,7 +324,10 @@ func TestInitChainer(t *testing.T) {
 
 	// reload app
 	app = NewBaseApp(name, logger, db, nil)
-	app.SetInitChainer(initChainer)
+	engine1 := protocol.NewProtocolEngine(pk)
+	engine1.Add(prot)
+	app.SetProtocolEngine(&engine)
+
 	app.MountStores(capKey, capKey2)
 	err = app.LoadLatestVersion(capKey) // needed to make stores non-nil
 	require.Nil(t, err)

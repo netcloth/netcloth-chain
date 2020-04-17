@@ -21,7 +21,7 @@ const (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	ipalQueryCmd := &cobra.Command{
+	queryCmd := &cobra.Command{
 		Use:                        upgtypes.ModuleName,
 		Short:                      "Querying commands for upgrade",
 		DisableFlagParsing:         true,
@@ -29,12 +29,12 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	ipalQueryCmd.AddCommand(client.GetCommands(
+	queryCmd.AddCommand(client.GetCommands(
 		GetInfoCmd(queryRoute, cdc),
 		GetCmdQuerySignals(queryRoute, cdc),
 	)...)
 
-	return ipalQueryCmd
+	return queryCmd
 
 }
 
@@ -89,17 +89,17 @@ func GetCmdQuerySignals(storeName string, cdc *codec.Codec) *cobra.Command {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res_upgradeConfig, _, err := cliCtx.QueryStore(sdk.UpgradeConfigKey, sdk.MainStore)
+			resUpgradeconfig, _, err := cliCtx.QueryStore(sdk.UpgradeConfigKey, sdk.MainStore)
 			if err != nil {
 				return err
 			}
-			if len(res_upgradeConfig) == 0 {
+			if len(resUpgradeconfig) == 0 {
 				fmt.Println("No Software Upgrade Switch Period is in process.")
 				return err
 			}
 
 			var upgradeConfig sdk.UpgradeConfig
-			if err = cdc.UnmarshalBinaryLengthPrefixed(res_upgradeConfig, &upgradeConfig); err != nil {
+			if err = cdc.UnmarshalBinaryLengthPrefixed(resUpgradeconfig, &upgradeConfig); err != nil {
 				return err
 			}
 

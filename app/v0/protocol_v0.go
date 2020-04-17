@@ -311,6 +311,7 @@ func (p *ProtocolV0) configModuleManager() {
 		vm.ModuleName,
 		types.ModuleName,
 		guardian.ModuleName,
+		upgrade.ModuleName,
 	)
 
 	p.moduleManager = moduleManager

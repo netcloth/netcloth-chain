@@ -1,14 +1,22 @@
-package lcd
+package rest
 
 import (
-	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	upgcli "github.com/netcloth/netcloth-chain/app/v0/upgrade/client"
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/client/context"
-	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
+
+func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc(
+		"/upgrade/info",
+		InfoHandlerFn(cliCtx),
+	).Methods("GET")
+}
 
 type VersionInfo struct {
 	Version        string `json:"version"`
@@ -17,18 +25,18 @@ type VersionInfo struct {
 	ProposalId     int64  `json:"proposal_id"`
 }
 
-func InfoHandlerFn(cliCtx context.CLIContext, cdc *codec.Codec, storeName string) http.HandlerFunc {
+func InfoHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		cdc := cliCtx.Codec
 		resCurrentversion, _, _ := cliCtx.QueryStore(sdk.CurrentVersionKey, sdk.MainStore)
 		var currentVersion uint64
 		cdc.MustUnmarshalBinaryLengthPrefixed(resCurrentversion, &currentVersion)
 
-		resProposalid, _, _ := cliCtx.QueryStore(types.GetSuccessVersionKey(currentVersion), storeName)
+		resProposalid, _, _ := cliCtx.QueryStore(types.GetSuccessVersionKey(currentVersion), "upgrade")
 		var proposalID uint64
 		cdc.MustUnmarshalBinaryLengthPrefixed(resProposalid, &proposalID)
 
-		resCurrentversioninfo, _, err := cliCtx.QueryStore(types.GetProposalIDKey(proposalID), storeName)
+		resCurrentversioninfo, _, err := cliCtx.QueryStore(types.GetProposalIDKey(proposalID), "upgrade")
 		var currentVersionInfo types.VersionInfo
 		cdc.MustUnmarshalBinaryLengthPrefixed(resCurrentversioninfo, &currentVersionInfo)
 

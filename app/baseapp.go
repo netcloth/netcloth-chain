@@ -106,6 +106,11 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*Base
 	return app
 }
 
+func (app *BaseApp) WithEngine(engine *protocol.ProtocolEngine) *BaseApp {
+	app.Engine = engine
+	return app
+}
+
 func (app *BaseApp) Name() string {
 	return app.name
 }

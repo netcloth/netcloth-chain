@@ -7,10 +7,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-
 	"github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/app/v0/upgrade/client/cli"
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade/client/rest"
 	upgtypes "github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -42,8 +42,8 @@ func (a AppModuleBasic) ValidateGenesis(d json.RawMessage) error {
 	return json.Unmarshal(d, &gs)
 }
 
-func (a AppModuleBasic) RegisterRESTRoutes(context.CLIContext, *mux.Router) {
-	panic("implement me")
+func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 func (a AppModuleBasic) GetTxCmd(*codec.Codec) *cobra.Command {

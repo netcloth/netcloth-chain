@@ -42,7 +42,6 @@ func (a AppModuleBasic) ValidateGenesis(d json.RawMessage) error {
 }
 
 func (a AppModuleBasic) RegisterRESTRoutes(context.CLIContext, *mux.Router) {
-	panic("implement me")
 }
 
 func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
