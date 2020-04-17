@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,8 +32,8 @@ func VMCmd(cdc *codec.Codec) *cobra.Command {
 func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
-		Short:   "Create a contract",
-		Example: "nchcli vm create --from=<user key name> --amount=<amount> --code_file=<code file> --args=<args>",
+		Short:   "Create and sign a create contract tx",
+		Example: "nchcli vm create --from=<user key name> --code_file=<code file> --amount=<amount> --args='arg1 arg2 arg3' --abi_file=<abi_file>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -55,13 +54,18 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			argsString := viper.GetString(flagArgs)
-			if len(argsString) != 0 {
-				argsBin, err := hex.DecodeString(argsString)
+			var payload []byte
+			argList := viper.GetStringSlice(flagArgs)
+			if len(argList) != 0 {
+				abiFile := viper.GetString(flagAbiFile)
+				if len(abiFile) == 0 {
+					return errors.New(fmt.Sprintf("must use --abi_file to appoint abi file when use constructor params\n"))
+				}
+				payload, _, err = GenPayload(abiFile, "", argList)
 				if err != nil {
 					return err
 				}
-				code = append(code, argsBin...)
+				code = append(code, payload...)
 			}
 
 			msg := types.NewMsgContract(cliCtx.GetFromAddress(), nil, code, coin)
@@ -73,9 +77,10 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flagCodeFile, "", "contract code file")
-	cmd.Flags().String(flagArgs, "", "contract construct function arg list, e.g. [constructor(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
-	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
+	cmd.Flags().String(flagCodeFile, "", "contract code file path")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file")
+	cmd.Flags().String(flagArgs, "", "contract method arg list (e.g. --args='arg1 arg2 arg3')")
+	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. 100pnch)")
 
 	cmd.MarkFlagRequired(flagCodeFile)
 
@@ -87,8 +92,8 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "call",
-		Short:   "call a contract",
-		Example: "nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --amount=<amount> --abi_file=<abi_file> --method=<method> --args=<args>",
+		Short:   "Create and sign a call contract tx",
+		Example: `nchcli vm call --from=<user key name> --contract_addr=<contract_addr> --method=<method> --abi_file=<abi_file>  --args='arg1 arg2 arg3' --amount=<amount> `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -104,41 +109,16 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			abiFile := viper.GetString(flagAbiFile)
-			abiObj, err := AbiFromFile(abiFile)
-			if err != nil {
-				return err
-			}
-
 			method := viper.GetString(flagMethod)
-			argsString := viper.GetString(flagArgs)
-			argsBinary, err := hex.DecodeString(argsString)
+			argList := viper.GetStringSlice(flagArgs)
+			payload, _, err := GenPayload(abiFile, method, argList)
 			if err != nil {
 				return err
-			}
-
-			m, exist := abiObj.Methods[method]
-			var payload []byte
-			if exist {
-				//if len(m.Inputs) != len(argsBinary)/32 {
-				//	return errors.New(fmt.Sprint("args count dismatch"))
-				//}
-
-				readyArgs, err := m.Inputs.UnpackValues(argsBinary)
-				if err != nil {
-					return err
-				}
-
-				payload, err = abiObj.Pack(method, readyArgs...)
-				if err != nil {
-					return err
-				}
-			} else {
-				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
 			dump := make([]byte, len(payload)*2)
 			hex.Encode(dump[:], payload)
-			fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
+			//fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
 
 			contractAddr, err := sdk.AccAddressFromBech32(viper.GetString(flagContractAddr))
 			if err != nil {
@@ -155,10 +135,10 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	cmd.Flags().String(flagContractAddr, "", "contract bech32 addr")
-	cmd.Flags().String(flagAmount, "", "send tokens to contract amount (e.g. 1000000pnch)")
+	cmd.Flags().String(flagAmount, "", "amount of coins to send (e.g. 1000000pnch)")
 	cmd.Flags().String(flagMethod, "", "contract method")
-	cmd.Flags().String(flagArgs, "", "contract method arg list, e.g. [f(a uint, b uint) a=1,b=1] --> 00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001")
-	cmd.Flags().String(flagAbiFile, "", "contract abi file")
+	cmd.Flags().String(flagArgs, "", "contract method arg list")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file path")
 
 	cmd.MarkFlagRequired(flagContractAddr)
 	cmd.MarkFlagRequired(flagMethod)

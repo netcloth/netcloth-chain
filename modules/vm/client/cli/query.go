@@ -9,10 +9,14 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	"github.com/netcloth/netcloth-chain/modules/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
@@ -315,13 +319,13 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 }
 
 func GetCmdQueryCall(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "call [from] [to] [method] [args] [amount] [abi_file]",
 		Short: "Querying fee to call contract",
-		Long: strings.TrimSpace(fmt.Sprintf(`call contract for local query.
+		Long: strings.TrimSpace(fmt.Sprintf(`call contract for query, don't create a transaction.
 Example:
-$ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf 0000000000000000000000000000000000000000000000000000000000000001 0pnch ./demo.abi`, version.ClientName)),
-		Args: cobra.ExactArgs(6),
+$ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz4745d63dtnpl8uwsramfgz8snr5 balanceOf ./demo.abi --amount=0pnch --args="arg1 arg2"`, version.ClientName)),
+		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
@@ -335,35 +339,10 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 				return err
 			}
 
-			abiObj, err := AbiFromFile(args[5])
+			argList := viper.GetStringSlice(flagArgs)
+			payload, m, err := GenPayload(args[3], args[2], argList)
 			if err != nil {
 				return err
-			}
-
-			argsBin, err := hex.DecodeString(args[3])
-			if err != nil {
-				return err
-			}
-
-			method := args[2]
-			m, exist := abiObj.Methods[method]
-			var payload []byte
-			if exist {
-				if len(m.Inputs) != len(argsBin)/32 {
-					//return errors.New(fmt.Sprint("args count dismatch"))
-				}
-
-				readyArgs, err := m.Inputs.UnpackValues(argsBin)
-				if err != nil {
-					return err
-				}
-
-				payload, err = abiObj.Pack(method, readyArgs...)
-				if err != nil {
-					return err
-				}
-			} else {
-				return errors.New(fmt.Sprintf("method %s not exist\n", method))
 			}
 
 			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
@@ -379,7 +358,40 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 
 			var out types.SimulationResult
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(out)
+
+			d, err := hexutil.Decode(out.Res)
+			if err != nil {
+				return cliCtx.PrintOutput(out)
+			}
+
+			var result types.VMQueryResult
+			result.Gas = out.Gas
+			result.Result, err = m.Outputs.UnpackValues(d)
+			if err != nil {
+				return err
+			}
+
+			for i := 0; i < len(m.Outputs); i++ {
+				if m.Outputs[i].Type.String() == "address" {
+					var addr sdk.AccAddress
+					if ethAddr, ok := result.Result[i].(common.Address); ok {
+						addr = append(addr[:], ethAddr.Bytes()...)
+						result.Result[i] = addr.String()
+					}
+				}
+			}
+
+			fmt.Println(result)
+
+			return nil
+
 		},
 	}
+
+	cmd.Flags().String(flagCodeFile, "", "contract code file path")
+	cmd.Flags().String(flagAbiFile, "", "contract abi file")
+	cmd.Flags().String(flagArgs, "", "contract method arg list (e.g. --args='arg1 arg2 arg3')(default \"\")")
+	cmd.Flags().String(flagAmount, "0pnch", "amount of coins to send (e.g. --amount=100pnch)")
+
+	return cmd
 }
