@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	// ModuleName is the name of the module
-	ModuleName = "gov"
+	ModuleName = protocol.GovModuleName
 
 	// StoreKey is the store key string for gov
 	StoreKey = ModuleName
