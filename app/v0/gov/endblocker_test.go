@@ -1,6 +1,7 @@
 package gov
 
 import (
+	"github.com/netcloth/netcloth-chain/mock"
 	"testing"
 	"time"
 
@@ -20,6 +21,56 @@ func TestTickExpiredDepositPeriod(t *testing.T) {
 
 	ctx := input.mApp.BaseApp.NewContext(false, abci.Header{})
 	govHandler := NewHandler(input.keeper)
+
+	inactiveQueue := input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+	require.False(t, inactiveQueue.Valid())
+	inactiveQueue.Close()
+
+	newProposalMsg := NewMsgSubmitProposal(
+		ContentFromProposalType("test", "test", ProposalTypeText),
+		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
+		input.addrs[0],
+	)
+
+	res := govHandler(ctx, newProposalMsg)
+	require.True(t, res.IsOK())
+
+	inactiveQueue = input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+	require.False(t, inactiveQueue.Valid())
+	inactiveQueue.Close()
+
+	newHeader := ctx.BlockHeader()
+	newHeader.Time = ctx.BlockHeader().Time.Add(time.Duration(1) * time.Second)
+	ctx = ctx.WithBlockHeader(newHeader)
+
+	inactiveQueue = input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+	require.False(t, inactiveQueue.Valid())
+	inactiveQueue.Close()
+
+	newHeader = ctx.BlockHeader()
+	newHeader.Time = ctx.BlockHeader().Time.Add(input.keeper.GetDepositParams(ctx).MaxDepositPeriod)
+	ctx = ctx.WithBlockHeader(newHeader)
+
+	inactiveQueue = input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+	require.True(t, inactiveQueue.Valid())
+	inactiveQueue.Close()
+
+	EndBlocker(ctx, input.keeper)
+
+	inactiveQueue = input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+	require.False(t, inactiveQueue.Valid())
+	inactiveQueue.Close()
+}
+
+func TestTickExpiredDepositPeriod2(t *testing.T) {
+	logger, db, app := mock.SetupMockApp()
+
+	header := abci.Header{Height: app.LastBlockHeight() + 1}
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+
+	ctx := app.BaseApp.NewContext(false, abci.Header{})
+	govHandler := NewHandler(app.Engine.GetCurrentProtocol())
+	app.Engine.GetCurrentProtocol().
 
 	inactiveQueue := input.keeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
 	require.False(t, inactiveQueue.Valid())
