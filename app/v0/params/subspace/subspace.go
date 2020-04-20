@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store/prefix"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	// StoreKey is the string store key for the param store
-	StoreKey = "params"
-
-	// TStoreKey is the string store key for the param transient store
-	TStoreKey = "transient_params"
+	StoreKey  = protocol.ParamsStoreKey
+	TStoreKey = protocol.ParamsTStoreKey
 )
 
 // Individual parameter store for each keeper

@@ -1,21 +1,22 @@
 package types
 
 import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
 	// module name
-	ModuleName = "auth"
+	ModuleName = protocol.AuthModuleName
 
 	// StoreKey is string representation of the store key for auth
-	StoreKey = "acc"
+	StoreKey = ModuleName
 
 	// FeeCollectorName the root string for the fee collector account address
 	FeeCollectorName = "fee_collector"
 
 	// QuerierRoute is the querier route for acc
-	QuerierRoute = StoreKey
+	QuerierRoute = ModuleName
 
 	RefundKey = "refund_fee"
 )

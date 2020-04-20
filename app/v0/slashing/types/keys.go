@@ -3,12 +3,12 @@ package types
 import (
 	"encoding/binary"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	// module name
-	ModuleName = "slashing"
+	ModuleName = protocol.SlashingModuleName
 
 	// StoreKey is the store key string for slashing
 	StoreKey = ModuleName

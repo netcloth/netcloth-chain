@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/netcloth/netcloth-chain/app/protocol"
 )
 
 const (
-	ModuleName   = "upgrade"
+	ModuleName   = protocol.UpgradeModuleName
 	StoreKey     = ModuleName
 	RouterKey    = ModuleName
 	QuerierRoute = ModuleName

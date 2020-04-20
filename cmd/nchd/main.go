@@ -25,7 +25,6 @@ import (
 )
 
 const (
-	flagOverwrite      = "overwrite"
 	flagMinGasPrices   = "minimum-gas-prices"
 	flagInvCheckPeriod = "inv-check-period"
 )

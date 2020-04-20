@@ -1,9 +1,11 @@
 package types
 
-// nolint
+import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
+)
+
 const (
-	// module name
-	ModuleName = "mint"
+	ModuleName = protocol.MintModuleName
 
 	// default paramspace for params keeper
 	DefaultParamspace = ModuleName

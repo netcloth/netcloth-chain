@@ -10,12 +10,10 @@ import (
 )
 
 const (
-	StoreKey           = subspace.StoreKey
-	TStoreKey          = subspace.TStoreKey
-	TestParamStore     = subspace.TestParamStore
-	ModuleName         = types.ModuleName
-	RouterKey          = types.RouterKey
-	ProposalTypeChange = types.ProposalTypeChange
+	StoreKey   = subspace.StoreKey
+	TStoreKey  = subspace.TStoreKey
+	ModuleName = types.ModuleName
+	RouterKey  = types.RouterKey
 )
 
 var (

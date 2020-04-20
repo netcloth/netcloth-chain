@@ -15,7 +15,7 @@ type Router struct {
 
 var _ sdk.Router = NewRouter()
 
-func NewRouter() *Router { // nolint: golint
+func NewRouter() *Router {
 	return &Router{
 		routes: make(map[string]sdk.Handler),
 	}

@@ -4,24 +4,16 @@ import (
 	"encoding/binary"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	// ModuleName is the name of the staking module
-	ModuleName = "staking"
-
-	// StoreKey is the string store representation
-	StoreKey = ModuleName
-
-	// TStoreKey is the string transient store representation
-	TStoreKey = "transient_" + ModuleName
-
-	// QuerierRoute is the querier route for the staking module
+	ModuleName   = protocol.StakingModuleName
+	StoreKey     = ModuleName
+	TStoreKey    = protocol.StakingTStoreKey
 	QuerierRoute = ModuleName
-
-	// RouterKey is the msg router key for the staking module
-	RouterKey = ModuleName
+	RouterKey    = ModuleName
 )
 
 //nolint

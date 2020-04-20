@@ -4,11 +4,12 @@ import (
 	"encoding/binary"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	ModuleName   = "ipal"
+	ModuleName   = protocol.IpalModuleName
 	StoreKey     = ModuleName
 	RouterKey    = ModuleName
 	QuerierRoute = ModuleName

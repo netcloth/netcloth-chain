@@ -212,7 +212,7 @@ func (p *ProtocolV0) configKeepers() {
 	p.accountKeeper = auth.NewAccountKeeper(p.cdc, protocol.Keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	p.refundKeeper = auth.NewRefundKeeper(p.cdc, protocol.Keys[auth.RefundKey])
 	p.bankKeeper = bank.NewBaseKeeper(p.accountKeeper, bankSubspace, ModuleAccountAddrs())
-	p.supplyKeeper = supply.NewKeeper(p.cdc, protocol.Keys[supply.StoreKey], p.accountKeeper, p.bankKeeper, maccPerms)
+	p.supplyKeeper = supply.NewKeeper(p.cdc, protocol.Keys[protocol.SupplyStoreKey], p.accountKeeper, p.bankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(
 		p.cdc, protocol.Keys[staking.StoreKey], protocol.TKeys[staking.TStoreKey],
 		p.supplyKeeper, stakingSubspace)
@@ -236,9 +236,9 @@ func (p *ProtocolV0) configKeepers() {
 
 	p.vmKeeper = vm.NewKeeper(
 		p.cdc,
-		protocol.Keys[protocol.VMStoreKey],
-		protocol.Keys[protocol.VMCodeKey],
-		protocol.Keys[protocol.VMStoreKey],
+		protocol.Keys[protocol.VmStoreKey],
+		protocol.Keys[protocol.VmCodeStoreKey],
+		protocol.Keys[protocol.VmStoreKey],
 		vmSubspace,
 		auth.NewAccountKeeperCopy(p.accountKeeper, true))
 

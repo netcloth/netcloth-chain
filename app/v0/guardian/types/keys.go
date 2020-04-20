@@ -1,11 +1,12 @@
 package types
 
 import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 const (
-	ModuleName   = "guardian"
+	ModuleName   = protocol.GuardianModuleName
 	StoreKey     = ModuleName
 	RouterKey    = ModuleName
 	QuerierRoute = ModuleName

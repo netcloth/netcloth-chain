@@ -1,8 +1,11 @@
 package types
 
+import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
+)
+
 const (
-	// ModuleName is the module name constant used in many places
-	ModuleName = "distribution"
+	ModuleName = protocol.DistributionModuleName
 
 	// StoreKey is the store key string for distribution
 	StoreKey = ModuleName

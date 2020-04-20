@@ -1,7 +1,11 @@
 package types
 
+import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
+)
+
 const (
-	ModuleName   = "cipal"
+	ModuleName   = protocol.CIpalModuleName
 	StoreKey     = ModuleName
 	RouterKey    = ModuleName
 	QuerierRoute = ModuleName
