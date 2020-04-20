@@ -1,6 +1,7 @@
-package gov
+package tests
 
 import (
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,8 +10,8 @@ import (
 )
 
 func TestEqualProposalID(t *testing.T) {
-	state1 := GenesisState{}
-	state2 := GenesisState{}
+	state1 := gov.GenesisState{}
+	state2 := gov.GenesisState{}
 	require.Equal(t, state1, state2)
 
 	// Proposals
@@ -25,7 +26,7 @@ func TestEqualProposalID(t *testing.T) {
 
 func TestEqualProposals(t *testing.T) {
 	// Generate mock app and keepers
-	input := getMockApp(t, 2, GenesisState{}, nil)
+	input := getMockApp(t, 2, gov.GenesisState{}, nil)
 	SortAddresses(input.addrs)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
@@ -45,8 +46,8 @@ func TestEqualProposals(t *testing.T) {
 	require.False(t, ProposalEqual(proposal1, proposal2))
 
 	// Now create two genesis blocks
-	state1 := GenesisState{Proposals: []Proposal{proposal1}}
-	state2 := GenesisState{Proposals: []Proposal{proposal2}}
+	state1 := gov.GenesisState{Proposals: []gov.Proposal{proposal1}}
+	state2 := gov.GenesisState{Proposals: []gov.Proposal{proposal2}}
 	require.NotEqual(t, state1, state2)
 	require.False(t, state1.Equal(state2))
 
@@ -67,7 +68,7 @@ func TestEqualProposals(t *testing.T) {
 
 func TestImportExportQueues(t *testing.T) {
 	// Generate mock app and keepers
-	input := getMockApp(t, 2, GenesisState{}, nil)
+	input := getMockApp(t, 2, gov.GenesisState{}, nil)
 	SortAddresses(input.addrs)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
@@ -93,13 +94,13 @@ func TestImportExportQueues(t *testing.T) {
 	require.True(t, ok)
 	proposal2, ok = input.keeper.GetProposal(ctx, proposalID2)
 	require.True(t, ok)
-	require.True(t, proposal1.Status == StatusDepositPeriod)
-	require.True(t, proposal2.Status == StatusVotingPeriod)
+	require.True(t, proposal1.Status == gov.StatusDepositPeriod)
+	require.True(t, proposal2.Status == gov.StatusVotingPeriod)
 
 	genAccs := input.mApp.AccountKeeper.GetAllAccounts(ctx)
 
 	// Export the state and import it into a new Mock App
-	genState := ExportGenesis(ctx, input.keeper)
+	genState := gov.ExportGenesis(ctx, input.keeper)
 	input2 := getMockApp(t, 2, genState, genAccs)
 
 	header = abci.Header{Height: input.mApp.LastBlockHeight() + 1}
@@ -115,17 +116,17 @@ func TestImportExportQueues(t *testing.T) {
 	require.True(t, ok)
 	proposal2, ok = input2.keeper.GetProposal(ctx2, proposalID2)
 	require.True(t, ok)
-	require.True(t, proposal1.Status == StatusDepositPeriod)
-	require.True(t, proposal2.Status == StatusVotingPeriod)
+	require.True(t, proposal1.Status == gov.StatusDepositPeriod)
+	require.True(t, proposal2.Status == gov.StatusVotingPeriod)
 
 	require.Equal(t, input2.keeper.GetDepositParams(ctx2).MinDeposit, input2.keeper.GetGovernanceAccount(ctx2).GetCoins())
 
 	// Run the endblocker. Check to make sure that proposal1 is removed from state, and proposal2 is finished VotingPeriod.
-	EndBlocker(ctx2, input2.keeper)
+	gov.EndBlocker(ctx2, input2.keeper)
 
 	proposal1, ok = input2.keeper.GetProposal(ctx2, proposalID1)
 	require.False(t, ok)
 	proposal2, ok = input2.keeper.GetProposal(ctx2, proposalID2)
 	require.True(t, ok)
-	require.True(t, proposal2.Status == StatusRejected)
+	require.True(t, proposal2.Status == gov.StatusRejected)
 }

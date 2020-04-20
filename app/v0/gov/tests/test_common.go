@@ -1,8 +1,9 @@
-package gov
+package tests
 
 import (
 	"bytes"
 	"errors"
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"log"
 	"sort"
 	"testing"
@@ -33,15 +34,15 @@ var (
 
 type testInput struct {
 	mApp     *mock.App
-	keeper   Keeper
-	router   Router
+	keeper   gov.Keeper
+	router   gov.Router
 	sk       staking.Keeper
 	addrs    []sdk.AccAddress
 	pubKeys  []crypto.PubKey
 	privKeys []crypto.PrivKey
 }
 
-func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []auth.Account) testInput {
+func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs []auth.Account) testInput {
 	mApp := mock.NewApp()
 
 	staking.RegisterCodec(mApp.Cdc)
@@ -50,7 +51,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 
 	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
 	tKeyStaking := sdk.NewTransientStoreKey(staking.TStoreKey)
-	keyGov := sdk.NewKVStoreKey(StoreKey)
+	keyGov := sdk.NewKVStoreKey(gov.StoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	govAcc := supply.NewEmptyModuleAccount(types.ModuleName, supply.Burner)
@@ -64,8 +65,8 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 
 	pk := mApp.ParamsKeeper
 
-	rtr := NewRouter().
-		AddRoute(RouterKey, ProposalHandler)
+	rtr := gov.NewRouter().
+		AddRoute(gov.RouterKey, ProposalHandler)
 
 	bk := bank.NewBaseKeeper(mApp.AccountKeeper, mApp.ParamsKeeper.Subspace(bank.DefaultParamspace), blacklistedAddrs)
 
@@ -77,10 +78,10 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 	supplyKeeper := supply.NewKeeper(mApp.Cdc, keySupply, mApp.AccountKeeper, bk, maccPerms)
 	sk := staking.NewKeeper(mApp.Cdc, keyStaking, tKeyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 
-	keeper := NewKeeper(mApp.Cdc, keyGov, pk.Subspace(DefaultParamspace), supplyKeeper, sk, rtr)
+	keeper := gov.NewKeeper(mApp.Cdc, keyGov, pk.Subspace(gov.DefaultParamspace), supplyKeeper, sk, rtr)
 
-	mApp.Router().AddRoute(RouterKey, NewHandler(keeper))
-	mApp.QueryRouter().AddRoute(QuerierRoute, NewQuerier(keeper))
+	mApp.Router().AddRoute(gov.RouterKey, gov.NewHandler(keeper))
+	mApp.QueryRouter().AddRoute(gov.QuerierRoute, gov.NewQuerier(keeper))
 
 	mApp.SetEndBlocker(getEndBlocker(keeper))
 	mApp.SetInitChainer(getInitChainer(mApp, keeper, sk, supplyKeeper, genAccs, genState,
@@ -104,15 +105,15 @@ func getMockApp(t *testing.T, numGenAccs int, genState GenesisState, genAccs []a
 }
 
 // gov and staking endblocker
-func getEndBlocker(keeper Keeper) sdk.EndBlocker {
+func getEndBlocker(keeper gov.Keeper) sdk.EndBlocker {
 	return func(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-		EndBlocker(ctx, keeper)
+		gov.EndBlocker(ctx, keeper)
 		return abci.ResponseEndBlock{}
 	}
 }
 
 // gov and staking initchainer
-func getInitChainer(mapp *mock.App, keeper Keeper, stakingKeeper staking.Keeper, supplyKeeper supply.Keeper, accs []auth.Account, genState GenesisState,
+func getInitChainer(mapp *mock.App, keeper gov.Keeper, stakingKeeper staking.Keeper, supplyKeeper supply.Keeper, accs []auth.Account, genState gov.GenesisState,
 	blacklistedAddrs []supplyexported.ModuleAccountI) sdk.InitChainer {
 	return func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 		mapp.InitChainer(ctx, req)
@@ -129,9 +130,9 @@ func getInitChainer(mapp *mock.App, keeper Keeper, stakingKeeper staking.Keeper,
 
 		validators := staking.InitGenesis(ctx, stakingKeeper, mapp.AccountKeeper, supplyKeeper, stakingGenesis)
 		if genState.IsEmpty() {
-			InitGenesis(ctx, keeper, supplyKeeper, DefaultGenesisState())
+			gov.InitGenesis(ctx, keeper, supplyKeeper, gov.DefaultGenesisState())
 		} else {
-			InitGenesis(ctx, keeper, supplyKeeper, genState)
+			gov.InitGenesis(ctx, keeper, supplyKeeper, genState)
 		}
 		return abci.ResponseInitChain{
 			Validators: validators,
@@ -182,8 +183,8 @@ func SortByteArrays(src [][]byte) [][]byte {
 	return sorted
 }
 
-func testProposal() Content {
-	return NewTextProposal("Test", "description")
+func testProposal() gov.Content {
+	return gov.NewTextProposal("Test", "description")
 }
 
 const contextKeyBadProposal = "contextKeyBadProposal"
@@ -191,9 +192,9 @@ const contextKeyBadProposal = "contextKeyBadProposal"
 // badProposalHandler implements a governance proposal handler that is identical
 // to the actual handler except this fails if the context doesn't contain a value
 // for the key contextKeyBadProposal or if the value is false.
-func badProposalHandler(ctx sdk.Context, c Content) error {
+func badProposalHandler(ctx sdk.Context, c gov.Content) error {
 	switch c.ProposalType() {
-	case ProposalTypeText, ProposalTypeSoftwareUpgrade:
+	case gov.ProposalTypeText, gov.ProposalTypeSoftwareUpgrade:
 		v := ctx.Value(contextKeyBadProposal)
 
 		if v == nil || !v.(bool) {
@@ -208,7 +209,7 @@ func badProposalHandler(ctx sdk.Context, c Content) error {
 }
 
 // checks if two proposals are equal (note: slow, for tests only)
-func ProposalEqual(proposalA Proposal, proposalB Proposal) bool {
+func ProposalEqual(proposalA gov.Proposal, proposalB gov.Proposal) bool {
 	return bytes.Equal(types.ModuleCdc.MustMarshalBinaryBare(proposalA),
 		types.ModuleCdc.MustMarshalBinaryBare(proposalB))
 }

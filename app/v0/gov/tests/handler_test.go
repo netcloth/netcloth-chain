@@ -1,6 +1,7 @@
-package gov
+package tests
 
 import (
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"strings"
 	"testing"
 
@@ -13,8 +14,8 @@ import (
 )
 
 func TestInvalidMsg(t *testing.T) {
-	k := Keeper{}
-	h := NewHandler(k)
+	k := gov.Keeper{}
+	h := gov.NewHandler(k)
 
 	res, err := h(sdk.NewContext(nil, abci.Header{}, false, nil), sdk.NewTestMsg())
 	require.Error(t, err)
