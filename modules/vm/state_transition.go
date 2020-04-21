@@ -30,8 +30,8 @@ func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
 	st.StateDB.AddBalance(to, amount)
 }
 
-func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash {
-	return func(n uint64) sdk.Hash {
+func (st StateTransition) GetHashFn(header abci.Header) func() sdk.Hash {
+	return func() sdk.Hash {
 		var res = sdk.Hash{}
 		blockID := header.GetLastBlockId()
 		res.SetBytes(blockID.GetHash())
