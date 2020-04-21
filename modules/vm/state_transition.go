@@ -76,10 +76,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
 
 		if vmerr == ErrExecutionReverted {
-			ctx.Logger().Info(fmt.Sprintf("VM error: revert. Reason provided by the contract: %v", string(ret[4:])))
+			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %v", string(ret[4:])))
 		}
 
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %v, consumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
+		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %s, consumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	}
 
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
