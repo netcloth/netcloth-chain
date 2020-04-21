@@ -452,8 +452,11 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 			idxLog.Success = false
 			idxLog.Log = fmt.Sprintf("failed to execute message; message index: %d. error: %s", i, err.Error())
 			idxLogs = append(idxLogs, idxLog)
-
 			logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
+
+			if msgResult != nil {
+				data = append(data, msgResult.Data...)
+			}
 
 			return &sdk.Result{
 				Data:   data,
