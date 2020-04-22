@@ -30,8 +30,8 @@ func (st StateTransition) Transfer(from, to sdk.AccAddress, amount *big.Int) {
 	st.StateDB.AddBalance(to, amount)
 }
 
-func (st StateTransition) GetHashFn(header abci.Header) func(n uint64) sdk.Hash {
-	return func(n uint64) sdk.Hash {
+func (st StateTransition) GetHashFn(header abci.Header) func() sdk.Hash {
+	return func() sdk.Hash {
 		var res = sdk.Hash{}
 		blockID := header.GetLastBlockId()
 		res.SetBytes(blockID.GetHash())
@@ -74,12 +74,17 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v , leftOverGas = %v, err = %v\n", st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
+
+		if vmerr == ErrExecutionReverted {
+			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %v", string(ret[4:])))
+		}
+
+		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %s, consumed gas = %v , leftOverGas = %v, err = %v\n", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	}
 
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
 	if vmerr != nil {
-		return nil, nil, vmerr
+		return nil, &sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}, vmerr
 	}
 
 	st.StateDB.Finalise(true)
