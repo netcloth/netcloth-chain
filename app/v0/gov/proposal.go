@@ -160,7 +160,7 @@ func (keeper Keeper) setProposalID(ctx sdk.Context, proposalID uint64) {
 	store.Set(ProposalIDKey, bz)
 }
 
-func (keeper Keeper) activateVotingPeriod(ctx sdk.Context, proposal Proposal) {
+func (keeper Keeper) ActivateVotingPeriod(ctx sdk.Context, proposal Proposal) { //TODO rename to activateVotingPeriod
 	proposal.VotingStartTime = ctx.BlockHeader().Time
 	votingPeriod := keeper.GetVotingParams(ctx).VotingPeriod
 	proposal.VotingEndTime = proposal.VotingStartTime.Add(votingPeriod)
