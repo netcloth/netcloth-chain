@@ -326,7 +326,7 @@ func registerTestCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(invalidProposalValidation{}, "test/invalidproposalv", nil)
 }
 
-func TestSubmitProposal(t *testing.T) {
+func TestSubmitProposal(t *testing.T) { // TODO: fixme test failed
 	input := getMockApp(t, 1, gov.GenesisState{}, nil)
 
 	registerTestCodec(input.keeper.Getcdc())
