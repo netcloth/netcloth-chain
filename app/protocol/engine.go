@@ -41,6 +41,15 @@ func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64
 	return flag, current
 }
 
+func (pe *ProtocolEngine) LoadCurrentProtocolN(n uint64) (bool, uint64) {
+	p, flag := pe.protocols[n]
+	if flag == true {
+		p.Load()
+		pe.current = n
+	}
+	return flag, n
+}
+
 func (pe *ProtocolEngine) Activate(version uint64, ctx sdk.Context) bool {
 	p, flag := pe.protocols[version]
 	if flag == true {

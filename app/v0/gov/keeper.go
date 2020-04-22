@@ -297,3 +297,7 @@ func (keeper Keeper) SoftwareUpgradeClear(ctx sdk.Context) {
 	store := ctx.KVStore(keeper.storeKey)
 	store.Delete(types.SoftwareUpgradeKey)
 }
+
+func (keeper Keeper) Getcdc() *codec.Codec {
+	return keeper.cdc
+}
