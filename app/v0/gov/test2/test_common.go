@@ -8,6 +8,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/test2/mock/app"
 	v0 "github.com/netcloth/netcloth-chain/app/v0/gov/test2/mock/p0"
+	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -45,6 +46,7 @@ type testInput struct {
 	mApp     *app.NCHApp
 	keeper   gov.Keeper
 	sk       staking.Keeper
+	ak       auth.AccountKeeper
 	addrs    []sdk.AccAddress
 	pubKeys  []crypto.PubKey
 	privKeys []crypto.PrivKey
@@ -74,7 +76,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	err := setGenesis(mApp, protocolV0.Cdc, genAccs)
 	require.Nil(t, err)
 
-	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, addrs, pubKeys, privKeys}
+	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
 }
 
 func NewNCHApp(t *testing.T) *app.NCHApp {
@@ -217,4 +219,9 @@ func badProposalHandler(ctx sdk.Context, c gov.Content, pid uint64, proposer sdk
 	default:
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
 	}
+}
+
+func ProposalEqual(proposalA gov.Proposal, proposalB gov.Proposal) bool {
+	return bytes.Equal(types.ModuleCdc.MustMarshalBinaryBare(proposalA),
+		types.ModuleCdc.MustMarshalBinaryBare(proposalB))
 }
