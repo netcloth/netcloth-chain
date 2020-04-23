@@ -24,4 +24,7 @@ type Protocol interface {
 	Load()
 	Init(ctx sdk.Context)
 	GetCodec() *codec.Codec
+
+	//for test
+	SetAnteHandler(anteHandler sdk.AnteHandler)
 }

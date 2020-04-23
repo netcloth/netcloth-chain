@@ -105,9 +105,7 @@ func NewNCHApp(t *testing.T) *app.NCHApp {
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	var app = &app.NCHApp{baseApp, nil}
-
-	return app
+	return &app.NCHApp{BaseApp: baseApp}
 }
 
 func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account) error {

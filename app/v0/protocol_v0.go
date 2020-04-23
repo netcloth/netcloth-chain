@@ -339,3 +339,13 @@ func (p *ProtocolV0) configFeeHandlers() {
 	p.anteHandler = ante.NewAnteHandler(p.accountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
 	p.feeRefundHandler = auth.NewFeeRefundHandler(p.accountKeeper, p.supplyKeeper, p.refundKeeper)
 }
+
+//for test
+
+func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
+	p.initChainer = initChainer
+}
+
+func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
+	p.anteHandler = anteHandler
+}

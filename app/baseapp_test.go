@@ -288,11 +288,12 @@ func TestInitChainer(t *testing.T) {
 		Data: key,
 	}
 
-	prot := v0.NewProtocolV0()
-
 	pk := sdk.NewProtocolKeeper(sdk.NewKVStoreKey("protocol"))
+
+	protocolV0 := v0.NewProtocolV0(0, logger, pk, app.DeliverTx, 10, nil)
+
 	engine := protocol.NewProtocolEngine(pk)
-	engine.Add(prot)
+	engine.Add(protocolV0)
 	app.SetProtocolEngine(&engine)
 
 	// initChainer is nil - nothing happens
@@ -301,7 +302,7 @@ func TestInitChainer(t *testing.T) {
 	require.Equal(t, 0, len(res.Value))
 
 	// set initChainer and try again - should see the value
-	prot.initChainer = initChainer
+	protocolV0.SetInitChainer(initChainer)
 
 	// stores are mounted and private members are set - sealing baseapp
 	err := app.LoadLatestVersion(capKey) // needed to make stores non-nil
@@ -325,7 +326,7 @@ func TestInitChainer(t *testing.T) {
 	// reload app
 	app = NewBaseApp(name, logger, db, nil)
 	engine1 := protocol.NewProtocolEngine(pk)
-	engine1.Add(prot)
+	engine1.Add(protocolV0)
 	app.SetProtocolEngine(&engine)
 
 	app.MountStores(capKey, capKey2)
@@ -528,7 +529,10 @@ func TestCheckTx(t *testing.T) {
 	// This ensures changes to the kvstore persist across successive CheckTx.
 	counterKey := []byte("counter-key")
 
-	anteOpt := func(bapp *BaseApp) { bapp.SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey)) }
+	anteOpt := func(bapp *BaseApp) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey))
+	}
+
 	routerOpt := func(bapp *BaseApp) {
 		// TODO: can remove this once CheckTx doesnt process msgs.
 		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
@@ -575,7 +579,9 @@ func TestCheckTx(t *testing.T) {
 func TestDeliverTx(t *testing.T) {
 	// test increments in the ante
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) { bapp.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey)) }
+	anteOpt := func(bapp *BaseApp) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	}
 
 	// test increments in the handler
 	deliverKey := []byte("deliver-key")
@@ -623,7 +629,9 @@ func TestMultiMsgCheckTx(t *testing.T) {
 func TestMultiMsgDeliverTx(t *testing.T) {
 	// increment the tx counter
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) { bapp.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey)) }
+	anteOpt := func(bapp *BaseApp) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	}
 
 	// increment the msg counter
 	deliverKey := []byte("deliver-key")
@@ -698,7 +706,7 @@ func TestSimulateTx(t *testing.T) {
 	gasConsumed := uint64(5)
 
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasConsumed))
 			return
 		})
@@ -760,7 +768,7 @@ func TestSimulateTx(t *testing.T) {
 
 func TestRunInvalidTransaction(t *testing.T) {
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			return
 		})
 	}
@@ -862,7 +870,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 func TestTxGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
 			defer func() {
@@ -946,7 +954,7 @@ func TestTxGasLimits(t *testing.T) {
 func TestMaxBlockGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
 			defer func() {
@@ -1016,7 +1024,7 @@ func TestMaxBlockGasLimits(t *testing.T) {
 		for j := 0; j < tc.numDelivers; j++ {
 			_, result, err := app.Deliver(tx)
 
-			ctx := app.getState(app.runTxModeDeliver).ctx
+			ctx := app.getState(runTxModeDeliver).ctx
 
 			// check for failed transactions
 			if tc.fail && (j+1) > tc.failAfterDeliver {
@@ -1046,7 +1054,7 @@ func TestMaxBlockGasLimits(t *testing.T) {
 func TestBaseAppAnteHandler(t *testing.T) {
 	anteKey := []byte("ante-key")
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	deliverKey := []byte("deliver-key")
@@ -1074,7 +1082,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	res := app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
 	require.False(t, res.IsOK(), fmt.Sprintf("%v", res))
 
-	ctx := app.getState(app.runTxModeDeliver).ctx
+	ctx := app.getState(runTxModeDeliver).ctx
 	store := ctx.KVStore(capKey1)
 	require.Equal(t, int64(0), getIntFromStore(store, anteKey))
 
@@ -1089,7 +1097,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	res = app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
 	require.False(t, res.IsOK(), fmt.Sprintf("%v", res))
 
-	ctx = app.getState(app.runTxModeDeliver).ctx
+	ctx = app.getState(runTxModeDeliver).ctx
 	store = ctx.KVStore(capKey1)
 	require.Equal(t, int64(1), getIntFromStore(store, anteKey))
 	require.Equal(t, int64(0), getIntFromStore(store, deliverKey))
@@ -1104,7 +1112,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	res = app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
 	require.True(t, res.IsOK(), fmt.Sprintf("%v", res))
 
-	ctx = app.getState(app.runTxModeDeliver).ctx
+	ctx = app.getState(runTxModeDeliver).ctx
 	store = ctx.KVStore(capKey1)
 	require.Equal(t, int64(2), getIntFromStore(store, anteKey))
 	require.Equal(t, int64(1), getIntFromStore(store, deliverKey))
@@ -1117,7 +1125,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 func TestGasConsumptionBadTx(t *testing.T) {
 	gasWanted := uint64(5)
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasWanted))
 
 			defer func() {
@@ -1188,7 +1196,7 @@ func TestGasConsumptionBadTx(t *testing.T) {
 func TestQuery(t *testing.T) {
 	key, value := []byte("hello"), []byte("goodbye")
 	anteOpt := func(bapp *BaseApp) {
-		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			store := ctx.KVStore(capKey1)
 			store.Set(key, value)
 			return
@@ -1312,7 +1320,9 @@ func (rtr *testCustomRouter) Route(ctx sdk.Context, path string) sdk.Handler {
 func TestWithRouter(t *testing.T) {
 	// test increments in the ante
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) { bapp.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey)) }
+	anteOpt := func(bapp *BaseApp) {
+		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	}
 
 	// test increments in the handler
 	deliverKey := []byte("deliver-key")
