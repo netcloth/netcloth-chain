@@ -51,7 +51,7 @@ func setupTest() (stakingKeeper staking.Keeper, ctx sdk.Context) {
 	keys := sdk.NewKVStoreKeys(params.StoreKey, auth.StoreKey, supply.StoreKey, staking.StoreKey)
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey, staking.TStoreKey)
 
-	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey], params.DefaultCodespace)
+	paramsKeeper := params.NewKeeper(cdc, keys[params.StoreKey], tkeys[params.TStoreKey])
 
 	authSubspace := paramsKeeper.Subspace(auth.DefaultParamspace)
 	bankSubspace := paramsKeeper.Subspace(bank.DefaultParamspace)
@@ -67,9 +67,9 @@ func setupTest() (stakingKeeper staking.Keeper, ctx sdk.Context) {
 	ms.LoadLatestVersion()
 
 	accountKeeper := auth.NewAccountKeeper(cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, bank.DefaultCodespace, moduleAccountAddrs())
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, bankSubspace, moduleAccountAddrs())
 	supplyKeeper := supply.NewKeeper(cdc, keys[supply.StoreKey], accountKeeper, bankKeeper, maccPerms)
-	stakingKeeper = staking.NewKeeper(cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey], supplyKeeper, stakingSubspace, staking.DefaultCodespace)
+	stakingKeeper = staking.NewKeeper(cdc, keys[staking.StoreKey], tkeys[staking.TStoreKey], supplyKeeper, stakingSubspace)
 	ctx = sdk.NewContext(ms, abci.Header{Time: time.Unix(0, 0)}, false, log.NewTMLogger(os.Stdout))
 
 	return
@@ -79,10 +79,14 @@ func TestEndBlock(t *testing.T) {
 	k, ctx := setupTest()
 
 	p := staking.Params{
+		UnbondingTime:               100,
 		MaxValidators:               100,
 		MaxValidatorsExtending:      130,
 		MaxValidatorsExtendingSpeed: 10,
 		NextExtendingTime:           time.Now().Unix() + stakingtypes.MaxValidatorsExtendingInterval,
+		MaxEntries:                  100,
+		BondDenom:                   sdk.DefaultBondDenom,
+		MaxLever:                    sdk.NewDec(20),
 	}
 
 	k.SetParams(ctx, p)

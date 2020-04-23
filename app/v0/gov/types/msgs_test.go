@@ -25,7 +25,7 @@ func init() {
 }
 
 // test ValidateBasic for MsgCreateValidator
-func TestMsgSubmitProposal(t *testing.T) {
+func TestMsgSubmitProposal(t *testing.T) { // TODO fixme test failed
 	tests := []struct {
 		title, description string
 		proposalType       string
