@@ -28,7 +28,7 @@ func TestExport(t *testing.T) {
 func setGenesis(app *NCHApp) error {
 	genesisState := v0.NewDefaultGenesisState()
 
-	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
+	stateBytes, err := codec.MarshalJSONIndent(app.Engine.GetCurrentProtocol().GetCodec(), genesisState)
 	if err != nil {
 		return err
 	}
