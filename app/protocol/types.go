@@ -26,5 +26,8 @@ type Protocol interface {
 	GetCodec() *codec.Codec
 
 	//for test
+	SetRouter(sdk.Router)
+	SetQuearyRouter(sdk.QueryRouter)
 	SetAnteHandler(anteHandler sdk.AnteHandler)
+	SetInitChainer(sdk.InitChainer)
 }

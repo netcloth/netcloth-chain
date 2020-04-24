@@ -346,6 +346,14 @@ func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
 	p.initChainer = initChainer
 }
 
+func (p *ProtocolV0) SetRouter(router sdk.Router) {
+	p.router = router
+}
+
+func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+	p.queryRouter = queryRouter
+}
+
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
 }

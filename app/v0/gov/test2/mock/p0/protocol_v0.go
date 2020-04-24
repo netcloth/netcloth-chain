@@ -107,8 +107,20 @@ type ProtocolV0 struct {
 	invCheckPeriod uint
 }
 
+func (p *ProtocolV0) SetRouter(router sdk.Router) {
+	p.router = router
+}
+
+func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+	p.queryRouter = queryRouter
+}
+
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
+}
+
+func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
+	p.initChainer = initChainer
 }
 
 func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {

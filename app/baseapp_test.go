@@ -3,8 +3,8 @@ package app
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
-
 	"os"
 	"sync"
 	"testing"
@@ -13,14 +13,16 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/app/protocol"
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
+	"github.com/netcloth/netcloth-chain/app/v0/genutil"
 	"github.com/netcloth/netcloth-chain/codec"
 	store "github.com/netcloth/netcloth-chain/store/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 var (
@@ -37,7 +39,11 @@ func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
 	db := dbm.NewMemDB()
 	codec := codec.New()
 	registerTestCodec(codec)
-	return NewBaseApp(name, logger, db, options...)
+
+	bApp := NewBaseApp(name, logger, db, options...)
+	bApp.txDecoder = testTxDecoder(codec)
+
+	return bApp
 }
 
 func registerTestCodec(cdc *codec.Codec) {
@@ -64,6 +70,33 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
 	return app
 }
 
+func setupBaseApp2(t *testing.T, options ...func(*MockProtocolV0)) *BaseApp {
+	app := newBaseApp(t.Name())
+	require.Equal(t, t.Name(), app.Name())
+
+	require.Panics(t, func() {
+		app.LoadLatestVersion(capKey1)
+	})
+
+	app.MountStores(capKey1, capKey2)
+
+	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
+	engine := protocol.NewProtocolEngine(pk)
+	app.SetProtocolEngine(&engine)
+	mockProtocolV0 := newMockProtocolV0()
+	engine.Add(mockProtocolV0)
+	engine.LoadCurrentProtocolN(0)
+
+	for _, option := range options {
+		option(mockProtocolV0)
+	}
+
+	err := app.LoadLatestVersion(capKey1)
+	require.Nil(t, err)
+
+	return app
+}
+
 func TestMountStores(t *testing.T) {
 	app := setupBaseApp(t)
 
@@ -73,15 +106,26 @@ func TestMountStores(t *testing.T) {
 	require.NotNil(t, store2)
 }
 
+func setupProtocol(app *BaseApp, capKey sdk.StoreKey) {
+	pk := sdk.NewProtocolKeeper(capKey)
+	engine := protocol.NewProtocolEngine(pk)
+	app.SetProtocolEngine(&engine)
+	mockProtocolV0 := newMockProtocolV0()
+	engine.Add(mockProtocolV0)
+	engine.LoadCurrentProtocolN(0)
+}
+
 func TestLoadVersion(t *testing.T) {
 	logger := defaultLogger()
 	pruningOpt := SetPruning(store.PruneSyncable)
 	db := dbm.NewMemDB()
 	name := t.Name()
+
 	app := NewBaseApp(name, logger, db, pruningOpt)
 
 	capKey := sdk.NewKVStoreKey("main")
 	app.MountStores(capKey)
+	setupProtocol(app, capKey)
 	err := app.LoadLatestVersion(capKey) // needed to make stores non-nil
 	require.Nil(t, err)
 
@@ -108,6 +152,7 @@ func TestLoadVersion(t *testing.T) {
 	// reload with LoadLatestVersion
 	app = NewBaseApp(name, logger, db, pruningOpt)
 	app.MountStores(capKey)
+	setupProtocol(app, capKey)
 	err = app.LoadLatestVersion(capKey)
 	require.Nil(t, err)
 	testLoadVersionHelper(t, app, int64(2), commitID2)
@@ -116,6 +161,7 @@ func TestLoadVersion(t *testing.T) {
 	// the same result
 	app = NewBaseApp(name, logger, db, pruningOpt)
 	app.MountStores(capKey)
+	setupProtocol(app, capKey)
 	err = app.LoadVersion(1, capKey)
 	require.Nil(t, err)
 	testLoadVersionHelper(t, app, int64(1), commitID1)
@@ -129,7 +175,9 @@ func TestAppVersionSetterGetter(t *testing.T) {
 	pruningOpt := SetPruning(store.PruneSyncable)
 	db := dbm.NewMemDB()
 	name := t.Name()
-	app := NewBaseApp(name, logger, db, nil, pruningOpt)
+
+	app := NewBaseApp(name, logger, db, pruningOpt)
+	setupProtocol(app, capKey1)
 
 	require.Equal(t, "", app.AppVersion())
 	res := app.Query(abci.RequestQuery{Path: "app/version"})
@@ -149,10 +197,12 @@ func TestLoadVersionInvalid(t *testing.T) {
 	pruningOpt := SetPruning(store.PruneSyncable)
 	db := dbm.NewMemDB()
 	name := t.Name()
-	app := NewBaseApp(name, logger, db, nil, pruningOpt)
 
+	app := NewBaseApp(name, logger, db, pruningOpt)
+	setupProtocol(app, capKey1)
 	capKey := sdk.NewKVStoreKey("main")
 	app.MountStores(capKey)
+	setupProtocol(app, capKey1)
 	err := app.LoadLatestVersion(capKey)
 	require.Nil(t, err)
 
@@ -166,8 +216,9 @@ func TestLoadVersionInvalid(t *testing.T) {
 	commitID1 := sdk.CommitID{1, res.Data}
 
 	// create a new app with the stores mounted under the same cap key
-	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app = NewBaseApp(name, logger, db, pruningOpt)
 	app.MountStores(capKey)
+	setupProtocol(app, capKey1)
 
 	// require we can load the latest version
 	err = app.LoadVersion(1, capKey)
@@ -189,7 +240,7 @@ func testLoadVersionHelper(t *testing.T, app *BaseApp, expectedHeight int64, exp
 func TestOptionFunction(t *testing.T) {
 	logger := defaultLogger()
 	db := dbm.NewMemDB()
-	bap := NewBaseApp("starting name", logger, db, nil, testChangeNameHelper("new name"))
+	bap := NewBaseApp("starting name", logger, db, testChangeNameHelper("new name"))
 	require.Equal(t, bap.name, "new name", "BaseApp should have had name changed via option function")
 }
 
@@ -214,22 +265,16 @@ func TestTxDecoder(t *testing.T) {
 	require.Equal(t, tx.Counter, cTx.Counter)
 }
 
-// Test that Info returns the latest committed state.
 func TestInfo(t *testing.T) {
 	app := newBaseApp(t.Name())
 
-	// ----- test an empty response -------
 	reqInfo := abci.RequestInfo{}
 	res := app.Info(reqInfo)
 
-	// should be empty
 	assert.Equal(t, "", res.Version)
 	assert.Equal(t, t.Name(), res.GetData())
 	assert.Equal(t, int64(0), res.LastBlockHeight)
 	require.Equal(t, []uint8(nil), res.LastBlockAppHash)
-
-	// ----- test a proper response -------
-	// TODO
 }
 
 func TestBaseAppOptionSeal(t *testing.T) {
@@ -266,16 +311,15 @@ func TestSetMinGasPrices(t *testing.T) {
 
 func TestInitChainer(t *testing.T) {
 	name := t.Name()
-	// keep the db and logger ourselves so
-	// we can reload the same  app later
 	db := dbm.NewMemDB()
 	logger := defaultLogger()
-	app := NewBaseApp(name, logger, db, nil)
+
+	app := NewBaseApp(name, logger, db)
 	capKey := sdk.NewKVStoreKey("main")
 	capKey2 := sdk.NewKVStoreKey("key2")
 	app.MountStores(capKey, capKey2)
+	setupProtocol(app, capKey1)
 
-	// set a value in the store on init chain
 	key, value := []byte("hello"), []byte("goodbye")
 	var initChainer sdk.InitChainer = func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 		store := ctx.KVStore(capKey)
@@ -288,30 +332,18 @@ func TestInitChainer(t *testing.T) {
 		Data: key,
 	}
 
-	pk := sdk.NewProtocolKeeper(sdk.NewKVStoreKey("protocol"))
-
-	protocolV0 := v0.NewProtocolV0(0, logger, pk, app.DeliverTx, 10, nil)
-
-	engine := protocol.NewProtocolEngine(pk)
-	engine.Add(protocolV0)
-	app.SetProtocolEngine(&engine)
-
-	// initChainer is nil - nothing happens
 	app.InitChain(abci.RequestInitChain{})
 	res := app.Query(query)
 	require.Equal(t, 0, len(res.Value))
 
-	// set initChainer and try again - should see the value
-	protocolV0.SetInitChainer(initChainer)
+	app.Engine.GetCurrentProtocol().SetInitChainer(initChainer)
 
-	// stores are mounted and private members are set - sealing baseapp
-	err := app.LoadLatestVersion(capKey) // needed to make stores non-nil
+	err := app.LoadLatestVersion(capKey)
 	require.Nil(t, err)
 	require.Equal(t, int64(0), app.LastBlockHeight())
 
-	app.InitChain(abci.RequestInitChain{AppStateBytes: []byte("{}"), ChainId: "test-chain-id"}) // must have valid JSON genesis file, even if empty
+	app.InitChain(abci.RequestInitChain{AppStateBytes: []byte("{}"), ChainId: "test-chain-id"})
 
-	// assert that chainID is set correctly in InitChain
 	chainID := app.deliverState.ctx.ChainID()
 	require.Equal(t, "test-chain-id", chainID, "ChainID in deliverState not set correctly in InitChain")
 
@@ -324,12 +356,9 @@ func TestInitChainer(t *testing.T) {
 	require.Equal(t, value, res.Value)
 
 	// reload app
-	app = NewBaseApp(name, logger, db, nil)
-	engine1 := protocol.NewProtocolEngine(pk)
-	engine1.Add(protocolV0)
-	app.SetProtocolEngine(&engine)
-
+	app = NewBaseApp(name, logger, db)
 	app.MountStores(capKey, capKey2)
+	setupProtocol(app, capKey1)
 	err = app.LoadLatestVersion(capKey) // needed to make stores non-nil
 	require.Nil(t, err)
 	require.Equal(t, int64(1), app.LastBlockHeight())
@@ -529,18 +558,18 @@ func TestCheckTx(t *testing.T) {
 	// This ensures changes to the kvstore persist across successive CheckTx.
 	counterKey := []byte("counter-key")
 
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey))
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey))
 	}
 
-	routerOpt := func(bapp *BaseApp) {
+	routerOpt := func(p *MockProtocolV0) {
 		// TODO: can remove this once CheckTx doesnt process msgs.
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	nTxs := int64(5)
 	app.InitChain(abci.RequestInitChain{})
@@ -579,17 +608,17 @@ func TestCheckTx(t *testing.T) {
 func TestDeliverTx(t *testing.T) {
 	// test increments in the ante
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	// test increments in the handler
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 	app.InitChain(abci.RequestInitChain{})
 
 	// Create same codec used in txDecoder
@@ -629,19 +658,19 @@ func TestMultiMsgCheckTx(t *testing.T) {
 func TestMultiMsgDeliverTx(t *testing.T) {
 	// increment the tx counter
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	// increment the msg counter
 	deliverKey := []byte("deliver-key")
 	deliverKey2 := []byte("deliver-key2")
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
-		bapp.Router().AddRoute(routeMsgCounter2, handlerMsgCounter(t, capKey1, deliverKey2))
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
+		p.GetRouter().AddRoute(routeMsgCounter2, handlerMsgCounter(t, capKey1, deliverKey2))
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	// Create same codec used in txDecoder
 	codec := codec.New()
@@ -705,21 +734,21 @@ func TestConcurrentCheckDeliver(t *testing.T) {
 func TestSimulateTx(t *testing.T) {
 	gasConsumed := uint64(5)
 
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasConsumed))
 			return
 		})
 	}
 
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			ctx.GasMeter().ConsumeGas(gasConsumed, "test")
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -767,18 +796,18 @@ func TestSimulateTx(t *testing.T) {
 }
 
 func TestRunInvalidTransaction(t *testing.T) {
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			return
 		})
 	}
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	header := abci.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -869,8 +898,8 @@ func TestRunInvalidTransaction(t *testing.T) {
 // Test that transactions exceeding gas limits fail
 func TestTxGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
 			defer func() {
@@ -892,15 +921,15 @@ func TestTxGasLimits(t *testing.T) {
 
 	}
 
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	header := abci.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -953,8 +982,8 @@ func TestTxGasLimits(t *testing.T) {
 // Test that transactions exceeding gas limits fail
 func TestMaxBlockGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
 			defer func() {
@@ -976,15 +1005,15 @@ func TestMaxBlockGasLimits(t *testing.T) {
 
 	}
 
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1053,17 +1082,17 @@ func TestMaxBlockGasLimits(t *testing.T) {
 
 func TestBaseAppAnteHandler(t *testing.T) {
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
 	cdc := codec.New()
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	app.InitChain(abci.RequestInitChain{})
 	registerTestCodec(cdc)
@@ -1124,8 +1153,8 @@ func TestBaseAppAnteHandler(t *testing.T) {
 
 func TestGasConsumptionBadTx(t *testing.T) {
 	gasWanted := uint64(5)
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasWanted))
 
 			defer func() {
@@ -1150,8 +1179,8 @@ func TestGasConsumptionBadTx(t *testing.T) {
 		})
 	}
 
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
 			return &sdk.Result{}, nil
@@ -1161,7 +1190,7 @@ func TestGasConsumptionBadTx(t *testing.T) {
 	cdc := codec.New()
 	registerTestCodec(cdc)
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1195,23 +1224,23 @@ func TestGasConsumptionBadTx(t *testing.T) {
 // Test that we can only query from the latest committed state.
 func TestQuery(t *testing.T) {
 	key, value := []byte("hello"), []byte("goodbye")
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			store := ctx.KVStore(capKey1)
 			store.Set(key, value)
 			return
 		})
 	}
 
-	routerOpt := func(bapp *BaseApp) {
-		bapp.Router().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+	routerOpt := func(p *MockProtocolV0) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			store := ctx.KVStore(capKey1)
 			store.Set(key, value)
 			return &sdk.Result{}, nil
 		})
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -1318,23 +1347,21 @@ func (rtr *testCustomRouter) Route(ctx sdk.Context, path string) sdk.Handler {
 }
 
 func TestWithRouter(t *testing.T) {
-	// test increments in the ante
 	anteKey := []byte("ante-key")
-	anteOpt := func(bapp *BaseApp) {
-		bapp.Engine.GetCurrentProtocol().SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
+	anteOpt := func(p *MockProtocolV0) {
+		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
-	// test increments in the handler
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(bapp *BaseApp) {
-		bapp.SetRouter(&testCustomRouter{routes: sync.Map{}})
-		bapp.Router().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
+	routerOpt := func(p *MockProtocolV0) {
+		p.SetRouter(&testCustomRouter{routes: sync.Map{}})
+		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app := setupBaseApp2(t, anteOpt, routerOpt)
+
 	app.InitChain(abci.RequestInitChain{})
 
-	// Create same codec used in txDecoder
 	codec := codec.New()
 	registerTestCodec(codec)
 
@@ -1359,4 +1386,90 @@ func TestWithRouter(t *testing.T) {
 		app.EndBlock(abci.RequestEndBlock{})
 		app.Commit()
 	}
+}
+
+type MockProtocolV0 struct {
+	moduleManager *module.Manager
+
+	router      sdk.Router
+	queryRouter sdk.QueryRouter
+
+	anteHandler      sdk.AnteHandler
+	feeRefundHandler sdk.FeeRefundHandler
+	initChainer      sdk.InitChainer
+	beginBlocker     sdk.BeginBlocker
+	endBlocker       sdk.EndBlocker
+	deliverTx        genutil.DeliverTxfn
+}
+
+func newMockProtocolV0() *MockProtocolV0 {
+	return &MockProtocolV0{
+		router:        protocol.NewRouter(),
+		queryRouter:   protocol.NewQueryRouter(),
+		moduleManager: module.NewManager(),
+	}
+}
+
+var _ protocol.Protocol = &MockProtocolV0{}
+
+func (m *MockProtocolV0) GetVersion() uint64 {
+	return 0
+}
+
+func (m *MockProtocolV0) GetRouter() sdk.Router {
+	return m.router
+}
+
+func (m *MockProtocolV0) GetQueryRouter() sdk.QueryRouter {
+	return m.queryRouter
+}
+
+func (m MockProtocolV0) GetAnteHandler() sdk.AnteHandler {
+	return m.anteHandler
+}
+
+func (m *MockProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
+	return m.feeRefundHandler
+}
+
+func (m *MockProtocolV0) GetInitChainer() sdk.InitChainer {
+	return m.initChainer
+}
+
+func (m MockProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
+	return m.beginBlocker
+}
+
+func (m MockProtocolV0) GetEndBlocker() sdk.EndBlocker {
+	return m.endBlocker
+}
+
+func (m *MockProtocolV0) ExportAppStateAndValidators(ctx sdk.Context, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []types.GenesisValidator, err error) {
+	return json.RawMessage{}, nil, nil
+}
+
+func (m *MockProtocolV0) Load() {
+}
+
+func (m *MockProtocolV0) Init(ctx sdk.Context) {
+}
+
+func (m *MockProtocolV0) GetCodec() *codec.Codec {
+	return codec.New()
+}
+
+func (m *MockProtocolV0) SetRouter(router sdk.Router) {
+	m.router = router
+}
+
+func (m *MockProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+	m.queryRouter = queryRouter
+}
+
+func (m *MockProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
+	m.anteHandler = anteHandler
+}
+
+func (m *MockProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
+	m.initChainer = initChainer
 }

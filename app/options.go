@@ -89,11 +89,3 @@ func (app *BaseApp) SetFauxMerkleMode() {
 func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
 	app.cms.SetTracer(w)
 }
-
-// SetRouter allows us to customize the router.
-func (app *BaseApp) SetRouter(router sdk.Router) {
-	if app.sealed {
-		panic("SetRouter() on sealed BaseApp")
-	}
-	app.router = router
-}

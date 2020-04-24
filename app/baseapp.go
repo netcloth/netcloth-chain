@@ -46,7 +46,6 @@ type BaseApp struct {
 	name        string               // application name from abci.Info
 	db          dbm.DB               // common DB backend
 	cms         sdk.CommitMultiStore // Main (uncached) state
-	router      sdk.Router           // handle any kind of message
 	queryRouter sdk.QueryRouter      // router for redirecting query calls
 	txDecoder   sdk.TxDecoder        // unmarshal []byte into sdk.Tx
 
@@ -88,13 +87,12 @@ type BaseApp struct {
 	appVersion string
 }
 
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*BaseApp)) *BaseApp { //TODO fixme crash if options use protocol instance(nil)
 	app := &BaseApp{
 		logger:         logger,
 		name:           name,
 		db:             db,
 		cms:            store.NewCommitMultiStore(db),
-		router:         protocol.NewRouter(),
 		queryRouter:    protocol.NewQueryRouter(),
 		fauxMerkleMode: false,
 	}
@@ -258,16 +256,6 @@ func (app *BaseApp) setMinGasPrices(gasPrices sdk.DecCoins) {
 
 func (app *BaseApp) setHaltHeight(height uint64) {
 	app.haltHeight = height
-}
-
-// Router returns the router of the BaseApp.
-func (app *BaseApp) Router() sdk.Router {
-	if app.sealed {
-		// We cannot return a router when the app is sealed because we can't have
-		// any routes modified which would cause unexpected routing behavior.
-		panic("Router() on sealed BaseApp")
-	}
-	return app.router
 }
 
 // QueryRouter returns the QueryRouter of a BaseApp.
