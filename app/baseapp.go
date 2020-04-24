@@ -42,12 +42,11 @@ var (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger      log.Logger
-	name        string               // application name from abci.Info
-	db          dbm.DB               // common DB backend
-	cms         sdk.CommitMultiStore // Main (uncached) state
-	queryRouter sdk.QueryRouter      // router for redirecting query calls
-	txDecoder   sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+	logger    log.Logger
+	name      string               // application name from abci.Info
+	db        dbm.DB               // common DB backend
+	cms       sdk.CommitMultiStore // Main (uncached) state
+	txDecoder sdk.TxDecoder        // unmarshal []byte into sdk.Tx
 
 	Engine *protocol.ProtocolEngine
 
@@ -93,7 +92,6 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*Base
 		name:           name,
 		db:             db,
 		cms:            store.NewCommitMultiStore(db),
-		queryRouter:    protocol.NewQueryRouter(),
 		fauxMerkleMode: false,
 	}
 
@@ -257,9 +255,6 @@ func (app *BaseApp) setMinGasPrices(gasPrices sdk.DecCoins) {
 func (app *BaseApp) setHaltHeight(height uint64) {
 	app.haltHeight = height
 }
-
-// QueryRouter returns the QueryRouter of a BaseApp.
-func (app *BaseApp) QueryRouter() sdk.QueryRouter { return app.queryRouter }
 
 // Seal seals a BaseApp. It prohibits any further modifications to a BaseApp.
 func (app *BaseApp) Seal() { app.sealed = true }
