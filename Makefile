@@ -93,7 +93,7 @@ clean:
 
 ##############################################
 ### Test
-PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v '/tests')
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v '/tests')
 
 test: test_unit
 

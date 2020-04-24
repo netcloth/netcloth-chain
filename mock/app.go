@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/netcloth/netcloth-chain/app"
 	"github.com/netcloth/netcloth-chain/app/protocol"
+	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	"math/rand"
 	"os"
 	"sort"
@@ -17,7 +18,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
-	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/params"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -47,7 +47,7 @@ type App struct {
 
 // NewApp partially constructs a new app on the memstore for module and genesis
 // testing.
-func NewApp() *App {
+func NewApp() (*App, *ProtocolV0) {
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
 	db := dbm.NewMemDB()
 
@@ -56,7 +56,7 @@ func NewApp() *App {
 
 	// Create your application object
 	app := &App{
-		BaseApp:          app.NewBaseApp("mock", logger, db, auth.DefaultTxDecoder(cdc)),
+		BaseApp:          app.NewBaseApp("mock", logger, db),
 		Cdc:              cdc,
 		KeyMain:          sdk.NewKVStoreKey(protocol.MainStoreKey),
 		KeyAccount:       sdk.NewKVStoreKey(auth.StoreKey),
@@ -75,16 +75,18 @@ func NewApp() *App {
 		auth.ProtoBaseAccount,
 	)
 
-	supplyKeeper := NewDummySupplyKeeper(app.AccountKeeper)
+	p0 := newMockProtocolV0()
+	pk := sdk.NewProtocolKeeper(app.KeyMain)
+	engine := protocol.NewProtocolEngine(pk)
+	app.SetProtocolEngine(&engine)
+	engine.Add(p0)
 
-	// Initialize the app. The chainers and blockers can be overwritten before
-	// calling complete setup.
-	app.SetInitChainer(app.InitChainer)
-	app.SetAnteHandler(ante.NewAnteHandler(app.AccountKeeper, supplyKeeper, ante.DefaultSigVerificationGasConsumer))
+	supplyKeeper := NewDummySupplyKeeper(app.AccountKeeper)
+	p0.SetAnteHandler(ante.NewAnteHandler(app.AccountKeeper, supplyKeeper, ante.DefaultSigVerificationGasConsumer))
 
 	// Not sealing for custom extension
 
-	return app
+	return app, p0
 }
 
 // CompleteSetup completes the application setup after the routes have been

@@ -3,91 +3,63 @@ package tests
 import (
 	"bytes"
 	"errors"
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
-	"log"
-	"sort"
-	"testing"
-
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto"
-
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
-	"github.com/netcloth/netcloth-chain/app/v0/bank"
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
+	"github.com/netcloth/netcloth-chain/app/v0/gov/tests/mock/app"
+	v0 "github.com/netcloth/netcloth-chain/app/v0/gov/tests/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
-	"github.com/netcloth/netcloth-chain/app/v0/supply"
-	supplyexported "github.com/netcloth/netcloth-chain/app/v0/supply/exported"
-	"github.com/netcloth/netcloth-chain/mock"
+	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+	"sort"
+	"testing"
 )
 
 var (
-	valTokens  = sdk.TokensFromConsensusPower(42)
+	valTokens  = sdk.TokensFromConsensusPower(1000)
 	initTokens = sdk.TokensFromConsensusPower(100000)
 	valCoins   = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
 	initCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
 )
 
+var (
+	pubkeys = []crypto.PubKey{
+		ed25519.GenPrivKey().PubKey(),
+		ed25519.GenPrivKey().PubKey(),
+		ed25519.GenPrivKey().PubKey(),
+	}
+
+	testDescription     = staking.NewDescription("T", "E", "S", "T")
+	testCommissionRates = staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
+)
+
 type testInput struct {
-	mApp     *mock.App
+	mApp     *app.NCHApp
 	keeper   gov.Keeper
-	router   gov.Router
 	sk       staking.Keeper
+	ak       auth.AccountKeeper
 	addrs    []sdk.AccAddress
 	pubKeys  []crypto.PubKey
 	privKeys []crypto.PrivKey
 }
 
+func getProtocolV0(t *testing.T, app *app.NCHApp) *v0.ProtocolV0 {
+	curProtocol := app.Engine.GetCurrentProtocol()
+	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
+	require.True(t, ok)
+	return protocolV0
+}
+
 func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs []auth.Account) testInput {
-	mApp := mock.NewApp()
-
-	staking.RegisterCodec(mApp.Cdc)
-	types.RegisterCodec(mApp.Cdc)
-	supply.RegisterCodec(mApp.Cdc)
-
-	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
-	tKeyStaking := sdk.NewTransientStoreKey(staking.TStoreKey)
-	keyGov := sdk.NewKVStoreKey(gov.StoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-
-	govAcc := supply.NewEmptyModuleAccount(types.ModuleName, supply.Burner)
-	notBondedPool := supply.NewEmptyModuleAccount(staking.NotBondedPoolName, supply.Burner, supply.Staking)
-	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
-
-	blacklistedAddrs := make(map[string]bool)
-	blacklistedAddrs[govAcc.String()] = true
-	blacklistedAddrs[notBondedPool.String()] = true
-	blacklistedAddrs[bondPool.String()] = true
-
-	pk := mApp.ParamsKeeper
-
-	rtr := gov.NewRouter().
-		AddRoute(gov.RouterKey, ProposalHandler)
-
-	bk := bank.NewBaseKeeper(mApp.AccountKeeper, mApp.ParamsKeeper.Subspace(bank.DefaultParamspace), blacklistedAddrs)
-
-	maccPerms := map[string][]string{
-		types.ModuleName:          []string{supply.Burner},
-		staking.NotBondedPoolName: []string{supply.Burner, supply.Staking},
-		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
-	}
-	supplyKeeper := supply.NewKeeper(mApp.Cdc, keySupply, mApp.AccountKeeper, bk, maccPerms)
-	sk := staking.NewKeeper(mApp.Cdc, keyStaking, tKeyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
-
-	keeper := gov.NewKeeper(mApp.Cdc, keyGov, pk.Subspace(gov.DefaultParamspace), supplyKeeper, sk, rtr)
-
-	mApp.Router().AddRoute(gov.RouterKey, gov.NewHandler(keeper))
-	mApp.QueryRouter().AddRoute(gov.QuerierRoute, gov.NewQuerier(keeper))
-
-	mApp.SetEndBlocker(getEndBlocker(keeper))
-	mApp.SetInitChainer(getInitChainer(mApp, keeper, sk, supplyKeeper, genAccs, genState,
-		[]supplyexported.ModuleAccountI{govAcc, notBondedPool, bondPool}))
-
-	require.NoError(t, mApp.CompleteSetup(keyStaking, tKeyStaking, keyGov, keySupply))
+	mApp := NewNCHApp(t)
 
 	var (
 		addrs    []sdk.AccAddress
@@ -96,59 +68,72 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	)
 
 	if genAccs == nil || len(genAccs) == 0 {
-		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(numGenAccs, valCoins)
+		genAccs, addrs, pubKeys, privKeys = CreateGenAccounts(numGenAccs, valCoins)
 	}
 
-	mock.SetGenesis(mApp, genAccs)
+	protocolV0 := getProtocolV0(t, mApp)
+	err := setGenesis(mApp, protocolV0.Cdc, genAccs)
+	require.Nil(t, err)
 
-	return testInput{mApp, keeper, rtr, sk, addrs, pubKeys, privKeys}
+	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
 }
 
-// gov and staking endblocker
-func getEndBlocker(keeper gov.Keeper) sdk.EndBlocker {
-	return func(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-		gov.EndBlocker(ctx, keeper)
-		return abci.ResponseEndBlock{}
-	}
+func NewNCHApp(t *testing.T) *app.NCHApp {
+	logger := log.NewNopLogger()
+	db := dbm.NewMemDB()
+	baseApp := app.NewBaseApp("nchmock", logger, db)
+
+	baseApp.SetCommitMultiStoreTracer(nil)
+	baseApp.SetAppVersion("v0")
+
+	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
+	engine := protocol.NewProtocolEngine(protocolKeeper)
+	baseApp.SetProtocolEngine(&engine)
+
+	baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
+
+	baseApp.MountKVStores(protocol.Keys)
+	baseApp.MountTransientStores(protocol.TKeys)
+
+	err := baseApp.LoadLatestVersion(protocol.MainKVStoreKey)
+	require.Nil(t, err)
+
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, 10, nil))
+
+	engine.LoadCurrentProtocolN(0)
+
+	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+
+	return &app.NCHApp{BaseApp: baseApp}
 }
 
-// gov and staking initchainer
-func getInitChainer(mapp *mock.App, keeper gov.Keeper, stakingKeeper staking.Keeper, supplyKeeper supply.Keeper, accs []auth.Account, genState gov.GenesisState,
-	blacklistedAddrs []supplyexported.ModuleAccountI) sdk.InitChainer {
-	return func(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-		mapp.InitChainer(ctx, req)
+func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account) error {
+	app.GenesisAccounts = accs
 
-		stakingGenesis := staking.DefaultGenesisState()
+	genesisState := v0.NewDefaultGenesisState()
 
-		totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(len(mapp.GenesisAccounts)))))
-		supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
-
-		// set module accounts
-		for _, macc := range blacklistedAddrs {
-			supplyKeeper.SetModuleAccount(ctx, macc)
-		}
-
-		validators := staking.InitGenesis(ctx, stakingKeeper, mapp.AccountKeeper, supplyKeeper, stakingGenesis)
-		if genState.IsEmpty() {
-			gov.InitGenesis(ctx, keeper, supplyKeeper, gov.DefaultGenesisState())
-		} else {
-			gov.InitGenesis(ctx, keeper, supplyKeeper, genState)
-		}
-		return abci.ResponseInitChain{
-			Validators: validators,
-		}
+	stateBytes, err := codec.MarshalJSONIndent(cdc, genesisState)
+	if err != nil {
+		return err
 	}
+
+	app.InitChain(
+		abci.RequestInitChain{
+			Validators:    []abci.ValidatorUpdate{},
+			AppStateBytes: stateBytes,
+		},
+	)
+	app.Commit()
+
+	return nil
 }
 
-// Sorts Addresses
-func SortAddresses(addrs []sdk.AccAddress) {
-	var byteAddrs [][]byte
-	for _, addr := range addrs {
-		byteAddrs = append(byteAddrs, addr.Bytes())
-	}
-	SortByteArrays(byteAddrs)
-	for i, byteAddr := range byteAddrs {
-		addrs[i] = byteAddr
+func initGenAccount(t *testing.T, ctx sdk.Context, app *app.NCHApp) {
+	p0 := getProtocolV0(t, app)
+	for _, genAcc := range app.GenesisAccounts {
+		acc := p0.AccountKeeper.NewAccountWithAddress(ctx, genAcc.GetAddress())
+		acc.SetCoins(genAcc.GetCoins())
+		p0.AccountKeeper.SetAccount(ctx, acc)
 	}
 }
 
@@ -167,7 +152,6 @@ func (b sortByteArrays) Less(i, j int) bool {
 	case 0, 1:
 		return false
 	default:
-		log.Panic("not fail-able with `bytes.Comparable` bounded [-1, 1].")
 		return false
 	}
 }
@@ -183,47 +167,21 @@ func SortByteArrays(src [][]byte) [][]byte {
 	return sorted
 }
 
+// Sorts Addresses
+func SortAddresses(addrs []sdk.AccAddress) {
+	var byteAddrs [][]byte
+	for _, addr := range addrs {
+		byteAddrs = append(byteAddrs, addr.Bytes())
+	}
+	SortByteArrays(byteAddrs)
+	for i, byteAddr := range byteAddrs {
+		addrs[i] = byteAddr
+	}
+}
+
 func testProposal() gov.Content {
 	return gov.NewTextProposal("Test", "description")
 }
-
-const contextKeyBadProposal = "contextKeyBadProposal"
-
-// badProposalHandler implements a governance proposal handler that is identical
-// to the actual handler except this fails if the context doesn't contain a value
-// for the key contextKeyBadProposal or if the value is false.
-func badProposalHandler(ctx sdk.Context, c gov.Content) error {
-	switch c.ProposalType() {
-	case gov.ProposalTypeText, gov.ProposalTypeSoftwareUpgrade:
-		v := ctx.Value(contextKeyBadProposal)
-
-		if v == nil || !v.(bool) {
-			return errors.New("proposal failed")
-		}
-
-		return nil
-
-	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
-	}
-}
-
-// checks if two proposals are equal (note: slow, for tests only)
-func ProposalEqual(proposalA gov.Proposal, proposalB gov.Proposal) bool {
-	return bytes.Equal(types.ModuleCdc.MustMarshalBinaryBare(proposalA),
-		types.ModuleCdc.MustMarshalBinaryBare(proposalB))
-}
-
-var (
-	pubkeys = []crypto.PubKey{
-		ed25519.GenPrivKey().PubKey(),
-		ed25519.GenPrivKey().PubKey(),
-		ed25519.GenPrivKey().PubKey(),
-	}
-
-	testDescription     = staking.NewDescription("T", "E", "S", "T")
-	testCommissionRates = staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
-)
 
 func createValidators(t *testing.T, stakingHandler sdk.Handler, ctx sdk.Context, addrs []sdk.ValAddress, powerAmt []int64) {
 	require.True(t, len(addrs) <= len(pubkeys), "Not enough pubkeys specified at top of file.")
@@ -240,4 +198,27 @@ func createValidators(t *testing.T, stakingHandler sdk.Handler, ctx sdk.Context,
 		require.NoError(t, err)
 		require.NotNil(t, res)
 	}
+}
+
+const contextKeyBadProposal = "contextKeyBadProposal"
+
+func badProposalHandler(ctx sdk.Context, c gov.Content, pid uint64, proposer sdk.AccAddress) error {
+	switch c.ProposalType() {
+	case gov.ProposalTypeText, gov.ProposalTypeSoftwareUpgrade:
+		v := ctx.Value(contextKeyBadProposal)
+
+		if v == nil || !v.(bool) {
+			return errors.New("proposal failed")
+		}
+
+		return nil
+
+	default:
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
+	}
+}
+
+func ProposalEqual(proposalA gov.Proposal, proposalB gov.Proposal) bool {
+	return bytes.Equal(types.ModuleCdc.MustMarshalBinaryBare(proposalA),
+		types.ModuleCdc.MustMarshalBinaryBare(proposalB))
 }

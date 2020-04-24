@@ -2,11 +2,9 @@ package tests
 
 import (
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
-	"testing"
-
 	"github.com/stretchr/testify/require"
-
 	abci "github.com/tendermint/tendermint/abci/types"
+	"testing"
 )
 
 func TestEqualProposalID(t *testing.T) {
@@ -36,9 +34,9 @@ func TestEqualProposals(t *testing.T) {
 
 	// Submit two proposals
 	proposal := testProposal()
-	proposal1, err := input.keeper.SubmitProposal(ctx, proposal)
+	proposal1, err := input.keeper.SubmitProposal(ctx, proposal, input.addrs[0])
 	require.NoError(t, err)
-	proposal2, err := input.keeper.SubmitProposal(ctx, proposal)
+	proposal2, err := input.keeper.SubmitProposal(ctx, proposal, input.addrs[0])
 	require.NoError(t, err)
 
 	// They are similar but their IDs should be different
@@ -75,18 +73,19 @@ func TestImportExportQueues(t *testing.T) {
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := input.mApp.BaseApp.NewContext(false, abci.Header{})
+	initGenAccount(t, ctx, input.mApp)
 
 	// Create two proposals, put the second into the voting period
 	proposal := testProposal()
-	proposal1, err := input.keeper.SubmitProposal(ctx, proposal)
+	proposal1, err := input.keeper.SubmitProposal(ctx, proposal, input.addrs[0])
 	require.NoError(t, err)
 	proposalID1 := proposal1.ProposalID
 
-	proposal2, err := input.keeper.SubmitProposal(ctx, proposal)
+	proposal2, err := input.keeper.SubmitProposal(ctx, proposal, input.addrs[0])
 	require.NoError(t, err)
 	proposalID2 := proposal2.ProposalID
 
-	err, votingStarted := input.keeper.AddDeposit(ctx, proposalID2, input.addrs[0], input.keeper.GetDepositParams(ctx).MinDeposit)
+	votingStarted, err := input.keeper.AddDeposit(ctx, proposalID2, input.addrs[0], input.keeper.GetDepositParams(ctx).MinDeposit)
 	require.NoError(t, err)
 	require.True(t, votingStarted)
 
@@ -97,7 +96,7 @@ func TestImportExportQueues(t *testing.T) {
 	require.True(t, proposal1.Status == gov.StatusDepositPeriod)
 	require.True(t, proposal2.Status == gov.StatusVotingPeriod)
 
-	genAccs := input.mApp.AccountKeeper.GetAllAccounts(ctx)
+	genAccs := input.ak.GetAllAccounts(ctx)
 
 	// Export the state and import it into a new Mock App
 	genState := gov.ExportGenesis(ctx, input.keeper)

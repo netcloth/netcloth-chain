@@ -42,10 +42,11 @@ func (tx testMsg) ValidateBasic() error {
 
 // getMockApp returns an initialized mock application.
 func getMockApp(t *testing.T) *App {
-	mApp := NewApp()
-
-	mApp.Router().AddRoute(msgRoute, func(ctx sdk.Context, msg sdk.Msg) (res sdk.Result) { return })
+	mApp, p := NewApp()
+	p.GetRouter().AddRoute(msgRoute, func(ctx sdk.Context, msg sdk.Msg) (res *sdk.Result, err error) { return })
 	require.NoError(t, mApp.CompleteSetup())
+
+	p.SetInitChainer(mApp.InitChainer)
 
 	return mApp
 }
@@ -72,14 +73,14 @@ func TestCheckAndDeliverGenTx(t *testing.T) {
 
 	// Signing a tx with the wrong privKey should result in an auth error
 	header = abci.Header{Height: mApp.LastBlockHeight() + 1}
-	res, _, _ := SignCheckDeliver(
+	_, res, _ := SignCheckDeliver(
 		t, mApp.Cdc, mApp.BaseApp, header, []sdk.Msg{msg},
 		[]uint64{accs[1].GetAccountNumber()}, []uint64{accs[1].GetSequence() + 1},
 		true, false, privKeys[1],
 	)
 
-	require.Equal(t, sdk.CodeUnauthorized, res.Code, res.Log)
-	require.Equal(t, sdk.CodespaceRoot, res.Codespace)
+	require.Equal(t, 1, res.Code, res.Log)
+	require.Equal(t, 2, res.Codespace)
 
 	// Resigning the tx with the correct privKey should result in an OK result
 	header = abci.Header{Height: mApp.LastBlockHeight() + 1}
