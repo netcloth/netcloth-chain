@@ -8,15 +8,19 @@ import (
 
 func NewGovProposalHandler(k Keeper) Handler {
 	return func(ctx sdk.Context, content Content, pid uint64, proposer sdk.AccAddress) error {
-		switch c := content.(type) {
-		case TextProposal:
+		switch {
+		case ProposalTypeText == content.ProposalType():
 			return nil
 
-		case SoftwareUpgradeProposal:
+		case ProposalTypeSoftwareUpgrade == content.ProposalType():
+			c, ok := content.(SoftwareUpgradeProposal)
+			if !ok {
+				sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "proposal type must be SoftwareUpgradeProposal")
+			}
 			return handleSoftwareUpgradeProposal(ctx, k, c, pid, proposer)
 
 		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
+			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", content.ProposalType())
 		}
 	}
 }

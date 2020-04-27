@@ -90,7 +90,6 @@ var (
 	NewTallyResultFromMap         = types.NewTallyResultFromMap
 	EmptyTallyResult              = types.EmptyTallyResult
 	NewTextProposal               = types.NewTextProposal
-	NewSoftwareUpgradeProposal    = types.NewSoftwareUpgradeProposal
 	RegisterProposalType          = types.RegisterProposalType
 	ContentFromProposalType       = types.ContentFromProposalType
 	IsValidProposalType           = types.IsValidProposalType

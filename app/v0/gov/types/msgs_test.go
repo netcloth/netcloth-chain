@@ -25,7 +25,7 @@ func init() {
 }
 
 // test ValidateBasic for MsgCreateValidator
-func TestMsgSubmitProposal(t *testing.T) { // TODO fixme test failed
+func TestMsgSubmitProposal(t *testing.T) {
 	tests := []struct {
 		title, description string
 		proposalType       string
@@ -36,7 +36,6 @@ func TestMsgSubmitProposal(t *testing.T) { // TODO fixme test failed
 		{"Test Proposal", "the purpose of this proposal is to test", ProposalTypeText, addrs[0], coinsPos, true},
 		{"", "the purpose of this proposal is to test", ProposalTypeText, addrs[0], coinsPos, false},
 		{"Test Proposal", "", ProposalTypeText, addrs[0], coinsPos, false},
-		{"Test Proposal", "the purpose of this proposal is to test", ProposalTypeSoftwareUpgrade, addrs[0], coinsPos, false},
 		{"Test Proposal", "the purpose of this proposal is to test", ProposalTypeText, sdk.AccAddress{}, coinsPos, false},
 		{"Test Proposal", "the purpose of this proposal is to test", ProposalTypeText, addrs[0], coinsZero, true},
 		{"Test Proposal", "the purpose of this proposal is to test", ProposalTypeText, addrs[0], coinsMulti, true},
@@ -47,6 +46,37 @@ func TestMsgSubmitProposal(t *testing.T) { // TODO fixme test failed
 	for i, tc := range tests {
 		msg := NewMsgSubmitProposal(
 			ContentFromProposalType(tc.title, tc.description, tc.proposalType),
+			tc.initialDeposit,
+			tc.proposerAddr,
+		)
+
+		if tc.expectPass {
+			require.NoError(t, msg.ValidateBasic(), "test: %v", i)
+		} else {
+			require.Error(t, msg.ValidateBasic(), "test: %v", i)
+		}
+	}
+
+	upgradeTest := []struct {
+		Title        string
+		Description  string
+		Version      uint64
+		Software     string
+		SwitchHeight uint64
+		Threshold    sdk.Dec
+
+		proposerAddr   sdk.AccAddress
+		initialDeposit sdk.Coins
+
+		expectPass bool
+	}{
+		{"Test Proposal", "the purpose of this proposal is to test", 0, "", 100, sdk.NewDecWithPrec(88, 2), addrs[0], coinsZero, true},
+	}
+
+	for i, tc := range upgradeTest {
+		softwareUpgradeProposal := NewSoftwareUpgradeProposal(tc.Title, tc.Description, tc.Version, tc.Software, tc.SwitchHeight, tc.Threshold)
+		msg := NewMsgSubmitProposal(
+			softwareUpgradeProposal,
 			tc.initialDeposit,
 			tc.proposerAddr,
 		)

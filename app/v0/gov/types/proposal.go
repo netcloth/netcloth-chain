@@ -289,10 +289,14 @@ type SoftwareUpgradeProposal struct {
 	Threshold    sdk.Dec `json:"threshold"`
 }
 
-func NewSoftwareUpgradeProposal(title, description string) Content {
+func NewSoftwareUpgradeProposal(title, description string, version uint64, software string, switchHeight uint64, threshold sdk.Dec) Content {
 	return SoftwareUpgradeProposal{
-		Title:       title,
-		Description: description,
+		Title:        title,
+		Description:  description,
+		Version:      version,
+		Software:     software,
+		SwitchHeight: switchHeight,
+		Threshold:    threshold,
 	}
 }
 
@@ -336,9 +340,6 @@ func ContentFromProposalType(title, desc, ty string) Content {
 	switch ty {
 	case ProposalTypeText:
 		return NewTextProposal(title, desc)
-
-	case ProposalTypeSoftwareUpgrade:
-		return NewSoftwareUpgradeProposal(title, desc)
 
 	default:
 		return nil
