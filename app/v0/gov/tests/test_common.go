@@ -100,7 +100,7 @@ func NewNCHApp(t *testing.T) *app.NCHApp {
 
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, 10, nil))
 
-	engine.LoadCurrentProtocolN(0)
+	engine.LoadProtocol(0)
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 

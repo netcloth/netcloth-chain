@@ -85,7 +85,7 @@ func setupBaseApp2(t *testing.T, options ...func(*MockProtocolV0)) *BaseApp {
 	app.SetProtocolEngine(&engine)
 	mockProtocolV0 := newMockProtocolV0()
 	engine.Add(mockProtocolV0)
-	engine.LoadCurrentProtocolN(0)
+	engine.LoadProtocol(0)
 
 	for _, option := range options {
 		option(mockProtocolV0)
@@ -112,7 +112,7 @@ func setupProtocol(app *BaseApp, capKey sdk.StoreKey) {
 	app.SetProtocolEngine(&engine)
 	mockProtocolV0 := newMockProtocolV0()
 	engine.Add(mockProtocolV0)
-	engine.LoadCurrentProtocolN(0)
+	engine.LoadProtocol(0)
 }
 
 func TestLoadVersion(t *testing.T) {
