@@ -10,7 +10,7 @@ import (
 
 func (keeper Keeper) SubmitProposal(ctx sdk.Context, content Content, proposer sdk.AccAddress) (Proposal, error) {
 	if !keeper.router.HasRoute(content.ProposalRoute()) {
-		return types.Proposal{}, sdkerrors.Wrap(types.ErrNoProposalHandlerExists, content.ProposalRoute())
+		return types.Proposal{}, types.ErrNoProposalHandlerExists
 	}
 
 	if ProposalTypeSoftwareUpgrade == content.ProposalType() {
