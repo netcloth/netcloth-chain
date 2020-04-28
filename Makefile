@@ -93,9 +93,13 @@ clean:
 
 ##############################################
 ### Test
-PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v '/tests')
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v '/tests' | grep -v '/netcloth/netcloth-chain/crypto')
+PACKAGES_CRYPTO=$(shell go list ./... | grep '/netcloth/netcloth-chain/crypto')
 
-test: test_unit
+test: test_unit_crypto test_unit
 
 test_unit:
 	@go test -mod=readonly $(PACKAGES_NOSIMULATION)
+
+test_unit_crypto:
+	@go test -mod=readonly -tags "ledger test_ledger_mock" $(PACKAGES_CRYPTO)
