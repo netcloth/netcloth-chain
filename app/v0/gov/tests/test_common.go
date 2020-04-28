@@ -72,7 +72,8 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	}
 
 	protocolV0 := getProtocolV0(t, mApp)
-	err := setGenesis(mApp, protocolV0.Cdc, genAccs)
+
+	err := setGenesis(mApp, protocolV0.Cdc, genAccs, genState)
 	require.Nil(t, err)
 
 	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
@@ -107,10 +108,14 @@ func NewNCHApp(t *testing.T) *app.NCHApp {
 	return &app.NCHApp{BaseApp: baseApp}
 }
 
-func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account) error {
+func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
 	app.GenesisAccounts = accs
 
 	genesisState := v0.NewDefaultGenesisState()
+	if !genState.IsEmpty() {
+		govState := cdc.MustMarshalJSON(genState)
+		genesisState["gov"] = govState
+	}
 
 	stateBytes, err := codec.MarshalJSONIndent(cdc, genesisState)
 	if err != nil {
