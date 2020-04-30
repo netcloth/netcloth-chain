@@ -1,8 +1,7 @@
-package app
+package simapp
 
 import (
 	"fmt"
-
 	"os"
 	"strconv"
 	"strings"

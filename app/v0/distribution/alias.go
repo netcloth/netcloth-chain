@@ -5,7 +5,6 @@
 package distribution
 
 import (
-	//"github.com/netcloth/netcloth-chain/app/v0/distribution/client"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
 )

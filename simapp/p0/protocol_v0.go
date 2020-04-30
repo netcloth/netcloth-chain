@@ -76,7 +76,7 @@ type ProtocolV0 struct {
 
 	AccountKeeper  auth.AccountKeeper
 	RefundKeeper   auth.RefundKeeper
-	bankKeeper     bank.Keeper
+	BankKeeper     bank.Keeper
 	slashingKeeper slashing.Keeper
 	mintKeeper     mint.Keeper
 	distrKeeper    distr.Keeper
@@ -225,8 +225,8 @@ func (p *ProtocolV0) configKeepers() {
 
 	p.AccountKeeper = auth.NewAccountKeeper(p.Cdc, protocol.Keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	p.RefundKeeper = auth.NewRefundKeeper(p.Cdc, protocol.Keys[auth.RefundKey])
-	p.bankKeeper = bank.NewBaseKeeper(p.AccountKeeper, bankSubspace, ModuleAccountAddrs())
-	p.supplyKeeper = supply.NewKeeper(p.Cdc, protocol.Keys[protocol.SupplyStoreKey], p.AccountKeeper, p.bankKeeper, maccPerms)
+	p.BankKeeper = bank.NewBaseKeeper(p.AccountKeeper, bankSubspace, ModuleAccountAddrs())
+	p.supplyKeeper = supply.NewKeeper(p.Cdc, protocol.Keys[protocol.SupplyStoreKey], p.AccountKeeper, p.BankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(
 		p.Cdc, protocol.Keys[staking.StoreKey], protocol.TKeys[staking.TStoreKey],
 		p.supplyKeeper, stakingSubspace)
@@ -287,7 +287,7 @@ func (p *ProtocolV0) configModuleManager() {
 		genaccounts.NewAppModule(p.AccountKeeper),
 		genutil.NewAppModule(p.AccountKeeper, p.StakingKeeper, p.deliverTx),
 		auth.NewAppModule(p.AccountKeeper),
-		bank.NewAppModule(p.bankKeeper, p.AccountKeeper),
+		bank.NewAppModule(p.BankKeeper, p.AccountKeeper),
 		crisis.NewAppModule(&p.crisisKeeper),
 		supply.NewAppModule(p.supplyKeeper, p.AccountKeeper),
 		distr.NewAppModule(p.distrKeeper, p.supplyKeeper),

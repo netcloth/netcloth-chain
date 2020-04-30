@@ -1,4 +1,4 @@
-package tests
+package gov_test
 
 import (
 	"testing"
@@ -7,13 +7,12 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func TestTallyNoOneVotes(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -36,20 +35,20 @@ func TestTallyNoOneVotes(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.True(t, burnDeposits)
-	require.True(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.True(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyNoQuorum(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -72,21 +71,21 @@ func TestTallyNoQuorum(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, _ := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, _ := Tally(ctx, input.keeper, proposal)
 	require.False(t, passes)
 	require.True(t, burnDeposits)
 }
 
 func TestTallyOnlyValidatorsAllYes(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -109,25 +108,25 @@ func TestTallyOnlyValidatorsAllYes(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyOnlyValidators51No(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -150,24 +149,24 @@ func TestTallyOnlyValidators51No(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, _ := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, _ := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
 }
 
 func TestTallyOnlyValidators51Yes(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -190,27 +189,27 @@ func TestTallyOnlyValidators51Yes(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyOnlyValidatorsVetoed(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -233,28 +232,28 @@ func TestTallyOnlyValidatorsVetoed(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNoWithVeto)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNoWithVeto)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.True(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 
 }
 
 func TestTallyOnlyValidatorsAbstainPasses(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -277,27 +276,27 @@ func TestTallyOnlyValidatorsAbstainPasses(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionAbstain)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionAbstain)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNo)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionYes)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyOnlyValidatorsAbstainFails(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -320,27 +319,27 @@ func TestTallyOnlyValidatorsAbstainFails(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionAbstain)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionAbstain)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyOnlyValidatorsNonVoter(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -363,25 +362,25 @@ func TestTallyOnlyValidatorsNonVoter(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyDelgatorOverride(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -408,29 +407,29 @@ func TestTallyDelgatorOverride(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[3], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[3], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyDelgatorInherit(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -457,27 +456,27 @@ func TestTallyDelgatorInherit(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionNo)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNo)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionYes)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyDelgatorMultipleOverride(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -506,29 +505,29 @@ func TestTallyDelgatorMultipleOverride(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[3], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[3], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyDelgatorMultipleInherit(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -570,27 +569,27 @@ func TestTallyDelgatorMultipleInherit(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNo)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }
 
 func TestTallyJailedValidator(t *testing.T) {
-	input := getMockApp(t, 10, gov.GenesisState{}, nil)
+	input := getMockApp(t, 10, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -626,21 +625,21 @@ func TestTallyJailedValidator(t *testing.T) {
 	proposal, err := input.keeper.SubmitProposal(ctx, tp, input.addrs[0])
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNo)
 	require.Nil(t, err)
-	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], gov.OptionNo)
+	err = input.keeper.AddVote(ctx, proposalID, input.addrs[2], OptionNo)
 	require.Nil(t, err)
 
 	proposal, ok := input.keeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := gov.Tally(ctx, input.keeper, proposal)
+	passes, burnDeposits, tallyResults := Tally(ctx, input.keeper, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
-	require.False(t, tallyResults.Equals(gov.EmptyTallyResult()))
+	require.False(t, tallyResults.Equals(EmptyTallyResult()))
 }

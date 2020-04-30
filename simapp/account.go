@@ -1,15 +1,19 @@
-package tests
+package simapp
 
 import (
 	"bytes"
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"math/rand"
 	"sort"
+	"testing"
 
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -124,4 +128,17 @@ func CreateGenAccounts(numAccs int, genCoins sdk.Coins) (genAccs []auth.Account,
 	}
 
 	return
+}
+
+func GetProtocolV0(t *testing.T, app *NCHApp) *v0.ProtocolV0 {
+	curProtocol := app.Engine.GetCurrentProtocol()
+	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
+	require.True(t, ok)
+	return protocolV0
+}
+
+func CheckBalance(t *testing.T, app *NCHApp, addr sdk.AccAddress, balances sdk.Coins) {
+	ctxCheck := app.BaseApp.NewContext(true, abci.Header{})
+	p0 := GetProtocolV0(t, app)
+	require.True(t, balances.IsEqual(p0.BankKeeper.GetCoins(ctxCheck, addr)))
 }

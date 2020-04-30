@@ -1,33 +1,39 @@
-package tests
+package staking_test
 
 import (
 	"bytes"
 	"errors"
-	"github.com/netcloth/netcloth-chain/app/protocol"
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
-	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
-	"github.com/netcloth/netcloth-chain/app/v0/staking"
-	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/app"
-	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
+	"sort"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"sort"
-	"testing"
+
+	"github.com/netcloth/netcloth-chain/app/protocol"
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
+	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
+	"github.com/netcloth/netcloth-chain/app/v0/staking"
+	"github.com/netcloth/netcloth-chain/codec"
+	"github.com/netcloth/netcloth-chain/simapp"
+	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
-	valTokens  = sdk.TokensFromConsensusPower(1000)
-	initTokens = sdk.TokensFromConsensusPower(100000)
-	valCoins   = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
-	initCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
+	bondedTokens = sdk.TokensFromConsensusPower(1000)
+	initTokens   = sdk.TokensFromConsensusPower(100000)
+	bondCoin     = sdk.NewCoin(sdk.DefaultBondDenom, bondedTokens)
+	initCoin     = sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	bondCoins    = sdk.NewCoins(bondCoin)
+	initCoins    = sdk.NewCoins(initCoin)
+
+	commissionRates = staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
 )
 
 var (
@@ -42,7 +48,7 @@ var (
 )
 
 type testInput struct {
-	mApp     *app.NCHApp
+	mApp     *simapp.NCHApp
 	keeper   gov.Keeper
 	sk       staking.Keeper
 	ak       auth.AccountKeeper
@@ -51,14 +57,14 @@ type testInput struct {
 	privKeys []crypto.PrivKey
 }
 
-func getProtocolV0(t *testing.T, app *app.NCHApp) *v0.ProtocolV0 {
+func getProtocolV0(t *testing.T, app *simapp.NCHApp) *v0.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
 	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
 	require.True(t, ok)
 	return protocolV0
 }
 
-func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs []auth.Account) testInput {
+func getMockApp(t *testing.T, numGenAccs int, genAccs []auth.Account) testInput {
 	mApp := NewNCHApp(t)
 
 	var (
@@ -68,21 +74,27 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	)
 
 	if genAccs == nil || len(genAccs) == 0 {
-		genAccs, addrs, pubKeys, privKeys = CreateGenAccounts(numGenAccs, valCoins)
+		genAccs, addrs, pubKeys, privKeys = simapp.CreateGenAccounts(numGenAccs, initCoins)
 	}
 
 	protocolV0 := getProtocolV0(t, mApp)
 
-	err := setGenesis(mApp, protocolV0.Cdc, genAccs, genState)
+	err := setGenesis(mApp, protocolV0.Cdc, genAccs)
 	require.Nil(t, err)
+
+	header := abci.Header{Height: mApp.LastBlockHeight() + 1}
+	mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	ctx := mApp.BaseApp.NewContext(false, abci.Header{})
+	initGenAccount(t, ctx, mApp)
+	mApp.Commit()
 
 	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
 }
 
-func NewNCHApp(t *testing.T) *app.NCHApp {
+func NewNCHApp(t *testing.T) *simapp.NCHApp {
 	logger := log.NewNopLogger()
 	db := dbm.NewMemDB()
-	baseApp := app.NewBaseApp("nchmock", logger, db)
+	baseApp := simapp.NewBaseApp("nchmock", logger, db)
 
 	baseApp.SetCommitMultiStoreTracer(nil)
 	baseApp.SetAppVersion("v0")
@@ -103,17 +115,13 @@ func NewNCHApp(t *testing.T) *app.NCHApp {
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	return &app.NCHApp{BaseApp: baseApp}
+	return &simapp.NCHApp{BaseApp: baseApp}
 }
 
-func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
+func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account) error {
 	app.GenesisAccounts = accs
 
 	genesisState := v0.NewDefaultGenesisState()
-	if !genState.IsEmpty() {
-		govState := cdc.MustMarshalJSON(genState)
-		genesisState["gov"] = govState
-	}
 
 	stateBytes, err := codec.MarshalJSONIndent(cdc, genesisState)
 	if err != nil {
@@ -131,7 +139,7 @@ func setGenesis(app *app.NCHApp, cdc *codec.Codec, accs []auth.Account, genState
 	return nil
 }
 
-func initGenAccount(t *testing.T, ctx sdk.Context, app *app.NCHApp) {
+func initGenAccount(t *testing.T, ctx sdk.Context, app *simapp.NCHApp) {
 	p0 := getProtocolV0(t, app)
 	for _, genAcc := range app.GenesisAccounts {
 		acc := p0.AccountKeeper.NewAccountWithAddress(ctx, genAcc.GetAddress())

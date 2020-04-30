@@ -1,4 +1,4 @@
-package tests
+package gov_test
 
 import (
 	"errors"
@@ -9,13 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 func TestGetSetProposal(t *testing.T) {
-	input := getMockApp(t, 1, gov.GenesisState{}, nil)
+	input := getMockApp(t, 1, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -34,7 +33,7 @@ func TestGetSetProposal(t *testing.T) {
 }
 
 func TestIncrementProposalNumber(t *testing.T) {
-	input := getMockApp(t, 1, gov.GenesisState{}, nil)
+	input := getMockApp(t, 1, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -54,7 +53,7 @@ func TestIncrementProposalNumber(t *testing.T) {
 }
 
 func TestActivateVotingPeriod(t *testing.T) {
-	input := getMockApp(t, 1, gov.GenesisState{}, nil)
+	input := getMockApp(t, 1, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -83,7 +82,7 @@ func TestActivateVotingPeriod(t *testing.T) {
 }
 
 func TestDeposits(t *testing.T) {
-	input := getMockApp(t, 2, gov.GenesisState{}, nil)
+	input := getMockApp(t, 2, GenesisState{}, nil)
 
 	SortAddresses(input.addrs)
 
@@ -187,7 +186,7 @@ func TestDeposits(t *testing.T) {
 }
 
 func TestVotes(t *testing.T) {
-	input := getMockApp(t, 2, gov.GenesisState{}, nil)
+	input := getMockApp(t, 2, GenesisState{}, nil)
 	SortAddresses(input.addrs)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
@@ -200,32 +199,32 @@ func TestVotes(t *testing.T) {
 	require.NoError(t, err)
 	proposalID := proposal.ProposalID
 
-	proposal.Status = gov.StatusVotingPeriod
+	proposal.Status = StatusVotingPeriod
 	input.keeper.SetProposal(ctx, proposal)
 
 	// Test first vote
-	input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionAbstain)
+	input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionAbstain)
 	vote, found := input.keeper.GetVote(ctx, proposalID, input.addrs[0])
 	require.True(t, found)
 	require.Equal(t, input.addrs[0], vote.Voter)
 	require.Equal(t, proposalID, vote.ProposalID)
-	require.Equal(t, gov.OptionAbstain, vote.Option)
+	require.Equal(t, OptionAbstain, vote.Option)
 
 	// Test change of vote
-	input.keeper.AddVote(ctx, proposalID, input.addrs[0], gov.OptionYes)
+	input.keeper.AddVote(ctx, proposalID, input.addrs[0], OptionYes)
 	vote, found = input.keeper.GetVote(ctx, proposalID, input.addrs[0])
 	require.True(t, found)
 	require.Equal(t, input.addrs[0], vote.Voter)
 	require.Equal(t, proposalID, vote.ProposalID)
-	require.Equal(t, gov.OptionYes, vote.Option)
+	require.Equal(t, OptionYes, vote.Option)
 
 	// Test second vote
-	input.keeper.AddVote(ctx, proposalID, input.addrs[1], gov.OptionNoWithVeto)
+	input.keeper.AddVote(ctx, proposalID, input.addrs[1], OptionNoWithVeto)
 	vote, found = input.keeper.GetVote(ctx, proposalID, input.addrs[1])
 	require.True(t, found)
 	require.Equal(t, input.addrs[1], vote.Voter)
 	require.Equal(t, proposalID, vote.ProposalID)
-	require.Equal(t, gov.OptionNoWithVeto, vote.Option)
+	require.Equal(t, OptionNoWithVeto, vote.Option)
 
 	// Test vote iterator
 	votesIterator := input.keeper.GetVotesIterator(ctx, proposalID)
@@ -234,21 +233,21 @@ func TestVotes(t *testing.T) {
 	require.True(t, votesIterator.Valid())
 	require.Equal(t, input.addrs[0], vote.Voter)
 	require.Equal(t, proposalID, vote.ProposalID)
-	require.Equal(t, gov.OptionYes, vote.Option)
+	require.Equal(t, OptionYes, vote.Option)
 	votesIterator.Next()
 	require.True(t, votesIterator.Valid())
 	input.keeper.Getcdc().MustUnmarshalBinaryLengthPrefixed(votesIterator.Value(), &vote)
 	require.True(t, votesIterator.Valid())
 	require.Equal(t, input.addrs[1], vote.Voter)
 	require.Equal(t, proposalID, vote.ProposalID)
-	require.Equal(t, gov.OptionNoWithVeto, vote.Option)
+	require.Equal(t, OptionNoWithVeto, vote.Option)
 	votesIterator.Next()
 	require.False(t, votesIterator.Valid())
 	votesIterator.Close()
 }
 
 func TestProposalQueues(t *testing.T) {
-	input := getMockApp(t, 1, gov.GenesisState{}, nil)
+	input := getMockApp(t, 1, GenesisState{}, nil)
 
 	header := abci.Header{Height: input.mApp.LastBlockHeight() + 1}
 	input.mApp.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -285,8 +284,8 @@ type validProposal struct{}
 
 func (validProposal) GetTitle() string       { return "title" }
 func (validProposal) GetDescription() string { return "description" }
-func (validProposal) ProposalRoute() string  { return gov.RouterKey }
-func (validProposal) ProposalType() string   { return gov.ProposalTypeText }
+func (validProposal) ProposalRoute() string  { return RouterKey }
+func (validProposal) ProposalType() string   { return ProposalTypeText }
 func (validProposal) String() string         { return "" }
 func (validProposal) ValidateBasic() error   { return nil }
 
@@ -327,7 +326,7 @@ func registerTestCodec(cdc *codec.Codec) {
 }
 
 func TestSubmitProposal(t *testing.T) { // TODO: fixme test failed
-	input := getMockApp(t, 1, gov.GenesisState{}, nil)
+	input := getMockApp(t, 1, GenesisState{}, nil)
 
 	registerTestCodec(input.keeper.Getcdc())
 
@@ -338,7 +337,7 @@ func TestSubmitProposal(t *testing.T) { // TODO: fixme test failed
 	//input.mApp.InitChainer(ctx, abci.RequestInitChain{})
 
 	testCases := []struct {
-		content     gov.Content
+		content     Content
 		expectedErr error
 	}{
 		{validProposal{}, nil},
@@ -348,7 +347,7 @@ func TestSubmitProposal(t *testing.T) { // TODO: fixme test failed
 		{invalidProposalDesc1{}, nil},
 		{invalidProposalDesc2{}, nil},
 		// error only when invalid route
-		{invalidProposalRoute{}, gov.ErrNoProposalHandlerExists},
+		{invalidProposalRoute{}, ErrNoProposalHandlerExists},
 		// Keeper does not call ValidateBasic, msg.ValidateBasic does
 		{invalidProposalValidation{}, nil},
 	}
