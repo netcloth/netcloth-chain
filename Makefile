@@ -92,7 +92,7 @@ clean:
 
 ##############################################
 ### Test
-PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v '/tests' | grep -v '/netcloth/netcloth-chain/crypto')
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v '/netcloth/netcloth-chain/crypto')
 PACKAGES_CRYPTO=$(shell go list ./... | grep '/netcloth/netcloth-chain/crypto')
 
 test: test_unit_crypto test_unit

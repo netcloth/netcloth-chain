@@ -87,16 +87,14 @@ func NewNCHApp(t *testing.T) *app.NCHApp {
 	baseApp.SetCommitMultiStoreTracer(nil)
 	baseApp.SetAppVersion("v0")
 
-	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
+	protocolKeeper := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(protocolKeeper)
 	baseApp.SetProtocolEngine(&engine)
-
-	baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
 
 	baseApp.MountKVStores(protocol.Keys)
 	baseApp.MountTransientStores(protocol.TKeys)
 
-	err := baseApp.LoadLatestVersion(protocol.MainKVStoreKey)
+	err := baseApp.LoadLatestVersion(protocol.Keys[protocol.MainStoreKey])
 	require.Nil(t, err)
 
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, 10, nil))
