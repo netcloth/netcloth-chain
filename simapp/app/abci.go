@@ -200,7 +200,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	tx, err := app.TxDecoder(req.Tx)
 	if err != nil {
-		return sdkerrors.ResponseDeliverTx(err, 0, 0, err.Error())
+		return sdkerrors.ResponseDeliverTx(err, nil, 0, 0, err.Error())
 	}
 
 	gInfo, result, err := app.runTx(runTxModeDeliver, req.Tx, tx)
@@ -210,7 +210,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		if result != nil {
 			log = result.Log
 		}
-		return sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed, log)
+		return sdkerrors.ResponseDeliverTx(err, nil, gInfo.GasWanted, gInfo.GasUsed, log)
 	}
 
 	return abci.ResponseDeliverTx{
