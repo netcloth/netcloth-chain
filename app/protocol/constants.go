@@ -47,9 +47,8 @@ const (
 
 // all store keys
 var (
-	MainKVStoreKey = sdk.NewKVStoreKey(MainStoreKey)
-
 	Keys = sdk.NewKVStoreKeys(
+		MainStoreKey,
 		ParamsStoreKey,
 		SupplyStoreKey,
 		StakingStoreKey,
