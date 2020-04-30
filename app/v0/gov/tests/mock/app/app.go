@@ -41,21 +41,21 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	baseApp.SetCommitMultiStoreTracer(traceStore)
 	baseApp.SetAppVersion(version.Version)
 
-	protocolKeeper := sdk.NewProtocolKeeper(protocol.MainKVStoreKey)
+	protocolKeeper := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(protocolKeeper)
 	baseApp.SetProtocolEngine(&engine)
 
 	if !baseApp.fauxMerkleMode {
-		baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeIAVL)
+		baseApp.MountStore(protocol.Keys[protocol.MainStoreKey], sdk.StoreTypeIAVL)
 	} else {
-		baseApp.MountStore(protocol.MainKVStoreKey, sdk.StoreTypeDB)
+		baseApp.MountStore(protocol.Keys[protocol.MainStoreKey], sdk.StoreTypeDB)
 	}
 
 	baseApp.MountKVStores(protocol.Keys)
 	baseApp.MountTransientStores(protocol.TKeys)
 
 	if loadLatest {
-		err := baseApp.LoadLatestVersion(protocol.MainKVStoreKey)
+		err := baseApp.LoadLatestVersion(protocol.Keys[protocol.MainStoreKey])
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
@@ -63,7 +63,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
 
-	loaded, current := engine.LoadCurrentProtocol(baseApp.Cms.GetKVStore(protocol.MainKVStoreKey))
+	loaded, current := engine.LoadCurrentProtocol(baseApp.Cms.GetKVStore(protocol.Keys[protocol.MainStoreKey]))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
 	} else {
@@ -82,7 +82,7 @@ func MakeLatestCodec() *codec.Codec {
 }
 
 func (app *NCHApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, protocol.MainKVStoreKey)
+	return app.LoadVersion(height, protocol.Keys[protocol.MainStoreKey])
 }
 
 func (app *NCHApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
