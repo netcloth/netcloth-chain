@@ -37,7 +37,7 @@ func (fpd FeePreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 	}
 
-	if ctx.BlockHeight() != 0 {
+	if !simulate && ctx.BlockHeight() != 0 {
 		gasLimit := feeTx.GetGas()
 		feeCoins := feeTx.GetFee()
 

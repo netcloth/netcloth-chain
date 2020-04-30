@@ -239,7 +239,7 @@ func (p *ProtocolV0) configKeepers() {
 		protocol.Keys[protocol.VmCodeStoreKey],
 		protocol.Keys[protocol.VmStoreKey],
 		vmSubspace,
-		auth.NewAccountKeeperCopy(p.accountKeeper, true))
+		p.accountKeeper)
 
 	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
 

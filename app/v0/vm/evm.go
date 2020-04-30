@@ -19,7 +19,7 @@ type (
 	// GetHashFunc returns the nth block hash in the blockchain
 	// and is used by the BLOCKHASH EVM op code.
 	//GetHashFunc func(sdk.Context) types.Hash
-	GetHashFunc func(uint64) sdk.Hash
+	GetHashFunc func() sdk.Hash
 )
 
 func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, error) {

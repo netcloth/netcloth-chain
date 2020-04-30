@@ -3,13 +3,13 @@ package types
 import (
 	"errors"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/hexutil"
 	"time"
 
 	"github.com/tendermint/tendermint/crypto"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/exported"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
