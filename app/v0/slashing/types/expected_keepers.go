@@ -1,15 +1,9 @@
 package types // noalias
 
 import (
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/exported"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
-
-// AccountKeeper expected account keeper
-type AccountKeeper interface {
-	IterateAccounts(ctx sdk.Context, process func(auth.Account) (stop bool))
-}
 
 // StakingKeeper expected staking keeper
 type StakingKeeper interface {

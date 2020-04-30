@@ -4,17 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
-	"github.com/spf13/viper"
-	mempl "github.com/tendermint/tendermint/mempool"
-
-	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cfg "github.com/tendermint/tendermint/config"
+	mempl "github.com/tendermint/tendermint/mempool"
 	"github.com/tendermint/tendermint/proxy"
 	tmsm "github.com/tendermint/tendermint/state"
 	tmstore "github.com/tendermint/tendermint/store"
@@ -23,41 +20,26 @@ import (
 	"github.com/netcloth/netcloth-chain/app"
 	"github.com/netcloth/netcloth-chain/server"
 	sdk "github.com/netcloth/netcloth-chain/types"
+)
 
-	cfg "github.com/tendermint/tendermint/config"
+const (
+	DefaultReplayFromHeight = 1
+	DefaultReplayToHeight   = -1
+
+	flagReplayFromHeight = "from"
+	flagReplayToHeight   = "to"
 )
 
 func replayCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "replay <root-dir> --from --to",
+		Use:   "replay <root-dir> --from [from_height] --to [to_height]",
 		Short: "Replay nchd transactions",
 
 		RunE: func(_ *cobra.Command, args []string) error {
-
-			from := 1
-			fromStr := viper.GetString("from")
-			if len(fromStr) > 0 {
-				newFrom, err := strconv.Atoi(fromStr)
-				if err != nil {
-					return err
-				}
-
-				if newFrom > from {
-					from = newFrom
-				}
-			}
-
-			to := -1
-			toStr := viper.GetString("to")
-			if len(toStr) > 0 {
-				newTo, err := strconv.Atoi(toStr)
-				if err != nil {
-					return err
-				}
-
-				if newTo > from {
-					to = newTo
-				}
+			from := viper.GetInt64(flagReplayFromHeight)
+			to := viper.GetInt64(flagReplayToHeight)
+			if from <= 0 {
+				return fmt.Errorf("from block height must >= 1")
 			}
 
 			return replayTxs(args[0], from, to)
@@ -65,38 +47,23 @@ func replayCmd() *cobra.Command {
 		Args: cobra.ExactArgs(1),
 	}
 
-	cmd.Flags().String("from", "", "from block")
-	cmd.Flags().String("to", "", "from block")
+	cmd.Flags().Int64(flagReplayFromHeight, DefaultReplayFromHeight, "from block height")
+	cmd.Flags().Int64(flagReplayToHeight, DefaultReplayToHeight, "to block height")
 
 	return cmd
 }
 
-func replayTxs(rootDir string, from, to int) error {
-
-	if false {
-		// Copy the rootDir to a new directory, to preserve the old one.
-		fmt.Fprintln(os.Stderr, "Copying rootdir over")
-		oldRootDir := rootDir
-		rootDir = oldRootDir + "_replay"
-		if cmn.FileExists(rootDir) {
-			cmn.Exit(fmt.Sprintf("temporary copy dir %v already exists", rootDir))
-		}
-		if err := cpm.Copy(oldRootDir, rootDir); err != nil {
-			return err
-		}
-	}
-
+func replayTxs(rootDir string, from, to int64) error {
 	configDir := filepath.Join(rootDir, "config")
 	dataDir := filepath.Join(rootDir, "data")
 	ctx := server.NewDefaultContext()
 
-	loadLatest := true
-	if from == 1 {
-		loadLatest = false
+	if DefaultReplayFromHeight == from {
 		statedbDir := filepath.Join(dataDir, "state.db")
-		fmt.Fprint(os.Stderr, statedbDir)
 		appdbDir := filepath.Join(dataDir, "application.db")
-		fmt.Fprint(os.Stderr, appdbDir)
+
+		fmt.Println(fmt.Sprintf("state database: %s", statedbDir))
+		fmt.Println(fmt.Sprintf("app database: %s", appdbDir))
 		err := os.RemoveAll(statedbDir)
 		if err != nil {
 			return err
@@ -118,7 +85,7 @@ func replayTxs(rootDir string, from, to int) error {
 
 	// TM DB
 	// tmDB := dbm.NewMemDB()
-	fmt.Fprintln(os.Stderr, "Opening tendermint state database")
+	fmt.Fprintln(os.Stderr, "Opening state database")
 	tmDB, err := sdk.NewLevelDB("state", dataDir)
 	if err != nil {
 		return err
@@ -133,7 +100,7 @@ func replayTxs(rootDir string, from, to int) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewNCHApp(ctx.Logger, appDB, nil, loadLatest, 0)
+	myapp := app.NewNCHApp(ctx.Logger, appDB, nil, true, uint(1))
 
 	// Genesis
 	var genDocPath = filepath.Join(configDir, "genesis.json")
@@ -199,7 +166,7 @@ func replayTxs(rootDir string, from, to int) error {
 	blockStore := tmstore.NewBlockStore(bcDB)
 
 	tz := []time.Duration{0, 0, 0}
-	for i := int(state.LastBlockHeight) + 1; to == -1 || i <= to; i++ {
+	for i := state.LastBlockHeight + 1; to == -1 || i <= to; i++ {
 		fmt.Fprintln(os.Stderr, "Running block ", i)
 		t1 := time.Now()
 
