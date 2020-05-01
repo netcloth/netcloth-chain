@@ -380,6 +380,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 }
 
 func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.ResponseQuery) {
+	// "/p2p" prefix for p2p queries
 	if len(path) >= 4 {
 		cmd, typ, arg := path[1], path[2], path[3]
 		switch cmd {
@@ -405,6 +406,11 @@ func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.
 }
 
 func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res abci.ResponseQuery) {
+	// path[0] should be "custom" because "/custom" prefix is required for keeper
+	// queries.
+	//
+	// The queryRouter routes using path[1]. For example, in the path
+	// "custom/gov/proposal", queryRouter routes using "gov".
 	if len(path) < 2 || path[1] == "" {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "no route for custom query specified"))
 	}

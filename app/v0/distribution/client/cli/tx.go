@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
+
 	//"github.com/netcloth/netcloth-chain/app/v0/gov"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
@@ -216,14 +219,14 @@ Where proposal.json contains:
   "recipient": "nch1s5afhd6gxevu37mkqcvvsj8qeylhn0rz46zdlq",
   "amount": [
     {
-      "denom": "stake",
-      "amount": "10000"
+      "denom": "pnch",
+      "amount": "1000000000000"
     }
   ],
   "deposit": [
     {
-      "denom": "stake",
-      "amount": "10000"
+      "denom": "pnch",
+      "amount": "1000000000000"
     }
   ]
 }
@@ -235,20 +238,20 @@ Where proposal.json contains:
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			//proposal, err := ParseCommunityPoolSpendProposalJSON(cdc, args[0])
-			//if err != nil {
-			//	return err
-			//}
+			proposal, err := ParseCommunityPoolSpendProposalJSON(cdc, args[0])
+			if err != nil {
+				return err
+			}
 
-			//from := cliCtx.GetFromAddress()
-			//content := types.NewCommunityPoolSpendProposal(proposal.Title, proposal.Description, proposal.Recipient, proposal.Amount)
-			//
-			//msg := gov.NewMsgSubmitProposal(content, proposal.Deposit, from)
-			//if err := msg.ValidateBasic(); err != nil {
-			//	return err
-			//}
+			from := cliCtx.GetFromAddress()
+			content := types.NewCommunityPoolSpendProposal(proposal.Title, proposal.Description, proposal.Recipient, proposal.Amount)
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{})
+			msg := gov.NewMsgSubmitProposal(content, proposal.Deposit, from)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 
