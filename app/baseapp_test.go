@@ -30,6 +30,19 @@ var (
 	capKey2 = sdk.NewKVStoreKey("key2")
 )
 
+func newEngine(options ...func(*MockProtocolV0)) protocol.ProtocolEngine {
+	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
+	engine := protocol.NewProtocolEngine(pk)
+	mockProtocolV0 := newMockProtocolV0()
+	for _, option := range options {
+		option(mockProtocolV0)
+	}
+	engine.Add(mockProtocolV0)
+	engine.LoadProtocol(0)
+
+	return engine
+}
+
 func defaultLogger() log.Logger {
 	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
 }
@@ -55,42 +68,22 @@ func registerTestCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(&msgNoRoute{}, "nch/baseapp/msgNoRoute", nil)
 }
 
-func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
+func setupBaseApp(t *testing.T, engine *protocol.ProtocolEngine, options ...func(*BaseApp)) *BaseApp {
 	app := newBaseApp(t.Name(), options...)
 	require.Equal(t, t.Name(), app.Name())
 
-	require.Panics(t, func() {
-		app.LoadLatestVersion(capKey1)
-	})
-
-	app.MountStores(capKey1, capKey2)
-
-	err := app.LoadLatestVersion(capKey1)
-	require.Nil(t, err)
-	return app
-}
-
-func setupBaseApp2(t *testing.T, options ...func(*MockProtocolV0)) *BaseApp {
-	app := newBaseApp(t.Name())
-	require.Equal(t, t.Name(), app.Name())
-
-	require.Panics(t, func() {
-		app.LoadLatestVersion(capKey1)
-	})
-
-	app.MountStores(capKey1, capKey2)
-
-	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
-	engine := protocol.NewProtocolEngine(pk)
-	app.SetProtocolEngine(&engine)
-	mockProtocolV0 := newMockProtocolV0()
-	engine.Add(mockProtocolV0)
-	engine.LoadProtocol(0)
-
-	for _, option := range options {
-		option(mockProtocolV0)
+	if engine != nil {
+		app.SetProtocolEngine(engine)
+		app.Engine.LoadProtocol(app.Engine.GetCurrentVersion())
 	}
 
+	require.Panics(t, func() {
+		app.LoadLatestVersion(capKey1)
+	})
+
+	app.MountStores(capKey1, capKey2)
+
+	// stores are mounted
 	err := app.LoadLatestVersion(capKey1)
 	require.Nil(t, err)
 
@@ -98,7 +91,8 @@ func setupBaseApp2(t *testing.T, options ...func(*MockProtocolV0)) *BaseApp {
 }
 
 func TestMountStores(t *testing.T) {
-	app := setupBaseApp(t)
+	engine := newEngine()
+	app := setupBaseApp(t, &engine)
 
 	store1 := app.cms.GetCommitKVStore(capKey1)
 	require.NotNil(t, store1)
@@ -250,6 +244,8 @@ func testChangeNameHelper(name string) func(*BaseApp) {
 	}
 }
 
+// Test that txs can be unmarshalled and read and that
+// correct error codes are returned when not
 func TestTxDecoder(t *testing.T) {
 	codec := codec.New()
 	registerTestCodec(codec)
@@ -265,6 +261,7 @@ func TestTxDecoder(t *testing.T) {
 	require.Equal(t, tx.Counter, cTx.Counter)
 }
 
+// Test that Info returns the latest committed state.
 func TestInfo(t *testing.T) {
 	app := newBaseApp(t.Name())
 
@@ -278,7 +275,7 @@ func TestInfo(t *testing.T) {
 }
 
 func TestBaseAppOptionSeal(t *testing.T) {
-	app := setupBaseApp(t)
+	app := setupBaseApp(t, nil)
 
 	require.Panics(t, func() {
 		app.SetName("")
@@ -568,8 +565,8 @@ func TestCheckTx(t *testing.T) {
 			return &sdk.Result{}, nil
 		})
 	}
-
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	nTxs := int64(5)
 	app.InitChain(abci.RequestInitChain{})
@@ -618,7 +615,8 @@ func TestDeliverTx(t *testing.T) {
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 	app.InitChain(abci.RequestInitChain{})
 
 	// Create same codec used in txDecoder
@@ -670,7 +668,8 @@ func TestMultiMsgDeliverTx(t *testing.T) {
 		p.GetRouter().AddRoute(routeMsgCounter2, handlerMsgCounter(t, capKey1, deliverKey2))
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	// Create same codec used in txDecoder
 	codec := codec.New()
@@ -748,7 +747,8 @@ func TestSimulateTx(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -807,7 +807,8 @@ func TestRunInvalidTransaction(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	header := abci.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -929,7 +930,8 @@ func TestTxGasLimits(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	header := abci.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -1013,7 +1015,9 @@ func TestMaxBlockGasLimits(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
+
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1092,7 +1096,8 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	}
 
 	cdc := codec.New()
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	app.InitChain(abci.RequestInitChain{})
 	registerTestCodec(cdc)
@@ -1190,7 +1195,9 @@ func TestGasConsumptionBadTx(t *testing.T) {
 	cdc := codec.New()
 	registerTestCodec(cdc)
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
+
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1240,7 +1247,8 @@ func TestQuery(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -1296,7 +1304,7 @@ func TestP2PQuery(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp(t, addrPeerFilterOpt, idPeerFilterOpt)
+	app := setupBaseApp(t, nil, addrPeerFilterOpt, idPeerFilterOpt)
 
 	addrQuery := abci.RequestQuery{
 		Path: "/p2p/filter/addr/1.1.1.1:8000",
@@ -1312,7 +1320,7 @@ func TestP2PQuery(t *testing.T) {
 }
 
 func TestGetMaximumBlockGas(t *testing.T) {
-	app := setupBaseApp(t)
+	app := setupBaseApp(t, nil)
 
 	app.setConsensusParams(&abci.ConsensusParams{Block: &abci.BlockParams{MaxGas: 0}})
 	require.Equal(t, uint64(0), app.getMaximumBlockGas())
@@ -1358,7 +1366,8 @@ func TestWithRouter(t *testing.T) {
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
-	app := setupBaseApp2(t, anteOpt, routerOpt)
+	engine := newEngine(anteOpt, routerOpt)
+	app := setupBaseApp(t, &engine)
 
 	app.InitChain(abci.RequestInitChain{})
 
