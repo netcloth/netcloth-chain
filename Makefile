@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
 
-PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 
@@ -88,3 +87,18 @@ draw-deps:
 
 clean:
 	rm -rf  build/
+
+
+
+##############################################
+### Test
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v '/netcloth/netcloth-chain/crypto')
+PACKAGES_CRYPTO=$(shell go list ./... | grep '/netcloth/netcloth-chain/crypto')
+
+test: test_unit_crypto test_unit
+
+test_unit:
+	@go test -mod=readonly $(PACKAGES_NOSIMULATION)
+
+test_unit_crypto:
+	@go test -mod=readonly -tags "ledger test_ledger_mock" $(PACKAGES_CRYPTO)

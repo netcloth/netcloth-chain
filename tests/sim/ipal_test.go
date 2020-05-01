@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	itypes "github.com/netcloth/netcloth-chain/modules/ipal/types"
+	itypes "github.com/netcloth/netcloth-chain/app/v0/ipal/types"
 	"github.com/netcloth/netcloth-chain/tests"
 	"github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
@@ -44,7 +44,7 @@ func executeGetIPALNodes(t *testing.T, cmdStr string) (nodes itypes.IPALNodes) {
 }
 
 func Test_ipal(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 	_, servAddr, port, nchdHome, nchcliHome, p2pAddr := initFixtures(t)
 
 	proc := tests.GoExecuteTWithStdout(t, fmt.Sprintf("nchd start --home=%s --rpc.laddr=%v --p2p.laddr=%v", nchdHome, servAddr, p2pAddr))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"path"
 
@@ -10,32 +11,28 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/netcloth/netcloth-chain/app"
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	authcmd "github.com/netcloth/netcloth-chain/app/v0/auth/client/cli"
+	authrest "github.com/netcloth/netcloth-chain/app/v0/auth/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/bank"
+	bankcmd "github.com/netcloth/netcloth-chain/app/v0/bank/client/cli"
+	cipalcli "github.com/netcloth/netcloth-chain/app/v0/cipal/client/cli"
+	ipalcli "github.com/netcloth/netcloth-chain/app/v0/ipal/client/cli"
+	vmcli "github.com/netcloth/netcloth-chain/app/v0/vm/client/cli"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/keys"
 	"github.com/netcloth/netcloth-chain/client/lcd"
 	"github.com/netcloth/netcloth-chain/client/rpc"
-	"github.com/netcloth/netcloth-chain/modules/auth"
-	authcmd "github.com/netcloth/netcloth-chain/modules/auth/client/cli"
-	authrest "github.com/netcloth/netcloth-chain/modules/auth/client/rest"
-	"github.com/netcloth/netcloth-chain/modules/bank"
-	bankcmd "github.com/netcloth/netcloth-chain/modules/bank/client/cli"
-	cipalcli "github.com/netcloth/netcloth-chain/modules/cipal/client/cli"
-	ipalcli "github.com/netcloth/netcloth-chain/modules/ipal/client/cli"
-	vmcli "github.com/netcloth/netcloth-chain/modules/vm/client/cli"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
 
 func main() {
-	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
 
-	// Instantiate the codec for the command line application
-	cdc := app.CreateCodec()
+	cdc := app.MakeLatestCodec()
 
-	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	app.SetBech32AddressPrefixes(config)
 	config.Seal()
 
 	rootCmd := &cobra.Command{
@@ -43,13 +40,11 @@ func main() {
 		Short: "NCHNetwork Client",
 	}
 
-	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initConfig(rootCmd)
 	}
 
-	// Construct Root Command
 	rootCmd.AddCommand(
 		client.ConfigCmd(app.DefaultCLIHome),
 		rpc.StatusCommand(),
@@ -79,7 +74,7 @@ func main() {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+	v0.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func queryCmd(cdc *amino.Codec) *cobra.Command {
@@ -98,8 +93,8 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 		client.LineBreak,
 	)
-	// add modules' query commands
-	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
+
+	v0.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
 }
@@ -120,18 +115,15 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	// add modules' tx commands
-	app.ModuleBasics.AddTxCommands(txCmd, cdc)
+	v0.ModuleBasics.AddTxCommands(txCmd, cdc)
 
 	// remove auth and bank commands as they're mounted under the root tx command
 	var cmdsToRemove []*cobra.Command
-
 	for _, cmd := range txCmd.Commands() {
 		if cmd.Use == auth.ModuleName || cmd.Use == bank.ModuleName {
 			cmdsToRemove = append(cmdsToRemove, cmd)
 		}
 	}
-
 	txCmd.RemoveCommand(cmdsToRemove...)
 
 	return txCmd

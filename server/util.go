@@ -27,7 +27,6 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
-// server context
 type Context struct {
 	Config *cfg.Config
 	Logger log.Logger
@@ -116,11 +115,11 @@ func interceptLoadConfig() (conf *cfg.Config, err error) {
 	return
 }
 
-// add server commands
 func AddCommands(
 	ctx *Context, cdc *codec.Codec,
 	rootCmd *cobra.Command,
-	appCreator AppCreator, appExport AppExporter) {
+	appCreator AppCreator,
+	appExport AppExporter) {
 
 	rootCmd.PersistentFlags().String("log_level", ctx.Config.LogLevel, "Log level")
 

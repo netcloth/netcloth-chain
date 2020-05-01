@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"testing"
 
@@ -25,9 +26,9 @@ func TestExport(t *testing.T) {
 }
 
 func setGenesis(app *NCHApp) error {
-	genesisState := NewDefaultGenesisState()
+	genesisState := v0.NewDefaultGenesisState()
 
-	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
+	stateBytes, err := codec.MarshalJSONIndent(app.Engine.GetCurrentProtocol().GetCodec(), genesisState)
 	if err != nil {
 		return err
 	}
