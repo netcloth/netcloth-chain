@@ -6,11 +6,12 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/utils"
+	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
+	"github.com/netcloth/netcloth-chain/app/v0/gov"
+	govrest "github.com/netcloth/netcloth-chain/app/v0/gov/client/rest"
 	"github.com/netcloth/netcloth-chain/client/context"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
-	//"github.com/netcloth/netcloth-chain/app/v0/gov"
-	govrest "github.com/netcloth/netcloth-chain/app/v0/gov/client/rest"
 )
 
 // RegisterRoutes register distribution REST routes.
@@ -39,13 +40,13 @@ func postProposalHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		//content := types.NewCommunityPoolSpendProposal(req.Title, req.Description, req.Recipient, req.Amount)
-		//
-		//msg := gov.NewMsgSubmitProposal(content, req.Deposit, req.Proposer)
-		//if err := msg.ValidateBasic(); err != nil {
-		//	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-		//	return
-		//}
+		content := types.NewCommunityPoolSpendProposal(req.Title, req.Description, req.Recipient, req.Amount)
+
+		msg := gov.NewMsgSubmitProposal(content, req.Deposit, req.Proposer)
+		if err := msg.ValidateBasic(); err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
 		utils.WriteGenerateStdTxResponse(w, cliCtx, req.BaseReq, []sdk.Msg{})
 	}

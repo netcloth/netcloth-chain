@@ -18,7 +18,6 @@ import (
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 
-	//"github.com/netcloth/netcloth-chain/app/v0/gov"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
