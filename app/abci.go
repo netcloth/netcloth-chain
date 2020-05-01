@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
-
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -23,18 +23,42 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		app.storeConsensusParams(req.ConsensusParams)
 	}
 
-	app.setDeliverState(abci.Header{ChainID: req.ChainId})
-	app.setCheckState(abci.Header{ChainID: req.ChainId})
+	initHeader := abci.Header{ChainID: req.ChainId, Time: req.Time}
+
+	// initialize the deliver state and check state with a correct header
+	app.setDeliverState(initHeader)
+	app.setCheckState(initHeader)
 
 	initChainer := app.Engine.GetCurrentProtocol().GetInitChainer()
 	if initChainer == nil {
 		return
 	}
 
+	// add block gas meter for any genesis transactions (allow infinite gas)
 	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	res = initChainer(app.deliverState.ctx, req)
 
+	// sanity check
+	if len(req.Validators) > 0 {
+		if len(req.Validators) != len(res.Validators) {
+			panic(
+				fmt.Errorf(
+					"len(RequestInitChain.Validators) != len(GenesisValidators) (%d != %d)",
+					len(req.Validators), len(res.Validators),
+				),
+			)
+		}
+
+		sort.Sort(abci.ValidatorUpdates(req.Validators))
+		sort.Sort(abci.ValidatorUpdates(res.Validators))
+
+		for i, val := range res.Validators {
+			if !val.Equal(req.Validators[i]) {
+				panic(fmt.Errorf("genesisValidators[%d] != req.Validators[%d] ", i, i))
+			}
+		}
+	}
 	// There may be some application state in the genesis file, so always init the metrics.
 	//app.Engine.GetCurrentProtocol().InitMetrics(app.cms)
 
@@ -116,6 +140,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		res = beginBlocker(app.deliverState.ctx, req)
 	}
 
+	// set the signed validators for addition to context in deliverTx
 	app.voteInfos = req.LastCommitInfo.GetVotes()
 	return
 }
