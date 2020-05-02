@@ -51,8 +51,8 @@ func (m Minter) NextInflationRate(params Params, bondedRatio sdk.Dec) sdk.Dec {
 	// The target annual inflation rate is recalculated for each previsions cycle. The
 	// inflation is also subject to a rate change (positive or negative) depending on
 	// the distance from the desired ratio (67%). The maximum rate change possible is
-	// defined to be 13% per year, however the annual inflation is capped as between
-	// 7% and 20%.
+	// defined to be 10% per year, however the annual inflation is capped as between
+	// 10% and 20%.
 
 	// (1 - bondedRatio/GoalBonded) * InflationRateChange
 	inflationRateChangePerYear := sdk.OneDec().
