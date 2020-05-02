@@ -22,27 +22,33 @@ const (
 
 var (
 	// functions aliases
-	NewKeeper           = keeper.NewKeeper
-	NewQuerier          = keeper.NewQuerier
-	NewGenesisState     = types.NewGenesisState
-	DefaultGenesisState = types.DefaultGenesisState
-	ValidateGenesis     = types.ValidateGenesis
-	ParamKeyTable       = types.ParamKeyTable
-	NewParams           = types.NewParams
-	DefaultParams       = types.DefaultParams
+	NewKeeper            = keeper.NewKeeper
+	NewQuerier           = keeper.NewQuerier
+	NewGenesisState      = types.NewGenesisState
+	DefaultGenesisState  = types.DefaultGenesisState
+	ValidateGenesis      = types.ValidateGenesis
+	NewMinter            = types.NewMinter
+	InitialMinter        = types.InitialMinter
+	DefaultInitialMinter = types.DefaultInitialMinter
+	ValidateMinter       = types.ValidateMinter
+	ParamKeyTable        = types.ParamKeyTable
+	NewParams            = types.NewParams
+	DefaultParams        = types.DefaultParams
 
 	// variable aliases
-	ModuleCdc             = types.ModuleCdc
-	KeyMintDenom          = types.KeyMintDenom
-	KeyInflationRate      = types.KeyInflationCutBackRate
-	KeyNextInflateHeight  = types.KeyNextInflationCutBackHeight
-	KeyBlockProvision     = types.KeyBlockProvision
-	KeyBlocksPerYear      = types.KeyBlocksPerYear
-	KeyTotalSupplyCeiling = types.KeyTotalSupplyCeiling
+	ModuleCdc              = types.ModuleCdc
+	MinterKey              = types.MinterKey
+	KeyMintDenom           = types.KeyMintDenom
+	KeyInflationRateChange = types.KeyInflationRateChange
+	KeyInflationMax        = types.KeyInflationMax
+	KeyInflationMin        = types.KeyInflationMin
+	KeyGoalBonded          = types.KeyGoalBonded
+	KeyBlocksPerYear       = types.KeyBlocksPerYear
 )
 
 type (
 	Keeper       = keeper.Keeper
 	GenesisState = types.GenesisState
+	Minter       = types.Minter
 	Params       = types.Params
 )

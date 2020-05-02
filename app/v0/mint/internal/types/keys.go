@@ -1,11 +1,12 @@
 package types
 
-import (
-	"github.com/netcloth/netcloth-chain/app/protocol"
-)
+// the one key to use for the keeper store
+var MinterKey = []byte{0x00}
 
+// nolint
 const (
-	ModuleName = protocol.MintModuleName
+	// module name
+	ModuleName = "mint"
 
 	// default paramspace for params keeper
 	DefaultParamspace = ModuleName
