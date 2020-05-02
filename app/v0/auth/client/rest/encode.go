@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/client/context"
-	"github.com/netcloth/netcloth-chain/modules/auth/types"
 	"github.com/netcloth/netcloth-chain/types/rest"
 )
 

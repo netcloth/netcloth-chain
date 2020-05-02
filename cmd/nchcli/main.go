@@ -1,9 +1,10 @@
 package main
 
 import (
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"os"
 	"path"
+
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -90,7 +91,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.ValidatorCommand(cdc),
 		rpc.BlockCommand(),
 		authcmd.QueryTxCmd(cdc),
-		client.LineBreak,
+		authcmd.QueryTxsByEventsCmd(cdc),
 		client.LineBreak,
 	)
 
@@ -112,6 +113,8 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.GetMultiSignCommand(cdc),
 		client.LineBreak,
 		authcmd.GetBroadcastCommand(cdc),
+		authcmd.GetEncodeCommand(cdc),
+		authcmd.GetDecodeCommand(cdc),
 		client.LineBreak,
 	)
 
