@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### nchd
+* fix #33 unbonding failed
 * update inflation of mint module
 * add #34 upgrade module
 * fix #27 "--gas=auto" not available
