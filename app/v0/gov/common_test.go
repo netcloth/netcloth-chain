@@ -18,6 +18,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
+	"github.com/netcloth/netcloth-chain/app/v0/supply"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/simapp"
 	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
@@ -133,13 +134,24 @@ func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account, genSt
 	return nil
 }
 
+func setTotalSupply(t *testing.T, app *simapp.NCHApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
+	p0 := getProtocolV0(t, app)
+	totalSupply := sdk.NewCoins(sdk.NewCoin(p0.StakingKeeper.BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
+	prevSupply := p0.SupplyKeeper.GetSupply(ctx)
+	p0.SupplyKeeper.SetSupply(ctx, supply.NewSupply(prevSupply.GetTotal().Add(totalSupply)))
+}
+
 func initGenAccount(t *testing.T, ctx sdk.Context, app *simapp.NCHApp) {
 	p0 := getProtocolV0(t, app)
+	accAmt := sdk.NewInt(0)
 	for _, genAcc := range app.GenesisAccounts {
 		acc := p0.AccountKeeper.NewAccountWithAddress(ctx, genAcc.GetAddress())
 		acc.SetCoins(genAcc.GetCoins())
 		p0.AccountKeeper.SetAccount(ctx, acc)
+		accAmt = accAmt.Add(genAcc.GetCoins()[0].Amount)
 	}
+
+	setTotalSupply(t, app, ctx, accAmt, 1)
 }
 
 // implement `Interface` in sort package.

@@ -84,7 +84,7 @@ type ProtocolV0 struct {
 	GovKeeper      gov.Keeper
 	crisisKeeper   crisis.Keeper
 	paramsKeeper   params.Keeper
-	supplyKeeper   supply.Keeper
+	SupplyKeeper   supply.Keeper
 	StakingKeeper  staking.Keeper
 	ipalKeeper     ipal.Keeper
 	cipalKeeper    cipal.Keeper
@@ -226,16 +226,16 @@ func (p *ProtocolV0) configKeepers() {
 	p.AccountKeeper = auth.NewAccountKeeper(p.Cdc, protocol.Keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
 	p.RefundKeeper = auth.NewRefundKeeper(p.Cdc, protocol.Keys[auth.RefundKey])
 	p.BankKeeper = bank.NewBaseKeeper(p.AccountKeeper, bankSubspace, ModuleAccountAddrs())
-	p.supplyKeeper = supply.NewKeeper(p.Cdc, protocol.Keys[protocol.SupplyStoreKey], p.AccountKeeper, p.BankKeeper, maccPerms)
+	p.SupplyKeeper = supply.NewKeeper(p.Cdc, protocol.Keys[protocol.SupplyStoreKey], p.AccountKeeper, p.BankKeeper, maccPerms)
 	stakingKeeper := staking.NewKeeper(
 		p.Cdc, protocol.Keys[staking.StoreKey], protocol.TKeys[staking.TStoreKey],
-		p.supplyKeeper, stakingSubspace)
-	p.mintKeeper = mint.NewKeeper(p.Cdc, protocol.Keys[mint.StoreKey], mintSubspace, &stakingKeeper, p.supplyKeeper, auth.FeeCollectorName)
+		p.SupplyKeeper, stakingSubspace)
+	p.mintKeeper = mint.NewKeeper(p.Cdc, protocol.Keys[mint.StoreKey], mintSubspace, &stakingKeeper, p.SupplyKeeper, auth.FeeCollectorName)
 	p.distrKeeper = distr.NewKeeper(p.Cdc, protocol.Keys[distr.StoreKey], distrSubspace, &stakingKeeper,
-		p.supplyKeeper, auth.FeeCollectorName, ModuleAccountAddrs())
+		p.SupplyKeeper, auth.FeeCollectorName, ModuleAccountAddrs())
 	p.slashingKeeper = slashing.NewKeeper(
 		p.Cdc, protocol.Keys[slashing.StoreKey], &stakingKeeper, slashingSubspace)
-	p.crisisKeeper = crisis.NewKeeper(crisisSubspace, p.invCheckPeriod, p.supplyKeeper, auth.FeeCollectorName)
+	p.crisisKeeper = crisis.NewKeeper(crisisSubspace, p.invCheckPeriod, p.SupplyKeeper, auth.FeeCollectorName)
 
 	p.cipalKeeper = cipal.NewKeeper(
 		protocol.Keys[cipal.StoreKey],
@@ -245,7 +245,7 @@ func (p *ProtocolV0) configKeepers() {
 	p.ipalKeeper = ipal.NewKeeper(
 		protocol.Keys[ipal.StoreKey],
 		p.Cdc,
-		p.supplyKeeper,
+		p.SupplyKeeper,
 		ipalSubspace)
 
 	p.vmKeeper = vm.NewKeeper(
@@ -259,7 +259,7 @@ func (p *ProtocolV0) configKeepers() {
 	p.guardianKeeper = guardian.NewKeeper(p.Cdc, protocol.Keys[protocol.GuardianStoreKey])
 
 	p.GovKeeper = gov.NewKeeper(
-		p.Cdc, protocol.Keys[gov.StoreKey], govSubspace, p.supplyKeeper,
+		p.Cdc, protocol.Keys[gov.StoreKey], govSubspace, p.SupplyKeeper,
 		&stakingKeeper, p.guardianKeeper, p.protocolKeeper,
 	)
 
@@ -289,12 +289,12 @@ func (p *ProtocolV0) configModuleManager() {
 		auth.NewAppModule(p.AccountKeeper),
 		bank.NewAppModule(p.BankKeeper, p.AccountKeeper),
 		crisis.NewAppModule(&p.crisisKeeper),
-		supply.NewAppModule(p.supplyKeeper, p.AccountKeeper),
-		distr.NewAppModule(p.distrKeeper, p.supplyKeeper),
-		gov.NewAppModule(p.GovKeeper, p.supplyKeeper),
+		supply.NewAppModule(p.SupplyKeeper, p.AccountKeeper),
+		distr.NewAppModule(p.distrKeeper, p.SupplyKeeper),
+		gov.NewAppModule(p.GovKeeper, p.SupplyKeeper),
 		mint.NewAppModule(p.mintKeeper),
 		slashing.NewAppModule(p.slashingKeeper, p.StakingKeeper),
-		staking.NewAppModule(p.StakingKeeper, p.distrKeeper, p.AccountKeeper, p.supplyKeeper),
+		staking.NewAppModule(p.StakingKeeper, p.distrKeeper, p.AccountKeeper, p.SupplyKeeper),
 		cipal.NewAppModule(p.cipalKeeper),
 		ipal.NewAppModule(p.ipalKeeper),
 		vm.NewAppModule(p.vmKeeper),
@@ -351,8 +351,8 @@ func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.
 }
 
 func (p *ProtocolV0) configFeeHandlers() {
-	p.anteHandler = ante.NewAnteHandler(p.AccountKeeper, p.supplyKeeper, ante.DefaultSigVerificationGasConsumer)
-	p.feeRefundHandler = auth.NewFeeRefundHandler(p.AccountKeeper, p.supplyKeeper, p.RefundKeeper)
+	p.anteHandler = ante.NewAnteHandler(p.AccountKeeper, p.SupplyKeeper, ante.DefaultSigVerificationGasConsumer)
+	p.feeRefundHandler = auth.NewFeeRefundHandler(p.AccountKeeper, p.SupplyKeeper, p.RefundKeeper)
 }
 
 // for test
