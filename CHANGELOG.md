@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 ### nchd
-
+* update inflation of mint module
+* add #34 upgrade module
 * fix #27 "--gas=auto" not available
 * fix #29 op blockhash
 * fix #32 op timestamp

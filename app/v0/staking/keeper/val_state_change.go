@@ -56,7 +56,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		if validator.PotentialConsensusPower() == 0 {
 			break
 		}
-		ctx.Logger().Info(fmt.Sprintf("voting power:  %d", validator.PotentialConsensusPower()))
+		ctx.Logger().Debug(fmt.Sprintf("voting power:  %d", validator.PotentialConsensusPower()))
 
 		// apply the appropriate state change if necessary
 		switch {
@@ -138,7 +138,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		k.SetLastTotalPower(ctx, totalPower)
 
 		for _, item := range updates {
-			ctx.Logger().Info(item.String())
+			ctx.Logger().Info(fmt.Sprintf("validator: %x, power: %d", item.GetPubKey().Data, item.Power))
 		}
 	}
 

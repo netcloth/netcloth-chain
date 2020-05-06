@@ -572,8 +572,8 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	// if the delegation is the operator of the validator and undelegating will decrease the validator's self delegation below their minimum
 	// trigger a jail validator
 	if isValidatorOperator && !validator.Jailed &&
-		validator.TokensFromShares(delegation.Shares).TruncateInt().LT(validator.MinSelfDelegation) {
-
+		(validator.TokensFromShares(delegation.Shares).TruncateInt().LT(validator.MinSelfDelegation) ||
+			validator.BondedLever(true, shares).GT(k.MaxLever(ctx))) {
 		k.jailValidator(ctx, validator)
 		validator = k.mustGetValidator(ctx, validator.OperatorAddress)
 	}
@@ -590,12 +590,6 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	// remove the shares and coins from the validator
 	// NOTE that the amount is later (in keeper.Delegation) moved between staking module pools
 	validator, amount = k.RemoveValidatorTokensAndShares(ctx, validator, shares, isValidatorOperator)
-
-	// if the validator lever > 20, jail the validator
-	if validator.BondedLever(true, sdk.ZeroDec()).GT(k.MaxLever(ctx)) {
-		k.jailValidator(ctx, validator)
-		validator = k.mustGetValidator(ctx, validator.OperatorAddress)
-	}
 
 	if validator.DelegatorShares.IsZero() && validator.IsUnbonded() {
 		// if not unbonded, we must instead remove validator in EndBlocker once it finishes its unbonding period
