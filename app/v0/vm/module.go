@@ -109,20 +109,6 @@ func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
-	// Gas costs are handled within msg handler so costs should be ignored
-	ebCtx := ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+	return EndBlocker(ctx, a.keeper)
 
-	// Update account balances before committing other parts of state
-	a.keeper.StateDB.UpdateAccounts()
-
-	// Commit state objects to KV store
-	_, err := a.keeper.StateDB.WithContext(ebCtx).Commit(true)
-	if err != nil {
-		panic(err)
-	}
-
-	// Clear accounts cache after account data has been committed
-	a.keeper.StateDB.ClearStateObjects()
-
-	return []abci.ValidatorUpdate{}
 }
