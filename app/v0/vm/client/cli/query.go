@@ -365,7 +365,8 @@ $ %s query vm call nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz474
 			}
 
 			var result types.VMQueryResult
-			result.Gas = out.Gas
+			result.GasVM = out.GasVM
+			result.GasNonVM = out.GasNonVM
 			result.Result, err = m.Outputs.UnpackValues(d)
 			if err != nil {
 				return err
