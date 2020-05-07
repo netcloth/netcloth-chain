@@ -52,7 +52,7 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	}
 	require.NotNil(t, vmKeeper.StateDB.GetCode(contractAddr))
 
-	// Gas costs are handled within msg handler so costs should be ignored
+	// end blocker
 	EndBlocker(ctx, vmKeeper)
 
 	// test ContractCall
