@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### nchd
+
+* add extension for IPAL transaction
 * fix #33 unbonding failed
 * update inflation of mint module
 * add #34 upgrade module
@@ -18,11 +20,8 @@
 #### [Features]
 
 * update response when query account not exist 
-
 * add distr alias for ```nchcli```
-
 * support "--gas auto" for ```nchcli``` to calculate gas automatically
-
 * add OOG logs in tx-receipt when out of gas
 
 ### nchd v1.0.4

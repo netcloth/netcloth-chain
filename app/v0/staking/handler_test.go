@@ -351,3 +351,70 @@ func TestIncrementsMsgDelegate(t *testing.T) {
 			i, expDelegatorAcc, gotDelegatorAcc, validator, bond)
 	}
 }
+
+func TestValidatorBondedLever(t *testing.T) {
+	initPower := int64(1000)
+	ctx, _, keeper, _ := keep.CreateTestInput(t, false, initPower)
+
+	bondAmount := sdk.TokensFromConsensusPower(10)
+	validatorAddr, delegatorAddr := sdk.ValAddress(keep.Addrs[0]), keep.Addrs[1]
+
+	// first create validator
+	msgCreateValidator := NewTestMsgCreateValidator(validatorAddr, keep.PKs[0], bondAmount)
+	_, err := handleMsgCreateValidator(ctx, msgCreateValidator, keeper)
+	require.Nil(t, err, "expected create validator msg to be ok, got %v", err)
+
+	// apply TM updates
+	keeper.ApplyAndReturnValidatorSetUpdates(ctx)
+
+	validator, found := keeper.GetValidator(ctx, validatorAddr)
+	require.True(t, found)
+	require.Equal(t, sdk.Bonded, validator.Status)
+	require.Equal(t, bondAmount, validator.DelegatorShares.RoundInt())
+	require.Equal(t, bondAmount, validator.BondedTokens(), "validator: %v", validator)
+	require.Equal(t, bondAmount.ToDec(), validator.SelfDelegation)
+	require.Equal(t, sdk.OneDec(), validator.BondedLever(true, sdk.ZeroDec()))
+
+	bondedTokens := keeper.TotalBondedTokens(ctx)
+	require.Equal(t, bondAmount.Int64(), bondedTokens.Int64())
+
+	// just send the same msgbond multiple times
+	msgDelegate := NewTestMsgDelegate(delegatorAddr, validatorAddr, bondAmount.MulRaw(3))
+	_, err = handleMsgDelegate(ctx, msgDelegate, keeper)
+	require.Nil(t, err, "expected msg to be ok, got %v", err)
+
+	//Check that the accounts and the bond account have the appropriate values
+	validator, found = keeper.GetValidator(ctx, validatorAddr)
+	require.True(t, found)
+	require.Equal(t, sdk.Bonded, validator.Status)
+	require.Equal(t, bondAmount.MulRaw(4), validator.DelegatorShares.RoundInt())
+	require.Equal(t, bondAmount.MulRaw(4), validator.BondedTokens(), "validator: %v", validator)
+	require.Equal(t, bondAmount.ToDec(), validator.SelfDelegation)
+	require.Equal(t, sdk.OneDec().MulInt64(4), validator.BondedLever(true, sdk.ZeroDec()))
+
+	// unbond self-delegation
+	unbondAmt := sdk.NewCoin(sdk.DefaultBondDenom, bondAmount)
+	msgUndelegate := NewMsgUndelegate(sdk.AccAddress(validatorAddr), validatorAddr, unbondAmt)
+	got, err := handleMsgUndelegate(ctx, msgUndelegate, keeper)
+	require.Nil(t, err, "expected msg to be ok, got %v", err)
+
+	validator, found = keeper.GetValidator(ctx, validatorAddr)
+	require.True(t, found)
+	require.Equal(t, bondAmount.MulRaw(3), validator.DelegatorShares.RoundInt())
+	require.Equal(t, bondAmount.MulRaw(3), validator.BondedTokens(), "validator: %v", validator)
+	require.Equal(t, sdk.ZeroDec(), validator.SelfDelegation)
+	require.Equal(t, sdk.NewDec(int64(^uint32(0))), validator.BondedLever(true, sdk.ZeroDec()))
+
+	var finishTime time.Time
+	types.ModuleCdc.MustUnmarshalBinaryLengthPrefixed(got.Data, &finishTime)
+	ctx = ctx.WithBlockTime(finishTime)
+	EndBlocker(ctx, keeper)
+	EndBlocker(ctx, keeper)
+
+	validator, found = keeper.GetValidator(ctx, validatorAddr)
+	require.True(t, found)
+	require.Equal(t, bondAmount.MulRaw(3), validator.DelegatorShares.RoundInt())
+	require.Equal(t, sdk.ZeroInt(), validator.BondedTokens(), "validator: %v", validator)
+	require.Equal(t, sdk.ZeroDec(), validator.SelfDelegation)
+	require.Equal(t, sdk.ZeroDec(), validator.BondedLever(true, sdk.ZeroDec()))
+}
