@@ -25,6 +25,8 @@ import (
 // are returned to Tendermint.
 func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []abci.ValidatorUpdate) {
 
+	logger := k.Logger(ctx)
+
 	store := ctx.KVStore(k.storeKey)
 	maxValidators := k.GetParams(ctx).MaxValidators
 	totalPower := sdk.ZeroInt()
@@ -56,7 +58,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		if validator.PotentialConsensusPower() == 0 {
 			break
 		}
-		ctx.Logger().Debug(fmt.Sprintf("voting power:  %d", validator.PotentialConsensusPower()))
+		logger.Info(fmt.Sprintf("voting power:  %d", validator.PotentialConsensusPower()))
 
 		// apply the appropriate state change if necessary
 		switch {
@@ -138,7 +140,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		k.SetLastTotalPower(ctx, totalPower)
 
 		for _, item := range updates {
-			ctx.Logger().Info(fmt.Sprintf("validator: %x, power: %d", item.GetPubKey().Data, item.Power))
+			logger.Info(fmt.Sprintf("validator: %x, power: %d", item.GetPubKey().Data, item.Power))
 		}
 	}
 

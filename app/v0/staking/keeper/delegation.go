@@ -460,6 +460,8 @@ func (k Keeper) DequeueAllMatureRedelegationQueue(ctx sdk.Context, currTime time
 func (k Keeper) Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.Int, tokenSrc sdk.BondStatus,
 	validator types.Validator, subtractAccount bool) (newShares sdk.Dec, err error) {
 
+	logger := k.Logger(ctx)
+
 	// In some situations, the exchange rate becomes invalid, e.g. if
 	// Validator loses all tokens due to slashing. In this case,
 	// make all future delegations invalid.
@@ -523,7 +525,7 @@ func (k Keeper) Delegate(ctx sdk.Context, delAddr sdk.AccAddress, bondAmt sdk.In
 	}
 
 	isValidatorOperator := delegation.DelegatorAddress.Equals(validator.OperatorAddress)
-	ctx.Logger().Info(fmt.Sprintf("delegation lever: %d", validator.BondedLever(isValidatorOperator, bondAmt.ToDec())))
+	logger.Info(fmt.Sprintf("delegation lever: %d", validator.BondedLever(isValidatorOperator, bondAmt.ToDec())))
 	if validator.BondedLever(isValidatorOperator, bondAmt.ToDec()).GT(k.MaxLever(ctx)) {
 		return sdk.ZeroDec(), types.ErrDelegatorShareExceedMaxLever
 	}
