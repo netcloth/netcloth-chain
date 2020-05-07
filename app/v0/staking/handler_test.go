@@ -416,5 +416,6 @@ func TestValidatorBondedLever(t *testing.T) {
 	require.Equal(t, bondAmount.MulRaw(3), validator.DelegatorShares.RoundInt())
 	require.Equal(t, sdk.ZeroInt(), validator.BondedTokens(), "validator: %v", validator)
 	require.Equal(t, sdk.ZeroDec(), validator.SelfDelegation)
-	require.Equal(t, sdk.ZeroDec(), validator.BondedLever(true, sdk.ZeroDec()))
+	require.Equal(t, sdk.NewDec(int64(^uint32(0))), validator.BondedLever(true, sdk.ZeroDec()))
+
 }

@@ -14,4 +14,5 @@ var (
 	ErrMissingSelfDelegation        = sdkerrors.New(ModuleName, 5, "validator has no self-delegation; cannot be unjailed")
 	ErrSelfDelegationTooLowToUnjail = sdkerrors.New(ModuleName, 6, "validator's self delegation less than minimum; cannot be unjailed")
 	ErrNoSigningInfoFound           = sdkerrors.New(ModuleName, 7, "no validator signing info found")
+	ErrDelegatorExceedMaxLever      = sdkerrors.New(ModuleName, 8, "delegation exceed max lever")
 )

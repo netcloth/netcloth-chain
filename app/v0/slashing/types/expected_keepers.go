@@ -25,6 +25,9 @@ type StakingKeeper interface {
 
 	// MaxValidators returns the maximum amount of bonded validators
 	MaxValidators(sdk.Context) uint16
+
+	// MaxLever returns the max delegation lever
+	MaxLever(ctx sdk.Context) (res sdk.Dec)
 }
 
 // StakingHooks event hooks for staking validator object

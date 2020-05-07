@@ -60,6 +60,11 @@ func handleMsgUnjail(ctx sdk.Context, msg MsgUnjail, k Keeper) (*sdk.Result, err
 		return nil, ErrValidatorJailed
 	}
 
+	// check bonded lever <= max lever (default 20)
+	if validator.BondedLever(true, sdk.ZeroDec()).GT(k.sk.MaxLever(ctx)) {
+		return nil, ErrDelegatorExceedMaxLever
+	}
+
 	k.sk.Unjail(ctx, consAddr)
 
 	ctx.EventManager().EmitEvent(

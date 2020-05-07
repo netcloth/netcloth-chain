@@ -29,6 +29,7 @@ var (
 	ErrBadValidatorAddr                      = types.ErrBadValidatorAddr
 	ErrValidatorJailed                       = types.ErrValidatorJailed
 	ErrValidatorNotJailed                    = types.ErrValidatorNotJailed
+	ErrDelegatorExceedMaxLever               = types.ErrDelegatorExceedMaxLever
 	ErrMissingSelfDelegation                 = types.ErrMissingSelfDelegation
 	ErrSelfDelegationTooLowToUnjail          = types.ErrSelfDelegationTooLowToUnjail
 	ErrNoSigningInfoFound                    = types.ErrNoSigningInfoFound
