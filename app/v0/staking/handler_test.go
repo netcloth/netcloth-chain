@@ -4,6 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -11,9 +14,6 @@ import (
 	keep "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // retrieve params which are instant
@@ -417,5 +417,42 @@ func TestValidatorBondedLever(t *testing.T) {
 	require.Equal(t, sdk.ZeroInt(), validator.BondedTokens(), "validator: %v", validator)
 	require.Equal(t, sdk.ZeroDec(), validator.SelfDelegation)
 	require.Equal(t, sdk.NewDec(int64(^uint32(0))), validator.BondedLever(true, sdk.ZeroDec()))
+}
 
+func TestMaxValidators(t *testing.T) {
+	ctx, _, keeper, _ := keep.CreateTestInput(t, false, int64(0))
+	params := keeper.GetParams(ctx)
+
+	maxValidators := params.MaxValidators
+	maxValidatorsLimit := params.MaxValidatorsExtendingLimit
+	delta := params.MaxValidatorsExtendingSpeed
+	nextExtendingTime := params.NextExtendingTime
+	for i := 0; maxValidators < maxValidatorsLimit; i++ {
+		// end blocker
+		ctx = ctx.WithBlockTime(nextExtendingTime)
+		EndBlocker(ctx, keeper)
+
+		// end blocker
+		ctx = ctx.WithBlockTime(nextExtendingTime.Add(time.Hour * 1))
+		EndBlocker(ctx, keeper)
+
+		params = keeper.GetParams(ctx)
+		// verify max validators
+		require.Equal(t, maxValidators+delta, params.MaxValidators)
+
+		maxValidators = params.MaxValidators
+		maxValidatorsLimit = params.MaxValidatorsExtendingLimit
+		delta = params.MaxValidatorsExtendingSpeed
+		nextExtendingTime = params.NextExtendingTime
+		//fmt.Println(fmt.Sprintf("round %v, nextExtendingtime: %v, maxValidators: %v, delta: %v, maxValidatorsLimit: %v",
+		//	i, nextExtendingTime, maxValidators, delta, maxValidatorsLimit))
+	}
+
+	// end blocker
+	ctx = ctx.WithBlockTime(nextExtendingTime)
+	EndBlocker(ctx, keeper)
+
+	params = keeper.GetParams(ctx)
+	// verify max validators with upper limit
+	require.Equal(t, params.MaxValidatorsExtendingLimit, params.MaxValidators)
 }

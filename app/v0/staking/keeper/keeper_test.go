@@ -1,6 +1,10 @@
 package keeper_test
 
 import (
+	"os"
+	"testing"
+	"time"
+
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
@@ -15,9 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"os"
-	"testing"
-	"time"
 
 	distr "github.com/netcloth/netcloth-chain/app/v0/distribution"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -81,7 +82,7 @@ func TestEndBlock(t *testing.T) {
 	p := staking.Params{
 		UnbondingTime:               100,
 		MaxValidators:               100,
-		MaxValidatorsExtending:      130,
+		MaxValidatorsExtendingLimit: 130,
 		MaxValidatorsExtendingSpeed: 10,
 		NextExtendingTime:           time.Now().Unix() + stakingtypes.MaxValidatorsExtendingInterval,
 		MaxEntries:                  100,
