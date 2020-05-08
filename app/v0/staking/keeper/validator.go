@@ -122,10 +122,10 @@ func (k Keeper) SetNewValidatorByPowerIndex(ctx sdk.Context, validator types.Val
 
 // Update the tokens of an existing validator, update the validators power index key
 func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Validator,
-	tokensToAdd sdk.Int, selfDelegation bool) (valOut types.Validator, addedShares sdk.Dec) {
+	tokensToAdd sdk.Int, isValidatorOperator bool) (valOut types.Validator, addedShares sdk.Dec) {
 
 	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, addedShares = validator.AddTokensFromDel(tokensToAdd, selfDelegation)
+	validator, addedShares = validator.AddTokensFromDel(tokensToAdd, isValidatorOperator)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
 	return validator, addedShares
@@ -133,10 +133,10 @@ func (k Keeper) AddValidatorTokensAndShares(ctx sdk.Context, validator types.Val
 
 // Update the tokens of an existing validator, update the validators power index key
 func (k Keeper) RemoveValidatorTokensAndShares(ctx sdk.Context, validator types.Validator,
-	sharesToRemove sdk.Dec, selfDelegation bool) (valOut types.Validator, removedTokens sdk.Int) {
+	sharesToRemove sdk.Dec, isValidatorOperator bool) (valOut types.Validator, removedTokens sdk.Int) {
 
 	k.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, removedTokens = validator.RemoveDelShares(sharesToRemove, selfDelegation)
+	validator, removedTokens = validator.RemoveDelShares(sharesToRemove, isValidatorOperator)
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByPowerIndex(ctx, validator)
 	return validator, removedTokens
