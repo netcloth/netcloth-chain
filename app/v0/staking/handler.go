@@ -7,7 +7,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
-	"github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
@@ -17,19 +16,19 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case types.MsgCreateValidator:
+		case MsgCreateValidator:
 			return handleMsgCreateValidator(ctx, msg, k)
 
-		case types.MsgEditValidator:
+		case MsgEditValidator:
 			return handleMsgEditValidator(ctx, msg, k)
 
-		case types.MsgDelegate:
+		case MsgDelegate:
 			return handleMsgDelegate(ctx, msg, k)
 
-		case types.MsgBeginRedelegate:
+		case MsgBeginRedelegate:
 			return handleMsgBeginRedelegate(ctx, msg, k)
 
-		case types.MsgUndelegate:
+		case MsgUndelegate:
 			return handleMsgUndelegate(ctx, msg, k)
 
 		default:
@@ -40,7 +39,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 // These functions assume everything has been authenticated,
 // now we just perform action and save
-func handleMsgCreateValidator(ctx sdk.Context, msg types.MsgCreateValidator, k keeper.Keeper) (*sdk.Result, error) {
+func handleMsgCreateValidator(ctx sdk.Context, msg MsgCreateValidator, k keeper.Keeper) (*sdk.Result, error) {
 	// check to see if the pubkey or sender has been registered before
 	if _, found := k.GetValidator(ctx, msg.ValidatorAddress); found {
 		return nil, ErrValidatorOwnerExists
@@ -98,13 +97,13 @@ func handleMsgCreateValidator(ctx sdk.Context, msg types.MsgCreateValidator, k k
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeCreateValidator,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+			EventTypeCreateValidator,
+			sdk.NewAttribute(AttributeKeyValidator, msg.ValidatorAddress.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.Amount.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
 		),
 	})
@@ -112,7 +111,7 @@ func handleMsgCreateValidator(ctx sdk.Context, msg types.MsgCreateValidator, k k
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keeper.Keeper) (*sdk.Result, error) {
+func handleMsgEditValidator(ctx sdk.Context, msg MsgEditValidator, k keeper.Keeper) (*sdk.Result, error) {
 	// validator must already be registered
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddress)
 	if !found {
@@ -153,13 +152,13 @@ func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keepe
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeEditValidator,
-			sdk.NewAttribute(types.AttributeKeyCommissionRate, validator.Commission.String()),
-			sdk.NewAttribute(types.AttributeKeyMinSelfDelegation, validator.MinSelfDelegation.String()),
+			EventTypeEditValidator,
+			sdk.NewAttribute(AttributeKeyCommissionRate, validator.Commission.String()),
+			sdk.NewAttribute(AttributeKeyMinSelfDelegation, validator.MinSelfDelegation.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.ValidatorAddress.String()),
 		),
 	})
@@ -167,7 +166,7 @@ func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keepe
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgDelegate(ctx sdk.Context, msg types.MsgDelegate, k keeper.Keeper) (*sdk.Result, error) {
+func handleMsgDelegate(ctx sdk.Context, msg MsgDelegate, k keeper.Keeper) (*sdk.Result, error) {
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddress)
 	if !found {
 		return nil, ErrNoValidatorFound
@@ -185,13 +184,13 @@ func handleMsgDelegate(ctx sdk.Context, msg types.MsgDelegate, k keeper.Keeper) 
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeDelegate,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+			EventTypeDelegate,
+			sdk.NewAttribute(AttributeKeyValidator, msg.ValidatorAddress.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.Amount.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
 		),
 	})
@@ -199,7 +198,7 @@ func handleMsgDelegate(ctx sdk.Context, msg types.MsgDelegate, k keeper.Keeper) 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keeper) (*sdk.Result, error) {
+func handleMsgUndelegate(ctx sdk.Context, msg MsgUndelegate, k keeper.Keeper) (*sdk.Result, error) {
 	shares, err := k.ValidateUnbondAmount(
 		ctx, msg.DelegatorAddress, msg.ValidatorAddress, msg.Amount.Amount,
 	)
@@ -216,17 +215,17 @@ func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keep
 		return nil, err
 	}
 
-	completionTimeBz := types.ModuleCdc.MustMarshalBinaryLengthPrefixed(completionTime)
+	completionTimeBz := ModuleCdc.MustMarshalBinaryLengthPrefixed(completionTime)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeUnbond,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+			EventTypeUnbond,
+			sdk.NewAttribute(AttributeKeyValidator, msg.ValidatorAddress.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
+			sdk.NewAttribute(AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
 		),
 	})
@@ -234,7 +233,7 @@ func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keep
 	return &sdk.Result{Data: completionTimeBz, Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgBeginRedelegate(ctx sdk.Context, msg types.MsgBeginRedelegate, k keeper.Keeper) (*sdk.Result, error) {
+func handleMsgBeginRedelegate(ctx sdk.Context, msg MsgBeginRedelegate, k keeper.Keeper) (*sdk.Result, error) {
 	shares, err := k.ValidateUnbondAmount(
 		ctx, msg.DelegatorAddress, msg.ValidatorSrcAddress, msg.Amount.Amount,
 	)
@@ -253,18 +252,18 @@ func handleMsgBeginRedelegate(ctx sdk.Context, msg types.MsgBeginRedelegate, k k
 		return nil, err
 	}
 
-	completionTimeBz := types.ModuleCdc.MustMarshalBinaryLengthPrefixed(completionTime)
+	completionTimeBz := ModuleCdc.MustMarshalBinaryLengthPrefixed(completionTime)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeRedelegate,
-			sdk.NewAttribute(types.AttributeKeySrcValidator, msg.ValidatorSrcAddress.String()),
-			sdk.NewAttribute(types.AttributeKeyDstValidator, msg.ValidatorDstAddress.String()),
+			EventTypeRedelegate,
+			sdk.NewAttribute(AttributeKeySrcValidator, msg.ValidatorSrcAddress.String()),
+			sdk.NewAttribute(AttributeKeyDstValidator, msg.ValidatorDstAddress.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
+			sdk.NewAttribute(AttributeKeyCompletionTime, completionTime.Format(time.RFC3339)),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
 		),
 	})
