@@ -93,13 +93,13 @@ func opSmod(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 	if y.Sign() == 0 {
 		stack.push(res)
 	} else {
-		if x.Sign() == 0 {
+		if x.Sign() < 0 {
 			res.Mod(x.Abs(x), y.Abs(y))
 			res.Neg(res)
 		} else {
 			res.Mod(x.Abs(x), y.Abs(y))
 		}
-		stack.push(math.S256(res))
+		stack.push(math.U256(res))
 	}
 	interpreter.intPool.put(x, y)
 	return nil, nil
