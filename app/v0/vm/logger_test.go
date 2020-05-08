@@ -13,12 +13,14 @@ import (
 
 type dummyContractRef struct {
 	calledForEach bool
+	address       sdk.AccAddress
 }
 
-func (dummyContractRef) ReturnGas(*big.Int)       {}
-func (dummyContractRef) Address() sdk.AccAddress  { return sdk.AccAddress{} }
-func (dummyContractRef) Value() *big.Int          { return new(big.Int) }
-func (dummyContractRef) SetCode(sdk.Hash, []byte) {}
+func (dummyContractRef) ReturnGas(*big.Int)                   {}
+func (d dummyContractRef) Address() sdk.AccAddress            { return d.address }
+func (d *dummyContractRef) SetAddress(address sdk.AccAddress) { d.address = address }
+func (dummyContractRef) Value() *big.Int                      { return new(big.Int) }
+func (dummyContractRef) SetCode(sdk.Hash, []byte)             {}
 func (d *dummyContractRef) ForEachStorage(callback func(key, value sdk.Hash) bool) {
 	d.calledForEach = true
 }

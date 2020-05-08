@@ -3,6 +3,7 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
+	sdk "github.com/netcloth/netcloth-chain/types"
 	"io/ioutil"
 	"math/big"
 	"testing"
@@ -23,6 +24,14 @@ type twoOperandParams struct {
 
 var commonParams []*twoOperandParams
 var twoOpMethods map[string]executionFunc
+
+type OneOperandTestcase struct {
+	X        string
+	Expected string
+}
+
+var oneOpParams []string
+var oneOpMethods map[string]executionFunc
 
 func init() {
 
@@ -68,6 +77,10 @@ func init() {
 		"shr":     opSHR,
 		"sar":     opSAR,
 	}
+
+	oneOpMethods = map[string]executionFunc{
+		"iszero": opIszero,
+	}
 }
 
 func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFunc, name string) {
@@ -95,6 +108,50 @@ func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFu
 
 		if actual.Cmp(expected) != 0 {
 			t.Errorf("Testcase %v %d, %v(%x, %x): expected  %x, got %x", name, i, name, x, y, expected, actual)
+		}
+		// Check pool usage
+		// 1.pool is not allowed to contain anything on the stack
+		// 2.pool is not allowed to contain the same pointers twice
+		if evmInterpreter.intPool.pool.len() > 0 {
+
+			poolvals := make(map[*big.Int]struct{})
+			poolvals[actual] = struct{}{}
+
+			for evmInterpreter.intPool.pool.len() > 0 {
+				key := evmInterpreter.intPool.get()
+				if _, exist := poolvals[key]; exist {
+					t.Errorf("Testcase %v %d, pool contains double-entry", name, i)
+				}
+				poolvals[key] = struct{}{}
+			}
+		}
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func testOneOperandOp(t *testing.T, tests []OneOperandTestcase, opFn executionFunc, name string) {
+
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		pc             = uint64(0)
+		evmInterpreter = env.interpreter.(*EVMInterpreter)
+	)
+	// Stuff a couple of nonzero bigints into pool, to ensure that ops do not rely on pooled integers to be zero
+	evmInterpreter.intPool = poolOfIntPools.get()
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+
+	for i, test := range tests {
+		x := new(big.Int).SetBytes(common.Hex2Bytes(test.X))
+		expected := new(big.Int).SetBytes(common.Hex2Bytes(test.Expected))
+		stack.push(x)
+		opFn(&pc, evmInterpreter, nil, nil, stack)
+		actual := stack.pop()
+
+		if actual.Cmp(expected) != 0 {
+			t.Errorf("Testcase %v %d, %v(%x): expected  %x, got %x", name, i, name, x, expected, actual)
 		}
 		// Check pool usage
 		// 1.pool is not allowed to contain anything on the stack
@@ -548,4 +605,99 @@ func BenchmarkOpSHA3(bench *testing.B) {
 		opSha3(&pc, evmInterpreter, nil, mem, stack)
 	}
 	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+//OneOp test
+
+func TestIsZero(t *testing.T) {
+	tests := []OneOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000000", "01"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "00"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "00"},
+	}
+	testOneOperandOp(t, tests, opIszero, "opIszero")
+}
+
+func TestNot(t *testing.T) {
+	tests := []OneOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000000", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"1000000000000000000000000000000000000000000000000000000000000002", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd"},
+	}
+	testOneOperandOp(t, tests, opNot, "opNot")
+}
+
+func TestSha3(t *testing.T) {
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(32)
+	mem.Set(0, 32, common.FromHex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"))
+	pc := uint64(0)
+
+	stack.pushN(big.NewInt(32), big.NewInt(0))
+	opSha3(&pc, evmInterpreter, nil, mem, stack)
+	actualHash := stack.pop()
+
+	//TODO fix test failed
+	expectedHash := common.FromHex("0xaf9613760f72635fbdb44a5a0a63c39f12af30f950a6ee5c971be188e89c4051")
+	if actualHash.Cmp(big.NewInt(0).SetBytes(expectedHash)) != 0 {
+		t.Errorf("Sha3 fail, got %x, expected %x", actualHash, expectedHash)
+	}
+
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func TestOpAddress(t *testing.T) {
+	addr := sdk.AccAddress{0xab}
+	var (
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, new(big.Int), 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+	opAddress(&pc, interpreter, contract, mem, stack)
+
+	actualAddr := sdk.AccAddress(stack.pop().Bytes())
+	if !actualAddr.Equals(addr) {
+		t.Errorf("Address fail, got %x, expected %x", actualAddr, addr)
+	}
+}
+
+func TestOpBalance(t *testing.T) {
+	addr := sdk.AccAddress{0xab}
+	balance := big.NewInt(100)
+	var (
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, new(big.Int), 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	//fixme env.StateDB.ak.SetAccount()
+	env.StateDB.SetBalance(addr, balance)
+	stack.push(big.NewInt(0).SetBytes(addr))
+
+	opBalance(&pc, interpreter, contract, mem, stack)
+
+	actualBalance := stack.pop()
+
+	if actualBalance.Cmp(balance) != 0 {
+		t.Errorf("Balance fail, got %d, expected %d", actualBalance, balance)
+	}
 }
