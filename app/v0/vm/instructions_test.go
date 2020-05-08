@@ -24,6 +24,52 @@ type twoOperandParams struct {
 var commonParams []*twoOperandParams
 var twoOpMethods map[string]executionFunc
 
+func init() {
+
+	// Params is a list of common edgecases that should be used for some common tests
+	params := []string{
+		"0000000000000000000000000000000000000000000000000000000000000000", // 0
+		"0000000000000000000000000000000000000000000000000000000000000001", // +1
+		"0000000000000000000000000000000000000000000000000000000000000005", // +5
+		"7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", // + max -1
+		"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // + max
+		"8000000000000000000000000000000000000000000000000000000000000000", // - max
+		"8000000000000000000000000000000000000000000000000000000000000001", // - max+1
+		"fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb", // - 5
+		"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // - 1
+	}
+	// Params are combined so each param is used on each 'side'
+	commonParams = make([]*twoOperandParams, len(params)*len(params))
+	for i, x := range params {
+		for j, y := range params {
+			commonParams[i*len(params)+j] = &twoOperandParams{x, y}
+		}
+	}
+	twoOpMethods = map[string]executionFunc{
+		"add":     opAdd,
+		"sub":     opSub,
+		"mul":     opMul,
+		"div":     opDiv,
+		"sdiv":    opSdiv,
+		"mod":     opMod,
+		"smod":    opSmod,
+		"exp":     opExp,
+		"signext": opSignExtend,
+		"lt":      opLt,
+		"gt":      opGt,
+		"slt":     opSlt,
+		"sgt":     opSgt,
+		"eq":      opEq,
+		"and":     opAnd,
+		"or":      opOr,
+		"xor":     opXor,
+		"byte":    opByte,
+		"shl":     opSHL,
+		"shr":     opSHR,
+		"sar":     opSAR,
+	}
+}
+
 func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFunc, name string) {
 
 	var (
