@@ -45,6 +45,7 @@ func createTestCodec() *codec.Codec {
 	supply.RegisterCodec(cdc)
 	bank.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)
+	RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	return cdc
 }

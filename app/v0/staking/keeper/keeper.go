@@ -3,7 +3,9 @@ package keeper
 import (
 	"container/list"
 	"fmt"
+	"time"
 
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/netcloth/netcloth-chain/app/v0/params"
@@ -89,22 +91,87 @@ func (k Keeper) SetLastTotalPower(ctx sdk.Context, power sdk.Int) {
 	store.Set(types.LastTotalPowerKey, b)
 }
 
-func (k Keeper) EndBlock(ctx sdk.Context) {
-	p := k.GetParams(ctx)
+// Calculate the ValidatorUpdates for the current block
+// Called in each EndBlock
+func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
+	// Calculate validator set changes.
+	//
+	// NOTE: ApplyAndReturnValidatorSetUpdates has to come before
+	// UnbondAllMatureValidatorQueue.
+	// This fixes a bug when the unbonding period is instant (is the case in
+	// some of the tests). The test expected the validator to be completely
+	// unbonded after the Endblocker (go from Bonded -> Unbonding during
+	// ApplyAndReturnValidatorSetUpdates and then Unbonding -> Unbonded during
+	// UnbondAllMatureValidatorQueue).
+	validatorUpdates := k.ApplyAndReturnValidatorSetUpdates(ctx)
 
-	if ctx.BlockTime().Unix() < p.NextExtendingTime {
+	// Unbond all mature validators from the unbonding queue.
+	k.UnbondAllMatureValidatorQueue(ctx)
+
+	// Remove all mature unbonding delegations from the ubd queue.
+	matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
+	for _, dvPair := range matureUnbonds {
+		err := k.CompleteUnbonding(ctx, dvPair.DelegatorAddress, dvPair.ValidatorAddress)
+		if err != nil {
+			continue
+		}
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeCompleteUnbonding,
+				sdk.NewAttribute(types.AttributeKeyValidator, dvPair.ValidatorAddress.String()),
+				sdk.NewAttribute(types.AttributeKeyDelegator, dvPair.DelegatorAddress.String()),
+			),
+		)
+	}
+
+	// Remove all mature redelegations from the red queue.
+	matureRedelegations := k.DequeueAllMatureRedelegationQueue(ctx, ctx.BlockHeader().Time)
+	for _, dvvTriplet := range matureRedelegations {
+		err := k.CompleteRedelegation(ctx, dvvTriplet.DelegatorAddress,
+			dvvTriplet.ValidatorSrcAddress, dvvTriplet.ValidatorDstAddress)
+		if err != nil {
+			continue
+		}
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeCompleteRedelegation,
+				sdk.NewAttribute(types.AttributeKeyDelegator, dvvTriplet.DelegatorAddress.String()),
+				sdk.NewAttribute(types.AttributeKeySrcValidator, dvvTriplet.ValidatorSrcAddress.String()),
+				sdk.NewAttribute(types.AttributeKeyDstValidator, dvvTriplet.ValidatorDstAddress.String()),
+			),
+		)
+	}
+
+	// update max validators
+	k.UpdateMaxValidators(ctx)
+
+	return validatorUpdates
+}
+
+func (k Keeper) UpdateMaxValidators(ctx sdk.Context) {
+	p := k.GetParams(ctx)
+	logger := k.Logger(ctx)
+
+	// time not up
+	if ctx.BlockTime().Before(p.NextExtendingTime) {
 		return
 	}
 
-	if p.MaxValidatorsExtending > p.MaxValidators {
-		e := p.MaxValidatorsExtendingSpeed
-		if p.MaxValidatorsExtending-p.MaxValidators < p.MaxValidatorsExtendingSpeed {
-			e = p.MaxValidatorsExtending - p.MaxValidators
+	// time up, update max validators
+	if p.MaxValidatorsExtendingLimit > p.MaxValidators {
+		logger.Info(fmt.Sprintf("Time up! Update maxValidators at blockTime: %v", ctx.BlockTime()))
+
+		p.MaxValidators += p.MaxValidatorsExtendingSpeed
+		if p.MaxValidators > p.MaxValidatorsExtendingLimit {
+			p.MaxValidators = p.MaxValidatorsExtendingLimit
 		}
 
-		p.MaxValidators += e
+		// update nextExtending time
+		p.NextExtendingTime = p.NextExtendingTime.Add(time.Second * types.MaxValidatorsExtendingInterval)
+		k.SetParams(ctx, p)
+	} else {
+		logger.Info(fmt.Sprintf("MaxValidators has reached upper limit %v at blockTime: %v", p.MaxValidatorsExtendingLimit, ctx.BlockTime()))
 	}
-
-	p.NextExtendingTime += types.MaxValidatorsExtendingInterval
-	k.SetParams(ctx, p)
 }

@@ -31,7 +31,7 @@ func (k Keeper) MaxValidators(ctx sdk.Context) (res uint16) {
 }
 
 func (k Keeper) MaxValidatorsExtending(ctx sdk.Context) (res uint16) {
-	k.paramstore.Get(ctx, types.KeyMaxValidatorsExtending, &res)
+	k.paramstore.Get(ctx, types.KeyMaxValidatorsExtendingLimit, &res)
 	return
 }
 
@@ -40,7 +40,7 @@ func (k Keeper) MaxValidatorsExtendingSpeed(ctx sdk.Context) (res uint16) {
 	return
 }
 
-func (k Keeper) NextExtendingTime(ctx sdk.Context) (res int64) {
+func (k Keeper) NextExtendingTime(ctx sdk.Context) (res time.Time) {
 	k.paramstore.Get(ctx, types.KeyNextExtendingTime, &res)
 	return
 }

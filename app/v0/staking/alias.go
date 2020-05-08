@@ -19,6 +19,9 @@ const (
 	RouterKey                          = types.RouterKey
 	DefaultUnbondingTime               = types.DefaultUnbondingTime
 	DefaultMaxValidators               = types.DefaultMaxValidators
+	DefaultMaxValidatorsExtendingLimit = types.DefaultMaxValidatorsExtendingLimit
+	DefaultMaxValidatorsExtendingSpeed = types.DefaultMaxValidatorsExtendingSpeed
+	MaxValidatorsExtendingInterval     = types.MaxValidatorsExtendingInterval
 	DefaultMaxEntries                  = types.DefaultMaxEntries
 	NotBondedPoolName                  = types.NotBondedPoolName
 	BondedPoolName                     = types.BondedPoolName
@@ -193,6 +196,27 @@ var (
 	KeyMaxValidators                 = types.KeyMaxValidators
 	KeyMaxEntries                    = types.KeyMaxEntries
 	KeyBondDenom                     = types.KeyBondDenom
+	KeyMaxValidatorsExtendingLimit   = types.KeyMaxValidatorsExtendingLimit
+	KeyMaxValidatorsExtendingSpeed   = types.KeyMaxValidatorsExtendingSpeed
+	KeyNextExtendingTime             = types.KeyNextExtendingTime
+	KeyMaxLever                      = types.KeyMaxLever
+
+	EventTypeCompleteUnbonding    = types.EventTypeCompleteUnbonding
+	EventTypeCompleteRedelegation = types.EventTypeCompleteRedelegation
+	EventTypeCreateValidator      = types.EventTypeCreateValidator
+	EventTypeEditValidator        = types.EventTypeEditValidator
+	EventTypeDelegate             = types.EventTypeDelegate
+	EventTypeUnbond               = types.EventTypeUnbond
+	EventTypeRedelegate           = types.EventTypeRedelegate
+
+	AttributeKeyValidator         = types.AttributeKeyValidator
+	AttributeKeyCommissionRate    = types.AttributeKeyCommissionRate
+	AttributeKeyMinSelfDelegation = types.AttributeKeyMinSelfDelegation
+	AttributeKeySrcValidator      = types.AttributeKeySrcValidator
+	AttributeKeyDstValidator      = types.AttributeKeyDstValidator
+	AttributeKeyDelegator         = types.AttributeKeyDelegator
+	AttributeKeyCompletionTime    = types.AttributeKeyCompletionTime
+	AttributeValueCategory        = types.AttributeValueCategory
 )
 
 type (
