@@ -444,7 +444,7 @@ func (v Validator) UpdateStatus(newStatus sdk.BondStatus) Validator {
 }
 
 // AddTokensFromDel adds tokens to a validator
-func (v Validator) AddTokensFromDel(amount sdk.Int, selfDelegation bool) (Validator, sdk.Dec) {
+func (v Validator) AddTokensFromDel(amount sdk.Int, isValidatorOperator bool) (Validator, sdk.Dec) {
 
 	// calculate the shares to issue
 	var issuedShares sdk.Dec
@@ -462,7 +462,8 @@ func (v Validator) AddTokensFromDel(amount sdk.Int, selfDelegation bool) (Valida
 
 	v.Tokens = v.Tokens.Add(amount)
 	v.DelegatorShares = v.DelegatorShares.Add(issuedShares)
-	if selfDelegation {
+
+	if isValidatorOperator {
 		v.SelfDelegation = v.SelfDelegation.Add(issuedShares)
 	}
 
@@ -484,7 +485,7 @@ func (v Validator) RemoveTokens(tokens sdk.Int) Validator {
 // RemoveDelShares removes delegator shares from a validator.
 // NOTE: because token fractions are left in the validator,
 //       the exchange rate of future shares of this validator can increase.
-func (v Validator) RemoveDelShares(delShares sdk.Dec, selfDelegation bool) (Validator, sdk.Int) {
+func (v Validator) RemoveDelShares(delShares sdk.Dec, isValidatorOperator bool) (Validator, sdk.Int) {
 	remainingShares := v.DelegatorShares.Sub(delShares)
 	var issuedTokens sdk.Int
 	if remainingShares.IsZero() {
@@ -504,10 +505,16 @@ func (v Validator) RemoveDelShares(delShares sdk.Dec, selfDelegation bool) (Vali
 	}
 
 	v.DelegatorShares = remainingShares
-	v.SelfDelegation = v.SelfDelegation.Sub(delShares)
-	if v.SelfDelegation.IsNegative() {
-		panic("validator self_delegation is negative now")
+
+	// self delegation
+	if isValidatorOperator {
+		v.SelfDelegation = v.SelfDelegation.Sub(delShares)
+
+		if v.SelfDelegation.IsNegative() {
+			panic("validator self_delegation is negative now")
+		}
 	}
+
 	return v, issuedTokens
 }
 
