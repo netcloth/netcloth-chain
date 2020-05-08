@@ -505,3 +505,47 @@ func TestOpMstore(t *testing.T) {
 	}
 	poolOfIntPools.put(evmInterpreter.intPool)
 }
+
+func BenchmarkOpMstore(bench *testing.B) {
+	bench.SetParallelism(1)
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(64)
+	pc := uint64(0)
+	memStart := big.NewInt(0)
+	value := big.NewInt(0x1337)
+
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		stack.pushN(value, memStart)
+		opMstore(&pc, evmInterpreter, nil, mem, stack)
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func BenchmarkOpSHA3(bench *testing.B) {
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(32)
+	pc := uint64(0)
+
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		stack.pushN(big.NewInt(32), big.NewInt(0))
+		opSha3(&pc, evmInterpreter, nil, mem, stack)
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
