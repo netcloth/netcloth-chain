@@ -72,7 +72,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 
 	if st.Recipient.Empty() {
 		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
-		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v , leftOverGas = %v, err = %v ", st.GasLimit-leftOverGas, leftOverGas, vmerr))
+		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v , leftOverGas = %v, vm err = %v ", st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
 
@@ -80,13 +80,23 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %v", string(ret[4:])))
 		}
 
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v , leftOverGas = %v, err = %v", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
+		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v , leftOverGas = %v, vm err = %v", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
 	}
 
-	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(st.GasLimit-leftOverGas, "EVM execution consumption")
+	vmGasUsed := st.GasLimit - leftOverGas
+
 	if vmerr != nil {
-		return nil, &sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}, vmerr
+		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, vmerr
 	}
+
+	if ctx.GasMeter().GasConsumed()+vmGasUsed > ctx.GasMeter().Limit() {
+		// vm rum out of gas
+		ctx.Logger().Info("VM run out of gas")
+		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, ErrOutOfGas
+	}
+
+	// comsume vm gas
+	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(vmGasUsed, "EVM execution consumption")
 
 	st.StateDB.Finalise(true)
 
