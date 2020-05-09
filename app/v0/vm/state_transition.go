@@ -89,12 +89,13 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, vmerr
 	}
 
-	// comsume vm gas
-	if ctx.GasMeter().Limit()-ctx.GasMeter().GasConsumed() < vmGasUsed {
+	if ctx.GasMeter().GasConsumed()+vmGasUsed > ctx.GasMeter().Limit() {
 		// vm rum out of gas
 		ctx.Logger().Info("VM run out of gas")
-		return nil, &sdk.Result{Data: ret, GasUsed: vmGasUsed}, ErrOutOfGas
+		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, ErrOutOfGas
 	}
+
+	// comsume vm gas
 	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(vmGasUsed, "EVM execution consumption")
 
 	st.StateDB.Finalise(true)
