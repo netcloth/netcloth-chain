@@ -37,25 +37,23 @@ func (q QueryStorageResult) String() string {
 
 // for Gas Estimate
 type SimulationResult struct {
-	GasVM    uint64
-	GasNonVM uint64
-	Res      string
+	Gas uint64
+	Res string
 }
 
 func (r SimulationResult) String() string {
-	return fmt.Sprintf("GasVM = %d\nGasNonVM = %d\nRes = %s", r.GasVM, r.GasNonVM, r.Res)
+	return fmt.Sprintf("Gas = %d\nRes = %s", r.Gas, r.Res)
 }
 
 type VMQueryResult struct {
-	GasVM    uint64
-	GasNonVM uint64
-	Result   []interface{}
+	Gas    uint64
+	Result []interface{}
 }
 
 func (r VMQueryResult) String() string {
 	j, err := json.Marshal(r)
 	if err != nil {
-		return fmt.Sprintf("GasVM = %d\nGasNonVM = %d\nValues = %s", r.GasVM, r.GasNonVM, err.Error())
+		return fmt.Sprintf("Gas = %d\nValues = %s", r.Gas, err.Error())
 	}
 	return string(j)
 }

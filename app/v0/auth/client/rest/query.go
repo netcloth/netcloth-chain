@@ -191,16 +191,16 @@ func EstimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 		cliCtx.Codec.MustUnmarshalBinaryLengthPrefixed(res, &gas)
 
 		type GasRes struct {
-			Gas uint64
+			Gas string
 			Res string
 		}
 		type GasResult struct {
-			Height int64  `json:"height"`
+			Height string `json:"height"`
 			Result GasRes `json:"result"`
 		}
 
-		gr := GasResult{Height: height}
-		gr.Result.Gas = gas
+		gr := GasResult{Height: strconv.FormatInt(height, 10)}
+		gr.Result.Gas = strconv.FormatUint(gas, 10)
 		resp, _ := json.MarshalIndent(gr, "", "  ")
 		rest.PostProcessResponseBare(w, cliCtx, resp)
 	}
