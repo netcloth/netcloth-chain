@@ -180,7 +180,8 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	// When an error was returned by the EVM or when setting the creation code
 	// above we revert to the snapshot and consume any gas remaining. Additionally
 	// when we're in homestead this also counts for code storage gas errors.
-	if maxCodeSizeExceeded || (err != nil && (err != ErrCodeStoreOutOfGas)) {
+	//if maxCodeSizeExceeded || (err != nil && (err != ErrCodeStoreOutOfGas)) { //TODO: why (err != ErrCodeStoreOutOfGas)?
+	if maxCodeSizeExceeded || err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)
 		if err != ErrExecutionReverted {
 			contract.UseGas(contract.Gas)

@@ -99,11 +99,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params
 	return nil, &sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}, nil
 }
 
-func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimit uint64, readonly bool) (*big.Int, *sdk.Result, error) {
+func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, readonly bool) (*big.Int, *sdk.Result, error) {
 	st := StateTransition{
 		Sender:    msg.From,
 		Recipient: msg.To,
-		GasLimit:  gasLimit,
 		Payload:   msg.Payload,
 		Amount:    msg.Amount.Amount,
 		StateDB:   k.StateDB.WithContext(ctx),
@@ -111,8 +110,11 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, gasLimi
 
 	if readonly {
 		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
+		st.GasLimit = DefaultGasLimit
 	}
 
 	params := k.GetParams(ctx)
+	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
+	st.GasLimit = gasLimit
 	return st.TransitionCSDB(ctx, &params)
 }
