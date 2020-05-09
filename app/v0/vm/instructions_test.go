@@ -3,6 +3,7 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
+	sdk "github.com/netcloth/netcloth-chain/types"
 	"io/ioutil"
 	"math/big"
 	"testing"
@@ -23,6 +24,64 @@ type twoOperandParams struct {
 
 var commonParams []*twoOperandParams
 var twoOpMethods map[string]executionFunc
+
+type OneOperandTestcase struct {
+	X        string
+	Expected string
+}
+
+var oneOpParams []string
+var oneOpMethods map[string]executionFunc
+
+func init() {
+
+	// Params is a list of common edgecases that should be used for some common tests
+	params := []string{
+		"0000000000000000000000000000000000000000000000000000000000000000", // 0
+		"0000000000000000000000000000000000000000000000000000000000000001", // +1
+		"0000000000000000000000000000000000000000000000000000000000000005", // +5
+		"7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe", // + max -1
+		"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // + max
+		"8000000000000000000000000000000000000000000000000000000000000000", // - max
+		"8000000000000000000000000000000000000000000000000000000000000001", // - max+1
+		"fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb", // - 5
+		"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // - 1
+	}
+	// Params are combined so each param is used on each 'side'
+	commonParams = make([]*twoOperandParams, len(params)*len(params))
+	for i, x := range params {
+		for j, y := range params {
+			commonParams[i*len(params)+j] = &twoOperandParams{x, y}
+		}
+	}
+	twoOpMethods = map[string]executionFunc{
+		"add":     opAdd,
+		"sub":     opSub,
+		"mul":     opMul,
+		"div":     opDiv,
+		"sdiv":    opSdiv,
+		"mod":     opMod,
+		"smod":    opSmod,
+		"exp":     opExp,
+		"signext": opSignExtend,
+		"lt":      opLt,
+		"gt":      opGt,
+		"slt":     opSlt,
+		"sgt":     opSgt,
+		"eq":      opEq,
+		"and":     opAnd,
+		"or":      opOr,
+		"xor":     opXor,
+		"byte":    opByte,
+		"shl":     opSHL,
+		"shr":     opSHR,
+		"sar":     opSAR,
+	}
+
+	oneOpMethods = map[string]executionFunc{
+		"iszero": opIszero,
+	}
+}
 
 func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFunc, name string) {
 
@@ -49,6 +108,50 @@ func testTwoOperandOp(t *testing.T, tests []TwoOperandTestcase, opFn executionFu
 
 		if actual.Cmp(expected) != 0 {
 			t.Errorf("Testcase %v %d, %v(%x, %x): expected  %x, got %x", name, i, name, x, y, expected, actual)
+		}
+		// Check pool usage
+		// 1.pool is not allowed to contain anything on the stack
+		// 2.pool is not allowed to contain the same pointers twice
+		if evmInterpreter.intPool.pool.len() > 0 {
+
+			poolvals := make(map[*big.Int]struct{})
+			poolvals[actual] = struct{}{}
+
+			for evmInterpreter.intPool.pool.len() > 0 {
+				key := evmInterpreter.intPool.get()
+				if _, exist := poolvals[key]; exist {
+					t.Errorf("Testcase %v %d, pool contains double-entry", name, i)
+				}
+				poolvals[key] = struct{}{}
+			}
+		}
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func testOneOperandOp(t *testing.T, tests []OneOperandTestcase, opFn executionFunc, name string) {
+
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		pc             = uint64(0)
+		evmInterpreter = env.interpreter.(*EVMInterpreter)
+	)
+	// Stuff a couple of nonzero bigints into pool, to ensure that ops do not rely on pooled integers to be zero
+	evmInterpreter.intPool = poolOfIntPools.get()
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+	evmInterpreter.intPool.put(big.NewInt(-1337))
+
+	for i, test := range tests {
+		x := new(big.Int).SetBytes(common.Hex2Bytes(test.X))
+		expected := new(big.Int).SetBytes(common.Hex2Bytes(test.Expected))
+		stack.push(x)
+		opFn(&pc, evmInterpreter, nil, nil, stack)
+		actual := stack.pop()
+
+		if actual.Cmp(expected) != 0 {
+			t.Errorf("Testcase %v %d, %v(%x): expected  %x, got %x", name, i, name, x, expected, actual)
 		}
 		// Check pool usage
 		// 1.pool is not allowed to contain anything on the stack
@@ -458,4 +561,116 @@ func TestOpMstore(t *testing.T) {
 		t.Fatalf("Mstore failed to overwrite previous value")
 	}
 	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func BenchmarkOpMstore(bench *testing.B) {
+	bench.SetParallelism(1)
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(64)
+	pc := uint64(0)
+	memStart := big.NewInt(0)
+	value := big.NewInt(0x1337)
+
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		stack.pushN(value, memStart)
+		opMstore(&pc, evmInterpreter, nil, mem, stack)
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+func BenchmarkOpSHA3(bench *testing.B) {
+	var (
+		env            = newEVM()
+		stack          = newstack()
+		mem            = NewMemory()
+		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
+	)
+	env.interpreter = evmInterpreter
+	evmInterpreter.intPool = poolOfIntPools.get()
+	mem.Resize(32)
+	pc := uint64(0)
+
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		stack.pushN(big.NewInt(32), big.NewInt(0))
+		opSha3(&pc, evmInterpreter, nil, mem, stack)
+	}
+	poolOfIntPools.put(evmInterpreter.intPool)
+}
+
+//OneOp test
+
+func TestIsZero(t *testing.T) {
+	tests := []OneOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000000", "01"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "00"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "00"},
+	}
+	testOneOperandOp(t, tests, opIszero, "opIszero")
+}
+
+func TestNot(t *testing.T) {
+	tests := []OneOperandTestcase{
+		{"0000000000000000000000000000000000000000000000000000000000000000", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"0000000000000000000000000000000000000000000000000000000000000001", "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"},
+		{"8000000000000000000000000000000000000000000000000000000000000000", "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+		{"1000000000000000000000000000000000000000000000000000000000000002", "effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd"},
+	}
+	testOneOperandOp(t, tests, opNot, "opNot")
+}
+
+func TestOpAddress(t *testing.T) {
+	addr := sdk.AccAddress{0xab}
+	var (
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, new(big.Int), 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+	opAddress(&pc, interpreter, contract, mem, stack)
+
+	actualAddr := sdk.AccAddress(stack.pop().Bytes())
+	if !actualAddr.Equals(addr) {
+		t.Errorf("Address fail, got %x, expected %x", actualAddr, addr)
+	}
+}
+
+func TestOpBalance(t *testing.T) {
+	addr := sdk.AccAddress{0xab}
+	balance := big.NewInt(100)
+	var (
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, new(big.Int), 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	//fixme env.StateDB.ak.SetAccount()
+	env.StateDB.SetBalance(addr, balance)
+	stack.push(big.NewInt(0).SetBytes(addr))
+
+	opBalance(&pc, interpreter, contract, mem, stack)
+
+	actualBalance := stack.pop()
+
+	if actualBalance.Cmp(balance) != 0 {
+		t.Errorf("Balance fail, got %d, expected %d", actualBalance, balance)
+	}
 }

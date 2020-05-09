@@ -36,3 +36,13 @@ func TestJumpDestAnalysis(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkJumpdestAnalysis_1200k(bench *testing.B) {
+	// 1.4 ms
+	code := make([]byte, 1200000)
+	bench.ResetTimer()
+	for i := 0; i < bench.N; i++ {
+		codeBitmap(code)
+	}
+	bench.StopTimer()
+}
