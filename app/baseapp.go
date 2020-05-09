@@ -405,6 +405,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 	idxLogs := make([]sdk.ABCIMessageLog, 0, len(msgs)) // a list of JSON-encoded logs with msg index
 
 	var data []byte
+	var gasSum uint64
 	events := sdk.EmptyEvents()
 
 	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
@@ -423,7 +424,13 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 		idxLog := sdk.ABCIMessageLog{MsgIndex: uint16(i)}
 
+		ctx.Simulate = false
+		if mode == runTxModeSimulate {
+			ctx.Simulate = true
+		}
+
 		msgResult, err := handler(ctx, msg)
+
 		if err != nil {
 			idxLog.Success = false
 			idxLog.Log = fmt.Sprintf("failed to execute message; message index: %d. error: %s", i, err.Error())
@@ -439,20 +446,21 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		}
 
 		data = append(data, msgResult.Data...)
+		gasSum += msgResult.GasUsed
 		// append events from the message's execution and a message action event
 		events = events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())))
 		events = events.AppendEvents(msgResult.Events)
 
 		idxLog.Success = true
 		idxLogs = append(idxLogs, idxLog)
-
 	}
 
 	logJSON := codec.Cdc.MustMarshalJSON(idxLogs)
 	return &sdk.Result{
-		Data:   data,
-		Log:    strings.TrimSpace(string(logJSON)),
-		Events: events,
+		Data:    data, //TODO: how to get data of single msg
+		Log:     strings.TrimSpace(string(logJSON)),
+		Events:  events,
+		GasUsed: gasSum,
 	}, nil
 }
 
@@ -596,12 +604,12 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (gInfo sdk.
 	// Attempt to execute all messages and only update state if all messages pass
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
 	// Result if any single message fails or does not have a registered Handler.
-	result, err = app.runMsgs(runMsgCtx, msgs, mode)
+	r, err := app.runMsgs(runMsgCtx, msgs, mode)
 	if err == nil && mode == runTxModeDeliver {
 		msCache.Write()
 	}
 
-	return gInfo, result, err
+	return gInfo, r, err
 }
 
 // ----------------------------------------------------------------------------

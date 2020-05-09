@@ -2,13 +2,13 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
-
 	"github.com/netcloth/netcloth-chain/client/context"
 )
 
 // REST query and parameter values
 const (
-	MethodGet = "GET"
+	MethodGet  = "GET"
+	MethodPost = "POST"
 )
 
 // RegisterRoutes registers the auth module REST routes.
@@ -21,6 +21,11 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 		"/auth/params",
 		queryParamsHandler(cliCtx),
 	).Methods(MethodGet)
+
+	r.HandleFunc(
+		"/estimate_gas",
+		EstimateGas(cliCtx),
+	).Methods(MethodPost)
 }
 
 // RegisterTxRoutes registers all transaction routes on the provided router.
