@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -154,5 +156,52 @@ func queryParamsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func EstimateGas(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req BroadcastReq
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		err = cliCtx.Codec.UnmarshalJSON(body, &req)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		txBytes, err := cliCtx.Codec.MarshalBinaryLengthPrefixed(req.Tx)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData("/app/simulate", txBytes)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		var gas uint64
+		cliCtx.Codec.MustUnmarshalBinaryLengthPrefixed(res, &gas)
+
+		type GasRes struct {
+			Gas string
+			Res string
+		}
+		type GasResult struct {
+			Height string `json:"height"`
+			Result GasRes `json:"result"`
+		}
+
+		gr := GasResult{Height: strconv.FormatInt(height, 10)}
+		gr.Result.Gas = strconv.FormatUint(gas, 10)
+		resp, _ := json.MarshalIndent(gr, "", "  ")
+		rest.PostProcessResponseBare(w, cliCtx, resp)
 	}
 }

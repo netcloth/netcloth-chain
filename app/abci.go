@@ -327,6 +327,10 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 
 			gInfo, _, _ := app.Simulate(txBytes, tx)
 
+			if req.Height == 0 {
+				req.Height = app.LastBlockHeight()
+			}
+
 			return abci.ResponseQuery{
 				Codespace: sdkerrors.RootCodespace,
 				Height:    req.Height,
