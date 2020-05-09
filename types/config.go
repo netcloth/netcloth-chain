@@ -23,7 +23,6 @@ type Config struct {
 }
 
 var (
-	// Initializing an instance of Config
 	sdkConfig = &Config{
 		sealed: false,
 		bech32AddressPrefix: map[string]string{

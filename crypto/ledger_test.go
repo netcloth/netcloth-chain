@@ -15,8 +15,6 @@ import (
 )
 
 func TestLedgerErrorHandling(t *testing.T) {
-	// first, try to generate a key, must return an error
-	// (no panic)
 	path := *hd.NewParams(44, 555, 0, false, 0)
 	_, err := NewPrivKeyLedgerSecp256k1Unsafe(path)
 	require.Error(t, err)
@@ -29,31 +27,30 @@ func TestPublicKeyUnsafe(t *testing.T) {
 	require.NotNil(t, priv)
 
 	require.Equal(t, "eb5ae98721034fef9cd7c4c63588d3b03feb5281b9d232cba34d6f3d71aee59211ffbfe1fe87",
-		fmt.Sprintf("%modules", priv.PubKey().Bytes()),
-		"Is your device using test mnemonic: %s ?", tests.TestMnemonic)
+		fmt.Sprintf("%x", priv.PubKey().Bytes()), "Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 
-	pubKeyAddr, err := sdk.Bech32ifyAccPub(priv.PubKey())
+	pubKeyAddr, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, priv.PubKey())
 	require.NoError(t, err)
-	require.Equal(t, "nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
+	require.Equal(t, "nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgwmlasca",
 		pubKeyAddr, "Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 
 	addr := sdk.AccAddress(priv.PubKey().Address()).String()
-	require.Equal(t, "nch1w34k53py5v5xyluazqpq65agyajavep2rflq6h",
+	require.Equal(t, "nch1w34k53py5v5xyluazqpq65agyajavep2wazjeu",
 		addr, "Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 }
 
 func TestPublicKeyUnsafeHDPath(t *testing.T) {
 	expectedAnswers := []string{
-		"nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
-		"nchpub1addwnpepqfsdqjr68h7wjg5wacksmqaypasnra232fkgu5sxdlnlu8j22ztxvlqvd65",
-		"nchpub1addwnpepqw3xwqun6q43vtgw6p4qspq7srvxhcmvq4jrx5j5ma6xy3r7k6dtxmrkh3d",
-		"nchpub1addwnpepqvez9lrp09g8w7gkv42y4yr5p6826cu28ydrhrujv862yf4njmqyyjr4pjs",
-		"nchpub1addwnpepq06hw3enfrtmq8n67teytcmtnrgcr0yntmyt25kdukfjkerdc7lqg32rcz7",
-		"nchpub1addwnpepqg3trf2gd0s2940nckrxherwqhgmm6xd5h4pcnrh4x7y35h6yafmcpk5qns",
-		"nchpub1addwnpepqdm6rjpx6wsref8wjn7ym6ntejet430j4szpngfgc20caz83lu545vuv8hp",
-		"nchpub1addwnpepqvdhtjzy2wf44dm03jxsketxc07vzqwvt3vawqqtljgsr9s7jvydjmt66ew",
-		"nchpub1addwnpepqwystfpyxwcava7v3t7ndps5xzu6s553wxcxzmmnxevlzvwrlqpzz695nw9",
-		"nchpub1addwnpepqw970u6gjqkccg9u3rfj99857wupj2z9fqfzy2w7e5dd7xn7kzzgkgqch0r",
+		"nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgwmlasca",
+		"nchpub1addwnpepqfsdqjr68h7wjg5wacksmqaypasnra232fkgu5sxdlnlu8j22ztxvtrjllx",
+		"nchpub1addwnpepqw3xwqun6q43vtgw6p4qspq7srvxhcmvq4jrx5j5ma6xy3r7k6dtx0qg95l",
+		"nchpub1addwnpepqvez9lrp09g8w7gkv42y4yr5p6826cu28ydrhrujv862yf4njmqyyxqtnhz",
+		"nchpub1addwnpepq06hw3enfrtmq8n67teytcmtnrgcr0yntmyt25kdukfjkerdc7lqg9fa28v",
+		"nchpub1addwnpepqg3trf2gd0s2940nckrxherwqhgmm6xd5h4pcnrh4x7y35h6yafmc442jkz",
+		"nchpub1addwnpepqdm6rjpx6wsref8wjn7ym6ntejet430j4szpngfgc20caz83lu545clj4jn",
+		"nchpub1addwnpepqvdhtjzy2wf44dm03jxsketxc07vzqwvt3vawqqtljgsr9s7jvydj0gyguu",
+		"nchpub1addwnpepqwystfpyxwcava7v3t7ndps5xzu6s553wxcxzmmnxevlzvwrlqpzzwx2pth",
+		"nchpub1addwnpepqw970u6gjqkccg9u3rfj99857wupj2z9fqfzy2w7e5dd7xn7kzzgkurx923",
 	}
 
 	const numIters = 10
@@ -74,7 +71,7 @@ func TestPublicKeyUnsafeHDPath(t *testing.T) {
 		tmp := priv.(PrivKeyLedgerSecp256k1)
 		(&tmp).AssertIsPrivKeyInner()
 
-		pubKeyAddr, err := sdk.Bech32ifyAccPub(priv.PubKey())
+		pubKeyAddr, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, priv.PubKey())
 		require.NoError(t, err)
 		require.Equal(t,
 			expectedAnswers[i], pubKeyAddr,
@@ -105,15 +102,15 @@ func TestPublicKeySafe(t *testing.T) {
 	require.NotNil(t, priv)
 
 	require.Equal(t, "eb5ae98721034fef9cd7c4c63588d3b03feb5281b9d232cba34d6f3d71aee59211ffbfe1fe87",
-		fmt.Sprintf("%modules", priv.PubKey().Bytes()),
+		fmt.Sprintf("%x", priv.PubKey().Bytes()),
 		"Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 
-	pubKeyAddr, err := sdk.Bech32ifyAccPub(priv.PubKey())
+	pubKeyAddr, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, priv.PubKey())
 	require.NoError(t, err)
-	require.Equal(t, "nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
+	require.Equal(t, "nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgwmlasca",
 		pubKeyAddr, "Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 
-	require.Equal(t, "nch1w34k53py5v5xyluazqpq65agyajavep2rflq6h",
+	require.Equal(t, "nch1w34k53py5v5xyluazqpq65agyajavep2wazjeu",
 		addr, "Is your device using test mnemonic: %s ?", tests.TestMnemonic)
 
 	addr2 := sdk.AccAddress(priv.PubKey().Address()).String()
@@ -122,29 +119,29 @@ func TestPublicKeySafe(t *testing.T) {
 
 func TestPublicKeyHDPath(t *testing.T) {
 	expectedPubKeys := []string{
-		"nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
-		"nchpub1addwnpepqfsdqjr68h7wjg5wacksmqaypasnra232fkgu5sxdlnlu8j22ztxvlqvd65",
-		"nchpub1addwnpepqw3xwqun6q43vtgw6p4qspq7srvxhcmvq4jrx5j5ma6xy3r7k6dtxmrkh3d",
-		"nchpub1addwnpepqvez9lrp09g8w7gkv42y4yr5p6826cu28ydrhrujv862yf4njmqyyjr4pjs",
-		"nchpub1addwnpepq06hw3enfrtmq8n67teytcmtnrgcr0yntmyt25kdukfjkerdc7lqg32rcz7",
-		"nchpub1addwnpepqg3trf2gd0s2940nckrxherwqhgmm6xd5h4pcnrh4x7y35h6yafmcpk5qns",
-		"nchpub1addwnpepqdm6rjpx6wsref8wjn7ym6ntejet430j4szpngfgc20caz83lu545vuv8hp",
-		"nchpub1addwnpepqvdhtjzy2wf44dm03jxsketxc07vzqwvt3vawqqtljgsr9s7jvydjmt66ew",
-		"nchpub1addwnpepqwystfpyxwcava7v3t7ndps5xzu6s553wxcxzmmnxevlzvwrlqpzz695nw9",
-		"nchpub1addwnpepqw970u6gjqkccg9u3rfj99857wupj2z9fqfzy2w7e5dd7xn7kzzgkgqch0r",
+		"nchpub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgwmlasca",
+		"nchpub1addwnpepqfsdqjr68h7wjg5wacksmqaypasnra232fkgu5sxdlnlu8j22ztxvtrjllx",
+		"nchpub1addwnpepqw3xwqun6q43vtgw6p4qspq7srvxhcmvq4jrx5j5ma6xy3r7k6dtx0qg95l",
+		"nchpub1addwnpepqvez9lrp09g8w7gkv42y4yr5p6826cu28ydrhrujv862yf4njmqyyxqtnhz",
+		"nchpub1addwnpepq06hw3enfrtmq8n67teytcmtnrgcr0yntmyt25kdukfjkerdc7lqg9fa28v",
+		"nchpub1addwnpepqg3trf2gd0s2940nckrxherwqhgmm6xd5h4pcnrh4x7y35h6yafmc442jkz",
+		"nchpub1addwnpepqdm6rjpx6wsref8wjn7ym6ntejet430j4szpngfgc20caz83lu545clj4jn",
+		"nchpub1addwnpepqvdhtjzy2wf44dm03jxsketxc07vzqwvt3vawqqtljgsr9s7jvydj0gyguu",
+		"nchpub1addwnpepqwystfpyxwcava7v3t7ndps5xzu6s553wxcxzmmnxevlzvwrlqpzzwx2pth",
+		"nchpub1addwnpepqw970u6gjqkccg9u3rfj99857wupj2z9fqfzy2w7e5dd7xn7kzzgkurx923",
 	}
 
 	expectedAddrs := []string{
-		"nch1w34k53py5v5xyluazqpq65agyajavep2rflq6h",
-		"nch19ewxwemt6uahejvwf44u7dh6tq859tkyvarh2q",
-		"nch1a07dzdjgjsntxpp75zg7cgatgq0udh3pcdcxm3",
-		"nch1qvw52lmn9gpvem8welghrkc52m3zczyhlqjsl7",
-		"nch17m78ka80fqkkw2c4ww0v4xm5nsu2drgrlm8mn2",
-		"nch1ferh9ll9c452d2p8k2v7heq084guygkn43up9e",
-		"nch10vf3sxmjg96rqq36axcphzfsl74dsntuehjlw5",
-		"nch1cq83av8cmnar79h0rg7duh9gnr7wkh228a7fxg",
-		"nch1dszhfrt226jy5rsre7e48vw9tgwe90uerfyefa",
-		"nch1734d7qsylzrdt05muhqqtpd90j8mp4y6rzch8l",
+		"nch1w34k53py5v5xyluazqpq65agyajavep2wazjeu",
+		"nch19ewxwemt6uahejvwf44u7dh6tq859tkypf79ft",
+		"nch1a07dzdjgjsntxpp75zg7cgatgq0udh3p4e95c6",
+		"nch1qvw52lmn9gpvem8welghrkc52m3zczyhj50zu4",
+		"nch17m78ka80fqkkw2c4ww0v4xm5nsu2drgrj06fsp",
+		"nch1ferh9ll9c452d2p8k2v7heq084guygknc9pnxj",
+		"nch10vf3sxmjg96rqq36axcphzfsl74dsntu5r0ddl",
+		"nch1cq83av8cmnar79h0rg7duh9gnr7wkh222frm9r",
+		"nch1dszhfrt226jy5rsre7e48vw9tgwe90uewaet2k",
+		"nch1734d7qsylzrdt05muhqqtpd90j8mp4y6wk99y5",
 	}
 
 	const numIters = 10
@@ -172,7 +169,7 @@ func TestPublicKeyHDPath(t *testing.T) {
 		tmp := priv.(PrivKeyLedgerSecp256k1)
 		(&tmp).AssertIsPrivKeyInner()
 
-		pubKeyAddr, err := sdk.Bech32ifyAccPub(priv.PubKey())
+		pubKeyAddr, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, priv.PubKey())
 		require.NoError(t, err)
 		require.Equal(t,
 			expectedPubKeys[i], pubKeyAddr,

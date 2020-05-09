@@ -57,11 +57,12 @@ func ResponseCheckTx(err error, gw, gu uint64) abci.ResponseCheckTx {
 
 // ResponseDeliverTx returns an ABCI ResponseDeliverTx object with fields filled in
 // from the given error and gas values.
-func ResponseDeliverTx(err error, gw, gu uint64, log string) abci.ResponseDeliverTx {
+func ResponseDeliverTx(err error, data []byte, gw uint64, gu uint64, log string) abci.ResponseDeliverTx {
 	space, code, _ := ABCIInfo(err, false)
 	return abci.ResponseDeliverTx{
 		Codespace: space,
 		Code:      code,
+		Data:      data,
 		Log:       log,
 		GasWanted: int64(gw),
 		GasUsed:   int64(gu),
