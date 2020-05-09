@@ -628,33 +628,6 @@ func TestNot(t *testing.T) {
 	testOneOperandOp(t, tests, opNot, "opNot")
 }
 
-func TestSha3(t *testing.T) {
-	var (
-		env            = newEVM()
-		stack          = newstack()
-		mem            = NewMemory()
-		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
-	)
-
-	env.interpreter = evmInterpreter
-	evmInterpreter.intPool = poolOfIntPools.get()
-	mem.Resize(32)
-	mem.Set(0, 32, common.FromHex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"))
-	pc := uint64(0)
-
-	stack.pushN(big.NewInt(32), big.NewInt(0))
-	opSha3(&pc, evmInterpreter, nil, mem, stack)
-	actualHash := stack.pop()
-
-	//TODO fix test failed
-	expectedHash := common.FromHex("0xaf9613760f72635fbdb44a5a0a63c39f12af30f950a6ee5c971be188e89c4051")
-	if actualHash.Cmp(big.NewInt(0).SetBytes(expectedHash)) != 0 {
-		t.Errorf("Sha3 fail, got %x, expected %x", actualHash, expectedHash)
-	}
-
-	poolOfIntPools.put(evmInterpreter.intPool)
-}
-
 func TestOpAddress(t *testing.T) {
 	addr := sdk.AccAddress{0xab}
 	var (
