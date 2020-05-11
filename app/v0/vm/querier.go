@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DefaultGasLimit = 100000000
+	DefaultVmGasLimit = 100000000
 )
 
 func NewQuerier(k keeper.Keeper) sdk.Querier {
