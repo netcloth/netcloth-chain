@@ -50,4 +50,5 @@ var (
 	ErrInvalidJump              = types.ErrInvalidJump
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
 	ErrNoPayload                = types.ErrNoPayload
+	ErrWrongCtx                 = types.ErrWrongCtx
 )
