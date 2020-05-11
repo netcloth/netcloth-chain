@@ -1,6 +1,7 @@
 # Changelog
 
-## [Unreleased]
+## testnet-v1.2.0
+
 ### nchd
 
 * add extension for IPAL transaction
