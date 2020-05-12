@@ -17,6 +17,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/genaccounts"
 	genaccscli "github.com/netcloth/netcloth-chain/app/v0/genaccounts/client/cli"
 	genutilcli "github.com/netcloth/netcloth-chain/app/v0/genutil/client/cli"
+	"github.com/netcloth/netcloth-chain/app/v0/guardian"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/server"
@@ -51,6 +52,7 @@ func main() {
 	rootCmd.AddCommand(genutilcli.GenTxCmd(ctx, cdc, staking.AppModuleBasic{}, genaccounts.AppModuleBasic{}, app.DefaultNodeHome, app.DefaultCLIHome))
 	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc))
 	rootCmd.AddCommand(genaccscli.AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
+	rootCmd.AddCommand(guardian.AddGenesisGuardianCmd(ctx, cdc, app.DefaultNodeHome))
 	rootCmd.AddCommand(client.NewCompletionCmd(rootCmd, true))
 	rootCmd.AddCommand(replayCmd())
 	rootCmd.AddCommand(client.LineBreak)
