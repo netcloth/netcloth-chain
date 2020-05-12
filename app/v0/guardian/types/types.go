@@ -17,6 +17,15 @@ type Guardian struct {
 	AddedBy     sdk.AccAddress `json:"added_by"` // address that initiated the AddGuardian tx
 }
 
+const MaxDescLenght = 70
+
+func (g Guardian) Validate() error {
+	if len(g.Description) > MaxDescLenght || len(g.Description) == 0 {
+		return ErrInvalidDescription()
+	}
+	return nil
+}
+
 type Profilers []Guardian
 
 func (ps Profilers) String() (out string) {

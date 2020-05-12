@@ -35,6 +35,15 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 }
 
 func DefaultGenesisState() GenesisState {
-	guardian := types.Guardian{Description: "genesis", AccountType: types.Genesis}
-	return NewGenesisState([]types.Guardian{guardian})
+	return NewGenesisState([]types.Guardian{})
+}
+
+func (gs GenesisState) Contains(addr sdk.AccAddress) bool {
+	for _, p := range gs.Profilers {
+		if p.Address.Equals(addr) {
+			return true
+		}
+	}
+
+	return false
 }
