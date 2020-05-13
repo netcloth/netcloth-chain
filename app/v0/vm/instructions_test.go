@@ -677,13 +677,13 @@ func TestOpBalance(t *testing.T) {
 
 func TestOpCaller(t *testing.T) {
 	var (
-		addr = sdk.AccAddress{0xab}
+		callerAddress = sdk.AccAddress{0xab}
 
 		env         = newEVM()
 		stack       = newstack()
 		mem         = NewMemory()
 		interpreter = NewEVMInterpreter(env, env.vmConfig)
-		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, new(big.Int), 0)
+		contract    = NewContract(&dummyContractRef{address: callerAddress}, &dummyContractRef{address: callerAddress}, new(big.Int), 0)
 	)
 
 	pc := uint64(0)
@@ -691,6 +691,27 @@ func TestOpCaller(t *testing.T) {
 
 	opCaller(&pc, interpreter, contract, mem, stack)
 
-	callerAddress := sdk.AccAddress(stack.pop().Bytes())
-	require.True(t, callerAddress.Equals(addr))
+	expectedCallerAddress := sdk.AccAddress(stack.pop().Bytes())
+	require.True(t, expectedCallerAddress.Equals(callerAddress))
+}
+
+func TestOpCallValue(t *testing.T) {
+	var (
+		addr  = sdk.AccAddress{0xab}
+		value = big.NewInt(1000)
+
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	opCallValue(&pc, interpreter, contract, mem, stack)
+
+	expectedValue := big.NewInt(0).SetBytes(stack.pop().Bytes())
+	require.True(t, expectedValue.Cmp(value) == 0)
 }
