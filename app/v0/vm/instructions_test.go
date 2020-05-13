@@ -677,13 +677,13 @@ func TestOpBalance(t *testing.T) {
 
 func TestOpCaller(t *testing.T) {
 	var (
-		callerAddress = sdk.AccAddress{0xab}
+		expectedCallerAddress = sdk.AccAddress{0xab}
 
 		env         = newEVM()
 		stack       = newstack()
 		mem         = NewMemory()
 		interpreter = NewEVMInterpreter(env, env.vmConfig)
-		contract    = NewContract(&dummyContractRef{address: callerAddress}, &dummyContractRef{address: callerAddress}, new(big.Int), 0)
+		contract    = NewContract(&dummyContractRef{address: expectedCallerAddress}, &dummyContractRef{address: expectedCallerAddress}, new(big.Int), 0)
 	)
 
 	pc := uint64(0)
@@ -691,14 +691,37 @@ func TestOpCaller(t *testing.T) {
 
 	opCaller(&pc, interpreter, contract, mem, stack)
 
-	expectedCallerAddress := sdk.AccAddress(stack.pop().Bytes())
-	require.True(t, expectedCallerAddress.Equals(callerAddress))
+	actualCallerAddress := sdk.AccAddress(stack.pop().Bytes())
+	require.True(t, actualCallerAddress.Equals(expectedCallerAddress))
 }
 
 func TestOpCallValue(t *testing.T) {
 	var (
-		addr  = sdk.AccAddress{0xab}
-		value = big.NewInt(1000)
+		addr          = sdk.AccAddress{0xab}
+		expectedValue = big.NewInt(1000)
+
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, expectedValue, 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	opCallValue(&pc, interpreter, contract, mem, stack)
+
+	actualValue := big.NewInt(0).SetBytes(stack.pop().Bytes())
+	require.True(t, actualValue.Cmp(expectedValue) == 0)
+}
+
+func TestOpCodeSize(t *testing.T) {
+	var (
+		addr             = sdk.AccAddress{0xab}
+		value            = big.NewInt(1000)
+		code             = []byte("abc")
+		expectedCodeSize = big.NewInt(int64(len(code)))
 
 		env         = newEVM()
 		stack       = newstack()
@@ -707,11 +730,12 @@ func TestOpCallValue(t *testing.T) {
 		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
 	)
 
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
 	pc := uint64(0)
 	interpreter.intPool = poolOfIntPools.get()
 
-	opCallValue(&pc, interpreter, contract, mem, stack)
+	opCodeSize(&pc, interpreter, contract, mem, stack)
 
-	expectedValue := big.NewInt(0).SetBytes(stack.pop().Bytes())
-	require.True(t, expectedValue.Cmp(value) == 0)
+	actualCodeSize := big.NewInt(0).SetBytes(stack.pop().Bytes())
+	require.True(t, actualCodeSize.Cmp(expectedCodeSize) == 0)
 }
