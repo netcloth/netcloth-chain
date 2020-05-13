@@ -649,9 +649,10 @@ func TestOpAddress(t *testing.T) {
 }
 
 func TestOpBalance(t *testing.T) {
-	addr := sdk.AccAddress{0xab}
-	balance := big.NewInt(100)
 	var (
+		addr    = sdk.AccAddress{0xab}
+		balance = big.NewInt(100)
+
 		env         = newEVM()
 		stack       = newstack()
 		mem         = NewMemory()
@@ -659,17 +660,15 @@ func TestOpBalance(t *testing.T) {
 		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, new(big.Int), 0)
 	)
 
+	env.StateDB.SetBalance(addr, balance)
+
 	pc := uint64(0)
 	interpreter.intPool = poolOfIntPools.get()
-
-	//fixme env.StateDB.ak.SetAccount()
-	env.StateDB.SetBalance(addr, balance)
 	stack.push(big.NewInt(0).SetBytes(addr))
 
 	opBalance(&pc, interpreter, contract, mem, stack)
 
 	actualBalance := stack.pop()
-
 	if actualBalance.Cmp(balance) != 0 {
 		t.Errorf("Balance fail, got %d, expected %d", actualBalance, balance)
 	}
