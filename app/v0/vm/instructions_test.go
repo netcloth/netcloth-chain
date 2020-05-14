@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"math/big"
+	"reflect"
 	"testing"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
@@ -738,4 +739,35 @@ func TestOpCodeSize(t *testing.T) {
 
 	actualCodeSize := big.NewInt(0).SetBytes(stack.pop().Bytes())
 	require.True(t, actualCodeSize.Cmp(expectedCodeSize) == 0)
+}
+
+func TestOpCodeCopy(t *testing.T) {
+	var (
+		addr  = sdk.AccAddress{0xab}
+		value = big.NewInt(1000)
+		code  = []byte("abc")
+
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+	mem.Resize(64)
+
+	stack.push(big.NewInt(int64(len(code))))
+	stack.push(big.NewInt(0))
+	stack.push(big.NewInt(0))
+	opCodeCopy(&pc, interpreter, contract, mem, stack)
+	require.True(t, reflect.DeepEqual(mem.Data()[:3], code))
+
+	stack.push(big.NewInt(int64(len(code))))
+	stack.push(big.NewInt(0))
+	stack.push(big.NewInt(10))
+	opCodeCopy(&pc, interpreter, contract, mem, stack)
+	require.True(t, reflect.DeepEqual(mem.Data()[10:13], code))
 }
