@@ -771,3 +771,26 @@ func TestOpCodeCopy(t *testing.T) {
 	opCodeCopy(&pc, interpreter, contract, mem, stack)
 	require.True(t, reflect.DeepEqual(mem.Data()[10:13], code))
 }
+
+func TestOpGasPrice(t *testing.T) {
+	var (
+		addr     = sdk.AccAddress{0xab}
+		value    = big.NewInt(1000)
+		gasPrice = big.NewInt(1000)
+
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	env.Context.GasPrice = gasPrice
+	opGasprice(&pc, interpreter, contract, mem, stack)
+
+	actualGasPrice := big.NewInt(0).SetBytes(stack.pop().Bytes())
+	require.True(t, actualGasPrice.Cmp(gasPrice) == 0)
+}
