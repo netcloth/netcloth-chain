@@ -1192,3 +1192,28 @@ func TestOpLog4(t *testing.T) {
 	require.True(t, len(logs) == 1)
 	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
 }
+
+func TestOpCallDataLoad(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputData, _ := hexutil.Decode(inputHexData)
+	contract.Input = inputData
+
+	stack.push(big.NewInt(0))
+	opCallDataLoad(&pc, interpreter, contract, mem, stack)
+
+	v := fmt.Sprintf("%064x", stack.pop().Uint64())
+	require.True(t, reflect.DeepEqual(inputHexData, v))
+}
