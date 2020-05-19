@@ -1217,3 +1217,55 @@ func TestOpCallDataLoad(t *testing.T) {
 	v := fmt.Sprintf("%064x", stack.pop().Uint64())
 	require.True(t, reflect.DeepEqual(inputHexData, v))
 }
+
+func TestOpCallDataSize(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputData, _ := hexutil.Decode(inputHexData)
+	contract.Input = inputData
+
+	opCallDataSize(&pc, interpreter, contract, mem, stack)
+
+	v := stack.pop().Uint64()
+	require.True(t, v == uint64(len(inputData)))
+}
+
+func TestOpCallDataCopy(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputData, _ := hexutil.Decode(inputHexData)
+	contract.Input = inputData
+
+	mem.Resize(10)
+
+	stack.push(big.NewInt(10)) // data len
+	stack.push(big.NewInt(22)) // data offset in input
+	stack.push(big.NewInt(0))  // data offset in memory
+	opCallDataCopy(&pc, interpreter, contract, mem, stack)
+
+	require.True(t, reflect.DeepEqual(mem.Data(), inputData[22:]))
+}
