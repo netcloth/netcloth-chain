@@ -903,3 +903,40 @@ func TestOpPushN(t *testing.T) {
 	v = stack.pop()
 	require.True(t, v.Cmp(big.NewInt(0).SetBytes(common.RightPadBytes(code[1:], 32))) == 0)
 }
+
+func TestOpPush2ToOpPush32(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+
+	code, _ := hexutil.Decode("0102030405060708090a0b0c0d0f02030405060708090a0b0c0d0f020304050607")
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
+
+	type testCase struct {
+		pushN         int
+		expectedValue *big.Int
+	}
+
+	var testCases []testCase
+	for i := 2; i < 33; i++ {
+		testCases = append(testCases, testCase{i, big.NewInt(0).SetBytes(common.RightPadBytes(code[1:1+i], i))})
+	}
+
+	for _, tc := range testCases {
+		pc := uint64(0)
+		makePush(uint64(tc.pushN), tc.pushN)(&pc, interpreter, contract, mem, stack)
+
+		require.Equal(t, pc, uint64(tc.pushN))
+		v := stack.pop()
+		require.True(t, v.Cmp(tc.expectedValue) == 0)
+	}
+
+}
