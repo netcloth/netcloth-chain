@@ -794,3 +794,26 @@ func TestOpGasPrice(t *testing.T) {
 	actualGasPrice := big.NewInt(0).SetBytes(stack.pop().Bytes())
 	require.True(t, actualGasPrice.Cmp(gasPrice) == 0)
 }
+
+func TestOpGasLimit(t *testing.T) {
+	var (
+		addr     = sdk.AccAddress{0xab}
+		value    = big.NewInt(1000)
+		gasLimit = uint64(1000)
+
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	env.Context.GasLimit = gasLimit
+	opGasLimit(&pc, interpreter, contract, mem, stack)
+
+	actualGasLimit := big.NewInt(0).SetBytes(stack.pop().Bytes())
+	require.True(t, actualGasLimit.Uint64() == gasLimit)
+}
