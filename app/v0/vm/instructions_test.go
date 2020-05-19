@@ -938,5 +938,29 @@ func TestOpPush2ToOpPush32(t *testing.T) {
 		v := stack.pop()
 		require.True(t, v.Cmp(tc.expectedValue) == 0)
 	}
+}
 
+func TestOpDup1ToOpDup16(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	for i := 16; i != 0; i-- {
+		stack.push(big.NewInt(int64(i)))
+	}
+
+	for i := 1; i < 17; i++ {
+		makeDup(int64(i))(&pc, interpreter, contract, nil, stack)
+
+		v := stack.pop().Int64()
+		require.Equal(t, v, int64(i))
+	}
 }
