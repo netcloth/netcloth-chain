@@ -850,5 +850,56 @@ func TestOpPush1(t *testing.T) {
 	require.Equal(t, pc, uint64(101))
 	v = stack.pop().Uint64()
 	require.Equal(t, uint64(0), v)
+}
 
+func TestOpPushN(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+
+	code, _ := hexutil.Decode("0102030405060708090a0b0c0d0f02030405060708090a0b0c0d0f02030405060708090a0b0c0d0f02030405060708090a0b0c0d0f")
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
+
+	// test push2
+	pc := uint64(0)
+	makePush(2, 2)(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(2))
+	v := stack.pop()
+	require.True(t, v.Cmp(big.NewInt(0).SetBytes(code[1:3])) == 0)
+
+	// test push3
+	pc = uint64(0)
+	makePush(3, 3)(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(3))
+	v = stack.pop()
+	require.True(t, v.Cmp(big.NewInt(0).SetBytes(code[1:4])) == 0)
+
+	// test push32
+	pc = uint64(0)
+	makePush(32, 32)(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(32))
+	v = stack.pop()
+	require.True(t, v.Cmp(big.NewInt(0).SetBytes(code[1:33])) == 0)
+
+	// test push32
+	code, _ = hexutil.Decode("0102030405060708090a0b0c0d0f")
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
+
+	pc = uint64(0)
+	makePush(32, 32)(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(32))
+	v = stack.pop()
+	require.True(t, v.Cmp(big.NewInt(0).SetBytes(common.RightPadBytes(code[1:], 32))) == 0)
 }
