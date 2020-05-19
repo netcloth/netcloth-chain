@@ -964,3 +964,28 @@ func TestOpDup1ToOpDup16(t *testing.T) {
 		require.Equal(t, v, int64(i))
 	}
 }
+
+func TestOpSwap1ToOpSwap16(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	for i := 16; i >= 0; i-- {
+		stack.push(big.NewInt(int64(i)))
+	}
+
+	for i := 16; i != 0; i-- {
+		makeSwap(int64(i))(&pc, interpreter, contract, nil, stack)
+
+		v := stack.peek().Int64()
+		require.Equal(t, v, int64(i))
+	}
+}
