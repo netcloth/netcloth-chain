@@ -3,6 +3,7 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -816,4 +817,38 @@ func TestOpGasLimit(t *testing.T) {
 
 	actualGasLimit := big.NewInt(0).SetBytes(stack.pop().Bytes())
 	require.True(t, actualGasLimit.Uint64() == gasLimit)
+}
+
+func TestOpPush1(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+
+	code, _ := hexutil.Decode("010203")
+	contract.SetCallCode(&addr, sdk.Hash{}, code)
+	pc := uint64(0)
+
+	opPush1(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(1))
+	v := stack.pop().Uint64()
+	require.Equal(t, uint64(2), v)
+
+	//
+	pc = uint64(100)
+
+	opPush1(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, pc, uint64(101))
+	v = stack.pop().Uint64()
+	require.Equal(t, uint64(0), v)
+
 }
