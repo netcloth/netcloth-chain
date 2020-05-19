@@ -989,3 +989,206 @@ func TestOpSwap1ToOpSwap16(t *testing.T) {
 		require.Equal(t, v, int64(i))
 	}
 }
+
+func TestOpLog0(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	logData := []byte("ab")
+	blockNumber := big.NewInt(100)
+	mem.Resize(64)
+	mem.Set(0, 2, logData)
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.BlockNumber = blockNumber
+	pc := uint64(0)
+
+	expectedLog := Log{
+		Address:     addr,
+		Topics:      make([]sdk.Hash, 0),
+		Data:        logData,
+		BlockNumber: blockNumber.Uint64(),
+	}
+
+	stack.push(big.NewInt(2))
+	stack.push(big.NewInt(0))
+	makeLog(0)(&pc, interpreter, contract, mem, stack)
+	logs := interpreter.evm.StateDB.Logs()
+	require.True(t, len(logs) == 1)
+	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
+}
+
+func TestOpLog1(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	logData := []byte("ab")
+	blockNumber := big.NewInt(100)
+	mem.Resize(64)
+	mem.Set(0, 2, logData)
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.BlockNumber = blockNumber
+	pc := uint64(0)
+
+	expectedLog := Log{
+		Address:     addr,
+		Topics:      make([]sdk.Hash, 0),
+		Data:        logData,
+		BlockNumber: blockNumber.Uint64(),
+	}
+	topic1 := sdk.BytesToHash([]byte("1"))
+	expectedLog.Topics = append(expectedLog.Topics, topic1)
+
+	stack.push(big.NewInt(0).SetBytes(topic1.Bytes()))
+	stack.push(big.NewInt(2))
+	stack.push(big.NewInt(0))
+	makeLog(1)(&pc, interpreter, contract, mem, stack)
+	logs := interpreter.evm.StateDB.Logs()
+	require.True(t, len(logs) == 1)
+	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
+}
+
+func TestOpLog2(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	logData := []byte("ab")
+	blockNumber := big.NewInt(100)
+	mem.Resize(64)
+	mem.Set(0, 2, logData)
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.BlockNumber = blockNumber
+	pc := uint64(0)
+
+	expectedLog := Log{
+		Address:     addr,
+		Topics:      make([]sdk.Hash, 0),
+		Data:        logData,
+		BlockNumber: blockNumber.Uint64(),
+	}
+
+	topic1 := sdk.BytesToHash([]byte("1"))
+	topic2 := sdk.BytesToHash([]byte("2"))
+	expectedLog.Topics = append(expectedLog.Topics, topic1)
+	expectedLog.Topics = append(expectedLog.Topics, topic2)
+
+	stack.push(big.NewInt(0).SetBytes(topic2.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic1.Bytes()))
+	stack.push(big.NewInt(2))
+	stack.push(big.NewInt(0))
+	makeLog(2)(&pc, interpreter, contract, mem, stack)
+	logs := interpreter.evm.StateDB.Logs()
+	require.True(t, len(logs) == 1)
+	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
+}
+
+func TestOpLog3(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	logData := []byte("ab")
+	blockNumber := big.NewInt(100)
+	mem.Resize(64)
+	mem.Set(0, 2, logData)
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.BlockNumber = blockNumber
+	pc := uint64(0)
+
+	expectedLog := Log{
+		Address:     addr,
+		Topics:      make([]sdk.Hash, 0),
+		Data:        logData,
+		BlockNumber: blockNumber.Uint64(),
+	}
+
+	topic1 := sdk.BytesToHash([]byte("1"))
+	topic2 := sdk.BytesToHash([]byte("2"))
+	topic3 := sdk.BytesToHash([]byte("3"))
+	expectedLog.Topics = append(expectedLog.Topics, topic1)
+	expectedLog.Topics = append(expectedLog.Topics, topic2)
+	expectedLog.Topics = append(expectedLog.Topics, topic3)
+
+	stack.push(big.NewInt(0).SetBytes(topic3.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic2.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic1.Bytes()))
+	stack.push(big.NewInt(2))
+	stack.push(big.NewInt(0))
+	makeLog(3)(&pc, interpreter, contract, mem, stack)
+	logs := interpreter.evm.StateDB.Logs()
+	require.True(t, len(logs) == 1)
+	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
+}
+
+func TestOpLog4(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	logData := []byte("ab")
+	blockNumber := big.NewInt(100)
+	mem.Resize(64)
+	mem.Set(0, 2, logData)
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.BlockNumber = blockNumber
+	pc := uint64(0)
+
+	expectedLog := Log{
+		Address:     addr,
+		Topics:      make([]sdk.Hash, 0),
+		Data:        logData,
+		BlockNumber: blockNumber.Uint64(),
+	}
+
+	topic1 := sdk.BytesToHash([]byte("1"))
+	topic2 := sdk.BytesToHash([]byte("2"))
+	topic3 := sdk.BytesToHash([]byte("3"))
+	topic4 := sdk.BytesToHash([]byte("4"))
+	expectedLog.Topics = append(expectedLog.Topics, topic1)
+	expectedLog.Topics = append(expectedLog.Topics, topic2)
+	expectedLog.Topics = append(expectedLog.Topics, topic3)
+	expectedLog.Topics = append(expectedLog.Topics, topic4)
+
+	stack.push(big.NewInt(0).SetBytes(topic4.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic3.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic2.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(topic1.Bytes()))
+	stack.push(big.NewInt(2))
+	stack.push(big.NewInt(0))
+	makeLog(4)(&pc, interpreter, contract, mem, stack)
+	logs := interpreter.evm.StateDB.Logs()
+	require.True(t, len(logs) == 1)
+	require.True(t, reflect.DeepEqual(*logs[0], expectedLog))
+}
