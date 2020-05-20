@@ -1269,3 +1269,46 @@ func TestOpCallDataCopy(t *testing.T) {
 
 	require.True(t, reflect.DeepEqual(mem.Data(), inputData[22:]))
 }
+
+func TestOpAddmod(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	stack.push(big.NewInt(3))
+	stack.push(big.NewInt(12))
+	stack.push(big.NewInt(1))
+	opAddmod(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+	expected := big.NewInt(1)
+	require.True(t, v.Cmp(expected) == 0)
+
+	//
+	stack.push(big.NewInt(8))
+	stack.push(big.NewInt(96))
+	stack.push(big.NewInt(4))
+	opAddmod(&pc, interpreter, contract, nil, stack)
+
+	v = stack.pop()
+	expected = big.NewInt(4)
+	require.True(t, v.Cmp(expected) == 0)
+
+	//
+	stack.push(big.NewInt(-3))
+	stack.push(big.NewInt(12))
+	stack.push(big.NewInt(1))
+	opAddmod(&pc, interpreter, contract, nil, stack)
+
+	v = stack.pop()
+	expected = big.NewInt(0)
+	require.True(t, v.Cmp(expected) == 0)
+}
