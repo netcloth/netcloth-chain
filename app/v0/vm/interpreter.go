@@ -64,6 +64,11 @@ type EVMInterpreter struct {
 	returnData []byte // last CALL's return data for subsequent reuse
 }
 
+//for test
+func (in *EVMInterpreter) SetReturnData(d []byte) {
+	in.returnData = d
+}
+
 // Run loops and evaluates the contract's code with the given input data and returns
 // the return byte-slice and an error if one occurred.
 //

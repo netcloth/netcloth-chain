@@ -1365,3 +1365,57 @@ func TestOpMulmod(t *testing.T) {
 	expected = big.NewInt(0)
 	require.True(t, v.Cmp(expected) == 0)
 }
+
+func TestOpReturnDataSize(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.SetReturnData([]byte("abc"))
+	pc := uint64(0)
+
+	opReturnDataSize(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+
+	require.True(t, v.Cmp(big.NewInt(3)) == 0)
+}
+
+func TestOpReturnDataCopy(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	mem.Resize(64)
+
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.SetReturnData([]byte("abc"))
+	pc := uint64(0)
+
+	stack.push(big.NewInt(3))
+	stack.push(big.NewInt(0))
+	stack.push(big.NewInt(10))
+	opReturnDataCopy(&pc, interpreter, contract, mem, stack)
+
+	require.True(t, reflect.DeepEqual(mem.Data()[10:13], []byte("abc")))
+
+	//
+	stack.push(big.NewInt(4))
+	stack.push(big.NewInt(0))
+	stack.push(big.NewInt(10))
+	_, err := opReturnDataCopy(&pc, interpreter, contract, mem, stack)
+
+	require.Equal(t, ErrReturnDataOutOfBounds.Error(), err.Error())
+}
