@@ -1442,3 +1442,25 @@ func TestOpTimestamp(t *testing.T) {
 
 	require.Equal(t, now, v.Int64())
 }
+
+func TestOpNumber(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	blockNumber := int64(100)
+	interpreter.evm.BlockNumber = big.NewInt(blockNumber)
+	pc := uint64(0)
+
+	opNumber(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+
+	require.Equal(t, blockNumber, v.Int64())
+}
