@@ -1506,3 +1506,23 @@ func TestOpChainID(t *testing.T) {
 
 	require.True(t, string(v.Bytes()) == interpreter.evm.chainConfig.ChainID)
 }
+
+func TestOpPop(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	stack.push(big.NewInt(0))
+	require.True(t, stack.len() == 1)
+	opPop(&pc, interpreter, contract, nil, stack)
+
+	require.True(t, stack.len() == 0)
+}
