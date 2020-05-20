@@ -906,10 +906,8 @@ func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, 
 	return nil, nil
 }
 
-// opChainID implements CHAINID opcode
 func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//TODO: chain-id is a string type
-	//chainId := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
-	//stack.push(chainId)
+	chainID := interpreter.intPool.get().SetBytes([]byte(interpreter.evm.chainConfig.ChainID))
+	stack.push(chainID)
 	return nil, nil
 }

@@ -1484,3 +1484,25 @@ func TestOpDifficulty(t *testing.T) {
 
 	require.Equal(t, int64(1), v.Int64())
 }
+
+func TestOpChainID(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	interpreter.evm.chainConfig.ChainID = "test"
+	pc := uint64(0)
+
+	opChainID(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+	t.Log(string(v.Bytes()))
+
+	require.True(t, string(v.Bytes()) == interpreter.evm.chainConfig.ChainID)
+}
