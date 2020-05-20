@@ -532,6 +532,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 }
 
 func opDifficulty(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	stack.push(interpreter.intPool.get().SetInt64(1)) //difficulty is always 1, just fulfil stack rules
 	return nil, nil
 }
 

@@ -1464,3 +1464,23 @@ func TestOpNumber(t *testing.T) {
 
 	require.Equal(t, blockNumber, v.Int64())
 }
+
+func TestOpDifficulty(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	opDifficulty(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+
+	require.Equal(t, int64(1), v.Int64())
+}
