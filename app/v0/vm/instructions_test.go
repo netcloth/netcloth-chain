@@ -6,6 +6,7 @@ import (
 	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/types/time"
 	"io/ioutil"
 	"math/big"
 	"reflect"
@@ -1418,4 +1419,26 @@ func TestOpReturnDataCopy(t *testing.T) {
 	_, err := opReturnDataCopy(&pc, interpreter, contract, mem, stack)
 
 	require.Equal(t, ErrReturnDataOutOfBounds.Error(), err.Error())
+}
+
+func TestOpTimestamp(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	now := time.Now().Unix()
+	interpreter.evm.Time = big.NewInt(now)
+	pc := uint64(0)
+
+	opTimestamp(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+
+	require.Equal(t, now, v.Int64())
 }
