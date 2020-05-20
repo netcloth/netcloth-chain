@@ -1312,3 +1312,56 @@ func TestOpAddmod(t *testing.T) {
 	expected = big.NewInt(0)
 	require.True(t, v.Cmp(expected) == 0)
 }
+
+func TestOpMulmod(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	stack.push(big.NewInt(3))
+	stack.push(big.NewInt(11))
+	stack.push(big.NewInt(1))
+	opMulmod(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+	expected := big.NewInt(2)
+	require.True(t, v.Cmp(expected) == 0)
+
+	//
+	stack.push(big.NewInt(8))
+	stack.push(big.NewInt(7))
+	stack.push(big.NewInt(3))
+	opMulmod(&pc, interpreter, contract, nil, stack)
+
+	v = stack.pop()
+	expected = big.NewInt(5)
+	require.True(t, v.Cmp(expected) == 0)
+
+	//
+	stack.push(big.NewInt(8))
+	stack.push(big.NewInt(8))
+	stack.push(big.NewInt(3))
+	opMulmod(&pc, interpreter, contract, nil, stack)
+
+	v = stack.pop()
+	expected = big.NewInt(0)
+	require.True(t, v.Cmp(expected) == 0)
+
+	//
+	stack.push(big.NewInt(-3))
+	stack.push(big.NewInt(11))
+	stack.push(big.NewInt(1))
+	opMulmod(&pc, interpreter, contract, nil, stack)
+
+	v = stack.pop()
+	expected = big.NewInt(0)
+	require.True(t, v.Cmp(expected) == 0)
+}
