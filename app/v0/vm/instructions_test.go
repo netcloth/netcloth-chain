@@ -1630,3 +1630,22 @@ func TestOpJumpi(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, uint64(22), pc)
 }
+
+func TestOpPc(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	pc := uint64(100)
+	interpreter.intPool = poolOfIntPools.get()
+
+	opPc(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop().Uint64()
+	require.Equal(t, v, pc)
+}
