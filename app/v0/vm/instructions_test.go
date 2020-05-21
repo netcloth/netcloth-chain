@@ -1787,3 +1787,23 @@ func TestOpExtCodeHash(t *testing.T) {
 
 	require.True(t, reflect.DeepEqual(expectedCodeHash.Bytes(), codeHash.Bytes()))
 }
+
+func TestOpCoinbase(t *testing.T) {
+	var (
+		evm         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(evm, evm.vmConfig)
+	)
+
+	contract := NewContract(&dummyContractRef{}, &dummyContractRef{}, nil, 0)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	evm.CoinBase = sdk.AccAddress{0xab}
+	opCoinbase(&pc, interpreter, contract, nil, stack)
+	v := stack.pop()
+	expectedCoinbase := big.NewInt(0).SetBytes(evm.CoinBase)
+
+	require.True(t, expectedCoinbase.Cmp(v) == 0)
+}
