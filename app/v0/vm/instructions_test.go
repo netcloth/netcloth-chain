@@ -1690,3 +1690,24 @@ func TestOpGas(t *testing.T) {
 	v := stack.pop().Uint64()
 	require.Equal(t, v, gas)
 }
+
+func TestOpSelfBalance(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		evm         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(evm, evm.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{address: addr}, nil, 0)
+	)
+
+	balance := big.NewInt(1000)
+	evm.StateDB.SetBalance(addr, balance)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	opSelfBalance(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop()
+	require.Equal(t, v, balance)
+}
