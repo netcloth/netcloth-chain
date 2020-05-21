@@ -1807,3 +1807,27 @@ func TestOpCoinbase(t *testing.T) {
 
 	require.True(t, expectedCoinbase.Cmp(v) == 0)
 }
+
+func TestOpSload(t *testing.T) {
+	var (
+		evm         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(evm, evm.vmConfig)
+	)
+
+	contractAddr := sdk.AccAddress{0xab}
+	contract := NewContract(&dummyContractRef{}, &dummyContractRef{address: contractAddr}, nil, 0)
+
+	k := sdk.Hash{0xaa}
+	v := sdk.Hash{0xbb}
+	evm.StateDB.SetState(contractAddr, k, v)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	stack.push(big.NewInt(0).SetBytes(k.Bytes()))
+	opSload(&pc, interpreter, contract, nil, stack)
+	V := stack.pop()
+
+	require.True(t, reflect.DeepEqual(V.Bytes(), v.Bytes()))
+}
