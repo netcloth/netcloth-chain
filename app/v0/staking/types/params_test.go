@@ -10,6 +10,7 @@ func TestParamsEqual(t *testing.T) {
 	p1 := DefaultParams()
 	p2 := DefaultParams()
 
+	p2.NextExtendingTime = p1.NextExtendingTime
 	ok := p1.Equal(p2)
 	require.True(t, ok)
 

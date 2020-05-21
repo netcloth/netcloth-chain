@@ -322,6 +322,12 @@ func (csdb *CommitStateDB) Logs() []*Log {
 	return logs
 }
 
+func (csdb *CommitStateDB) ClearLogs() {
+	for k, _ := range csdb.logs {
+		delete(csdb.logs, k)
+	}
+}
+
 // GetRefund returns the current value of the refund counter.
 func (csdb *CommitStateDB) GetRefund() uint64 {
 	return csdb.refund

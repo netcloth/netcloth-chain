@@ -532,6 +532,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 }
 
 func opDifficulty(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	stack.push(interpreter.intPool.get().SetInt64(1)) //difficulty is always 1, just fulfil stack rules
 	return nil, nil
 }
 
@@ -905,10 +906,8 @@ func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, 
 	return nil, nil
 }
 
-// opChainID implements CHAINID opcode
 func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//TODO: chain-id is a string type
-	//chainId := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
-	//stack.push(chainId)
+	chainID := interpreter.intPool.get().SetBytes([]byte(interpreter.evm.chainConfig.ChainID))
+	stack.push(chainID)
 	return nil, nil
 }
