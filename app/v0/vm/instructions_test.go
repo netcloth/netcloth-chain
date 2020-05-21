@@ -1554,3 +1554,31 @@ func TestOpMload(t *testing.T) {
 
 	require.True(t, v.Cmp(d) == 0)
 }
+
+func TestOpMstore8(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	offset := uint64(10)
+	hexData, _ := hexutil.Decode("0xdededede")
+	d := big.NewInt(0).SetBytes(hexData)
+
+	mem.Resize(64)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	stack.push(d)
+	stack.push(big.NewInt(int64(offset)))
+	opMstore8(&pc, interpreter, contract, mem, stack)
+
+	memD := mem.Data()[offset : offset+4]
+	require.True(t, memD[0] == hexData[0] && memD[1] == memD[2] && memD[2] == memD[3] && memD[3] == 0)
+}
