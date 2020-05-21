@@ -1649,3 +1649,24 @@ func TestOpPc(t *testing.T) {
 	v := stack.pop().Uint64()
 	require.Equal(t, v, pc)
 }
+
+func TestOpMsize(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	mem.Resize(64)
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	opMsize(&pc, interpreter, contract, mem, stack)
+
+	v := stack.pop().Uint64()
+	require.Equal(t, v, uint64(64))
+}
