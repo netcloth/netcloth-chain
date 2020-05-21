@@ -1526,3 +1526,31 @@ func TestOpPop(t *testing.T) {
 
 	require.True(t, stack.len() == 0)
 }
+
+func TestOpMload(t *testing.T) {
+	var (
+		addr        = sdk.AccAddress{0xab}
+		value       = big.NewInt(1000)
+		env         = newEVM()
+		stack       = newstack()
+		mem         = NewMemory()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{address: addr}, &dummyContractRef{address: addr}, value, 0)
+	)
+
+	offset := uint64(10)
+	d := big.NewInt(100)
+
+	mem.Resize(64)
+	mem.Set32(offset, d)
+
+	interpreter.intPool = poolOfIntPools.get()
+	pc := uint64(0)
+
+	stack.push(big.NewInt(int64(offset)))
+	opMload(&pc, interpreter, contract, mem, stack)
+
+	v := stack.pop()
+
+	require.True(t, v.Cmp(d) == 0)
+}
