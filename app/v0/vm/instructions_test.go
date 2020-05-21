@@ -1831,3 +1831,28 @@ func TestOpSload(t *testing.T) {
 
 	require.True(t, reflect.DeepEqual(V.Bytes(), v.Bytes()))
 }
+
+func TestOpSstore(t *testing.T) {
+	var (
+		evm         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(evm, evm.vmConfig)
+	)
+
+	contractAddr := sdk.AccAddress{0xab}
+	contract := NewContract(&dummyContractRef{}, &dummyContractRef{address: contractAddr}, nil, 0)
+
+	k := sdk.Hash{0xaa}
+	v := sdk.Hash{0xbb}
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	stack.push(big.NewInt(0).SetBytes(v.Bytes()))
+	stack.push(big.NewInt(0).SetBytes(k.Bytes()))
+	opSstore(&pc, interpreter, contract, nil, stack)
+
+	V := evm.StateDB.GetState(contractAddr, k)
+
+	require.True(t, reflect.DeepEqual(V.Bytes(), v.Bytes()))
+}
