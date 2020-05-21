@@ -1670,3 +1670,23 @@ func TestOpMsize(t *testing.T) {
 	v := stack.pop().Uint64()
 	require.Equal(t, v, uint64(64))
 }
+
+func TestOpGas(t *testing.T) {
+	var (
+		env         = newEVM()
+		stack       = newstack()
+		interpreter = NewEVMInterpreter(env, env.vmConfig)
+		contract    = NewContract(&dummyContractRef{}, &dummyContractRef{}, nil, 0)
+	)
+
+	pc := uint64(0)
+	interpreter.intPool = poolOfIntPools.get()
+
+	gas := uint64(100)
+	contract.Gas = gas
+
+	opGas(&pc, interpreter, contract, nil, stack)
+
+	v := stack.pop().Uint64()
+	require.Equal(t, v, gas)
+}
