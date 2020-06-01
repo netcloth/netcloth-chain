@@ -15,6 +15,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	v1 "github.com/netcloth/netcloth-chain/app/v1"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
@@ -54,6 +55,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	}
 
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
+	engine.Add(v1.NewProtocolV1(1, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
 
 	loaded, current := engine.LoadCurrentProtocol(baseApp.cms.GetKVStore(mainStoreKey))
 	if !loaded {
@@ -70,7 +72,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 }
 
 func MakeLatestCodec() *codec.Codec {
-	return v0.MakeCodec()
+	return v1.MakeCodec()
 }
 
 func (app *NCHApp) LoadHeight(height int64) error {
