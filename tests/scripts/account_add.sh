@@ -1,4 +1,3 @@
-
 #!/usr/bin/expect
 
 # before use this script, you should have expect installed, if not:apt-get install expect

@@ -1,4 +1,3 @@
-#set -x
 accs_file_list=($@)
 #echo ${accs_file_list[@]}
 
