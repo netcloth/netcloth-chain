@@ -8,8 +8,6 @@ import (
 	"sort"
 	"sync"
 
-	ethstate "github.com/ethereum/go-ethereum/core/state"
-
 	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
@@ -401,7 +399,11 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 		delete(csdb.stateObjectsDirty, addr)
 	}
 
-	csdb.commitLogs()
+	err = csdb.commitLogs()
+	if err != nil {
+		return
+	}
+
 	csdb.ClearLogs()
 
 	// NOTE: Ethereum returns the trie merkle root here, but as commitment
@@ -410,17 +412,29 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 	return
 }
 
-func (csdb *CommitStateDB) commitLogs() {
-	for h, lgs := range csdb.logs {
-		ctx := csdb.ctx
-		store := ctx.KVStore(csdb.logKey)
-		d, err := json.Marshal(lgs)
+func (csdb *CommitStateDB) commitLogs() (err error) {
+	ctx := csdb.ctx
+	store := ctx.KVStore(csdb.logKey)
+
+	var hs []string
+	for h := range csdb.logs {
+		hs = append(hs, h.String())
+	}
+	sort.Strings(hs)
+
+	for _, h := range hs {
+		hash := sdk.HexToHash(h)
+		d, err := json.Marshal(csdb.logs[hash])
 		if err != nil {
 			ctx.Logger().Error(err.Error())
+			return err
 		}
-		ctx.Logger().Debug(string(d))
-		store.Set(h.Bytes(), d)
+
+		ctx.Logger().Debug("save log----", hash.String(), ":", string(d))
+		store.Set(hash.Bytes(), d)
 	}
+
+	return err
 }
 
 // Finalise finalizes the state objects (accounts) state by setting their state,
@@ -526,9 +540,9 @@ func (csdb *CommitStateDB) RevertToSnapshot(revID int) {
 
 // Database retrieves the low level database supporting the lower level trie
 // ops. It is not used in Ethermint, so it returns nil.
-func (csdb *CommitStateDB) Database() ethstate.Database {
-	return nil
-}
+//func (csdb *CommitStateDB) Database() ethstate.Database {
+//	return nil
+//}
 
 // Empty returns whether the state object is either non-existent or empty
 // according to the EIP161 specification (balance = nonce = code = 0).
