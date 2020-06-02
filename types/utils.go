@@ -13,7 +13,7 @@ import (
 
 var (
 	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
-	DBBackend = ""
+	DBBackend = "goleveldb" // default is goleveldb
 )
 
 // SortedJSON takes any JSON and returns it sorted by keys. Also, all white-spaces

@@ -67,7 +67,7 @@ func (lkb lazyKeybase) Delete(name, passphrase string, skipPass bool) error {
 }
 
 func (lkb lazyKeybase) Sign(name, passphrase string, msg []byte) ([]byte, crypto.PubKey, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewGoLevelDBWithOptionsReadOnly(lkb.name, lkb.dir)
 	if err != nil {
 		return nil, nil, err
 	}
