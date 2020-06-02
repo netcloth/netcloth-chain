@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -34,6 +35,7 @@ type CommitStateDB struct {
 	ak              auth.AccountKeeper
 	storageKey      sdk.StoreKey
 	codeKey         sdk.StoreKey
+	logKey          sdk.StoreKey
 	storageDebugKey sdk.StoreKey
 
 	// maps that hold 'live' objects, which will get modified while processing a
@@ -78,11 +80,12 @@ type CommitStateDB struct {
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
 //func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, logKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
 		storageKey:        storageKey,
 		codeKey:           codeKey,
+		logKey:            logKey,
 		storageDebugKey:   storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
@@ -308,12 +311,26 @@ func (csdb *CommitStateDB) GetCommittedState(addr sdk.AccAddress, hash sdk.Hash)
 }
 
 // GetLogs returns the current logs for a given hash in the state.
-func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) []*Log {
-	return csdb.logs[hash]
+func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) (logs []*Log) {
+	r, ok := csdb.logs[hash]
+	if ok {
+		return r
+	}
+
+	ctx := csdb.ctx
+	store := ctx.KVStore(csdb.logKey)
+	d := store.Get(hash.Bytes())
+	err := json.Unmarshal(d, &logs)
+	if err != nil {
+		ctx.Logger().Error(err.Error())
+		return
+	}
+
+	return
 }
 
 // Logs returns all the current logs in the state.
-func (csdb *CommitStateDB) Logs() []*Log {
+func (csdb *CommitStateDB) Logs() []*Log { // todo: is should get all logs from store?
 	var logs []*Log
 	for _, lgs := range csdb.logs {
 		logs = append(logs, lgs...)
@@ -384,10 +401,26 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 		delete(csdb.stateObjectsDirty, addr)
 	}
 
+	csdb.commitLogs()
+	csdb.ClearLogs()
+
 	// NOTE: Ethereum returns the trie merkle root here, but as commitment
 	// actually happens in the BaseApp at EndBlocker, we do not know the root at
 	// this time.
 	return
+}
+
+func (csdb *CommitStateDB) commitLogs() {
+	for h, lgs := range csdb.logs {
+		ctx := csdb.ctx
+		store := ctx.KVStore(csdb.logKey)
+		d, err := json.Marshal(lgs)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+		}
+		ctx.Logger().Debug(string(d))
+		store.Set(h.Bytes(), d)
+	}
 }
 
 // Finalise finalizes the state objects (accounts) state by setting their state,

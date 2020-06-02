@@ -8,6 +8,7 @@ const (
 	ModuleName    = protocol.VmModuleName
 	StoreKey      = ModuleName
 	CodeKey       = StoreKey + "_code"
+	LogKey        = StoreKey + "_log"
 	StoreDebugKey = StoreKey + "_debug"
 	QuerierRoute  = ModuleName
 	RouterKey     = ModuleName
