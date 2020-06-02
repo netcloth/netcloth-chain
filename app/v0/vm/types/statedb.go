@@ -430,7 +430,7 @@ func (csdb *CommitStateDB) commitLogs() (err error) {
 			return err
 		}
 
-		ctx.Logger().Info("save log----", hash.String(), ":", string(d))
+		ctx.Logger().Error("save log----", hash.String(), ":", string(d))
 		store.Set(hash.Bytes(), d)
 	}
 
