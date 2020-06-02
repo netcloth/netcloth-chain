@@ -4,8 +4,9 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
+
+	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	dbm "github.com/tendermint/tm-db"
 )
@@ -75,8 +76,17 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 		backend = dbm.CLevelDBBackend
 	}
 
-	if strings.Contains(dir, ".nchcli") { // nchcli can readonly for signing txs
-		backend = dbm.GoLevelDBBackendRO
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("couldn't create db: %v", r)
+		}
+	}()
+	return dbm.NewDB(name, backend, dir), err
+}
+
+func NewGoLevelDBWithOptionsReadOnly(name, dir string) (db dbm.DB, err error) {
+	if DBBackend != string(dbm.GoLevelDBBackend) {
+		return NewLevelDB(name, dir)
 	}
 
 	defer func() {
@@ -84,5 +94,6 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 			err = fmt.Errorf("couldn't create db: %v", r)
 		}
 	}()
-	return dbm.NewDB(name, backend, dir), err
+
+	return dbm.NewGoLevelDBWithOpts(name, dir, &opt.Options{ReadOnly: true})
 }

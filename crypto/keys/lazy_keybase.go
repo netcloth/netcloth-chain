@@ -37,7 +37,7 @@ func (lkb lazyKeybase) List() ([]Info, error) {
 }
 
 func (lkb lazyKeybase) Get(name string) (Info, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewGoLevelDBWithOptionsReadOnly(lkb.name, lkb.dir)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (lkb lazyKeybase) Get(name string) (Info, error) {
 }
 
 func (lkb lazyKeybase) GetByAddress(address sdk.AccAddress) (Info, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewGoLevelDBWithOptionsReadOnly(lkb.name, lkb.dir)
 	if err != nil {
 		return nil, err
 	}
