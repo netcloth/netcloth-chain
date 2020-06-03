@@ -39,6 +39,7 @@ const (
 	CIpalStoreKey        = CIpalModuleName
 	VmStoreKey           = VmModuleName
 	VmCodeStoreKey       = VmStoreKey + "_code"
+	VmLogStoreKey        = VmStoreKey + "_log"
 	VmDebugStoreKey      = VmStoreKey + "_debug"
 
 	ParamsTStoreKey  = "transient_" + ParamsStoreKey
@@ -59,6 +60,7 @@ var (
 		IpalStoreKey,
 		VmStoreKey,
 		VmCodeStoreKey,
+		VmLogStoreKey,
 		VmDebugStoreKey,
 		GovStoreKey,
 		AuthStoreKey,
