@@ -24,14 +24,3 @@ type Log struct {
 
 	Removed bool `json:"removed" yaml:"removed"`
 }
-
-type logMarshaling struct {
-	Data        hexutil.Bytes
-	BlockNumber hexutil.Uint64
-	TxIndex     hexutil.Uint
-	Index       hexutil.Uint
-}
-
-// LogForStorage is a wrapper around a Log that flattens and parses the entire content of
-// a log including non-consensus fields.
-type LogForStorage Log

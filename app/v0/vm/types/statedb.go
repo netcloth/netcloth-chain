@@ -399,13 +399,6 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 		delete(csdb.stateObjectsDirty, addr)
 	}
 
-	err = csdb.commitLogs()
-	if err != nil {
-		return
-	}
-
-	csdb.ClearLogs()
-
 	// NOTE: Ethereum returns the trie merkle root here, but as commitment
 	// actually happens in the BaseApp at EndBlocker, we do not know the root at
 	// this time.
@@ -467,6 +460,9 @@ func (csdb *CommitStateDB) Finalise(deleteEmptyObjects bool) {
 
 		csdb.stateObjectsDirty[addr] = struct{}{}
 	}
+
+	csdb.commitLogs()
+	csdb.ClearLogs()
 
 	// invalidate journal because reverting across transactions is not allowed
 	csdb.clearJournalAndRefund()
