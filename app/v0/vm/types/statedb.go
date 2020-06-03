@@ -12,6 +12,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
+	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -47,7 +48,6 @@ type CommitStateDB struct {
 	thash, bhash sdk.Hash
 	txIndex      int
 	logs         map[sdk.Hash][]*Log
-	logSize      uint
 
 	// TODO: Determine if we actually need this as we do not need preimages in
 	// the SDK, but it seems to be used elsewhere in Geth.
@@ -179,9 +179,8 @@ func (csdb *CommitStateDB) AddLog(log *Log) {
 	log.TxHash = csdb.thash
 	log.BlockHash = csdb.bhash
 	log.TxIndex = uint(csdb.txIndex)
-	log.Index = csdb.logSize
+	log.Index = csdb.updateLogIndex(false)
 	csdb.logs[csdb.thash] = append(csdb.logs[csdb.thash], log)
-	csdb.logSize++
 }
 
 // AddPreimage records a SHA3 preimage seen by the VM.
@@ -405,7 +404,7 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 	return
 }
 
-func (csdb *CommitStateDB) commitLogs() (err error) {
+func (csdb *CommitStateDB) commitLogs() {
 	ctx := csdb.ctx
 	store := ctx.KVStore(csdb.logKey)
 
@@ -420,14 +419,43 @@ func (csdb *CommitStateDB) commitLogs() (err error) {
 		d, err := json.Marshal(csdb.logs[hash])
 		if err != nil {
 			ctx.Logger().Error(err.Error())
-			return err
 		}
 
-		ctx.Logger().Error("save log----", hash.String(), ":", string(d))
+		ctx.Logger().Info("save log----", hash.String(), ":", string(d))
 		store.Set(hash.Bytes(), d)
 	}
+}
 
-	return err
+func (csdb *CommitStateDB) updateLogIndex(isPlus bool) uint64 {
+	const logIndexKey = "logIndexKey"
+	key := []byte(logIndexKey)
+
+	ctx := csdb.ctx
+	store := ctx.KVStore(csdb.logKey)
+
+	value := big.NewInt(0)
+	if store.Has(key) {
+		d := store.Get(key)
+		value.SetBytes(d)
+
+		if isPlus {
+			if value.Uint64() == 0 {
+				ctx.Logger().Error(fmt.Sprintf("current logIndex is 0, can not to be plus"))
+				return 0
+			}
+			value.SetUint64(value.Uint64() - 1)
+		} else {
+			if value.Uint64() == math.MaxUint64 {
+				ctx.Logger().Error(fmt.Sprintf("current logIndex will out of range"))
+				return value.Uint64()
+			}
+			value.SetUint64(value.Uint64() + 1)
+		}
+	}
+
+	store.Set(key, value.Bytes())
+
+	return value.Uint64()
 }
 
 // Finalise finalizes the state objects (accounts) state by setting their state,
@@ -590,7 +618,6 @@ func (csdb *CommitStateDB) Reset(_ sdk.Hash) error {
 	csdb.bhash = sdk.Hash{}
 	csdb.txIndex = 0
 	csdb.logs = make(map[sdk.Hash][]*Log)
-	csdb.logSize = 0
 	csdb.preimages = make(map[sdk.Hash][]byte)
 
 	csdb.clearJournalAndRefund()
@@ -670,7 +697,6 @@ func (csdb *CommitStateDB) Copy() *CommitStateDB {
 		stateObjectsDirty: make(map[string]struct{}, len(csdb.journal.dirties)),
 		refund:            csdb.refund,
 		logs:              make(map[sdk.Hash][]*Log, len(csdb.logs)),
-		logSize:           csdb.logSize,
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
 	}

@@ -20,7 +20,7 @@ type Log struct {
 	TxHash      sdk.Hash `json:"transactionHash" yaml:"transactionHash"`
 	TxIndex     uint     `json:"transactionIndex" yaml:"transactionIndex"`
 	BlockHash   sdk.Hash `json:"blockHash" yaml:"blockHash"`
-	Index       uint     `json:"logIndex" yaml:"logIndex"`
+	Index       uint64   `json:"logIndex" yaml:"logIndex"`
 
 	Removed bool `json:"removed" yaml:"removed"`
 }
