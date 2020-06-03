@@ -419,9 +419,10 @@ func (csdb *CommitStateDB) commitLogs() {
 		d, err := json.Marshal(csdb.logs[hash])
 		if err != nil {
 			ctx.Logger().Error(err.Error())
+			continue
 		}
 
-		ctx.Logger().Info("save log----", hash.String(), ":", string(d))
+		ctx.Logger().Debug("save log----", hash.String(), ":", string(d))
 		store.Set(hash.Bytes(), d)
 	}
 }
