@@ -13,3 +13,7 @@ const (
 	QuerierRoute  = ModuleName
 	RouterKey     = ModuleName
 )
+
+var (
+	LogIndexKey = []byte("logIndexKey")
+)

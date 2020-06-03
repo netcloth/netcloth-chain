@@ -179,7 +179,7 @@ func (csdb *CommitStateDB) AddLog(log *Log) {
 	log.TxHash = csdb.thash
 	log.BlockHash = csdb.bhash
 	log.TxIndex = uint(csdb.txIndex)
-	log.Index = csdb.updateLogIndex(false)
+	log.Index = csdb.updateLogIndexByOne(false)
 	csdb.logs[csdb.thash] = append(csdb.logs[csdb.thash], log)
 }
 
@@ -427,21 +427,18 @@ func (csdb *CommitStateDB) commitLogs() {
 	}
 }
 
-func (csdb *CommitStateDB) updateLogIndex(isPlus bool) uint64 {
-	const logIndexKey = "logIndexKey"
-	key := []byte(logIndexKey)
-
+func (csdb *CommitStateDB) updateLogIndexByOne(isSubtract bool) uint64 {
 	ctx := csdb.ctx
 	store := ctx.KVStore(csdb.logKey)
 
 	value := big.NewInt(0)
-	if store.Has(key) {
-		d := store.Get(key)
+	if store.Has(LogIndexKey) {
+		d := store.Get(LogIndexKey)
 		value.SetBytes(d)
 
-		if isPlus {
+		if isSubtract {
 			if value.Uint64() == 0 {
-				ctx.Logger().Error(fmt.Sprintf("current logIndex is 0, can not to be plus"))
+				ctx.Logger().Error(fmt.Sprintf("current logIndex is 0, can not to be Subtracted"))
 				return 0
 			}
 			value.SetUint64(value.Uint64() - 1)
@@ -454,7 +451,7 @@ func (csdb *CommitStateDB) updateLogIndex(isPlus bool) uint64 {
 		}
 	}
 
-	store.Set(key, value.Bytes())
+	store.Set(LogIndexKey, value.Bytes())
 
 	return value.Uint64()
 }
