@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
+	v1 "github.com/netcloth/netcloth-chain/app/v1"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -75,7 +75,7 @@ func main() {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	v0.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+	v1.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func queryCmd(cdc *amino.Codec) *cobra.Command {
@@ -95,7 +95,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	v0.ModuleBasics.AddQueryCommands(queryCmd, cdc)
+	v1.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
 	return queryCmd
 }
@@ -118,7 +118,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	v0.ModuleBasics.AddTxCommands(txCmd, cdc)
+	v1.ModuleBasics.AddTxCommands(txCmd, cdc)
 
 	// remove auth and bank commands as they're mounted under the root tx command
 	var cmdsToRemove []*cobra.Command

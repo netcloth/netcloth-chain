@@ -74,7 +74,7 @@ func (v IPALNodes) String() (out string) {
 	return strings.TrimSpace(out)
 }
 
-func NewIPALNode(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, amount sdk.Coin) IPALNode {
+func NewIPALNode(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, amount sdk.Coin, appVersion string) IPALNode {
 	return IPALNode{
 		OperatorAddress: operator,
 		Moniker:         moniker,
@@ -83,6 +83,7 @@ func NewIPALNode(operator sdk.AccAddress, moniker, website, details, extension s
 		Extension:       extension,
 		Endpoints:       endpoints,
 		Bond:            amount,
+		AppVersion:      appVersion,
 	}
 }
 

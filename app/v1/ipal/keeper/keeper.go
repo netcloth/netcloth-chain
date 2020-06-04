@@ -120,7 +120,7 @@ func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err 
 			} else {
 			}
 
-			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
+			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond, m.AppVersion)
 			k.updateIPALNode(ctx, n, ipalNode)
 		} else {
 			k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond)
@@ -133,7 +133,7 @@ func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err 
 				return err
 			}
 
-			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)
+			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond, m.AppVersion)
 			k.CreateIPALNode(ctx, ipalNode)
 		} else {
 			return sdkerrors.Wrapf(types.ErrBondInsufficient, "bond insufficient, min bond: %s, actual bond: %s", minBond.String(), m.Bond.String())
