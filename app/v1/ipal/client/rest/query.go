@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/netcloth/netcloth-chain/app/v0/ipal/types"
+	"github.com/netcloth/netcloth-chain/app/v1/ipal/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/rest"

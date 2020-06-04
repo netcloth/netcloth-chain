@@ -48,9 +48,10 @@ type MsgIPALNodeClaim struct {
 	Extension       string         `json:"extension" yaml:"extension"`               // for future extension
 	Endpoints       Endpoints      `json:"endpoints" yaml:"endpoints"`               // server endpoint for app client
 	Bond            sdk.Coin       `json:"bond" yaml:"bond"`                         // bond coin for ranking
+	AppVersion      string         `json:"app_version" yaml:"app_version"`
 }
 
-func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin) MsgIPALNodeClaim {
+func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin, appVersion string) MsgIPALNodeClaim {
 	return MsgIPALNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
@@ -59,6 +60,7 @@ func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, ext
 		Extension:       extension,
 		Endpoints:       endpoints,
 		Bond:            Bond,
+		AppVersion:      appVersion,
 	}
 }
 

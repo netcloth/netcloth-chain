@@ -2,13 +2,15 @@ package cli
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/utils"
-	"github.com/netcloth/netcloth-chain/app/v0/ipal/types"
+	"github.com/netcloth/netcloth-chain/app/v1/ipal/types"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -59,7 +61,8 @@ func IPALNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgIPALNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, extension, endpoints, coin)
+			rand.Seed(time.Now().Unix())
+			msg := types.NewMsgIPALNodeClaim(cliCtx.GetFromAddress(), moniker, website, details, extension, endpoints, coin, fmt.Sprintf("%v", rand.Uint64()))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

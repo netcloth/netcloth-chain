@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/netcloth/netcloth-chain/app/v0/ipal/types"
+	"github.com/netcloth/netcloth-chain/app/v1/ipal/types"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
