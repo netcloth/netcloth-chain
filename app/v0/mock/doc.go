@@ -5,4 +5,4 @@ abstractions.
 
 BaseApp has no state except the CommitMultiStore you provide upon init.
 */
-package simapp
+package mock

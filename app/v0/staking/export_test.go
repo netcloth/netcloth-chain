@@ -17,10 +17,10 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
+	"github.com/netcloth/netcloth-chain/app/v0/mock"
+	v0 "github.com/netcloth/netcloth-chain/app/v0/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp"
-	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
@@ -48,7 +48,7 @@ var (
 )
 
 type testInput struct {
-	mApp     *simapp.NCHApp
+	mApp     *mock.NCHApp
 	keeper   gov.Keeper
 	sk       staking.Keeper
 	ak       auth.AccountKeeper
@@ -57,7 +57,7 @@ type testInput struct {
 	privKeys []crypto.PrivKey
 }
 
-func getProtocolV0(t *testing.T, app *simapp.NCHApp) *v0.ProtocolV0 {
+func getProtocolV0(t *testing.T, app *mock.NCHApp) *v0.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
 	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
 	require.True(t, ok)
@@ -74,7 +74,7 @@ func getMockApp(t *testing.T, numGenAccs int, genAccs []auth.Account) testInput 
 	)
 
 	if genAccs == nil || len(genAccs) == 0 {
-		genAccs, addrs, pubKeys, privKeys = simapp.CreateGenAccounts(numGenAccs, initCoins)
+		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(numGenAccs, initCoins)
 	}
 
 	protocolV0 := getProtocolV0(t, mApp)
@@ -91,10 +91,10 @@ func getMockApp(t *testing.T, numGenAccs int, genAccs []auth.Account) testInput 
 	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
 }
 
-func NewNCHApp(t *testing.T) *simapp.NCHApp {
+func NewNCHApp(t *testing.T) *mock.NCHApp {
 	logger := log.NewNopLogger()
 	db := dbm.NewMemDB()
-	baseApp := simapp.NewBaseApp("nchmock", logger, db)
+	baseApp := mock.NewBaseApp("nchmock", logger, db)
 
 	baseApp.SetCommitMultiStoreTracer(nil)
 	baseApp.SetAppVersion("v0")
@@ -115,10 +115,10 @@ func NewNCHApp(t *testing.T) *simapp.NCHApp {
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	return &simapp.NCHApp{BaseApp: baseApp}
+	return &mock.NCHApp{BaseApp: baseApp}
 }
 
-func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account) error {
+func setGenesis(app *mock.NCHApp, cdc *codec.Codec, accs []auth.Account) error {
 	app.GenesisAccounts = accs
 
 	genesisState := v0.NewDefaultGenesisState()
@@ -139,7 +139,7 @@ func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account) error
 	return nil
 }
 
-func initGenAccount(t *testing.T, ctx sdk.Context, app *simapp.NCHApp) {
+func initGenAccount(t *testing.T, ctx sdk.Context, app *mock.NCHApp) {
 	p0 := getProtocolV0(t, app)
 	for _, genAcc := range app.GenesisAccounts {
 		acc := p0.AccountKeeper.NewAccountWithAddress(ctx, genAcc.GetAddress())

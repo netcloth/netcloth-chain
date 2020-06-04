@@ -1,13 +1,14 @@
-package simapp
+package mock
 
 import (
 	"bytes"
-	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
-	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"math/rand"
 	"sort"
 	"testing"
+
+	v02 "github.com/netcloth/netcloth-chain/app/v0/mock/p0"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -130,9 +131,9 @@ func CreateGenAccounts(numAccs int, genCoins sdk.Coins) (genAccs []auth.Account,
 	return
 }
 
-func GetProtocolV0(t *testing.T, app *NCHApp) *v0.ProtocolV0 {
+func GetProtocolV0(t *testing.T, app *NCHApp) *v02.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
-	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
+	protocolV0, ok := curProtocol.(*v02.ProtocolV0)
 	require.True(t, ok)
 	return protocolV0
 }

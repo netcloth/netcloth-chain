@@ -1,5 +1,5 @@
 // nolint: golint
-package simapp
+package mock
 
 import (
 	"fmt"

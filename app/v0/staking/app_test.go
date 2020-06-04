@@ -6,12 +6,12 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/netcloth/netcloth-chain/app/v0/mock"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
-	"github.com/netcloth/netcloth-chain/simapp"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-func checkValidator(t *testing.T, app *simapp.NCHApp, addr sdk.ValAddress, expFound bool) staking.Validator {
+func checkValidator(t *testing.T, app *mock.NCHApp, addr sdk.ValAddress, expFound bool) staking.Validator {
 	ctxCheck := app.BaseApp.NewContext(true, abci.Header{})
 
 	p0 := getProtocolV0(t, app)
@@ -22,7 +22,7 @@ func checkValidator(t *testing.T, app *simapp.NCHApp, addr sdk.ValAddress, expFo
 }
 
 func checkDelegation(
-	t *testing.T, app *simapp.NCHApp, delegatorAddr sdk.AccAddress,
+	t *testing.T, app *mock.NCHApp, delegatorAddr sdk.AccAddress,
 	validatorAddr sdk.ValAddress, expFound bool, expShares sdk.Dec,
 ) {
 
@@ -62,8 +62,8 @@ func TestStakingMsgs(t *testing.T) {
 	input := getMockApp(t, 2, nil)
 	app := input.mApp
 
-	simapp.CheckBalance(t, app, input.addrs[0], initCoins)
-	simapp.CheckBalance(t, app, input.addrs[1], initCoins)
+	mock.CheckBalance(t, app, input.addrs[0], initCoins)
+	mock.CheckBalance(t, app, input.addrs[1], initCoins)
 
 	//// create validator
 	//desc := staking.NewDescription("moniker", "", "", "")
@@ -72,9 +72,9 @@ func TestStakingMsgs(t *testing.T) {
 	//)
 	//
 	//header := abci.Header{Height: app.LastBlockHeight() + 1}
-	//_, _, err := simapp.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{createValidatorMsg}, []uint64{0}, []uint64{0}, true, true, input.privKeys[0])
+	//_, _, err := mock.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{createValidatorMsg}, []uint64{0}, []uint64{0}, true, true, input.privKeys[0])
 	//require.NoError(t, err)
-	//simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin.Sub(bondCoin)})
+	//mock.CheckBalance(t, app, addr1, sdk.Coins{genCoin.Sub(bondCoin)})
 	//
 	//header = abci.Header{Height: app.LastBlockHeight() + 1}
 	//app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -92,32 +92,32 @@ func TestStakingMsgs(t *testing.T) {
 	//editValidatorMsg := staking.NewMsgEditValidator(sdk.ValAddress(addr1), description, nil, nil)
 	//
 	//header = abci.Header{Height: app.LastBlockHeight() + 1}
-	//_, _, err = simapp.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{editValidatorMsg}, []uint64{0}, []uint64{1}, true, true, priv1)
+	//_, _, err = mock.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{editValidatorMsg}, []uint64{0}, []uint64{1}, true, true, priv1)
 	//require.NoError(t, err)
 	//
 	//validator = checkValidator(t, app, sdk.ValAddress(addr1), true)
 	//require.Equal(t, description, validator.Description)
 	//
 	//// delegate
-	//simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
+	//mock.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
 	//delegateMsg := staking.NewMsgDelegate(addr2, sdk.ValAddress(addr1), bondCoin)
 	//
 	//header = abci.Header{Height: app.LastBlockHeight() + 1}
-	//_, _, err = simapp.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{delegateMsg}, []uint64{1}, []uint64{0}, true, true, priv2)
+	//_, _, err = mock.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{delegateMsg}, []uint64{1}, []uint64{0}, true, true, priv2)
 	//require.NoError(t, err)
 	//
-	//simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
+	//mock.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
 	//checkDelegation(t, app, addr2, sdk.ValAddress(addr1), true, bondTokens.ToDec())
 	//
 	//// begin unbonding
 	//beginUnbondingMsg := staking.NewMsgUndelegate(addr2, sdk.ValAddress(addr1), bondCoin)
 	//header = abci.Header{Height: app.LastBlockHeight() + 1}
-	//_, _, err = simapp.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{beginUnbondingMsg}, []uint64{1}, []uint64{1}, true, true, priv2)
+	//_, _, err = mock.SignCheckDeliver(t, app.Codec(), app.BaseApp, header, []sdk.Msg{beginUnbondingMsg}, []uint64{1}, []uint64{1}, true, true, priv2)
 	//require.NoError(t, err)
 	//
 	//// delegation should exist anymore
 	//checkDelegation(t, app, addr2, sdk.ValAddress(addr1), false, sdk.Dec{})
 	//
 	//// balance should be the same because bonding not yet complete
-	//simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
+	//mock.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
 }

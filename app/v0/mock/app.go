@@ -1,4 +1,4 @@
-package simapp
+package mock
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/app/protocol"
-	"github.com/netcloth/netcloth-chain/app/v0"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/codec"
