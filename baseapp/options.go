@@ -1,5 +1,5 @@
 // nolint: golint
-package app
+package baseapp
 
 import (
 	"fmt"

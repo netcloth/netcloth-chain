@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/netcloth/netcloth-chain/app/protocol"
+	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 )
 
 const (

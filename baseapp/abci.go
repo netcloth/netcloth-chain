@@ -1,4 +1,4 @@
-package app
+package baseapp
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -175,7 +176,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 
 	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
 	if success {
-		app.txDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
+		app.TxDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
 		return
 	} else {
 		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
@@ -190,7 +191,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 //
 // NOTE:CheckTx does not run the actual Msg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
-	tx, err := app.txDecoder(req.Tx)
+	tx, err := app.TxDecoder(req.Tx)
 	if err != nil {
 		return sdkerrors.ResponseCheckTx(err, 0, 0)
 	}
@@ -223,7 +224,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 }
 
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
-	tx, err := app.txDecoder(req.Tx)
+	tx, err := app.TxDecoder(req.Tx)
 	if err != nil {
 		return sdkerrors.ResponseDeliverTx(err, nil, 0, 0, err.Error())
 	}
@@ -320,7 +321,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 		case "simulate":
 			txBytes := req.Data
 
-			tx, err := app.txDecoder(txBytes)
+			tx, err := app.TxDecoder(txBytes)
 			if err != nil {
 				return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to decode tx"))
 			}

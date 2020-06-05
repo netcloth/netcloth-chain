@@ -1,41 +1,38 @@
-package app
+package simapp
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/netcloth/netcloth-chain/baseapp"
 
-	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
-	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/baseapp/protocol"
-	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
 
-const (
-	appName = "nch"
-)
+const appName = "SimApp"
 
 var (
-	DefaultCLIHome  = os.ExpandEnv("$HOME/.nchcli")
-	DefaultNodeHome = os.ExpandEnv("$HOME/.nchd")
+	// DefaultCLIHome default home directories for the application CLI
+	DefaultCLIHome = os.ExpandEnv("$HOME/.simapp")
+
+	// DefaultNodeHome default home directories for the application daemon
+	DefaultNodeHome = os.ExpandEnv("$HOME/.simapp")
 )
 
-type NCHApp struct {
+type SimApp struct {
 	*baseapp.BaseApp
 }
 
-func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *NCHApp {
+func NewSimApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *SimApp {
 	baseApp := baseapp.NewBaseApp(appName, logger, db, baseAppOptions...)
 
 	baseApp.SetCommitMultiStoreTracer(traceStore)
@@ -57,7 +54,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
 
-	loaded, current := engine.LoadCurrentProtocol(baseApp.GetCms().GetKVStore(mainStoreKey))
+	loaded, current := engine.LoadCurrentProtocol(baseApp.cms.GetKVStore(mainStoreKey))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
 	} else {
@@ -66,20 +63,12 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	var app = &NCHApp{baseApp}
+	var app = &SimApp{baseApp}
 
 	return app
 }
 
-func MakeLatestCodec() *codec.Codec {
-	return v0.MakeCodec()
-}
-
-func (app *NCHApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, protocol.Keys[protocol.MainStoreKey])
-}
-
-func (app *NCHApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
-	return app.Engine.GetCurrentProtocol().ExportAppStateAndValidators(ctx, forZeroHeight, jailWhiteList)
-}
+//// SimulationManager implements the SimulationApp interface
+//func (app *SimApp) SimulationManager() *module.SimulationManager {
+//	return app.sm
+//}

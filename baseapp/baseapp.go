@@ -1,4 +1,4 @@
-package app
+package baseapp
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
+	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -46,7 +46,7 @@ type BaseApp struct {
 	name      string               // application name from abci.Info
 	db        dbm.DB               // common DB backend
 	cms       sdk.CommitMultiStore // Main (uncached) state
-	txDecoder sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+	TxDecoder sdk.TxDecoder        // unmarshal []byte into sdk.Tx
 
 	Engine *protocol.ProtocolEngine
 
@@ -359,6 +359,10 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 	}
 
 	return app.checkState
+}
+
+func (app *BaseApp) GetCms() sdk.CommitMultiStore {
+	return app.cms
 }
 
 // retrieve the context for the tx w/ txBytes and other memoized values.

@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/binary"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
+	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

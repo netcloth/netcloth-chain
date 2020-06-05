@@ -17,7 +17,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
 	"github.com/netcloth/netcloth-chain/app/v0/cipal"
@@ -30,6 +29,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/app/v0/supply"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
+	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
 	sdk "github.com/netcloth/netcloth-chain/types"
