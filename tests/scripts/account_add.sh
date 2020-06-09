@@ -4,11 +4,11 @@
 spawn nchcli keys add [lindex $argv 0]
 expect {
     "Enter a passphrase to encrypt your key to disk" {
-        send "testtest\n";
+        send "[lindex $argv 1]\n";
         exp_continue;
     }
     "Repeat the passphrase" {
-        send "testtest\n";
+        send "[lindex $argv 1]\n";
         exp_continue;
     }
 }
