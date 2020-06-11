@@ -1,5 +1,8 @@
-# netcloth-chain
-An efficient blockchain network.
+<h1 align="center">NetCloth Chain</h1>
+<h4 align="center">Version testnet-v1.2.0</h4>
+
+Welcome to the official Go implementation of the [NetCloth](https://www.netcloth.org) blockchain!
+
 
 ## QuickStart
 

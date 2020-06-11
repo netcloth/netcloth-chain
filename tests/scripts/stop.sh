@@ -1,0 +1,2 @@
+pkill nchd
+pkill nchcli

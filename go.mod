@@ -26,8 +26,12 @@ require (
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/iavl v0.12.4
-	github.com/tendermint/tendermint v0.32.10
+	github.com/tendermint/tendermint v0.32.12
 	github.com/tendermint/tm-db v0.2.0
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
 	gopkg.in/yaml.v2 v2.2.7
+)
+
+replace (
+	github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.13
 )
