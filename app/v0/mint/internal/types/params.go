@@ -62,9 +62,9 @@ func (p Params) Equal(p2 Params) bool {
 func DefaultParams() Params {
 	return Params{
 		MintDenom:           nchtypes.DefaultBondDenom,
-		InflationRateChange: sdk.NewDecWithPrec(10, 2),
-		InflationMax:        sdk.NewDecWithPrec(20, 2),
-		InflationMin:        sdk.NewDecWithPrec(10, 2),
+		InflationRateChange: sdk.NewDecWithPrec(3, 2),
+		InflationMax:        sdk.NewDecWithPrec(5, 2),
+		InflationMin:        sdk.NewDecWithPrec(2, 2),
 		GoalBonded:          sdk.NewDecWithPrec(67, 2),
 		BlocksPerYear:       uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
 	}
