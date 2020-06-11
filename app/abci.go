@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	cmn "github.com/tendermint/tendermint/libs/common"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -178,7 +179,15 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 		app.txDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
 		return
 	} else {
-		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
+		msg := fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion)
+		fmt.Println(msg)
+		e := abci.Event{
+			Type: abci.UpgradeFailureEvent,
+			Attributes: []cmn.KVPair{
+				{Key: []byte("info"), Value: []byte(msg)},
+			},
+		}
+		res.Events = append(res.Events, e)
 	}
 
 	return
