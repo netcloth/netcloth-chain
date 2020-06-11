@@ -48,25 +48,25 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	baseApp.MountKVStores(protocol.Keys)
 	baseApp.MountTransientStores(protocol.TKeys)
 
+	var app = &NCHApp{baseApp}
+
 	if loadLatest {
-		err := baseApp.LoadLatestVersion(mainStoreKey)
+		err := app.LoadLatestVersion(mainStoreKey)
 		if err != nil {
 			cmn.Exit(err.Error())
 		}
 	}
 
-	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, baseApp.DeliverTx, invCheckPeriod, nil))
+	engine.Add(v0.NewProtocolV0(0, logger, protocolKeeper, app.DeliverTx, invCheckPeriod, nil))
 
-	loaded, current := engine.LoadCurrentProtocol(baseApp.GetCms().GetKVStore(mainStoreKey))
+	loaded, current := engine.LoadCurrentProtocol(app.GetCms().GetKVStore(mainStoreKey))
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
-	} else {
-		fmt.Println(fmt.Sprintf("blockchain current protocol version :%d", current))
 	}
+	logger.Info(fmt.Sprintf("launch app with protocol version: %d", current))
 
-	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
-
-	var app = &NCHApp{baseApp}
+	// set txDeocder
+	app.SetTxDecoder(auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec()))
 
 	return app
 }

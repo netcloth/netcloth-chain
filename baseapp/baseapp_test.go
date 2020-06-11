@@ -54,7 +54,7 @@ func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
 	registerTestCodec(codec)
 
 	bApp := NewBaseApp(name, logger, db, options...)
-	bApp.TxDecoder = testTxDecoder(codec)
+	bApp.txDecoder = testTxDecoder(codec)
 
 	return bApp
 }
@@ -254,7 +254,7 @@ func TestTxDecoder(t *testing.T) {
 	tx := newTxCounter(1, 0)
 	txBytes := codec.MustMarshalBinaryLengthPrefixed(tx)
 
-	dTx, err := app.TxDecoder(txBytes)
+	dTx, err := app.txDecoder(txBytes)
 	require.NoError(t, err)
 
 	cTx := dTx.(txTest)
@@ -571,7 +571,7 @@ func TestCheckTx(t *testing.T) {
 	nTxs := int64(5)
 	app.InitChain(abci.RequestInitChain{})
 
-	// Create same codec used in TxDecoder
+	// Create same codec used in txDecoder
 	codec := codec.New()
 	registerTestCodec(codec)
 
@@ -619,7 +619,7 @@ func TestDeliverTx(t *testing.T) {
 	app := setupBaseApp(t, &engine)
 	app.InitChain(abci.RequestInitChain{})
 
-	// Create same codec used in TxDecoder
+	// Create same codec used in txDecoder
 	codec := codec.New()
 	registerTestCodec(codec)
 
@@ -671,7 +671,7 @@ func TestMultiMsgDeliverTx(t *testing.T) {
 	engine := newEngine(anteOpt, routerOpt)
 	app := setupBaseApp(t, &engine)
 
-	// Create same codec used in TxDecoder
+	// Create same codec used in txDecoder
 	codec := codec.New()
 	registerTestCodec(codec)
 
@@ -752,7 +752,7 @@ func TestSimulateTx(t *testing.T) {
 
 	app.InitChain(abci.RequestInitChain{})
 
-	// Create same codec used in TxDecoder
+	// Create same codec used in txDecoder
 	cdc := codec.New()
 	registerTestCodec(cdc)
 

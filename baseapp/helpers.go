@@ -35,3 +35,7 @@ func (app *BaseApp) NewContext(isCheckTx bool, header abci.Header) sdk.Context {
 
 	return sdk.NewContext(app.deliverState.ms, header, false, app.logger)
 }
+
+func (app *BaseApp) SetTxDecoder(txDecoder sdk.TxDecoder) {
+	app.txDecoder = txDecoder
+}

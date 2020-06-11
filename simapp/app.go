@@ -61,7 +61,7 @@ func NewSimApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		fmt.Println(fmt.Sprintf("blockchain current protocol version :%d", current))
 	}
 
-	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+	baseApp.SetTxDecoder(auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec()))
 
 	var app = &SimApp{baseApp}
 

@@ -7,10 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -176,12 +175,11 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 
 	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
 	if success {
-		app.TxDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
+		app.SetTxDecoder(auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec()))
 		return
-	} else {
-		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 	}
 
+	app.log(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 	return
 }
 
@@ -191,7 +189,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 //
 // NOTE:CheckTx does not run the actual Msg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
-	tx, err := app.TxDecoder(req.Tx)
+	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
 		return sdkerrors.ResponseCheckTx(err, 0, 0)
 	}
@@ -224,7 +222,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 }
 
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
-	tx, err := app.TxDecoder(req.Tx)
+	tx, err := app.txDecoder(req.Tx)
 	if err != nil {
 		return sdkerrors.ResponseDeliverTx(err, nil, 0, 0, err.Error())
 	}
@@ -280,7 +278,7 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 
 	defer func() {
 		if app.haltHeight > 0 && uint64(header.Height) == app.haltHeight {
-			app.logger.Info("halting node per configuration", "height", app.haltHeight)
+			app.log("halting node per configuration", "height", app.haltHeight)
 			os.Exit(0)
 		}
 	}()
@@ -321,7 +319,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 		case "simulate":
 			txBytes := req.Data
 
-			tx, err := app.TxDecoder(txBytes)
+			tx, err := app.txDecoder(txBytes)
 			if err != nil {
 				return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to decode tx"))
 			}
@@ -473,4 +471,9 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		Height: req.Height,
 		Value:  resBytes,
 	}
+}
+
+// log format
+func (app *BaseApp) log(format string, a ...interface{}) {
+	app.logger.Info(fmt.Sprintf(format, a...))
 }
