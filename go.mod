@@ -33,5 +33,5 @@ require (
 )
 
 replace (
-	github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.13
+	github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.14
 )
