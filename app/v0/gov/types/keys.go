@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

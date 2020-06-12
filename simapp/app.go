@@ -13,9 +13,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )

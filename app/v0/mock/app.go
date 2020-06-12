@@ -12,10 +12,10 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"

@@ -6,9 +6,9 @@ import (
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/slashing"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 )
 
 const (

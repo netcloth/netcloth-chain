@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"

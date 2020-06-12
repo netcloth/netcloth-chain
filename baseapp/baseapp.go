@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/baseapp/protocol"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/store"
 	sdk "github.com/netcloth/netcloth-chain/types"
