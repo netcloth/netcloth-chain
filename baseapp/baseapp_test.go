@@ -1457,10 +1457,10 @@ func (m *MockProtocolV0) ExportAppStateAndValidators(ctx sdk.Context, forZeroHei
 	return json.RawMessage{}, nil, nil
 }
 
-func (m *MockProtocolV0) Load() {
+func (m *MockProtocolV0) LoadContext() {
 }
 
-func (m *MockProtocolV0) Init(ctx sdk.Context) {
+func (m *MockProtocolV0) Init() {
 }
 
 func (m *MockProtocolV0) GetCodec() *codec.Codec {

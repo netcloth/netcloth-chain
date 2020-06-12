@@ -28,25 +28,25 @@ func (pe *ProtocolEngine) LoadProtocol(version uint64) {
 	if flag == false {
 		panic("unknown protocol version!!!")
 	}
-	p.Load()
+	p.LoadContext()
 	pe.current = version
 }
 
 func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64) {
 	current := pe.ProtocolKeeper.GetCurrentVersionByStore(kvStore)
 	p, flag := pe.protocols[current]
-	if flag == true {
-		p.Load()
+	if flag {
+		p.LoadContext()
 		pe.current = current
 	}
 	return flag, current
 }
 
-func (pe *ProtocolEngine) Activate(version uint64, ctx sdk.Context) bool {
-	p, flag := pe.protocols[version]
-	if flag == true {
-		p.Load()
-		p.Init(ctx)
+func (pe *ProtocolEngine) Activate(version uint64) bool {
+	protocol, flag := pe.protocols[version]
+	if flag {
+		protocol.Init()
+		protocol.LoadContext()
 		pe.current = version
 	}
 	return flag

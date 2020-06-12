@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -155,32 +153,12 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 		res = endBlocker(app.deliverState.ctx, req)
 	}
 
-	appVersion := app.Engine.GetCurrentVersion()
-	for _, event := range res.Events {
-		if event.Type == sdk.AppVersionEvent {
-			for _, attr := range event.Attributes {
-				if string(attr.Key) == sdk.AppVersionEvent {
-					appVersion, _ = strconv.ParseUint(string(attr.Value), 10, 64)
-					break
-				}
-			}
-
-			break
-		}
+	if app.PostEndBlocker != nil {
+		app.PostEndBlocker(&res)
 	}
 
-	if appVersion <= app.Engine.GetCurrentVersion() {
-		return
-	}
-
-	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
-	if success {
-		app.SetTxDecoder(auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec()))
-		return
-	}
-
-	app.log(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 	return
+
 }
 
 // CheckTx implements the ABCI interface. It runs the "basic checks" to see
@@ -278,7 +256,7 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 
 	defer func() {
 		if app.haltHeight > 0 && uint64(header.Height) == app.haltHeight {
-			app.log("halting node per configuration", "height", app.haltHeight)
+			app.Log("halting node per configuration", "height", app.haltHeight)
 			os.Exit(0)
 		}
 	}()
@@ -473,7 +451,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 	}
 }
 
-// log format
-func (app *BaseApp) log(format string, a ...interface{}) {
+// Log format
+func (app *BaseApp) Log(format string, a ...interface{}) {
 	app.logger.Info(fmt.Sprintf(format, a...))
 }

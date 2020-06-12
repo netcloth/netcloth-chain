@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/netcloth/netcloth-chain/baseapp"
 
@@ -50,6 +51,9 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	var app = &NCHApp{baseApp}
 
+	// set hook function postEndBlocker
+	baseApp.PostEndBlocker = app.postEndBlocker
+
 	if loadLatest {
 		err := app.LoadLatestVersion(mainStoreKey)
 		if err != nil {
@@ -77,6 +81,36 @@ func MakeLatestCodec() *codec.Codec {
 
 func (app *NCHApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, protocol.Keys[protocol.MainStoreKey])
+}
+
+// hook function for BaseApp's EndBlock(upgrade)
+func (app *NCHApp) postEndBlocker(res *abci.ResponseEndBlock) {
+	appVersion := app.Engine.GetCurrentVersion()
+	for _, event := range res.Events {
+		if event.Type == sdk.AppVersionEvent {
+			for _, attr := range event.Attributes {
+				if string(attr.Key) == sdk.AppVersionEvent {
+					appVersion, _ = strconv.ParseUint(string(attr.Value), 10, 64)
+					break
+				}
+			}
+
+			break
+		}
+	}
+
+	if appVersion <= app.Engine.GetCurrentVersion() {
+		return
+	}
+
+	success := app.Engine.Activate(appVersion)
+	if success {
+		app.SetTxDecoder(auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec()))
+		return
+	}
+
+	app.Log(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
+	return
 }
 
 func (app *NCHApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {

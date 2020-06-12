@@ -158,7 +158,7 @@ func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
 }
 
-func (p *ProtocolV0) Load() {
+func (p *ProtocolV0) LoadContext() {
 	p.configCodec()
 	p.configKeepers()
 	p.configModuleManager()
@@ -166,7 +166,7 @@ func (p *ProtocolV0) Load() {
 	p.configFeeHandlers()
 }
 
-func (p *ProtocolV0) Init(ctx sdk.Context) {
+func (p *ProtocolV0) Init() {
 }
 
 func (p *ProtocolV0) GetCodec() *codec.Codec {

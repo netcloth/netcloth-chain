@@ -84,6 +84,8 @@ type BaseApp struct {
 
 	// application's version string
 	appVersion string
+
+	PostEndBlocker sdk.PostEndBlockHandler
 }
 
 func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*BaseApp)) *BaseApp { //TODO fixme crash if options use protocol instance(nil)
