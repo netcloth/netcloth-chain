@@ -3,7 +3,6 @@ package baseapp
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -13,16 +12,13 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/app/v0/genutil"
 	"github.com/netcloth/netcloth-chain/baseapp/protocol"
 	"github.com/netcloth/netcloth-chain/codec"
 	store "github.com/netcloth/netcloth-chain/store/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
-	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 var (
@@ -30,10 +26,10 @@ var (
 	capKey2 = sdk.NewKVStoreKey("key2")
 )
 
-func newEngine(options ...func(*MockProtocolV0)) protocol.ProtocolEngine {
+func newEngine(options ...func(*protocol.MockProtocolV0)) protocol.ProtocolEngine {
 	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(pk)
-	mockProtocolV0 := newMockProtocolV0()
+	mockProtocolV0 := protocol.NewMockProtocolV0()
 	for _, option := range options {
 		option(mockProtocolV0)
 	}
@@ -104,7 +100,7 @@ func setupProtocol(app *BaseApp, capKey sdk.StoreKey) {
 	pk := sdk.NewProtocolKeeper(capKey)
 	engine := protocol.NewProtocolEngine(pk)
 	app.SetProtocolEngine(&engine)
-	mockProtocolV0 := newMockProtocolV0()
+	mockProtocolV0 := protocol.NewMockProtocolV0()
 	engine.Add(mockProtocolV0)
 	engine.LoadProtocol(0)
 }
@@ -555,11 +551,11 @@ func TestCheckTx(t *testing.T) {
 	// This ensures changes to the kvstore persist across successive CheckTx.
 	counterKey := []byte("counter-key")
 
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey))
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		// TODO: can remove this once CheckTx doesnt process msgs.
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			return &sdk.Result{}, nil
@@ -605,13 +601,13 @@ func TestCheckTx(t *testing.T) {
 func TestDeliverTx(t *testing.T) {
 	// test increments in the ante
 	anteKey := []byte("ante-key")
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	// test increments in the handler
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
@@ -656,14 +652,14 @@ func TestMultiMsgCheckTx(t *testing.T) {
 func TestMultiMsgDeliverTx(t *testing.T) {
 	// increment the tx counter
 	anteKey := []byte("ante-key")
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	// increment the msg counter
 	deliverKey := []byte("deliver-key")
 	deliverKey2 := []byte("deliver-key2")
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 		p.GetRouter().AddRoute(routeMsgCounter2, handlerMsgCounter(t, capKey1, deliverKey2))
 	}
@@ -733,14 +729,14 @@ func TestConcurrentCheckDeliver(t *testing.T) {
 func TestSimulateTx(t *testing.T) {
 	gasConsumed := uint64(5)
 
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasConsumed))
 			return
 		})
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			ctx.GasMeter().ConsumeGas(gasConsumed, "test")
 			return &sdk.Result{}, nil
@@ -796,12 +792,12 @@ func TestSimulateTx(t *testing.T) {
 }
 
 func TestRunInvalidTransaction(t *testing.T) {
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			return
 		})
 	}
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			return &sdk.Result{}, nil
 		})
@@ -899,7 +895,7 @@ func TestRunInvalidTransaction(t *testing.T) {
 // Test that transactions exceeding gas limits fail
 func TestTxGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
@@ -922,7 +918,7 @@ func TestTxGasLimits(t *testing.T) {
 
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
@@ -984,7 +980,7 @@ func TestTxGasLimits(t *testing.T) {
 // Test that transactions exceeding gas limits fail
 func TestMaxBlockGasLimits(t *testing.T) {
 	gasGranted := uint64(10)
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
 
@@ -1007,7 +1003,7 @@ func TestMaxBlockGasLimits(t *testing.T) {
 
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
@@ -1086,12 +1082,12 @@ func TestMaxBlockGasLimits(t *testing.T) {
 
 func TestBaseAppAnteHandler(t *testing.T) {
 	anteKey := []byte("ante-key")
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}
 
@@ -1158,7 +1154,7 @@ func TestBaseAppAnteHandler(t *testing.T) {
 
 func TestGasConsumptionBadTx(t *testing.T) {
 	gasWanted := uint64(5)
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasWanted))
 
@@ -1184,7 +1180,7 @@ func TestGasConsumptionBadTx(t *testing.T) {
 		})
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			count := msg.(msgCounter).Counter
 			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
@@ -1231,7 +1227,7 @@ func TestGasConsumptionBadTx(t *testing.T) {
 // Test that we can only query from the latest committed state.
 func TestQuery(t *testing.T) {
 	key, value := []byte("hello"), []byte("goodbye")
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			store := ctx.KVStore(capKey1)
 			store.Set(key, value)
@@ -1239,7 +1235,7 @@ func TestQuery(t *testing.T) {
 		})
 	}
 
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 			store := ctx.KVStore(capKey1)
 			store.Set(key, value)
@@ -1356,12 +1352,12 @@ func (rtr *testCustomRouter) Route(ctx sdk.Context, path string) sdk.Handler {
 
 func TestWithRouter(t *testing.T) {
 	anteKey := []byte("ante-key")
-	anteOpt := func(p *MockProtocolV0) {
+	anteOpt := func(p *protocol.MockProtocolV0) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
 
 	deliverKey := []byte("deliver-key")
-	routerOpt := func(p *MockProtocolV0) {
+	routerOpt := func(p *protocol.MockProtocolV0) {
 		p.SetRouter(&testCustomRouter{routes: sync.Map{}})
 		p.GetRouter().AddRoute(routeMsgCounter, handlerMsgCounter(t, capKey1, deliverKey))
 	}

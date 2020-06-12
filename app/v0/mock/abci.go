@@ -147,7 +147,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 		return
 	}
 
-	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
+	success := app.Engine.Activate(appVersion)
 	if success {
 		app.TxDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
 		return

@@ -60,6 +60,12 @@ func (pe *ProtocolEngine) GetCurrentVersion() uint64 {
 	return pe.current
 }
 
+// GetUpgradeConfigByStore gets upgrade config from store
+func (pe *ProtocolEngine) GetUpgradeConfigByStore(store sdk.KVStore) (upgradeConfig sdk.UpgradeConfig,
+	found bool) {
+	return pe.ProtocolKeeper.GetUpgradeConfigByStore(store)
+}
+
 func (pe *ProtocolEngine) Add(p Protocol) Protocol {
 	if p.GetVersion() != pe.next {
 		panic(fmt.Errorf("Wrong version being added to the protocol engine: %d; Expecting %d", p.GetVersion(), pe.next))
@@ -67,6 +73,11 @@ func (pe *ProtocolEngine) Add(p Protocol) Protocol {
 	pe.protocols[pe.next] = p
 	pe.next++
 	return p
+}
+
+// GetProtocolKeeper gets protocol keeper from engine
+func (pe *ProtocolEngine) GetProtocolKeeper() sdk.ProtocolKeeper {
+	return pe.ProtocolKeeper
 }
 
 func (pe *ProtocolEngine) GetByVersion(v uint64) (Protocol, bool) {
