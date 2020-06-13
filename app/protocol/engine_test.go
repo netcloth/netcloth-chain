@@ -30,7 +30,6 @@ func TestProtocolEngine(t *testing.T) {
 	auc, ok := engine.GetUpgradeConfigByStore(ctx.KVStore(mainKey))
 	require.Equal(t, true, ok)
 	require.Equal(t, "NCH", auc.Protocol.Software)
-
 }
 
 func createEngineTestInput(t *testing.T) (sdk.Context, *sdk.KVStoreKey) {

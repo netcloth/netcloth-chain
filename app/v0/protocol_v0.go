@@ -1,11 +1,12 @@
 package v0
 
 import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
+	v0 "github.com/netcloth/netcloth-chain/app/v0/mock/p0"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
@@ -97,10 +98,11 @@ type ProtocolV0 struct {
 
 	anteHandler      sdk.AnteHandler
 	feeRefundHandler sdk.FeeRefundHandler
-	initChainer      sdk.InitChainer
-	beginBlocker     sdk.BeginBlocker
-	endBlocker       sdk.EndBlocker
-	deliverTx        genutil.DeliverTxfn
+
+	initChainer  sdk.InitChainer
+	beginBlocker sdk.BeginBlocker
+	endBlocker   sdk.EndBlocker
+	deliverTx    genutil.DeliverTxfn
 
 	config *cfg.InstrumentationConfig
 
@@ -287,9 +289,19 @@ func (p *ProtocolV0) configModuleManager() {
 		guardian.NewAppModule(p.guardianKeeper),
 	)
 
-	moduleManager.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+	moduleManager.SetOrderBeginBlockers(
+		mint.ModuleName,
+		distr.ModuleName,
+		slashing.ModuleName)
 
-	moduleManager.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
+	moduleManager.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+		ipal.ModuleName,
+		vm.ModuleName,
+		upgrade.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -321,7 +333,7 @@ func (p *ProtocolV0) configRouters() {
 }
 
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
+	var genesisState v0.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.moduleManager.InitGenesis(ctx, genesisState)
