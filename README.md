@@ -1,6 +1,8 @@
 <h1 align="center">NetCloth Chain</h1>
 <h4 align="center">Version testnet-v1.2.0</h4>
 
+[![Build Status](https://travis-ci.com/netcloth/netcloth-chain.svg?branch=develop)](https://travis-ci.com/netcloth/netcloth-chain)
+
 Welcome to the official Go implementation of the [NetCloth](https://www.netcloth.org) blockchain!
 
 
