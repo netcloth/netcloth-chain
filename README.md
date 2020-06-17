@@ -6,9 +6,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/netcloth/netcloth-chain)](https://goreportcard.com/report/github.com/netcloth/netcloth-chain)
 [![LoC](https://tokei.rs/b1/github/netcloth/netcloth-chain)](https://github.com/netcloth/netcloth-chain)
 [![GolangCI](https://golangci.com/badges/github.com/netcloth/netcloth-chain.svg)](https://golangci.com/r/github.com/netcloth/netcloth-chain)
-
-
-
 [![Build Status](https://travis-ci.com/netcloth/netcloth-chain.svg?branch=develop)](https://travis-ci.com/netcloth/netcloth-chain)
 
 Welcome to the official Go implementation of the [NetCloth](https://www.netcloth.org) blockchain!
