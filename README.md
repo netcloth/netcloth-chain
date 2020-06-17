@@ -1,5 +1,4 @@
 <h1 align="center">NetCloth Chain</h1>
-<h4 align="center">Version testnet-v1.2.0</h4>
 
 [![version](https://img.shields.io/github/tag/netcloth/netcloth-chain.svg)](https://github.com/netcloth/netcloth-chain/releases/latest)
 [![license](https://img.shields.io/github/license/netcloth/netcloth-chain.svg)](https://github.com/netcloth/netcloth-chain/blob/master/LICENSE)
