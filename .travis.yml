@@ -8,7 +8,7 @@ os:
   - osx
 
 script:
-  - env GO111MODULE=on make -coverprofile=coverage.txt
+  - env GO111MODULE=on make
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
