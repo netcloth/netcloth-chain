@@ -3,20 +3,17 @@ language: go
 go:
   - "1.12"
   - develop
+
 os:
   - linux
   - osx
 
-before_script:
-  - go get github.com/netcloth/netcloth-chain
+dist: trusty
+
+install: true
 
 script:
   - echo "script"
   - ls
   - echo $GOPATH
-  - cd  $GOPATH/src
-  - mv $GOPATH/src/github.com/netcloth/netcloth-chain $GOPATH/src/
-  - echo $PWD
-  - cd ./netcloth-chain
-  - make
-
+  - env GO111MODULE=on make
