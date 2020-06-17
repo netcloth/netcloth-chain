@@ -15,4 +15,5 @@ script:
   - env GO111MODULE=on make
 
 after_success:
+  - export CODECOV_TOKEN="087b590c-1d2e-43ea-94aa-322a4675df79"
   - bash <(curl -s https://codecov.io/bash)
