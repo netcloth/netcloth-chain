@@ -2,8 +2,7 @@ language: go
 
 go:
   - "1.12"
-  - develop
-
+  
 os:
   - linux
   - osx
@@ -13,7 +12,4 @@ dist: trusty
 install: true
 
 script:
-  - echo "script"
-  - ls
-  - echo $GOPATH
   - env GO111MODULE=on make
