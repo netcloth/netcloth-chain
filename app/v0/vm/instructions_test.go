@@ -3,14 +3,15 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/hexutil"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/types/time"
 	"io/ioutil"
 	"math/big"
 	"reflect"
 	"testing"
+
+	"github.com/netcloth/netcloth-chain/hexutil"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/types/time"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 )
@@ -1622,6 +1623,7 @@ func TestOpJumpi(t *testing.T) {
 	stack.push(big.NewInt(0))  // cond == 0 can not jump, and the pc will puls 1
 	stack.push(big.NewInt(22)) // code[22] == '6b': 91 is JUMPDEST
 	_, err := opJumpi(&pc, interpreter, contract, nil, stack)
+	require.Nil(t, err)
 	require.Equal(t, uint64(1), pc)
 
 	stack.push(big.NewInt(1))  // cond != 0 can jump

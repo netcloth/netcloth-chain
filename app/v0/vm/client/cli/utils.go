@@ -20,7 +20,7 @@ import (
 )
 
 func CodeFromFile(codeFile string) ([]byte, error) {
-	codeFile, err := filepath.Abs(codeFile)
+	codeFile, _ = filepath.Abs(codeFile)
 	if 0 == len(codeFile) {
 		return nil, errors.New("code_file can not be empty")
 	}

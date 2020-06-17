@@ -48,7 +48,6 @@ func IPALNodeClaimCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			moniker := viper.GetString(flagMoniker)
-			endpointDelimiter = viper.GetString(flagEndpointDelimiter)
 			website := viper.GetString(flagWebsite)
 			details := viper.GetString(flagDetails)
 			extension := viper.GetString(flagExtension)
