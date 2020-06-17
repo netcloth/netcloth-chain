@@ -1,0 +1,17 @@
+language: go
+
+go:
+  - "1.12"
+  - develop
+
+sudo: required
+
+os:
+  - linux
+  - osx
+
+install:
+  - echo "install"
+
+script:
+  - echo "script"
