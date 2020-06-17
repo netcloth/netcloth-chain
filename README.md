@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/github/license/netcloth/netcloth-chain.svg)](https://github.com/netcloth/netcloth-chain/blob/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/netcloth/netcloth-chain)](https://goreportcard.com/report/github.com/netcloth/netcloth-chain)
 [![LoC](https://tokei.rs/b1/github/netcloth/netcloth-chain)](https://github.com/netcloth/netcloth-chain)
-[![GolangCI](https://golangci.com/badges/github.com/netcloth/netcloth-chain.svg)](https://golangci.com/r/github.com/netcloth/netcloth-chain)
 [![codecov](https://codecov.io/gh/netcloth/netcloth-chain/branch/develop/graph/badge.svg)](https://codecov.io/gh/netcloth/netcloth-chain)
 [![Build Status](https://travis-ci.com/netcloth/netcloth-chain.svg?branch=develop)](https://travis-ci.com/netcloth/netcloth-chain)
 

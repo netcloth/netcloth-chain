@@ -1,18 +1,14 @@
 language: go
 
 go:
-  - "1.12"
+  - 1.12.x
   
 os:
   - linux
   - osx
 
-dist: trusty
-
-install: true
-
 script:
   - env GO111MODULE=on make
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t 087b590c-1d2e-43ea-94aa-322a4675df79
+  - bash <(curl -s https://codecov.io/bash)
