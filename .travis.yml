@@ -3,15 +3,20 @@ language: go
 go:
   - "1.12"
   - develop
-
-sudo: required
-
 os:
   - linux
   - osx
 
-install:
-  - echo "install"
+before_script:
+  - go get github.com/netcloth/netcloth-chain
 
 script:
   - echo "script"
+  - ls
+  - echo $GOPATH
+  - cd  $GOPATH/src
+  - mv $GOPATH/src/github.com/netcloth/netcloth-chain $GOPATH/src/
+  - echo $PWD
+  - cd ./netcloth-chain
+  - make
+
