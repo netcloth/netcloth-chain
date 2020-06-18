@@ -1,12 +1,14 @@
-package simulation
+package simulation_test
 
 import (
 	"math/rand"
 	"testing"
 	"time"
 
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 func TestRandSubsetCoins(t *testing.T) {
@@ -23,7 +25,7 @@ func TestRandSubsetCoins(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got := RandSubsetCoins(tt.r, tt.coins)
+			got := simulation.RandSubsetCoins(tt.r, tt.coins)
 			gotStringRep := got.String()
 			sortedStringRep := got.Sort().String()
 			require.Equal(t, gotStringRep, sortedStringRep)
@@ -41,12 +43,13 @@ func TestRandStringOfLength(t *testing.T) {
 	}{
 		{"0-size", 0, 0},
 		{"10-size", 10, 10},
-		{"10-size", 1_000_000_000, 1_000_000_000},
+		{"1_000_000-size", 1_000_000, 1_000_000},
 	}
 	for _, tt := range tests {
 		tt := tt
+
 		t.Run(tt.name, func(t *testing.T) {
-			got := RandStringOfLength(r, tt.n)
+			got := simulation.RandStringOfLength(r, tt.n)
 			require.Equal(t, tt.want, len(got))
 		})
 	}
