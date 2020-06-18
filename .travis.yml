@@ -8,7 +8,7 @@ os:
   - osx
 
 script:
-  - env GO111MODULE=on make
+  - env GO111MODULE=on go test -race -coverprofile=coverage.txt $(go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests')
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
