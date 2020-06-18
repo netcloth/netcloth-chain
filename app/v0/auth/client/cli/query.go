@@ -68,7 +68,7 @@ $ <appcli> query auth params
 
 			var params types.Params
 			if err := cdc.UnmarshalJSON(res, &params); err != nil {
-				return fmt.Errorf("failed to unmarshal params: %w", err)
+				return fmt.Errorf("failed to unmarshal params: %v", err)
 			}
 
 			return cliCtx.PrintOutput(params)
