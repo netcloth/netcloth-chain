@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
+	"github.com/netcloth/netcloth-chain/app/v0/staking/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -75,4 +76,10 @@ func (k Keeper) DeleteSignal(ctx sdk.Context, protocol uint64, address string) b
 		return true
 	}
 	return false
+}
+
+// IterateBondedValidatorsByPower iterates bonded validators by power
+func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context,
+	fn func(index int64, validator exported.ValidatorI) (stop bool)) {
+	k.sk.IterateBondedValidatorsByPower(ctx, fn)
 }

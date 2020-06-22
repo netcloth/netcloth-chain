@@ -9,12 +9,12 @@ func tally(ctx sdk.Context, versionProtocol uint64, k Keeper, threshold sdk.Dec)
 	totalVotingPower := sdk.ZeroDec()
 	signalsVotingPower := sdk.ZeroDec()
 
-	k.sk.IterateBondedValidatorsByPower(ctx, func(index int64, validator exported.ValidatorI) (stop bool) {
-		power := sdk.NewDec(validator.GetConsensusPower())
-		totalVotingPower = totalVotingPower.Add(power)
+	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator exported.ValidatorI) (stop bool) {
+		power := validator.GetConsensusPower()
+		totalVotingPower = totalVotingPower.Add(sdk.NewDec(power))
 		valAcc := validator.GetConsAddr().String()
 		if ok := k.GetSignal(ctx, versionProtocol, valAcc); ok {
-			signalsVotingPower = signalsVotingPower.Add(power)
+			signalsVotingPower = signalsVotingPower.Add(sdk.NewDec(power))
 		}
 		return false
 	})
