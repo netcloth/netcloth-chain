@@ -7,8 +7,12 @@ os:
   - linux
   - osx
 
+env:
+  - GO111MODULE="on"
+
 script:
-  - env GO111MODULE="on" go test -race -coverprofile=coverage.txt $(go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v crypto)
+  - make
+  - go test -race -coverprofile=coverage.txt $(go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v crypto)
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
