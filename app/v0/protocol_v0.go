@@ -74,6 +74,7 @@ type ProtocolV0 struct {
 	logger  log.Logger
 
 	moduleManager *module.Manager
+	simManager    *module.SimulationManager
 
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper

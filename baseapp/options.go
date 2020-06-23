@@ -84,6 +84,10 @@ func (app *BaseApp) SetFauxMerkleMode() {
 	app.fauxMerkleMode = true
 }
 
+func FauxMerkleMode() func(*BaseApp) {
+	return func(app *BaseApp) { app.SetFauxMerkleMode() }
+}
+
 // SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
 // CommitMultiStore.
 func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
