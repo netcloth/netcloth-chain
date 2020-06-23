@@ -3,7 +3,9 @@
 set -e
 echo "" > coverage.txt
 
-go test ./... -mod=readonly -timeout 12m -race -coverprofile=coverage.txt -covermode=atomic
+#go test ./... -mod=readonly -timeout 12m -race -coverprofile=coverage.txt -covermode=atomic \
+go test -mod=readonly -timeout 12m -race -coverprofile=coverage.txt -covermode=atomic \
+$(go list ./... | grep -v '/simulation' | grep -v mock | grep -v crypto)
 
 # filter out DONTCOVER
 excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
