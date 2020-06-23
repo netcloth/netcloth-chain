@@ -12,7 +12,7 @@ env:
 
 script:
   - make
-  - go test -race -coverprofile=coverage.txt $(go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v crypto)
+  - bash ./go.test.sh
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
