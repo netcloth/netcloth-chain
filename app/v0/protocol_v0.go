@@ -110,6 +110,8 @@ type ProtocolV0 struct {
 	invCheckPeriod uint
 }
 
+
+
 func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
@@ -369,4 +371,9 @@ func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
 
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
+}
+
+// for simulation
+func (p *ProtocolV0) GetSimulationManager() *module.SimulationManager {
+	return p.simManager
 }

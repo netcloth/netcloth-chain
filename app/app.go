@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netcloth/netcloth-chain/types/module"
 	"io"
 	"os"
 	"strconv"
@@ -34,6 +35,31 @@ var (
 
 type NCHApp struct {
 	*baseapp.BaseApp
+}
+
+func (app *NCHApp) Codec() *codec.Codec {
+	return app.Engine.GetCurrentProtocol().GetCodec()
+}
+
+func (app *NCHApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	return app.BeginBlock(req)
+}
+
+func (app *NCHApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	return app.EndBlock(req)
+}
+
+func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	return app.InitChain(req)
+}
+
+
+func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
+	return nil
+}
+
+func (app *NCHApp) SimulationManager() *module.SimulationManager {
+	return app.Engine.GetCurrentProtocol().GetSimulationManager()
 }
 
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *NCHApp {

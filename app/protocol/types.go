@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/types/module"
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -31,4 +32,7 @@ type Protocol interface {
 	SetQuearyRouter(sdk.QueryRouter)
 	SetAnteHandler(anteHandler sdk.AnteHandler)
 	SetInitChainer(sdk.InitChainer)
+
+	//for simulation
+	GetSimulationManager() *module.SimulationManager
 }
