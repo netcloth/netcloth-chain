@@ -6,6 +6,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 type Keeper struct {
@@ -82,4 +83,25 @@ func (k Keeper) DeleteSignal(ctx sdk.Context, protocol uint64, address string) b
 func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context,
 	fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	k.sk.IterateBondedValidatorsByPower(ctx, fn)
+}
+
+// GetCurrentVersion gets current version
+func (k Keeper) GetCurrentVersion(ctx sdk.Context) uint64 {
+	return k.protocolKeeper.GetCurrentVersion(ctx)
+}
+
+// SetAppUpgradeConfig sets app upgrade config for test
+// deprecated
+func (k Keeper) SetAppUpgradeConfig(ctx sdk.Context, proposalID, version, upgradeHeight uint64, software string,
+) error {
+	if _, found := k.protocolKeeper.GetUpgradeConfig(ctx); found {
+		return sdkerrors.Wrap(sdkerrors.ErrInternal, "failed. an app upgrade config is existed, only one entry is permitted")
+	}
+
+	appUpgradeConfig := sdk.NewUpgradeConfig(
+		proposalID,
+		sdk.NewProtocolDefinition(version, software, upgradeHeight, sdk.NewDecWithPrec(7, 1)),
+	)
+	k.protocolKeeper.SetUpgradeConfig(ctx, appUpgradeConfig)
+	return nil
 }
