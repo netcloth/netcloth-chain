@@ -8,10 +8,12 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// EndBlocker does signal maintenance in the end of block
 func EndBlocker(ctx sdk.Context, keeper Keeper) {
 	ctx = ctx.WithLogger(ctx.Logger().With("handler", "EndBlock").With("module", "nch/upgrade"))
 
 	upgradeConfig, ok := keeper.protocolKeeper.GetUpgradeConfig(ctx)
+
 	if ok {
 		ctx.Logger().Info(fmt.Sprintf("----upgrade: new upgradeinfo:%s", upgradeConfig.String()))
 		//uk.metrics.SetVersion(upgradeConfig.Protocol.Version)
