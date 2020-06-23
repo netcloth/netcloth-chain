@@ -337,7 +337,7 @@ func (csdb *CommitStateDB) Logs() []*Log { // todo: is should get all logs from 
 }
 
 func (csdb *CommitStateDB) ClearLogs() {
-	for k, _ := range csdb.logs {
+	for k := range csdb.logs {
 		delete(csdb.logs, k)
 	}
 }
