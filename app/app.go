@@ -53,13 +53,13 @@ func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 	return app.InitChain(req)
 }
 
-
 func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
 	return nil
 }
 
 func (app *NCHApp) SimulationManager() *module.SimulationManager {
-	return app.Engine.GetCurrentProtocol().GetSimulationManager()
+	//return app.Engine.GetCurrentProtocol().GetSimulationManager()
+	return nil
 }
 
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *NCHApp {

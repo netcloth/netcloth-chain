@@ -8,7 +8,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/types"
 
-	stakingtypes "github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -160,7 +159,7 @@ func RandomConsensusParams(r *rand.Rand, appState json.RawMessage) *abci.Consens
 
 	cdc.UnmarshalJSON(appState, &genesisState)
 
-	stakingGenesisState := stakingtypes.GetGenesisStateFromAppState(cdc, genesisState)
+	//stakingGenesisState := stakingtypes.GetGenesisStateFromAppState(cdc, genesisState)
 
 	consensusParams := &abci.ConsensusParams{
 		Block: &abci.BlockParams{
@@ -170,9 +169,9 @@ func RandomConsensusParams(r *rand.Rand, appState json.RawMessage) *abci.Consens
 		Validator: &abci.ValidatorParams{
 			PubKeyTypes: []string{types.ABCIPubKeyTypeSecp256k1, types.ABCIPubKeyTypeEd25519},
 		},
-		Evidence: &abci.EvidenceParams{
-			MaxAge: int64(stakingGenesisState.Params.UnbondingTime / AverageBlockTime),
-		},
+		//Evidence: &abci.EvidenceParams{
+		//	MaxAge: int64(stakingGenesisState.Params.UnbondingTime / AverageBlockTime),
+		//},
 	}
 	fmt.Printf("Selected randomly generated consensus parameters:\n%s\n", codec.MustMarshalJSONIndent(cdc, consensusParams))
 

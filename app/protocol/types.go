@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/types/module"
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -34,5 +33,5 @@ type Protocol interface {
 	SetInitChainer(sdk.InitChainer)
 
 	//for simulation
-	GetSimulationManager() *module.SimulationManager
+	//GetSimulationManager() *module.SimulationManager
 }

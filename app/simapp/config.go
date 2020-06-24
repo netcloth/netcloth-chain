@@ -6,6 +6,10 @@ import (
 	"github.com/netcloth/netcloth-chain/types/simulation"
 )
 
+func init() {
+	GetSimulatorFlags()
+}
+
 // List of available flags for the simulator
 var (
 	FlagGenesisFileValue        string
@@ -20,7 +24,7 @@ var (
 	FlagBlockSizeValue          int
 	FlagLeanValue               bool
 	FlagCommitValue             bool
-	FlagOnOperationValue        bool // TODO: Remove in favor of binary search for invariant violation
+	FlagOnOperationValue        bool
 	FlagAllInvariantsValue      bool
 
 	FlagEnabledValue     bool

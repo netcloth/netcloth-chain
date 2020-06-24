@@ -39,7 +39,7 @@ func GenTx(msgs []sdk.Msg, feeAmt sdk.Coins, gas uint64, chainID string, accnums
 		}
 
 		sigs[i] = auth.StdSignature{
-			PubKey:    p.PubKey().Bytes(),
+			PubKey:    p.PubKey(),
 			Signature: sig,
 		}
 	}

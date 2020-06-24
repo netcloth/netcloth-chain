@@ -2,6 +2,7 @@ package genaccounts
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/types/simulation"
 	"math/rand"
 
 	"github.com/gorilla/mux"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/genaccounts/internal/types"
-	"github.com/netcloth/netcloth-chain/app/v0/genaccounts/simulation"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -106,7 +106,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 
 // simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
+	//simulation.RandomizedGenState(simState)
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []simulation.WeightedProposalContent {

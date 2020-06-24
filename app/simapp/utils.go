@@ -73,17 +73,17 @@ func SimulationOperations(app App, cdc *codec.Codec, config simtypes.Config) []s
 func CheckExportSimulation(
 	app App, config simtypes.Config, params simtypes.Params,
 ) error {
-	if config.ExportStatePath != "" {
-		fmt.Println("exporting app state...")
-		appState, _, _, err := app.ExportAppStateAndValidators(false, nil)
-		if err != nil {
-			return err
-		}
-
-		if err := ioutil.WriteFile(config.ExportStatePath, []byte(appState), 0600); err != nil {
-			return err
-		}
-	}
+	//if config.ExportStatePath != "" {
+	//	fmt.Println("exporting app state...")
+	//	appState, _, _, err := app.ExportAppStateAndValidators(false, nil)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	if err := ioutil.WriteFile(config.ExportStatePath, []byte(appState), 0600); err != nil {
+	//		return err
+	//	}
+	//}
 
 	if config.ExportParamsPath != "" {
 		fmt.Println("exporting simulation params...")

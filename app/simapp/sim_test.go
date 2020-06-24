@@ -1,14 +1,15 @@
 package simapp
 
 import (
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
-	"github.com/netcloth/netcloth-chain/app/v0/simulation"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 
-	app "github.com/netcloth/netcloth-chain/app"
-	baseapp "github.com/netcloth/netcloth-chain/baseapp"
+	"github.com/stretchr/testify/require"
+
+	"github.com/netcloth/netcloth-chain/app"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
+	"github.com/netcloth/netcloth-chain/app/v0/simulation"
+	"github.com/netcloth/netcloth-chain/baseapp"
 )
 
 func TestFullAppSimulation(t *testing.T) {
@@ -24,14 +25,14 @@ func TestFullAppSimulation(t *testing.T) {
 	}()
 
 	app := app.NewNCHApp(logger, db, nil, true, FlagPeriodValue, baseapp.FauxMerkleMode())
-	require.Equal(t, "SimApp", app.Name())
+	require.Equal(t, "nch", app.Name()) //Simapp
 
 	// run randomized simulation
 	curProtocol := app.Engine.GetCurrentProtocol()
 	cdc := curProtocol.GetCodec()
-	sm := curProtocol.GetSimulationManager()
+	//sm := curProtocol.GetSimulationManager()
 	_, _, simErr := simulation.SimulateFromSeed(
-		t, os.Stdout, app.BaseApp, AppStateFn(cdc, sm),
+		t, os.Stdout, app.BaseApp, AppStateFn(cdc, nil),
 		SimulationOperations(app, cdc, config),
 		v0.ModuleAccountAddrs(), config,
 	)
