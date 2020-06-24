@@ -10,6 +10,7 @@ import (
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/baseapp"
+	"github.com/netcloth/netcloth-chain/types/module"
 )
 
 func TestFullAppSimulation(t *testing.T) {
@@ -25,14 +26,16 @@ func TestFullAppSimulation(t *testing.T) {
 	}()
 
 	app := app.NewNCHApp(logger, db, nil, true, FlagPeriodValue, baseapp.FauxMerkleMode())
-	require.Equal(t, "nch", app.Name()) //Simapp
 
 	// run randomized simulation
 	curProtocol := app.Engine.GetCurrentProtocol()
 	cdc := curProtocol.GetCodec()
-	//sm := curProtocol.GetSimulationManager()
+	smp := curProtocol.GetSimulationManager()
+	sm, ok := smp.(*module.SimulationManager)
+	require.True(t, ok)
+
 	_, _, simErr := simulation.SimulateFromSeed(
-		t, os.Stdout, app.BaseApp, AppStateFn(cdc, nil),
+		t, os.Stdout, app.BaseApp, AppStateFn(cdc, sm),
 		SimulationOperations(app, cdc, config),
 		v0.ModuleAccountAddrs(), config,
 	)

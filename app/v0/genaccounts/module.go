@@ -83,11 +83,17 @@ type AppModule struct {
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(accountKeeper types.AccountKeeper) module.AppModule {
-
 	return module.NewGenesisOnlyAppModule(AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		accountKeeper:  accountKeeper,
 	})
+}
+
+func NewSimAppModule(accountKeeper types.AccountKeeper) AppModule {
+	return AppModule{
+		AppModuleBasic: AppModuleBasic{},
+		accountKeeper:  accountKeeper,
+	}
 }
 
 // module init-genesis
@@ -118,9 +124,8 @@ func (am AppModule) RandomizedParams(r *rand.Rand) []simulation.ParamChange {
 }
 
 func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
-	panic("implement me")
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simulation.WeightedOperation {
-	panic("implement me")
+	return nil
 }

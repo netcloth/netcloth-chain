@@ -58,8 +58,13 @@ func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
 }
 
 func (app *NCHApp) SimulationManager() *module.SimulationManager {
-	//return app.Engine.GetCurrentProtocol().GetSimulationManager()
-	return nil
+	smp := app.Engine.GetCurrentProtocol().GetSimulationManager()
+	sm, ok := smp.(*module.SimulationManager)
+	if !ok {
+		return nil
+	}
+
+	return sm
 }
 
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *NCHApp {

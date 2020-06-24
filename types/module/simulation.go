@@ -17,13 +17,13 @@ type AppModuleSimulation interface {
 	GenerateGenesisState(input *SimulationState)
 
 	// content functions used to simulate governance proposals
-	ProposalContents(simState SimulationState) []simulation.WeightedProposalContent
+	//ProposalContents(simState SimulationState) []simulation.WeightedProposalContent
 
 	// randomized module parameters for param change proposals
-	RandomizedParams(r *rand.Rand) []simulation.ParamChange
+	//RandomizedParams(r *rand.Rand) []simulation.ParamChange
 
 	// register a func to decode the each module's defined types from their corresponding store key
-	RegisterStoreDecoder(sdk.StoreDecoderRegistry)
+	//RegisterStoreDecoder(sdk.StoreDecoderRegistry)
 
 	// simulation operations (i.e msgs) with their respective weight
 	WeightedOperations(simState SimulationState) []simulation.WeightedOperation
@@ -50,18 +50,18 @@ func NewSimulationManager(modules ...AppModuleSimulation) *SimulationManager {
 // with their default operation weight and key.
 func (sm *SimulationManager) GetProposalContents(simState SimulationState) []simulation.WeightedProposalContent {
 	var wContents []simulation.WeightedProposalContent //nolint:prealloc
-	for _, module := range sm.Modules {
-		wContents = append(wContents, module.ProposalContents(simState)...)
-	}
+	//for _, module := range sm.Modules {
+	//	wContents = append(wContents, module.ProposalContents(simState)...)
+	//}
 
 	return wContents
 }
 
 // RegisterStoreDecoders registers each of the modules' store decoders into a map
 func (sm *SimulationManager) RegisterStoreDecoders() {
-	for _, module := range sm.Modules {
-		module.RegisterStoreDecoder(sm.StoreDecoders)
-	}
+	//for _, module := range sm.Modules {
+	//	module.RegisterStoreDecoder(sm.StoreDecoders)
+	//}
 }
 
 // GenerateGenesisStates generates a randomized GenesisState for each of the
@@ -75,11 +75,11 @@ func (sm *SimulationManager) GenerateGenesisStates(simState *SimulationState) {
 // GenerateParamChanges generates randomized contents for creating params change
 // proposal transactions
 func (sm *SimulationManager) GenerateParamChanges(seed int64) (paramChanges []simulation.ParamChange) {
-	r := rand.New(rand.NewSource(seed))
+	//r := rand.New(rand.NewSource(seed))
 
-	for _, module := range sm.Modules {
-		paramChanges = append(paramChanges, module.RandomizedParams(r)...)
-	}
+	//for _, module := range sm.Modules {
+	//	paramChanges = append(paramChanges, module.RandomizedParams(r)...)
+	//}
 
 	return
 }

@@ -356,3 +356,9 @@ func (p *ProtocolV0) configFeeHandlers() {
 }
 
 // for test
+
+// for simulation
+
+func (p *ProtocolV0) GetSimulationManager() interface{} {
+	return nil
+}

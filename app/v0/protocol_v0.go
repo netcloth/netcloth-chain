@@ -110,8 +110,6 @@ type ProtocolV0 struct {
 	invCheckPeriod uint
 }
 
-
-
 func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
@@ -151,9 +149,9 @@ func (p *ProtocolV0) LoadContext() {
 	p.configCodec()
 	p.configKeepers()
 	p.configModuleManager()
+	p.configSimulationManager()
 	p.configRouters()
 	p.configFeeHandlers()
-	//p.configParams()
 }
 
 func (p *ProtocolV0) Init() {
@@ -331,6 +329,13 @@ func (p *ProtocolV0) configModuleManager() {
 	p.moduleManager = moduleManager
 }
 
+func (p *ProtocolV0) configSimulationManager() {
+	simManager := module.NewSimulationManager(
+		genaccounts.NewSimAppModule(p.accountKeeper),
+	)
+	p.simManager = simManager
+}
+
 func (p *ProtocolV0) configRouters() {
 	p.moduleManager.RegisterRoutes(p.router, p.queryRouter)
 }
@@ -374,6 +379,6 @@ func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 }
 
 // for simulation
-func (p *ProtocolV0) GetSimulationManager() *module.SimulationManager {
+func (p *ProtocolV0) GetSimulationManager() interface{} {
 	return p.simManager
 }

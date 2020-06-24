@@ -54,7 +54,7 @@ func GetSimulatorFlags() {
 	// simulation flags
 	flag.BoolVar(&FlagEnabledValue, "Enabled", true, "enable the simulation")
 	flag.BoolVar(&FlagVerboseValue, "Verbose", true, "verbose log output")
-	flag.UintVar(&FlagPeriodValue, "Period", 0, "run slow invariants only once every period assertions")
+	flag.UintVar(&FlagPeriodValue, "Period", 5, "run slow invariants only once every period assertions")
 	flag.Int64Var(&FlagGenesisTimeValue, "GenesisTime", 0, "override genesis UNIX time instead of using a random UNIX time")
 }
 
