@@ -13,11 +13,12 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/bank/client/rest"
 	"github.com/netcloth/netcloth-chain/app/v0/bank/internal/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/bank/internal/types"
+	"github.com/netcloth/netcloth-chain/app/v0/bank/simulation"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
-	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
@@ -130,16 +131,16 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 
 // GenerateGenesisState creates a randomized GenState of the bank module.
 func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	//simulation.RandomizedGenState(simState)
+	simulation.RandomizedGenState(simState)
 }
 
 // ProposalContents doesn't return any content functions for governance proposals.
-func (AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
+func (AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
 	return nil
 }
 
 // RandomizedParams creates randomized bank param changes for the simulator.
-func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
+func (AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 	//return simulation.ParamChanges(r)
 	return nil
 }
@@ -150,9 +151,8 @@ func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 }
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	//return simulation.WeightedOperations(
-	//	simState.AppParams, simState.Cdc, am.accountKeeper, am.keeper,
-	//)
-	return nil
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return simulation.WeightedOperations(
+		simState.AppParams, simState.Cdc, am.accountKeeper, am.keeper,
+	)
 }

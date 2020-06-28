@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -25,6 +26,16 @@ func AppStateFn(cdc *codec.Codec, simManager *module.SimulationManager) simtypes
 		appParams := make(simtypes.AppParams)
 		appState, simAccs = AppStateRandomizedFn(simManager, r, cdc, accs, genesisTimestamp, appParams)
 
+		fd, err := os.OpenFile("/tmp/1.json", os.O_CREATE|os.O_RDWR, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+
+		defer func() {
+			fd.Close()
+		}()
+
+		fmt.Fprintf(fd, "%s", string(appState))
 		return appState, simAccs, chainID, genesisTimestamp
 	}
 }
@@ -43,7 +54,7 @@ func AppStateRandomizedFn(
 	var initialStake, numInitiallyBonded int64
 	appParams.GetOrGenerate(
 		cdc, simapparams.StakePerAccount, &initialStake, r,
-		func(r *rand.Rand) { initialStake = r.Int63n(1e12) },
+		func(r *rand.Rand) { initialStake = r.Int63n(1e14) },
 	)
 	appParams.GetOrGenerate(
 		cdc, simapparams.InitiallyBondedValidators, &numInitiallyBonded, r,

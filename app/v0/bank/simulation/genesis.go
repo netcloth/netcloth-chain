@@ -6,7 +6,6 @@ import (
 	"math/rand"
 
 	"github.com/netcloth/netcloth-chain/app/v0/bank/internal/types"
-	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 )
 
@@ -22,18 +21,18 @@ func GenSendEnabled(r *rand.Rand) bool {
 
 // RandomGenesisAccounts returns a slice of account balances. Each account has
 // a balance of simState.InitialStake for sdk.DefaultBondDenom.
-func RandomGenesisBalances(simState *module.SimulationState) []types.Balance {
-	genesisBalances := []types.Balance{}
-
-	for _, acc := range simState.Accounts {
-		genesisBalances = append(genesisBalances, types.Balance{
-			Address: acc.Address,
-			Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(simState.InitialStake))),
-		})
-	}
-
-	return genesisBalances
-}
+//func RandomGenesisBalances(simState *module.SimulationState) []types.Balance {
+//	genesisBalances := []types.Balance{}
+//
+//	for _, acc := range simState.Accounts {
+//		genesisBalances = append(genesisBalances, types.Balance{
+//			Address: acc.Address,
+//			Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(simState.InitialStake))),
+//		})
+//	}
+//
+//	return genesisBalances
+//}
 
 // RandomizedGenState generates a random GenesisState for bank
 func RandomizedGenState(simState *module.SimulationState) {
@@ -43,10 +42,11 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { sendEnabled = GenSendEnabled(r) },
 	)
 
-	numAccs := int64(len(simState.Accounts))
-	totalSupply := sdk.NewInt(simState.InitialStake * (numAccs + simState.NumBonded))
-	supply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, totalSupply))
+	type GenesisState struct {
+		SendEnabled bool `json:"send_enabled" yaml:"send_enabled"`
+	}
 
-	bankGenesis := types.NewGenesisState(sendEnabled, RandomGenesisBalances(simState), supply)
+	bankGenesis := GenesisState{SendEnabled: sendEnabled}
+
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(bankGenesis)
 }

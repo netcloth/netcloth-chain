@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	//"math/rand"
 
 	"github.com/tendermint/tendermint/libs/log"
+	//"github.com/tendermint/tendermint/types/time"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/codec"
@@ -24,6 +26,8 @@ func SetupSimulation(dirPrefix, dbName string) (simtypes.Config, dbm.DB, string,
 	}
 
 	config := NewConfigFromFlags()
+	//r := rand.New(rand.NewSource(time.Now().Unix()))
+	//config.Seed = r.Int63()
 	config.ChainID = helpers.SimAppChainID
 
 	var logger log.Logger

@@ -332,6 +332,9 @@ func (p *ProtocolV0) configModuleManager() {
 func (p *ProtocolV0) configSimulationManager() {
 	simManager := module.NewSimulationManager(
 		genaccounts.NewSimAppModule(p.accountKeeper),
+		auth.NewAppModule(p.accountKeeper),
+		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
+		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
 	)
 	p.simManager = simManager
 }

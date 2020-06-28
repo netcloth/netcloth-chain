@@ -2,7 +2,6 @@ package genaccounts
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/types/simulation"
 	"math/rand"
 
 	"github.com/gorilla/mux"
@@ -12,10 +11,12 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/genaccounts/internal/types"
+	"github.com/netcloth/netcloth-chain/app/v0/genaccounts/simulation"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
@@ -112,20 +113,22 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 
 // simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	//simulation.RandomizedGenState(simState)
+	genesisAccs := simulation.RandomGenesisAccounts(simState)
+	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(genesisAccs)
+	//fmt.Printf("Selected randomly generated auth parameters:\n%s\n", simState.GenState[types.ModuleName])
 }
 
-func (am AppModule) ProposalContents(simState module.SimulationState) []simulation.WeightedProposalContent {
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
 	return nil
 }
 
-func (am AppModule) RandomizedParams(r *rand.Rand) []simulation.ParamChange {
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 	return nil
 }
 
 func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simulation.WeightedOperation {
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
 	return nil
 }

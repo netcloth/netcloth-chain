@@ -14,11 +14,13 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	"github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 // app module basics object
@@ -123,4 +125,15 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // module end-block
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
+}
+
+// for simulation
+func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
+	genState := types.DefaultGenesisState()
+	genState.Params.GasPriceThreshold = 1
+	simState.GenState[types.ModuleName] = types.ModuleCdc.MustMarshalJSON(genState)
+}
+
+func (am AppModule) WeightedOperations(simState module.SimulationState) []simulation.WeightedOperation {
+	return nil
 }
