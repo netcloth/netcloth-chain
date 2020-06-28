@@ -106,10 +106,14 @@ func RandSubsetCoins(r *rand.Rand, coins sdk.Coins) sdk.Coins {
 	// make sure at least one coin added
 	denomIdx := r.Intn(len(coins))
 	coin := coins[denomIdx]
-	amt, err := RandPositiveInt(r, coin.Amount)
+	amt, err := RandPositiveInt(r, coin.Amount.Quo(sdk.NewInt(100)))
 	// malformed coin. 0 amt in coins
 	if err != nil {
 		return sdk.Coins{}
+	}
+
+	if amt.Equal(sdk.NewInt(0)) {
+		amt = sdk.NewInt(1)
 	}
 
 	subset := sdk.Coins{sdk.NewCoin(coin.Denom, amt)}

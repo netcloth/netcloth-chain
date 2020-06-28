@@ -79,6 +79,10 @@ func RandomFees(r *rand.Rand, ctx sdk.Context, spendableCoins sdk.Coins) (sdk.Co
 		return nil, err
 	}
 
+	if amt.Equal(sdk.NewInt(0)) {
+		amt = sdk.NewInt(1)
+	}
+
 	// Create a random fee and verify the fees are within the account's spendable
 	// balance.
 	fees := sdk.NewCoins(sdk.NewCoin(randCoin.Denom, amt))
