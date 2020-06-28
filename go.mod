@@ -11,7 +11,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.9
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.3.1
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
 	github.com/mattn/go-isatty v0.0.12
 	github.com/pelletier/go-toml v1.6.0
 	github.com/pkg/errors v0.9.1
@@ -20,8 +20,8 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.6.1
 	github.com/spf13/viper v1.7.0
+	github.com/stretchr/testify v1.6.1
 	github.com/tendermint/btcd v0.1.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.15.1
