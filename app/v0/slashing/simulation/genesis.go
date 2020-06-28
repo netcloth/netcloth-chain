@@ -83,7 +83,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	params := types.DefaultGenesisState().Params
 
-	var sis map[string]types.ValidatorSigningInfo
+	sis := make(map[string]types.ValidatorSigningInfo)
 
 	stakingStateJson := simState.GenState[staking.ModuleName]
 	var stakingState staking.GenesisState

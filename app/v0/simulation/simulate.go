@@ -171,7 +171,7 @@ func SimulateFromSeed(
 		operations := blockSimulator(r, app, ctx, accs, header)
 		opCount += operations + numQueuedOpsRan + numQueuedTimeOpsRan
 
-		res := app.EndBlock(abci.RequestEndBlock{})
+		res := app.EndBlock(abci.RequestEndBlock{Height: int64(height)})
 		header.Height++
 		header.Time = header.Time.Add(
 			time.Duration(minTimePerBlock) * time.Second)

@@ -34,14 +34,14 @@ func TestFullAppSimulation(t *testing.T) {
 	sm, ok := smp.(*module.SimulationManager)
 	require.True(t, ok)
 
-	_, _, simErr := simulation.SimulateFromSeed(
+	_, simParams, simErr := simulation.SimulateFromSeed(
 		t, os.Stdout, app.BaseApp, AppStateFn(cdc, sm),
 		SimulationOperations(app, cdc, config),
 		v0.ModuleAccountAddrs(), config,
 	)
 
 	// export state and simParams before the simulation error is checked
-	//err = CheckExportSimulation(app, config, simParams)
+	err = CheckExportSimulation(app, config, simParams)
 	require.NoError(t, err)
 	require.NoError(t, simErr)
 

@@ -1,10 +1,12 @@
 package simapp
 
 import (
+	"encoding/json"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 // App implements the common methods for a Cosmos SDK-based application
@@ -30,9 +32,9 @@ type App interface {
 	LoadHeight(height int64) error
 
 	// Exports the state of the application for a genesis file.
-	//ExportAppStateAndValidators(
-	//	forZeroHeight bool, jailWhiteList []string,
-	//) (json.RawMessage, []tmtypes.GenesisValidator, *abci.ConsensusParams, error)
+	ExportAppStateAndValidators(
+		forZeroHeight bool, jailWhiteList []string,
+	) (json.RawMessage, []tmtypes.GenesisValidator, error)
 
 	// All the registered module account addreses.
 	ModuleAccountAddrs() map[string]bool

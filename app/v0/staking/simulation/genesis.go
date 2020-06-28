@@ -68,7 +68,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 	params := types.NewParams(
 		simState.UnbondTime,
 		uint16(maxVals),
-		70,
+		700,
 		1,
 		tmtime.Now().Add(time.Second*MaxValidatorsExtendingInterval),
 		100,
