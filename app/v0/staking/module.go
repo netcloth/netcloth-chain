@@ -174,9 +174,7 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return nil
-
-	//return simulation.WeightedOperations(
-	//	simState.AppParams, simState.Cdc, am.accKeeper, am.bankKeeper, am.keeper,
-	//)
+	return simulation.WeightedOperations(
+		simState.AppParams, simState.Cdc, am.accKeeper, am.keeper,
+	)
 }
