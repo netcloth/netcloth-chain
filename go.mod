@@ -13,7 +13,7 @@ require (
 	github.com/golang/mock v1.3.1-0.20190508161146-9fa652df1129
 	github.com/gorilla/mux v1.7.3
 	github.com/mattn/go-isatty v0.0.11
-	github.com/pelletier/go-toml v1.6.0
+	github.com/pelletier/go-toml v1.8.0
 	github.com/pkg/errors v0.9.0
 	github.com/rakyll/statik v0.1.6
 	github.com/spf13/afero v1.2.1 // indirect
@@ -29,9 +29,7 @@ require (
 	github.com/tendermint/tendermint v0.32.12
 	github.com/tendermint/tm-db v0.2.0
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
-	gopkg.in/yaml.v2 v2.2.7
+	gopkg.in/yaml.v2 v2.3.0
 )
 
-replace (
-	github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.15
-)
+replace github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.15
