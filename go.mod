@@ -8,7 +8,7 @@ require (
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/cosmos/go-bip39 v0.0.0-20180618194314-52158e4697b8
 	github.com/cosmos/ledger-cosmos-go v0.10.3
-	github.com/ethereum/go-ethereum v1.9.9
+	github.com/ethereum/go-ethereum v1.9.15
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.3.1
 	github.com/gorilla/mux v1.7.4
@@ -27,8 +27,8 @@ require (
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.12
+	golang.org/x/crypto v0.0.0-20200311171314-f7b00557c8c4
 	github.com/tendermint/tm-db v0.6.0
-	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
 	gopkg.in/yaml.v2 v2.3.0
 )
 
