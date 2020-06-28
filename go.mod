@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/mattn/go-isatty v0.0.11
 	github.com/pelletier/go-toml v1.6.0
-	github.com/pkg/errors v0.9.0
+	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.6
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cobra v0.0.5
@@ -32,6 +32,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.7
 )
 
-replace (
-	github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.15
-)
+replace github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.15
