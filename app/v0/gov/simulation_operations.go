@@ -1,11 +1,10 @@
-package simulation
+package gov
 
 import (
 	"math"
 	"math/rand"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -28,8 +27,8 @@ const (
 func WeightedOperations(
 	appParams simtypes.AppParams,
 	cdc *codec.Codec,
-	ak gov.AccountKeeper,
-	k gov.Keeper,
+	ak AccountKeeper,
+	k Keeper,
 	wContents []simtypes.WeightedProposalContent) simulation.WeightedOperations {
 
 	var (
@@ -84,7 +83,7 @@ func WeightedOperations(
 // SimulateSubmitProposal simulates creating a msg Submit Proposal
 // voting on the proposal, and subsequently slashing the proposal. It is implemented using
 // future operations.
-func SimulateSubmitProposal(ak gov.AccountKeeper, k gov.Keeper, contentSim simtypes.ContentSimulatorFn) simtypes.Operation {
+func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.ContentSimulatorFn) simtypes.Operation {
 	// The states are:
 	// column 1: All validators vote
 	// column 2: 90% vote
@@ -185,7 +184,7 @@ func SimulateSubmitProposal(ak gov.AccountKeeper, k gov.Keeper, contentSim simty
 }
 
 // SimulateMsgDeposit generates a MsgDeposit with random values.
-func SimulateMsgDeposit(ak gov.AccountKeeper, k gov.Keeper) simtypes.Operation {
+func SimulateMsgDeposit(ak AccountKeeper, k Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		proposalID, ok := randomProposalID(r, k, ctx, types.StatusDepositPeriod)
@@ -235,11 +234,11 @@ func SimulateMsgDeposit(ak gov.AccountKeeper, k gov.Keeper) simtypes.Operation {
 }
 
 // SimulateMsgVote generates a MsgVote with random values.
-func SimulateMsgVote(ak gov.AccountKeeper, k gov.Keeper) simtypes.Operation {
+func SimulateMsgVote(ak AccountKeeper, k Keeper) simtypes.Operation {
 	return operationSimulateMsgVote(ak, k, simtypes.Account{}, -1)
 }
 
-func operationSimulateMsgVote(ak gov.AccountKeeper, k gov.Keeper,
+func operationSimulateMsgVote(ak AccountKeeper, k Keeper,
 	simAccount simtypes.Account, proposalIDInt int64) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
@@ -299,8 +298,8 @@ func operationSimulateMsgVote(ak gov.AccountKeeper, k gov.Keeper,
 func randomDeposit(
 	r *rand.Rand,
 	ctx sdk.Context,
-	ak gov.AccountKeeper,
-	k gov.Keeper,
+	ak AccountKeeper,
+	k Keeper,
 	addr sdk.AccAddress) (deposit sdk.Coins, skip bool, err error) {
 	account := ak.GetAccount(ctx, addr)
 	coins := account.GetCoins()
@@ -337,7 +336,7 @@ func randomDeposit(
 // It does not provide a default ID.
 func randomProposalID(
 	r *rand.Rand,
-	k gov.Keeper,
+	k Keeper,
 	ctx sdk.Context,
 	status types.ProposalStatus) (proposalID uint64, found bool) {
 

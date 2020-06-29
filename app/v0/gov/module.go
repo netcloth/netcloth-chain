@@ -11,7 +11,6 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client/rest"
-	"github.com/netcloth/netcloth-chain/app/v0/gov/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -169,9 +168,9 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 
 // for simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
+	RandomizedGenState(simState)
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, simState.Contents)
+	return WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, simState.Contents)
 }
