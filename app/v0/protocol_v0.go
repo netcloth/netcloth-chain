@@ -330,8 +330,12 @@ func (p *ProtocolV0) configModuleManager() {
 }
 
 func (p *ProtocolV0) configSimulationManager() {
-	distrMod := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
-	distrModP := distrMod.WithAccountKeeper(p.accountKeeper)
+	distrModule := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
+	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper)
+
+	govModule := gov.NewAppModule(p.govKeeper, p.supplyKeeper)
+	govModuleP := govModule.WithAccountKeeper(p.accountKeeper)
+
 	simManager := module.NewSimulationManager(
 		genaccounts.NewSimAppModule(p.accountKeeper),
 		auth.NewAppModule(p.accountKeeper),
@@ -339,7 +343,9 @@ func (p *ProtocolV0) configSimulationManager() {
 		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
 		slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper),
 		mint.NewAppModule(p.mintKeeper),
-		distrModP,
+		mint.NewAppModule(p.mintKeeper),
+		distrModuleP,
+		govModuleP,
 	)
 	p.simManager = simManager
 }

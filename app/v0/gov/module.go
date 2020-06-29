@@ -11,16 +11,19 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/gov/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 // app module basics object
@@ -94,6 +97,7 @@ type AppModule struct {
 	AppModuleBasic
 	keeper       Keeper
 	supplyKeeper SupplyKeeper
+	ak           AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object
@@ -103,6 +107,11 @@ func NewAppModule(keeper Keeper, supplyKeeper SupplyKeeper) AppModule {
 		keeper:         keeper,
 		supplyKeeper:   supplyKeeper,
 	}
+}
+
+func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
+	am.ak = ak
+	return am
 }
 
 // module name
@@ -156,4 +165,13 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	EndBlocker(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
+}
+
+// for simulation
+func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
+	simulation.RandomizedGenState(simState)
+}
+
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, simState.Contents)
 }
