@@ -3,6 +3,7 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -17,11 +18,13 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 type AppModuleBasic struct{}
@@ -66,10 +69,6 @@ type AppModule struct {
 	keeper Keeper
 }
 
-func NewAppModule(keeper Keeper) AppModule {
-	return AppModule{keeper: keeper}
-}
-
 func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -105,10 +104,27 @@ func (a AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
-	// TODO
 }
 
 func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, a.keeper)
+}
 
+func NewAppModule(keeper Keeper) AppModule {
+	return AppModule{keeper: keeper}
+}
+
+func (a AppModule) GenerateGenesisState(input *module.SimulationState) {
+}
+
+func (a AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (a AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+	return nil
+}
+
+func (a AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return nil
 }
