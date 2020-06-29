@@ -2,6 +2,7 @@ package cipal
 
 import (
 	"encoding/json"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -14,11 +15,13 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 type AppModuleBasic struct {
@@ -102,4 +105,20 @@ func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 
 func (am AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, am.keeper)
+}
+
+// for simulation
+func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+	return nil
+}
+
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return nil
 }

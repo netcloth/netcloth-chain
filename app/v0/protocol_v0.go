@@ -350,6 +350,7 @@ func (p *ProtocolV0) configSimulationManager() {
 		distrModuleP,
 		govModuleP,
 		ipal.NewAppModule(p.ipalKeeper),
+		cipal.NewAppModule(p.cipalKeeper),
 	)
 	p.simManager = simManager
 }
