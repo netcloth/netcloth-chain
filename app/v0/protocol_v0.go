@@ -331,7 +331,7 @@ func (p *ProtocolV0) configModuleManager() {
 
 func (p *ProtocolV0) configSimulationManager() {
 	distrModule := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
-	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper)
+	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
 
 	govModule := gov.NewAppModule(p.govKeeper, p.supplyKeeper)
 	govModuleP := govModule.WithAccountKeeper(p.accountKeeper)

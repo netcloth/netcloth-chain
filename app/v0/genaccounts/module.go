@@ -115,7 +115,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	genesisAccs := simulation.RandomGenesisAccounts(simState)
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(genesisAccs)
-	//fmt.Printf("Selected randomly generated auth parameters:\n%s\n", simState.GenState[types.ModuleName])
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {

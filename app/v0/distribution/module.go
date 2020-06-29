@@ -13,6 +13,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
+	stakingkeeper "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -74,7 +75,8 @@ type AppModule struct {
 	AppModuleBasic
 	keeper       Keeper
 	supplyKeeper types.SupplyKeeper
-	ak           keeper.AccountKeeper
+	ak           keeper.AccountKeeper // for simulation
+	sk           stakingkeeper.Keeper // for simulation
 }
 
 // NewAppModule creates a new AppModule object
@@ -88,6 +90,11 @@ func NewAppModule(keeper Keeper, supplyKeeper types.SupplyKeeper) AppModule {
 
 func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
 	am.ak = ak
+	return am
+}
+
+func (am *AppModule) WithStakingKeeper(sk stakingkeeper.Keeper) *AppModule {
+	am.sk = sk
 	return am
 }
 
@@ -151,6 +158,5 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return nil
-	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.keeper, am.ak)
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.keeper, am.ak, am.sk)
 }
