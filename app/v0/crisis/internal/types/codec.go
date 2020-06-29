@@ -9,7 +9,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgVerifyInvariant{}, "nch/MsgVerifyInvariant", nil)
 }
 
-// generic sealed codec to be used throughout module
+// ModuleCdc - generic sealed codec to be used throughout module
 var ModuleCdc *codec.Codec
 
 func init() {

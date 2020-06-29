@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	flagTags   = "tags"
 	flagEvents = "events"
 	flagPage   = "page"
 	flagLimit  = "limit"

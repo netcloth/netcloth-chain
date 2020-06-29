@@ -220,9 +220,9 @@ func TestQueries(t *testing.T) {
 	cdc.MustUnmarshalBinaryLengthPrefixed(res.Data, &proposalID3)
 
 	// input.addrs[1] deposits on proposals #2 & #3
-	res, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID2, depositParams.MinDeposit))
+	_, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID2, depositParams.MinDeposit))
 	require.Nil(t, err)
-	res, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID3, depositParams.MinDeposit))
+	_, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID3, depositParams.MinDeposit))
 	require.Nil(t, err)
 
 	// check deposits on proposal1 match individual deposits
