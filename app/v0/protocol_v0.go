@@ -336,6 +336,7 @@ func (p *ProtocolV0) configSimulationManager() {
 		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
 		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
 		slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper),
+		mint.NewAppModule(p.mintKeeper),
 	)
 	p.simManager = simManager
 }
