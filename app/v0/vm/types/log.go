@@ -14,24 +14,13 @@ type Log struct {
 	// list of topics provided by the contract.
 	Topics []sdk.Hash `json:"topics" yaml:"topics"`
 	// supplied by the contract, usually ABI-encoded
-	Data hexutil.Bytes `json:"data" yaml:"data`
+	Data hexutil.Bytes `json:"data" yaml:"data"`
 
 	BlockNumber uint64   `json:"blockNumber" yaml:"blockNumber"`
 	TxHash      sdk.Hash `json:"transactionHash" yaml:"transactionHash"`
 	TxIndex     uint     `json:"transactionIndex" yaml:"transactionIndex"`
 	BlockHash   sdk.Hash `json:"blockHash" yaml:"blockHash"`
-	Index       uint     `json:"logIndex" yaml:"logIndex"`
+	Index       uint64   `json:"logIndex" yaml:"logIndex"`
 
 	Removed bool `json:"removed" yaml:"removed"`
 }
-
-type logMarshaling struct {
-	Data        hexutil.Bytes
-	BlockNumber hexutil.Uint64
-	TxIndex     hexutil.Uint
-	Index       hexutil.Uint
-}
-
-// LogForStorage is a wrapper around a Log that flattens and parses the entire content of
-// a log including non-consensus fields.
-type LogForStorage Log

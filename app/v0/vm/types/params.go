@@ -34,7 +34,7 @@ var (
 )
 
 type VMCommonGasParams struct {
-	ContractCreationGas uint64 `json: "contract_creation_gas" yaml:"contract_creation_gas"`
+	ContractCreationGas uint64 `json:"contract_creation_gas" yaml:"contract_creation_gas"`
 	CreateDataGas       uint64 `json:"create_data_gas" yaml:"create_data_gas"`
 }
 

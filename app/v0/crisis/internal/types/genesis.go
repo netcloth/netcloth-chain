@@ -3,7 +3,6 @@ package types
 import (
 	"fmt"
 
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -22,7 +21,7 @@ func NewGenesisState(constantFee sdk.Coin) GenesisState {
 // DefaultGenesisState creates a default GenesisState object
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		ConstantFee: sdk.NewCoin(nchtypes.DefaultBondDenom, sdk.NewInt(1000)),
+		ConstantFee: sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000)),
 	}
 }
 

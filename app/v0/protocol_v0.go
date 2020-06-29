@@ -35,7 +35,7 @@ import (
 
 var _ protocol.Protocol = (*ProtocolV0)(nil)
 
-// The module BasicManager is in charge of setting up basic,
+// ModuleBasics - The module BasicManager is in charge of setting up basic,
 // non-dependant module elements, such as codec registration
 // and genesis verification.
 var ModuleBasics = module.NewBasicManager(
@@ -240,6 +240,7 @@ func (p *ProtocolV0) configKeepers() {
 		p.cdc,
 		protocol.Keys[protocol.VmStoreKey],
 		protocol.Keys[protocol.VmCodeStoreKey],
+		protocol.Keys[protocol.VmLogStoreKey],
 		protocol.Keys[protocol.VmStoreKey],
 		vmSubspace,
 		p.accountKeeper)

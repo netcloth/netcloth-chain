@@ -157,8 +157,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 		app.PostEndBlocker(&res)
 	}
 
-	return
-
+	return res
 }
 
 // CheckTx implements the ABCI interface. It runs the "basic checks" to see

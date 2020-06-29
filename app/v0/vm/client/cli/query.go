@@ -229,7 +229,7 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 				return err
 			}
 
-			code, err := CodeFromFile(args[0])
+			code, _ := CodeFromFile(args[0])
 			msg := types.NewMsgContractQuery(from, nil, code, ZeroAmount)
 			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {

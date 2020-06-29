@@ -1,0 +1,18 @@
+language: go
+
+go:
+  - 1.14.x
+
+os:
+  - linux
+  - osx
+
+env:
+  - GO111MODULE="on"
+
+script:
+  - make
+  - bash ./go.test.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

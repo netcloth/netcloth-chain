@@ -80,6 +80,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		ipal.StoreKey,
 		StoreKey,
 		CodeKey,
+		LogKey,
 		StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
@@ -96,6 +97,7 @@ func setupTest() (vmKeeper Keeper, ctx sdk.Context) {
 		cdc,
 		keys[StoreKey],
 		keys[CodeKey],
+		keys[LogKey],
 		keys[StoreDebugKey],
 		vmSubspace,
 		accountKeeper)
@@ -139,5 +141,5 @@ func newEVM() *EVM {
 	ms.MountStoreWithDB(authKey, sdk.StoreTypeDB, db)
 	ms.LoadLatestVersion()
 
-	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, authKey, authKey, sdk.NewKVStoreKey(StoreDebugKey)).WithContext(sdk.NewContext(ms, abci.Header{}, false, logger)), Config{})
+	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, authKey, authKey, authKey, sdk.NewKVStoreKey(StoreDebugKey)).WithContext(sdk.NewContext(ms, abci.Header{}, false, logger)), Config{})
 }

@@ -115,7 +115,7 @@ func (c *ecrecover) Run(input []byte) ([]byte, error) {
 	ss := fmt.Sprintf("pubkey: %x", pubkeyBin)
 	fmt.Println(ss)
 
-	pubkey, err := btcsecp256k1.ParsePubKey(pubkeyBin, btcsecp256k1.S256())
+	pubkey, _ := btcsecp256k1.ParsePubKey(pubkeyBin, btcsecp256k1.S256())
 
 	fmt.Println(fmt.Sprintf("cpubkey: %x", pubkey.SerializeCompressed()))
 
