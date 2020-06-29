@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 n=$1
 send_book_file=$2
 

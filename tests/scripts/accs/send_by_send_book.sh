@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 send_file=$1
 amt=$2
 passwd=$3

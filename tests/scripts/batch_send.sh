@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 accs_file=$1
 from=$2
 passwd=$3

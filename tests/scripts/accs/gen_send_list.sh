@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 ff=$1
 tf=$2
 send_lists_dir=$3

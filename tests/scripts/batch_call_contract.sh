@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 contract_addr=$1
 accs=$2
 passwd=$3

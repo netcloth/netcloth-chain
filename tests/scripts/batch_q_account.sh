@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 accs_file=$1
 
 output_file=account_not_exist

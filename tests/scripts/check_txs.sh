@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo txhash:account_address:total:amount:fee
 
 txhashs_file=$1
