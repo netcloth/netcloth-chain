@@ -131,9 +131,6 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 
 // for simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	//genState := types.DefaultGenesisState()
-	//genState.Params.GasPriceThreshold = 1
-	//simState.GenState[types.ModuleName] = types.ModuleCdc.MustMarshalJSON(genState)
 	simulation.RandomizedGenState(simState)
 }
 

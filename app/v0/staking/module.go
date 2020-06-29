@@ -185,5 +185,5 @@ func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimul
 }
 
 func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
-	return nil
+	return simulation.ParamChanges(r)
 }

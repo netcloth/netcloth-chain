@@ -349,6 +349,7 @@ func (p *ProtocolV0) configSimulationManager() {
 		mint.NewAppModule(p.mintKeeper),
 		distrModuleP,
 		govModuleP,
+		ipal.NewAppModule(p.ipalKeeper),
 	)
 	p.simManager = simManager
 }

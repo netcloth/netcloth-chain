@@ -163,9 +163,9 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksim
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
-	return nil
+	return simulation.ProposalContents(am.keeper)
 }
 
 func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
-	return nil
+	return simulation.ParamChanges(r)
 }
