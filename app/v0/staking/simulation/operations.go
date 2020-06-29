@@ -98,30 +98,23 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtype
 
 		_, found := k.GetValidator(ctx, address)
 		if found {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "unable to find validator"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "validator exist"), nil, nil
 		}
 
 		bondDenom := k.GetParams(ctx).BondDenom
 
 		accountObj := ak.GetAccount(ctx, acc.Address)
-		balance := accountObj.GetCoins().AmountOf(bondDenom)
-		if !balance.IsPositive() {
+		amount := accountObj.GetCoins().AmountOf(bondDenom)
+		if !amount.IsPositive() {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "balance is negative"), nil, nil
 		}
 
-		amount, err := simtypes.RandPositiveInt(r, balance.Quo(sdk.NewInt(100)))
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "unable to generate positive amount"), nil, err
-		}
-
-		if amount.Equal(sdk.NewInt(0)) {
-			amount = sdk.NewInt(1)
-		}
+		amount = amount.Quo(sdk.NewInt(2))
 
 		selfDelegation := sdk.NewCoin(bondDenom, amount)
 
 		var fees sdk.Coins
-
+		var err error
 		coins, hasNeg := accountObj.GetCoins().SafeSub(sdk.Coins{selfDelegation})
 		if !hasNeg {
 			fees, err = simtypes.RandomFees(r, ctx, coins)
@@ -144,8 +137,7 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtype
 			simtypes.RandomDecAmount(r, maxCommission),
 		)
 
-		msg := types.NewMsgCreateValidator(address, acc.PubKey,
-			selfDelegation, description, commission, sdk.OneInt())
+		msg := types.NewMsgCreateValidator(address, acc.PubKey, selfDelegation, description, commission, sdk.OneInt())
 
 		tx := helpers.GenTx(
 			[]sdk.Msg{msg},
@@ -193,9 +185,9 @@ func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.
 		}
 
 		accountObj := ak.GetAccount(ctx, acc.Address)
-		spendable := accountObj.GetCoins()
+		coins := accountObj.GetCoins()
 
-		fees, err := simtypes.RandomFees(r, ctx, spendable)
+		fees, err := simtypes.RandomFees(r, ctx, coins)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditValidator, "unable to generate fees"), nil, err
 		}
@@ -231,10 +223,8 @@ func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.
 // SimulateMsgDelegate generates a MsgDelegate with random values
 // nolint: interfacer
 func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		denom := k.GetParams(ctx).BondDenom
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		bondDenom := k.GetParams(ctx).BondDenom
 
 		if len(k.GetAllValidators(ctx)) == 0 {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "number of validators equal zero"), nil, nil
@@ -256,32 +246,13 @@ func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Opera
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "balance is negative"), nil, nil
 		}
 
-		amount := coins.AmountOf(sdk.DefaultBondDenom).Quo(sdk.NewInt(10000))
-		amount, err := simtypes.RandPositiveInt(r, amount)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "unable to generate positive amount"), nil, err
-		}
-
-		if amount.Equal(sdk.NewInt(0)) {
-			amount = sdk.NewInt(1)
-		}
-		bondAmt := sdk.NewCoin(denom, amount)
-
-		var fees sdk.Coins
-
-		coins, hasNeg := coins.SafeSub(sdk.Coins{bondAmt})
-		if !hasNeg {
-			fees, err = simtypes.RandomFees(r, ctx, coins)
-			if err != nil {
-				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "unable to generate fees"), nil, err
-			}
-		}
+		bondAmt := sdk.NewCoin(bondDenom, sdk.NewInt(1))
 
 		msg := types.NewMsgDelegate(acc.Address, val.GetOperator(), bondAmt)
 
 		tx := helpers.GenTx(
 			[]sdk.Msg{msg},
-			fees,
+			sdk.NewCoins(sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(1000000))),
 			helpers.DefaultGenTxGas,
 			chainID,
 			[]uint64{accountObj.GetAccountNumber()},
@@ -289,7 +260,7 @@ func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Opera
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err := app.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
