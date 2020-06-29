@@ -2,7 +2,6 @@ package slashing
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/app/v0/slashing/simulation"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -12,6 +11,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/slashing/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/slashing/client/rest"
 	"github.com/netcloth/netcloth-chain/app/v0/slashing/types"
+	stakingkeeper "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -76,6 +76,8 @@ type AppModule struct {
 	AppModuleBasic
 	keeper        Keeper
 	stakingKeeper types.StakingKeeper
+	ak            AccountKeeper        // for simulation
+	sk            stakingkeeper.Keeper // for simulation
 }
 
 // NewAppModule creates a new AppModule object
@@ -85,6 +87,16 @@ func NewAppModule(keeper Keeper, stakingKeeper types.StakingKeeper) AppModule {
 		keeper:         keeper,
 		stakingKeeper:  stakingKeeper,
 	}
+}
+
+func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
+	am.ak = ak
+	return am
+}
+
+func (am *AppModule) WithStakingKeeper(sk stakingkeeper.Keeper) *AppModule {
+	am.sk = sk
+	return am
 }
 
 // module name
@@ -141,9 +153,9 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 
 // for simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
+	RandomizedGenState(simState)
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return nil
+	return WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, am.sk)
 }

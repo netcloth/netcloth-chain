@@ -330,6 +330,9 @@ func (p *ProtocolV0) configModuleManager() {
 }
 
 func (p *ProtocolV0) configSimulationManager() {
+	slashingModule := slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper)
+	slashingModuleP := slashingModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
+
 	distrModule := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
 	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
 
@@ -341,7 +344,7 @@ func (p *ProtocolV0) configSimulationManager() {
 		auth.NewAppModule(p.accountKeeper),
 		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
 		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
-		slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper),
+		slashingModuleP,
 		mint.NewAppModule(p.mintKeeper),
 		mint.NewAppModule(p.mintKeeper),
 		distrModuleP,
