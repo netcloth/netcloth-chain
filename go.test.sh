@@ -13,7 +13,7 @@ excludelist+=" $(find ./ -type f -name '*.pb.go')"
 excludelist+=" $(find ./ -type f -path './tests/mocks/*.go')"
 for filename in ${excludelist}
 do
-  filename=$(echo $filename | sed 's/^./github.com\/cosmos\/cosmos-sdk/g')
+  filename=$(echo $filename | sed 's/^./github.com\/netcloth\/netcloth-chain/g')
   echo "Excluding ${filename} from coverage report..."
   sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
 done
