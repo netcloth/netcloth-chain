@@ -21,7 +21,7 @@ import (
 
 func CodeFromFile(codeFile string) ([]byte, error) {
 	codeFile, _ = filepath.Abs(codeFile)
-	if 0 == len(codeFile) {
+	if len(codeFile) == 0 {
 		return nil, errors.New("code_file can not be empty")
 	}
 
@@ -32,12 +32,12 @@ func CodeFromFile(codeFile string) ([]byte, error) {
 
 	hexcode = bytes.TrimSpace(hexcode)
 
-	if 0 == len(hexcode) {
+	if len(hexcode) == 0 {
 		return nil, errors.New("code can not be empty")
 	}
 
 	if len(hexcode)%2 != 0 {
-		return nil, errors.New(fmt.Sprintf("Invalid input length for hex data (%d)\n", len(hexcode)))
+		return nil, fmt.Errorf("invalid input length for hex data (%d)", len(hexcode))
 	}
 
 	code, err := hex.DecodeString(string(hexcode))
@@ -50,7 +50,10 @@ func CodeFromFile(codeFile string) ([]byte, error) {
 
 func AbiFromFile(abiFile string) (abiObj abi.ABI, err error) {
 	abiFile, err = filepath.Abs(abiFile)
-	if 0 == len(abiFile) {
+	if err != nil {
+		return
+	}
+	if len(abiFile) == 0 {
 		err = errors.New("abi_file can not be empty")
 		return
 	}
@@ -72,20 +75,20 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 		return nil, emptyMethod, err
 	}
 
-	exist := false
 	if len(method) == 0 { //constructor
 		m = abiObj.Constructor
 	} else {
+		exist := false
 		m, exist = abiObj.Methods[method]
 		if !exist {
-			return nil, emptyMethod, errors.New(fmt.Sprintf("method %s not exist\n", method))
+			return nil, emptyMethod, fmt.Errorf("method %s not exist", method)
 		}
 	}
 
 	var readyArgs []interface{}
 
 	if len(args) != len(m.Inputs) {
-		return nil, emptyMethod, errors.New(fmt.Sprintf("args number dismatch,  expected %d args, actual %d args\n", len(m.Inputs), len(args)))
+		return nil, emptyMethod, fmt.Errorf("args number dismatch,  expected %d args, actual %d args", len(m.Inputs), len(args))
 	}
 
 	for i, a := range args {
@@ -100,7 +103,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 		case abi.AddressTy:
 			addrStr := a
 			if len(addrStr) <= 2 {
-				return nil, emptyMethod, errors.New(fmt.Sprintf("wrong address format, actual address[%s]", addrStr))
+				return nil, emptyMethod, fmt.Errorf("wrong address format, actual address[%s]", addrStr)
 			}
 
 			if addrStr[:3] == "nch" {
@@ -110,7 +113,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 				}
 
 				if len(addr) != 20 {
-					return nil, emptyMethod, errors.New(fmt.Sprintf("wrong bech32 address format, actual address[%s]", addrStr))
+					return nil, emptyMethod, fmt.Errorf("wrong bech32 address format, actual address[%s]", addrStr)
 				}
 
 				var addrBin [20]byte
@@ -122,7 +125,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 				}
 
 				if len(addrStr) != 40 {
-					return nil, emptyMethod, errors.New(fmt.Sprintf("address must have 40 chars except the prefix '0x', actual %d chars\n", len(addrStr)))
+					return nil, emptyMethod, fmt.Errorf("address must have 40 chars except the prefix '0x', actual %d chars", len(addrStr))
 				}
 
 				addrV, err := hexutil.Decode(addrStr)
@@ -150,7 +153,7 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 				bytes = bytes[2:]
 			}
 			if len(bytes) != m.Inputs[i].Type.Size*2 {
-				return nil, emptyMethod, errors.New(fmt.Sprintf("must have %d chars except the prefix '0x', actual %d chars\n", m.Inputs[i].Type.Size*2, len(bytes)))
+				return nil, emptyMethod, fmt.Errorf("must have %d chars except the prefix '0x', actual %d chars", m.Inputs[i].Type.Size*2, len(bytes))
 			}
 			dv, err := hexutil.Decode(bytes)
 			if err != nil {
@@ -183,44 +186,45 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 
 			v, success := big.NewInt(0).SetString(a, 10)
 			if !success {
-				return nil, emptyMethod, errors.New(fmt.Sprintf("parse int failed"))
+				return nil, emptyMethod, fmt.Errorf("parse int failed")
 			}
 
 			if v.Cmp(typeMinValue) == -1 || v.Cmp(typeMaxValue) == 1 {
-				return nil, emptyMethod, errors.New(fmt.Sprintf("value of type[%s] must be in range [%d, %d]", m.Inputs[i].Type.String(), typeMinValue, typeMaxValue))
+				return nil, emptyMethod, fmt.Errorf("value of type[%s] must be in range [%d, %d]", m.Inputs[i].Type.String(), typeMinValue, typeMaxValue)
 			}
 
 			unsignedUint64 := v.Uint64()
-			if m.Inputs[i].Type.Size == 8 {
+			switch m.Inputs[i].Type.Size {
+			case 8:
 				if m.Inputs[i].Type.T == abi.IntTy {
 					readyArgs = append(readyArgs, int8(unsignedUint64))
 				} else {
 					readyArgs = append(readyArgs, uint8(unsignedUint64))
 				}
-			} else if m.Inputs[i].Type.Size == 16 {
+			case 16:
 				if m.Inputs[i].Type.T == abi.IntTy {
 					readyArgs = append(readyArgs, int16(unsignedUint64))
 				} else {
 					readyArgs = append(readyArgs, uint16(unsignedUint64))
 				}
-			} else if m.Inputs[i].Type.Size == 32 {
+			case 32:
 				if m.Inputs[i].Type.T == abi.IntTy {
 					readyArgs = append(readyArgs, int32(unsignedUint64))
 				} else {
 					readyArgs = append(readyArgs, uint32(unsignedUint64))
 				}
-			} else if m.Inputs[i].Type.Size == 64 {
+			case 64:
 				if m.Inputs[i].Type.T == abi.IntTy {
 					readyArgs = append(readyArgs, int64(unsignedUint64))
 				} else {
-					readyArgs = append(readyArgs, uint64(unsignedUint64))
+					readyArgs = append(readyArgs, unsignedUint64)
 				}
-			} else {
+			default:
 				readyArgs = append(readyArgs, v)
 			}
 
 		default:
-			return nil, emptyMethod, errors.New(fmt.Sprintf("no supported type [%s:%d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.T))
+			return nil, emptyMethod, fmt.Errorf("no supported type [%s:%d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.T)
 		}
 	}
 
@@ -231,5 +235,5 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 		return nil, emptyMethod, err
 	}
 
-	return
+	return payload, m, err
 }
