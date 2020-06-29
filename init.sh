@@ -21,11 +21,11 @@ echo -e "${passwd}\n${passwd}\n" | nchcli keys add bob
 echo -e "${passwd}\n${passwd}\n" | nchcli keys add jack
 
 # add genesis account
-vesting_start_time=`date +%s`
+vesting_start_time=$(date +%s)
 if [ "$(uname)" == "Darwin" ]; then
-    vesting_end_time=`date -v+1d +%s`
+    vesting_end_time=$(date -v+1d +%s)
 else
-    vesting_end_time=`date --date="+1 day" +%s`
+    vesting_end_time=$(date --date="+1 day" +%s)
 fi
 nchd add-genesis-account $(nchcli keys show alice -a) 30000000000000000000pnch
 nchd add-genesis-account $(nchcli keys show bob -a) 40000000000000000000pnch --vesting-amount 5000000000000000000pnch --vesting-start-time ${vesting_start_time} --vesting-end-time ${vesting_end_time}
