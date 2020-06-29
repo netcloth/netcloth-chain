@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -9,12 +10,13 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/auth/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
-	"github.com/netcloth/netcloth-chain/types/simulation"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
@@ -129,11 +131,20 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 
 // for simulation
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	genState := types.DefaultGenesisState()
-	genState.Params.GasPriceThreshold = 1
-	simState.GenState[types.ModuleName] = types.ModuleCdc.MustMarshalJSON(genState)
+	//genState := types.DefaultGenesisState()
+	//genState.Params.GasPriceThreshold = 1
+	//simState.GenState[types.ModuleName] = types.ModuleCdc.MustMarshalJSON(genState)
+	simulation.RandomizedGenState(simState)
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simulation.WeightedOperation {
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
 	return nil
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+	return simulation.ParamChanges(r)
 }

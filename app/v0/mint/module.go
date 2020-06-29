@@ -2,7 +2,7 @@ package mint
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/app/v0/mint/simulation"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/mint/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/mint/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/mint/simulation"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -134,5 +135,13 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return nil
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 	return nil
 }

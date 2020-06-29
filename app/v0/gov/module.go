@@ -2,6 +2,7 @@ package gov
 
 import (
 	"encoding/json"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -173,4 +174,12 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
 	return WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, simState.Contents)
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+	return nil
 }

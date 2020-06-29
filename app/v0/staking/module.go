@@ -2,8 +2,7 @@ package staking
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/app/v0/staking/simulation"
-	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -16,11 +15,13 @@ import (
 	authtypes "github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/staking/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
@@ -177,4 +178,12 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksim
 	return simulation.WeightedOperations(
 		simState.AppParams, simState.Cdc, am.accKeeper, am.keeper,
 	)
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+	return nil
 }
