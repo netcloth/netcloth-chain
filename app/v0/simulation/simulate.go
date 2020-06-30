@@ -244,22 +244,27 @@ type blockSimFn func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 
 // Returns a function to simulate blocks. Written like this to avoid constant
 // parameters being passed everytime, to minimize memory overhead.
-func createBlockSimulator(testingMode bool, tb testing.TB, w io.Writer, params Params,
-	event func(route, op, evResult string), ops WeightedOperations,
-	operationQueue OperationQueue, timeOperationQueue []simulation.FutureOperation,
-	logWriter LogWriter, config simulation.Config) blockSimFn {
+func createBlockSimulator(
+	testingMode bool,
+	tb testing.TB,
+	w io.Writer,
+	params Params,
+	event func(route, op, evResult string),
+	ops WeightedOperations,
+	operationQueue OperationQueue,
+	timeOperationQueue []simulation.FutureOperation,
+	logWriter LogWriter,
+	config simulation.Config,
+) blockSimFn {
 
 	lastBlockSizeState := 0 // state for [4 * uniform distribution]
 	blocksize := 0
 	selectOp := ops.getSelectOpFn()
 
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accounts []simulation.Account, header abci.Header,
-	) (opCount int) {
-		_, _ = fmt.Fprintf(
-			w, "\rSimulating... block %d/%d, operation %d/%d.",
-			header.Height, config.NumBlocks, opCount, blocksize,
-		)
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accounts []simulation.Account, header abci.Header) (opCount int) {
+
+		fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.", header.Height, config.NumBlocks, opCount, blocksize)
+
 		lastBlockSizeState, blocksize = getBlockSize(r, params, lastBlockSizeState, config.BlockSize)
 
 		type opAndR struct {
@@ -300,8 +305,7 @@ Comment: %s`,
 			queueOperations(operationQueue, timeOperationQueue, futureOps)
 
 			if testingMode && opCount%50 == 0 {
-				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d. ",
-					header.Height, config.NumBlocks, opCount, blocksize)
+				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d. ", header.Height, config.NumBlocks, opCount, blocksize)
 			}
 
 			opCount++

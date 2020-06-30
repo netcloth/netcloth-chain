@@ -7,7 +7,7 @@ import (
 	"math/rand"
 
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
-	"github.com/netcloth/netcloth-chain/modules/simulation"
+	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 

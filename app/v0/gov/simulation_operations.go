@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
+	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/modules/simulation"
 	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"

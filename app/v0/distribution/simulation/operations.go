@@ -6,10 +6,10 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
+	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	stakingkeeper "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/modules/simulation"
 	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
