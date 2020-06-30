@@ -263,7 +263,7 @@ func createBlockSimulator(
 
 	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accounts []simulation.Account, header abci.Header) (opCount int) {
 
-		fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.", header.Height, config.NumBlocks, opCount, blocksize)
+		fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.\n", header.Height, config.NumBlocks, opCount, blocksize)
 
 		lastBlockSizeState, blocksize = getBlockSize(r, params, lastBlockSizeState, config.BlockSize)
 
@@ -305,7 +305,7 @@ Comment: %s`,
 			queueOperations(operationQueue, timeOperationQueue, futureOps)
 
 			if testingMode && opCount%50 == 0 {
-				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d. ", header.Height, config.NumBlocks, opCount, blocksize)
+				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.\n", header.Height, config.NumBlocks, opCount, blocksize)
 			}
 
 			opCount++

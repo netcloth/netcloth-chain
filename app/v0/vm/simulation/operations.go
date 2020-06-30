@@ -2,7 +2,6 @@ package simulation
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -114,9 +113,6 @@ func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.
 		contractAddrs := k.GetAllHostContractAddresses(ctx)
 		if len(contractAddrs) == 0 {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "no contract"), nil, nil
-		}
-		for _, ca := range contractAddrs {
-			fmt.Println(ca.String())
 		}
 
 		contractIndex := r.Intn(len(contractAddrs))
