@@ -41,3 +41,7 @@ func (k *Keeper) GetCode(ctx sdk.Context, addr sdk.AccAddress) []byte {
 func (k *Keeper) GetLogs(ctx sdk.Context, hash sdk.Hash) []*types.Log {
 	return k.StateDB.WithContext(ctx).GetLogs(hash)
 }
+
+func (k *Keeper) GetAllHostContractAddresses(ctx sdk.Context) []sdk.AccAddress {
+	return k.StateDB.WithContext(ctx).GetAllHotContractAddrs()
+}

@@ -13,6 +13,8 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
+	"github.com/netcloth/netcloth-chain/app/v0/vm/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
@@ -66,65 +68,71 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
+	keeper          Keeper
+	akForSimulation keeper.AccountKeeper
 }
 
-func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
+	am.akForSimulation = ak
+	return am
+}
+
+func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	a.keeper.SetParams(ctx, genesisState.Params)
+	am.keeper.SetParams(ctx, genesisState.Params)
 
 	return nil
 }
 
-func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	kvs := a.keeper.StateDB.WithContext(ctx).ExportState()
+func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+	kvs := am.keeper.StateDB.WithContext(ctx).ExportState()
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("len(kvs)=%d", len(kvs)))
 	return types.ModuleCdc.MustMarshalJSON(kvs)
 }
 
-func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {
+func (am AppModule) RegisterInvariants(sdk.InvariantRegistry) {
 	panic("implement me")
 }
 
-func (a AppModule) Route() string {
+func (am AppModule) Route() string {
 	return RouterKey
 }
 
-func (a AppModule) NewHandler() sdk.Handler {
-	return NewHandler(a.keeper)
+func (am AppModule) NewHandler() sdk.Handler {
+	return NewHandler(am.keeper)
 }
 
-func (a AppModule) QuerierRoute() string {
+func (am AppModule) QuerierRoute() string {
 	return QuerierRoute
 }
 
-func (a AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(a.keeper)
+func (am AppModule) NewQuerierHandler() sdk.Querier {
+	return NewQuerier(am.keeper)
 }
 
-func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
-func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return EndBlocker(ctx, a.keeper)
+func (am AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return EndBlocker(ctx, am.keeper)
 }
 
 func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{keeper: keeper}
 }
 
-func (a AppModule) GenerateGenesisState(input *module.SimulationState) {
+func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
 }
 
-func (a AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
 	return nil
 }
 
-func (a AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 	return nil
 }
 
-func (a AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return nil
+func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }

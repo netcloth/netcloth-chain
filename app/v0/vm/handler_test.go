@@ -43,7 +43,7 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	msgCreate := types.NewMsgContract(acc.GetAddress(), nil, code, sdk.NewInt64Coin(sdk.NativeTokenName, 0))
 	require.NotNil(t, msgCreate)
 	require.Equal(t, msgCreate.Route(), RouterKey)
-	require.Equal(t, msgCreate.Type(), types.TypeMsgContract)
+	require.Equal(t, msgCreate.Type(), types.TypeMsgContractCreate)
 
 	resCreate, err := handler(ctx, msgCreate)
 	require.Nil(t, err)
@@ -59,7 +59,7 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	msgCall := types.NewMsgContract(acc.GetAddress(), contractAddr, common.FromHex("a9059cbb0000000000000000000000005376329591cde25497d29de88ec553229ad10a610000000000000000000000000000000000000000000000000000000000000064"), sdk.NewInt64Coin(sdk.NativeTokenName, 10))
 	require.NotNil(t, msgCall)
 	require.Equal(t, msgCall.Route(), RouterKey)
-	require.Equal(t, msgCall.Type(), types.TypeMsgContract)
+	require.Equal(t, msgCall.Type(), types.TypeMsgContractCall)
 
 	resCall, err := handler(ctx, msgCall)
 	require.Nil(t, err)

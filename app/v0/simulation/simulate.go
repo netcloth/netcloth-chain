@@ -291,7 +291,7 @@ func createBlockSimulator(testingMode bool, tb testing.TB, w io.Writer, params P
 
 			if err != nil {
 				logWriter.PrintLogs()
-				tb.Fatalf(`error on block  %d/%d, operation (%d/%d) from x/%s:
+				tb.Fatalf(`error on block  %d/%d, operation (%d/%d) from modules/%s:
 %v
 Comment: %s`,
 					header.Height, config.NumBlocks, opCount, blocksize, opMsg.Route, err, opMsg.Comment)

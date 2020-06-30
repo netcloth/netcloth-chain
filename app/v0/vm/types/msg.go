@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	TypeMsgContract = "contract"
+	TypeMsgContractCreate = "contract_create"
+	TypeMsgContractCall   = "contract_call"
 )
 
 var (
@@ -26,7 +27,10 @@ func (msg MsgContract) Route() string {
 }
 
 func (msg MsgContract) Type() string {
-	return TypeMsgContract
+	if msg.To.Empty() {
+		return TypeMsgContractCreate
+	}
+	return TypeMsgContractCall
 }
 
 func (msg MsgContract) ValidateBasic() error {

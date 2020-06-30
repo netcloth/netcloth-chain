@@ -103,12 +103,12 @@ func TestMsgContractRoute(t *testing.T) {
 	msg := NewMsgContract(addr1, nil, payload, coin)
 
 	require.Equal(t, msg.Route(), RouterKey)
-	require.Equal(t, msg.Type(), TypeMsgContract)
+	require.Equal(t, msg.Type(), TypeMsgContractCreate)
 
 	// construct a MsgContract
 	addr2 := sdk.AccAddress([]byte("to"))
 	msg = NewMsgContract(addr1, addr2, payload, coin)
 	require.Equal(t, msg.Route(), RouterKey)
-	require.Equal(t, msg.Type(), TypeMsgContract)
+	require.Equal(t, msg.Type(), TypeMsgContractCall)
 
 }
