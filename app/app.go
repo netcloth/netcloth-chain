@@ -3,12 +3,9 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/types/module"
 	"io"
 	"os"
 	"strconv"
-
-	"github.com/netcloth/netcloth-chain/baseapp"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -19,8 +16,10 @@ import (
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/types/module"
 	"github.com/netcloth/netcloth-chain/version"
 )
 
