@@ -301,8 +301,12 @@ Comment: %s`,
 
 			queueOperations(operationQueue, timeOperationQueue, futureOps)
 
-			if testingMode && opCount%50 == 0 {
-				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.\n", header.Height, config.NumBlocks, opCount, blocksize)
+			if testingMode && opCount%10 == 0 {
+				result := "ok"
+				if len(opMsg.Comment) != 0 {
+					result = opMsg.Comment
+				}
+				fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d, [%s/%s/%s].\n", header.Height, config.NumBlocks, opCount, blocksize, opMsg.Route, opMsg.Name, result)
 			}
 
 			opCount++
