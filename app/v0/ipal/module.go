@@ -60,8 +60,8 @@ func (a AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
-	ak     keeper.AccountKeeper // for simulation
+	keeper          Keeper
+	akForSimulation keeper.AccountKeeper // for simulation
 }
 
 func NewAppModule(keeper Keeper) AppModule {
@@ -69,7 +69,7 @@ func NewAppModule(keeper Keeper) AppModule {
 }
 
 func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
-	am.ak = ak
+	am.akForSimulation = ak
 	return am
 }
 
@@ -124,5 +124,5 @@ func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper)
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }

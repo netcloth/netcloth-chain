@@ -69,7 +69,7 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 type AppModule struct {
 	AppModuleBasic
 	keeper          Keeper
-	akForSimulation keeper.AccountKeeper
+	akForSimulation keeper.AccountKeeper // for simulation
 }
 
 func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {

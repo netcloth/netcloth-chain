@@ -95,9 +95,9 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 // app module
 type AppModule struct {
 	AppModuleBasic
-	keeper       Keeper
-	supplyKeeper SupplyKeeper
-	ak           AccountKeeper
+	keeper          Keeper
+	supplyKeeper    SupplyKeeper
+	akForSimulation AccountKeeper // for simulation
 }
 
 // NewAppModule creates a new AppModule object
@@ -110,7 +110,7 @@ func NewAppModule(keeper Keeper, supplyKeeper SupplyKeeper) AppModule {
 }
 
 func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
-	am.ak = ak
+	am.akForSimulation = ak
 	return am
 }
 
@@ -173,7 +173,7 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return WeightedOperations(simState.AppParams, simState.Cdc, am.ak, am.keeper, simState.Contents)
+	return WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper, simState.Contents)
 }
 
 func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
