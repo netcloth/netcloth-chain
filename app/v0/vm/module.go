@@ -87,7 +87,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	kvs := am.keeper.StateDB.WithContext(ctx).ExportState()
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("len(kvs)=%d", len(kvs)))
+	fmt.Fprintf(os.Stderr, "len(kvs)=%d", len(kvs))
 	return types.ModuleCdc.MustMarshalJSON(kvs)
 }
 

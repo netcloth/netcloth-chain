@@ -56,7 +56,7 @@ func (k Keeper) DequeueAllMatureUnBondingQueue(ctx sdk.Context, curTime time.Tim
 			}
 		}
 
-		if moduleFundsErr == true {
+		if moduleFundsErr {
 			ctx.Logger().Error(fmt.Sprintf("module[%s] funds[%v] insufficient", types.ModuleName, moduleFunds.String()))
 			break
 		}

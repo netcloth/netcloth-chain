@@ -8,7 +8,7 @@ import (
 
 // GenesisState contains all upgrade state that must be provided at genesis
 type GenesisState struct {
-	GenesisVersion types.VersionInfo 			`json:"genesis_version" yaml:"genesis_version"`
+	GenesisVersion types.VersionInfo `json:"genesis_version" yaml:"genesis_version"`
 }
 
 // DefaultGenesisState returns default raw genesis raw message

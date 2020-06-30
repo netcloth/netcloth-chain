@@ -18,7 +18,7 @@ const (
 	GuardianModuleName     = "guardian"
 	IpalModuleName         = "ipal"
 	CIpalModuleName        = "cipal"
-	VmModuleName           = "vm"
+	VMModuleName           = "vm"
 )
 
 // all store keys name
@@ -37,10 +37,10 @@ const (
 	GuardianStoreKey     = GuardianModuleName
 	IpalStoreKey         = IpalModuleName
 	CIpalStoreKey        = CIpalModuleName
-	VmStoreKey           = VmModuleName
-	VmCodeStoreKey       = VmStoreKey + "_code"
-	VmLogStoreKey        = VmStoreKey + "_log"
-	VmDebugStoreKey      = VmStoreKey + "_debug"
+	VMStoreKey           = VMModuleName
+	VMCodeStoreKey       = VMStoreKey + "_code"
+	VMLogStoreKey        = VMStoreKey + "_log"
+	VMDebugStoreKey      = VMStoreKey + "_debug"
 
 	ParamsTStoreKey  = "transient_" + ParamsStoreKey
 	StakingTStoreKey = "transient_" + StakingStoreKey
@@ -58,10 +58,10 @@ var (
 		SlashingStoreKey,
 		CIpalStoreKey,
 		IpalStoreKey,
-		VmStoreKey,
-		VmCodeStoreKey,
-		VmLogStoreKey,
-		VmDebugStoreKey,
+		VMStoreKey,
+		VMCodeStoreKey,
+		VMLogStoreKey,
+		VMDebugStoreKey,
 		GovStoreKey,
 		AuthStoreKey,
 		UpgradeStoreKey,

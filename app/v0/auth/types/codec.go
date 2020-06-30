@@ -16,7 +16,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(StdTx{}, "nch/StdTx", nil)
 }
 
-// module wide codec
+// ModuleCdc - generic sealed codec to be used throughout module
 var ModuleCdc *codec.Codec
 
 func init() {
