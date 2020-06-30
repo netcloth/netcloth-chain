@@ -2,6 +2,8 @@ package cipal
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/keeper"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/simulation"
 	"math/rand"
 
 	"github.com/gorilla/mux"
@@ -59,7 +61,13 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
+	keeper          Keeper
+	akForSimulation keeper.AccountKeeper
+}
+
+func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
+	am.akForSimulation = ak
+	return am
 }
 
 func NewAppModule(keeper Keeper) AppModule {
@@ -120,5 +128,5 @@ func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
-	return nil
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }
