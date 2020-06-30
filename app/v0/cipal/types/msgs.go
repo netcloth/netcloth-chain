@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	maxUserAddressLength   = 256
-	maxServerAddressLength = 256
+	maxUserAddressLength = 256
 )
 
 var (
