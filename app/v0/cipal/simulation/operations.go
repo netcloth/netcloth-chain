@@ -32,7 +32,7 @@ func SimulateMsgCreateCIpal(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.O
 
 		expiration := ctx.BlockHeader().Time.AddDate(0, 0, 1)
 		adMsg := types.NewADParam(acc.Address.String(), acc.Address.String(), 1, expiration)
-		sig, err := acc.PrivKey.Sign(adMsg.GetSignBytes())
+		sig, _ := acc.PrivKey.Sign(adMsg.GetSignBytes())
 
 		stdSig := auth.StdSignature{PubKey: acc.PubKey, Signature: sig}
 		msg := types.NewMsgCIPALClaim(acc.Address, acc.Address.String(), acc.Address.String(), 1, expiration, stdSig)
@@ -47,7 +47,7 @@ func SimulateMsgCreateCIpal(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.O
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err := app.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
