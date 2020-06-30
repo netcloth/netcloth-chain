@@ -262,9 +262,6 @@ func createBlockSimulator(
 	selectOp := ops.getSelectOpFn()
 
 	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accounts []simulation.Account, header abci.Header) (opCount int) {
-
-		fmt.Fprintf(w, "\rSimulating... block %d/%d, operation %d/%d.\n", header.Height, config.NumBlocks, opCount, blocksize)
-
 		lastBlockSizeState, blocksize = getBlockSize(r, params, lastBlockSizeState, config.BlockSize)
 
 		type opAndR struct {
