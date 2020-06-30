@@ -30,7 +30,6 @@ var (
 	valTokens  = sdk.TokensFromConsensusPower(1000)
 	initTokens = sdk.TokensFromConsensusPower(100000)
 	valCoins   = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
-	initCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
 )
 
 var (

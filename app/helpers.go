@@ -1,14 +1,10 @@
 package app
 
 import (
-	"regexp"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
-
-var isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
 
 // nolint - Mostly for testing
 func (app *BaseApp) Check(tx sdk.Tx) (sdk.GasInfo, *sdk.Result, error) {

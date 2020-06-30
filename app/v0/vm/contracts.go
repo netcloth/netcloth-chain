@@ -36,14 +36,6 @@ var PrecompiledContracts = map[string]PrecompiledContract{
 	//(sdk.BytesToAddress([]byte{9})).String(): &blake2F{},
 }
 
-var (
-	// true32Byte is returned if the bn256 pairing check succeeds.
-	true32Byte = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-
-	// false32Byte is returned if the bn256 pairing check fails.
-	false32Byte = make([]byte, 32)
-)
-
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
 func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err error) {
 	gas := p.RequiredGas(input)
