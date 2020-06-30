@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"errors"
 	"math/rand"
 
 	"github.com/tendermint/tendermint/crypto"
@@ -71,7 +72,7 @@ func RandomFees(r *rand.Rand, ctx sdk.Context, spendableCoins sdk.Coins) (sdk.Co
 	randCoin := spendableCoins[denomIndex]
 
 	if randCoin.Amount.IsZero() {
-		return nil, nil
+		return nil, errors.New("amount zero")
 	}
 
 	amt, err := RandPositiveInt(r, randCoin.Amount)
@@ -79,8 +80,12 @@ func RandomFees(r *rand.Rand, ctx sdk.Context, spendableCoins sdk.Coins) (sdk.Co
 		return nil, err
 	}
 
-	if amt.Equal(sdk.NewInt(0)) {
-		amt = sdk.NewInt(1)
+	if randCoin.Amount.LT(sdk.NewInt(1000000)) {
+		return nil, errors.New("amount < 1000000")
+	}
+
+	if amt.LT(sdk.NewInt(1000000)) {
+		amt = sdk.NewInt(1000000)
 	}
 
 	// Create a random fee and verify the fees are within the account's spendable

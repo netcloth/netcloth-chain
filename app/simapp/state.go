@@ -43,7 +43,11 @@ func AppStateRandomizedFn(
 	var initialStake, numInitiallyBonded int64
 	appParams.GetOrGenerate(
 		cdc, simapparams.StakePerAccount, &initialStake, r,
-		func(r *rand.Rand) { initialStake = r.Int63n(1e14) },
+		func(r *rand.Rand) {
+			for initialStake < 1e17 {
+				initialStake = r.Int63n(1e18)
+			}
+		},
 	)
 	appParams.GetOrGenerate(
 		cdc, simapparams.InitiallyBondedValidators, &numInitiallyBonded, r,

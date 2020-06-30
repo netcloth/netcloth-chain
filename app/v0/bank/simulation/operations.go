@@ -15,13 +15,7 @@ import (
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
-const (
-	OpWeightMsgSend = "op_weight_msg_send"
-)
-
-func WeightedOperations(
-	appParams simtypes.AppParams, cdc *codec.Codec, ak types.AccountKeeper, bk keeper.Keeper,
-) simulation.WeightedOperations {
+func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak types.AccountKeeper, bk keeper.Keeper) simulation.WeightedOperations {
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
 			80,
@@ -31,11 +25,8 @@ func WeightedOperations(
 }
 
 func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
-		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		if !bk.GetSendEnabled(ctx) {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "transfers are not enabled"), nil, nil
 		}
@@ -58,8 +49,14 @@ func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operatio
 }
 
 func sendMsgSend(
-	r *rand.Rand, app *baseapp.BaseApp, bk keeper.Keeper, ak types.AccountKeeper,
-	msg types.MsgSend, ctx sdk.Context, chainID string, privkeys []crypto.PrivKey,
+	r *rand.Rand,
+	app *baseapp.BaseApp,
+	bk keeper.Keeper,
+	ak types.AccountKeeper,
+	msg types.MsgSend,
+	ctx sdk.Context,
+	chainID string,
+	privkeys []crypto.PrivKey,
 ) error {
 
 	var (
@@ -96,9 +93,7 @@ func sendMsgSend(
 	return nil
 }
 
-func randomSendFields(
-	r *rand.Rand, ctx sdk.Context, accs []simtypes.Account, bk keeper.Keeper, ak types.AccountKeeper,
-) (simtypes.Account, simtypes.Account, sdk.Coins, bool) {
+func randomSendFields(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account, bk keeper.Keeper, ak types.AccountKeeper) (simtypes.Account, simtypes.Account, sdk.Coins, bool) {
 
 	simAccount, _ := simtypes.RandomAcc(r, accs)
 	toSimAcc, _ := simtypes.RandomAcc(r, accs)

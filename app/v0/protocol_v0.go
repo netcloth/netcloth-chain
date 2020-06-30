@@ -340,6 +340,9 @@ func (p *ProtocolV0) configSimulationManager() {
 	govModule := gov.NewAppModule(p.govKeeper, p.supplyKeeper)
 	govModuleP := govModule.WithAccountKeeper(p.accountKeeper)
 
+	ipalModule := ipal.NewAppModule(p.ipalKeeper)
+	ipalModuleP := ipalModule.WithAccountKeeper(p.accountKeeper)
+
 	simManager := module.NewSimulationManager(
 		genaccounts.NewSimAppModule(p.accountKeeper),
 		auth.NewAppModule(p.accountKeeper),
@@ -350,7 +353,7 @@ func (p *ProtocolV0) configSimulationManager() {
 		mint.NewAppModule(p.mintKeeper),
 		distrModuleP,
 		govModuleP,
-		ipal.NewAppModule(p.ipalKeeper),
+		ipalModuleP,
 		cipal.NewAppModule(p.cipalKeeper),
 		vm.NewAppModule(p.vmKeeper),
 	)
