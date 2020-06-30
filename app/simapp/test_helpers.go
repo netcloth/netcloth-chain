@@ -41,69 +41,6 @@ var DefaultConsensusParams = &abci.ConsensusParams{
 	},
 }
 
-//func Setup(isCheckTx bool) *SimApp {
-//	db := dbm.NewMemDB()
-//	app := NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5)
-//	if !isCheckTx {
-//		// init chain must be called to stop deliverState from being nil
-//		genesisState := NewDefaultGenesisState()
-//		stateBytes, err := codec.MarshalJSONIndent(app.Codec(), genesisState)
-//		if err != nil {
-//			panic(err)
-//		}
-//
-//		// Initialize the chain
-//		app.InitChain(
-//			abci.RequestInitChain{
-//				Validators:      []abci.ValidatorUpdate{},
-//				ConsensusParams: DefaultConsensusParams,
-//				AppStateBytes:   stateBytes,
-//			},
-//		)
-//	}
-//
-//	return app
-//}
-
-// SetupWithGenesisAccounts initializes a new SimApp with the provided genesis
-// accounts and possible balances.
-//func SetupWithGenesisAccounts(genAccs []auth.GenesisAccount, balances ...banktypes.Balance) *SimApp {
-//	db := dbm.NewMemDB()
-//	app := NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0)
-//
-//	// initialize the chain with the passed in genesis accounts
-//	genesisState := NewDefaultGenesisState()
-//
-//	authGenesis := auth.NewGenesisState(auth.DefaultParams(), genAccs)
-//	genesisState[auth.ModuleName] = app.Codec().MustMarshalJSON(authGenesis)
-//
-//	totalSupply := sdk.NewCoins()
-//	for _, b := range balances {
-//		totalSupply = totalSupply.Add(b.Coins...)
-//	}
-//
-//	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().SendEnabled, balances, totalSupply)
-//	genesisState[banktypes.ModuleName] = app.Codec().MustMarshalJSON(bankGenesis)
-//
-//	stateBytes, err := codec.MarshalJSONIndent(app.Codec(), genesisState)
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	app.InitChain(
-//		abci.RequestInitChain{
-//			Validators:      []abci.ValidatorUpdate{},
-//			ConsensusParams: DefaultConsensusParams,
-//			AppStateBytes:   stateBytes,
-//		},
-//	)
-//
-//	app.Commit()
-//	app.BeginBlock(abci.RequestBeginBlock{Header: abci.Header{Height: app.LastBlockHeight() + 1}})
-//
-//	return app
-//}
-
 type GenerateAccountStrategy func(int) []sdk.AccAddress
 
 // createRandomAccounts is a strategy used by addTestAddrs() in order to generated addresses in random order.
@@ -139,61 +76,6 @@ func createIncrementalAccounts(accNum int) []sdk.AccAddress {
 	return addresses
 }
 
-// AddTestAddrsFromPubKeys adds the addresses into the SimApp providing only the public keys.
-//func AddTestAddrsFromPubKeys(app *SimApp, ctx sdk.Context, pubKeys []crypto.PubKey, accAmt sdk.Int) {
-//	initCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt))
-//
-//	setTotalSupply(app, ctx, accAmt, len(pubKeys))
-//
-//	// fill all the addresses with some coins, set the loose pool tokens simultaneously
-//	for _, pubKey := range pubKeys {
-//		saveAccount(app, ctx, sdk.AccAddress(pubKey.Address()), initCoins)
-//	}
-//}
-
-// setTotalSupply provides the total supply based on accAmt * totalAccounts.
-//func setTotalSupply(app *SimApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
-//	totalSupply := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
-//	prevSupply := app.BankKeeper.GetSupply(ctx)
-//	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(prevSupply.GetTotal().Add(totalSupply...)))
-//}
-
-// AddTestAddrs constructs and returns accNum amount of accounts with an
-// initial balance of accAmt in random order
-//func AddTestAddrs(app *SimApp, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
-//	return addTestAddrs(app, ctx, accNum, accAmt, createRandomAccounts)
-//}
-
-// AddTestAddrs constructs and returns accNum amount of accounts with an
-// initial balance of accAmt in random order
-//func AddTestAddrsIncremental(app *SimApp, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
-//	return addTestAddrs(app, ctx, accNum, accAmt, createIncrementalAccounts)
-//}
-
-//func addTestAddrs(app *SimApp, ctx sdk.Context, accNum int, accAmt sdk.Int, strategy GenerateAccountStrategy) []sdk.AccAddress {
-//	testAddrs := strategy(accNum)
-//
-//	initCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt))
-//	setTotalSupply(app, ctx, accAmt, accNum)
-//
-//	// fill all the addresses with some coins, set the loose pool tokens simultaneously
-//	for _, addr := range testAddrs {
-//		saveAccount(app, ctx, addr, initCoins)
-//	}
-//
-//	return testAddrs
-//}
-
-// saveAccount saves the provided account into the simapp with balance based on initCoins.
-//func saveAccount(app *SimApp, ctx sdk.Context, addr sdk.AccAddress, initCoins sdk.Coins) {
-//	acc := app.AccountKeeper.NewAccountWithAddress(ctx, addr)
-//	app.AccountKeeper.SetAccount(ctx, acc)
-//	_, err := app.BankKeeper.AddCoins(ctx, addr, initCoins)
-//	if err != nil {
-//		panic(err)
-//	}
-//}
-
 // ConvertAddrsToValAddrs converts the provided addresses to ValAddress.
 func ConvertAddrsToValAddrs(addrs []sdk.AccAddress) []sdk.ValAddress {
 	valAddrs := make([]sdk.ValAddress, len(addrs))
@@ -225,12 +107,6 @@ func TestAddr(addr string, bech string) (sdk.AccAddress, error) {
 
 	return res, nil
 }
-
-// CheckBalance checks the balance of an account.
-//func CheckBalance(t *testing.T, app *SimApp, addr sdk.AccAddress, balances sdk.Coins) {
-//	ctxCheck := app.BaseApp.NewContext(true, abci.Header{})
-//	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
-//}
 
 // SignCheckDeliver checks a generated signed transaction and simulates a
 // block commitment with the given transaction. A test assertion is made using
