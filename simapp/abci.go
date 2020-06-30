@@ -116,7 +116,8 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 	}
 
 	app.voteInfos = req.LastCommitInfo.GetVotes()
-	return
+
+	return res
 }
 
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
@@ -144,18 +145,18 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	}
 
 	if appVersion <= app.Engine.GetCurrentVersion() {
-		return
+		return res
 	}
 
 	success := app.Engine.Activate(appVersion, app.deliverState.ctx)
 	if success {
 		app.TxDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
-		return
+		return res
 	} else {
 		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 	}
 
-	return
+	return res
 }
 
 // CheckTx implements the ABCI interface. It runs the "basic checks" to see

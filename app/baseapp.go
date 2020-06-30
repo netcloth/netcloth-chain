@@ -336,7 +336,7 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 
 // validateBasicTxMsgs executes basic validator calls for messages.
 func validateBasicTxMsgs(msgs []sdk.Msg) error {
-	if msgs == nil || len(msgs) == 0 {
+	if len(msgs) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "must contain at least one message")
 	}
 

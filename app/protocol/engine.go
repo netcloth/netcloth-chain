@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"fmt"
+
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -24,7 +25,7 @@ func NewProtocolEngine(protocolKeeper sdk.ProtocolKeeper) ProtocolEngine {
 
 func (pe *ProtocolEngine) LoadProtocol(version uint64) {
 	p, flag := pe.protocols[version]
-	if flag == false {
+	if !flag {
 		panic("unknown protocol version!!!")
 	}
 	p.Load()
@@ -34,7 +35,7 @@ func (pe *ProtocolEngine) LoadProtocol(version uint64) {
 func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64) {
 	current := pe.ProtocolKeeper.GetCurrentVersionByStore(kvStore)
 	p, flag := pe.protocols[current]
-	if flag == true {
+	if flag {
 		p.Load()
 		pe.current = current
 	}
@@ -43,7 +44,7 @@ func (pe *ProtocolEngine) LoadCurrentProtocol(kvStore sdk.KVStore) (bool, uint64
 
 func (pe *ProtocolEngine) Activate(version uint64, ctx sdk.Context) bool {
 	p, flag := pe.protocols[version]
-	if flag == true {
+	if flag {
 		p.Load()
 		p.Init(ctx)
 		pe.current = version
