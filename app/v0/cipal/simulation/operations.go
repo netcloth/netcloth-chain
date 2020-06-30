@@ -1,6 +1,8 @@
 package simulation
 
 import (
+	"math/rand"
+
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/cipal/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/cipal/types"
@@ -9,11 +11,10 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
-	"math/rand"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
-func WeightedOperations(appParams sdksimulation.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
+func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
 
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
@@ -23,10 +24,10 @@ func WeightedOperations(appParams sdksimulation.AppParams, cdc *codec.Codec, ak 
 	}
 }
 
-func SimulateMsgCreateCIpal(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulation.Operation {
+func SimulateMsgCreateCIpal(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []sdksimulation.Account, chainID string) (sdksimulation.OperationMsg, []sdksimulation.FutureOperation, error) {
-		acc, _ := sdksimulation.RandomAcc(r, accs)
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		acc, _ := simtypes.RandomAcc(r, accs)
 		accountObj := ak.GetAccount(ctx, acc.Address)
 
 		expiration := ctx.BlockHeader().Time.AddDate(0, 0, 1)
@@ -48,9 +49,9 @@ func SimulateMsgCreateCIpal(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulat
 
 		_, _, err = app.Deliver(tx)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
 
-		return sdksimulation.NewOperationMsg(msg, true, ""), nil, nil
+		return simtypes.NewOperationMsg(msg, true, ""), nil, nil
 	}
 }

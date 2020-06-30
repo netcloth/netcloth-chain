@@ -10,10 +10,10 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
-func WeightedOperations(appParams sdksimulation.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
+func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
 
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
@@ -23,13 +23,13 @@ func WeightedOperations(appParams sdksimulation.AppParams, cdc *codec.Codec, ak 
 	}
 }
 
-func SimulateMsgCreateIpal(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulation.Operation {
+func SimulateMsgCreateIpal(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []sdksimulation.Account, chainID string) (sdksimulation.OperationMsg, []sdksimulation.FutureOperation, error) {
-		acc, _ := sdksimulation.RandomAcc(r, accs)
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		acc, _ := simtypes.RandomAcc(r, accs)
 		_, found := k.GetIPALNode(ctx, acc.Address)
 		if found {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "ipal exist"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "ipal exist"), nil, nil
 		}
 
 		minBond := k.GetParams(ctx).MinBond
@@ -38,24 +38,24 @@ func SimulateMsgCreateIpal(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulati
 		accountObj := ak.GetAccount(ctx, acc.Address)
 		amount := accountObj.GetCoins().AmountOf(bondDenom)
 		if !amount.IsPositive() {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "balance is negative"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "balance is negative"), nil, nil
 		}
 
-		bondAmt := sdksimulation.RandomAmount(r, amount)
+		bondAmt := simtypes.RandomAmount(r, amount)
 		for bondAmt.LT(minBond.Amount) || bondAmt.GT(minBond.Amount.Mul(sdk.NewInt(2))) {
-			bondAmt = sdksimulation.RandomAmount(r, amount)
+			bondAmt = simtypes.RandomAmount(r, amount)
 		}
 
 		bond := sdk.NewCoin(bondDenom, bondAmt)
 
 		var fees sdk.Coins
 		var err error
-		fees, err = sdksimulation.RandomFees(r, ctx, sdk.NewCoins(bond))
+		fees, err = simtypes.RandomFees(r, ctx, sdk.NewCoins(bond))
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "unable to generate fees"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "unable to generate fees"), nil, err
 		}
 
-		moniker, website, details, extension := sdksimulation.RandStringOfLength(r, 1000), sdksimulation.RandStringOfLength(r, 1000), sdksimulation.RandStringOfLength(r, 1000), sdksimulation.RandStringOfLength(r, 1000)
+		moniker, website, details, extension := simtypes.RandStringOfLength(r, 1000), simtypes.RandStringOfLength(r, 1000), simtypes.RandStringOfLength(r, 1000), simtypes.RandStringOfLength(r, 1000)
 
 		endPoint := types.NewEndpoint(r.Uint64(), "192.168.1.100:666")
 		msg := types.NewMsgIPALNodeClaim(acc.Address, moniker, website, details, extension, types.Endpoints{endPoint}, bond)
@@ -72,9 +72,9 @@ func SimulateMsgCreateIpal(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulati
 
 		_, _, err = app.Deliver(tx)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
 
-		return sdksimulation.NewOperationMsg(msg, true, ""), nil, nil
+		return simtypes.NewOperationMsg(msg, true, ""), nil, nil
 	}
 }

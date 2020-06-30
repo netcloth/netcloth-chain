@@ -16,7 +16,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
-	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
@@ -134,14 +134,14 @@ func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	simulation.RandomizedGenState(simState)
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimulation.WeightedOperation {
+func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }
 
-func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimulation.WeightedProposalContent {
+func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return nil
 }
 
-func (am AppModule) RandomizedParams(r *rand.Rand) []sdksimulation.ParamChange {
+func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return simulation.ParamChanges(r)
 }

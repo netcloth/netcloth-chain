@@ -16,10 +16,10 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	sdksimulation "github.com/netcloth/netcloth-chain/types/simulation"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
-func WeightedOperations(appParams sdksimulation.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
+func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak keeper.AccountKeeper, k keeper.Keeper) simulation.WeightedOperations {
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
 			10,
@@ -38,27 +38,27 @@ const (
 	abiStr  = "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_feeRateE4\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_actual_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"E4\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"calcCommission\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"doTransfer\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeRateE4\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_feeRateE4\",\"type\":\"uint256\"}],\"name\":\"feeRateValid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_feeRateE4\",\"type\":\"uint256\"}],\"name\":\"setFeeRate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 )
 
-func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulation.Operation {
+func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []sdksimulation.Account, chainID string) (sdksimulation.OperationMsg, []sdksimulation.FutureOperation, error) {
-		acc, _ := sdksimulation.RandomAcc(r, accs)
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		acc, _ := simtypes.RandomAcc(r, accs)
 		accountObj := ak.GetAccount(ctx, acc.Address)
 
 		code, err := hex.DecodeString(codeStr)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "wrong contract code"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "wrong contract code"), nil, err
 		}
 
 		abiObj, err := abi.JSON(strings.NewReader(abiStr))
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "wrong contract abi"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "wrong contract abi"), nil, err
 		}
 
 		args := []interface{}{big.NewInt(10)}
 
 		payload, err := abiObj.Constructor.Inputs.PackValues(args)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "gen payload failed"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "gen payload failed"), nil, err
 		}
 
 		code = append(code, payload...)
@@ -77,27 +77,27 @@ func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) sdksimu
 
 		_, _, err = app.Deliver(tx)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
 
-		return sdksimulation.NewOperationMsg(msg, true, ""), nil, nil
+		return simtypes.NewOperationMsg(msg, true, ""), nil, nil
 	}
 }
 
-func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) sdksimulation.Operation {
+func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []sdksimulation.Account, chainID string) (sdksimulation.OperationMsg, []sdksimulation.FutureOperation, error) {
-		acc, _ := sdksimulation.RandomAcc(r, accs)
+	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		acc, _ := simtypes.RandomAcc(r, accs)
 		accountObj := ak.GetAccount(ctx, acc.Address)
 
 		abiObj, err := abi.JSON(strings.NewReader(abiStr))
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "wrong contract abi"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "wrong contract abi"), nil, err
 		}
 
 		m, ok := abiObj.Methods["doTransfer"]
 		if !ok {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "method not exist in abi"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "method not exist in abi"), nil, err
 		}
 
 		var Address [20]byte
@@ -107,13 +107,13 @@ func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) sdksimula
 		payload := m.ID
 		argsBin, err := m.Inputs.PackValues(args)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "gen payload failed"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "gen payload failed"), nil, err
 		}
 		payload = append(payload, argsBin...)
 
 		contractAddrs := k.GetAllHostContractAddresses(ctx)
 		if len(contractAddrs) == 0 {
-			return sdksimulation.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "no contract"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "no contract"), nil, nil
 		}
 		for _, ca := range contractAddrs {
 			fmt.Println(ca.String())
@@ -134,9 +134,9 @@ func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) sdksimula
 
 		_, _, err = app.Deliver(tx)
 		if err != nil {
-			return sdksimulation.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
 
-		return sdksimulation.NewOperationMsg(msg, true, ""), nil, nil
+		return simtypes.NewOperationMsg(msg, true, ""), nil, nil
 	}
 }
