@@ -27,9 +27,8 @@ import (
 )
 
 var (
-	valTokens  = sdk.TokensFromConsensusPower(1000)
-	initTokens = sdk.TokensFromConsensusPower(100000)
-	valCoins   = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	valTokens = sdk.TokensFromConsensusPower(1000)
+	valCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
 )
 
 var (

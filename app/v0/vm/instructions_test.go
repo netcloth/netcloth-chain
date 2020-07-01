@@ -35,7 +35,6 @@ type OneOperandTestcase struct {
 	Expected string
 }
 
-var oneOpParams []string
 var oneOpMethods map[string]executionFunc
 
 func init() {
