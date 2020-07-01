@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/netcloth/netcloth-chain/app/v0/mock"
+	"github.com/netcloth/netcloth-chain/app/mock"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )

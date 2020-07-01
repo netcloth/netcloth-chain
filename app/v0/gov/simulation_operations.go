@@ -5,12 +5,12 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
+	simappparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
-	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -105,7 +105,14 @@ func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.Cont
 	statePercentageArray := []float64{1, .9, .75, .4, .15, 0}
 	curNumVotesState := 1
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSubmitProposal, "app invalid"), nil, nil
+		}
+
 		// 1) submit proposal now
 		content := contentSim(r, ctx, accs)
 		if content == nil {
@@ -145,7 +152,7 @@ func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.Cont
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -185,7 +192,13 @@ func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.Cont
 
 // SimulateMsgDeposit generates a MsgDeposit with random values.
 func SimulateMsgDeposit(ak AccountKeeper, k Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDeposit, "app invalid"), nil, nil
+		}
+
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		proposalID, ok := randomProposalID(r, k, ctx, types.StatusDepositPeriod)
 		if !ok {
@@ -224,7 +237,7 @@ func SimulateMsgDeposit(ak AccountKeeper, k Keeper) simtypes.Operation {
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -240,10 +253,14 @@ func SimulateMsgVote(ak AccountKeeper, k Keeper) simtypes.Operation {
 
 func operationSimulateMsgVote(ak AccountKeeper, k Keeper,
 	simAccount simtypes.Account, proposalIDInt int64) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
-		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgVote, "app invalid"), nil, nil
+		}
+
 		if simAccount.Equals(simtypes.Account{}) {
 			simAccount, _ = simtypes.RandomAcc(r, accs)
 		}
@@ -282,7 +299,7 @@ func operationSimulateMsgVote(ak AccountKeeper, k Keeper,
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}

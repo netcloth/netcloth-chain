@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
+	simappparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	stakingkeeper "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
-	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -65,9 +65,13 @@ func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, k keeper
 
 // SimulateMsgSetWithdrawAddress generates a MsgSetWithdrawAddress with random values.
 func SimulateMsgSetWithdrawAddress(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSetWithdrawAddress, "app invalid"), nil, nil
+		}
+
 		if !k.GetWithdrawAddrEnabled(ctx) {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSetWithdrawAddress, "withdrawal is not enabled"), nil, nil
 		}
@@ -95,7 +99,7 @@ func SimulateMsgSetWithdrawAddress(ak keeper.AccountKeeper, k keeper.Keeper) sim
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -106,9 +110,13 @@ func SimulateMsgSetWithdrawAddress(ak keeper.AccountKeeper, k keeper.Keeper) sim
 
 // SimulateMsgWithdrawDelegatorReward generates a MsgWithdrawDelegatorReward with random values.
 func SimulateMsgWithdrawDelegatorReward(ak keeper.AccountKeeper, k keeper.Keeper, sk stakingkeeper.Keeper) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgWithdrawDelegatorReward, "app invalid"), nil, nil
+		}
+
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		delegations := sk.GetAllDelegatorDelegations(ctx, simAccount.Address)
 		if len(delegations) == 0 {
@@ -142,7 +150,7 @@ func SimulateMsgWithdrawDelegatorReward(ak keeper.AccountKeeper, k keeper.Keeper
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -153,7 +161,13 @@ func SimulateMsgWithdrawDelegatorReward(ak keeper.AccountKeeper, k keeper.Keeper
 
 // SimulateMsgWithdrawValidatorCommission generates a MsgWithdrawValidatorCommission with random values.
 func SimulateMsgWithdrawValidatorCommission(ak keeper.AccountKeeper, k keeper.Keeper, sk stakingkeeper.Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgWithdrawValidatorCommission, "app invalid"), nil, nil
+		}
 
 		validator, ok := stakingkeeper.RandomValidator(r, sk, ctx)
 		if !ok {
@@ -185,7 +199,7 @@ func SimulateMsgWithdrawValidatorCommission(ak keeper.AccountKeeper, k keeper.Ke
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}

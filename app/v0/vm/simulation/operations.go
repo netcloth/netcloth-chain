@@ -8,12 +8,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -39,7 +39,14 @@ const (
 
 func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "app invalid"), nil, nil
+		}
+
 		acc, _ := simtypes.RandomAcc(r, accs)
 		accountObj := ak.GetAccount(ctx, acc.Address)
 
@@ -74,7 +81,7 @@ func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) simtype
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -85,7 +92,14 @@ func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) simtype
 
 func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "app invalid"), nil, nil
+		}
+
 		acc, _ := simtypes.RandomAcc(r, accs)
 		accountObj := ak.GetAccount(ctx, acc.Address)
 
@@ -128,7 +142,7 @@ func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}

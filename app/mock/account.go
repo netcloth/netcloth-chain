@@ -6,14 +6,14 @@ import (
 	"sort"
 	"testing"
 
-	v02 "github.com/netcloth/netcloth-chain/app/v0/mock/p0"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
+	p0 "github.com/netcloth/netcloth-chain/app/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -131,9 +131,9 @@ func CreateGenAccounts(numAccs int, genCoins sdk.Coins) (genAccs []auth.Account,
 	return
 }
 
-func GetProtocolV0(t *testing.T, app *NCHApp) *v02.ProtocolV0 {
+func GetProtocolV0(t *testing.T, app *NCHApp) *p0.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
-	protocolV0, ok := curProtocol.(*v02.ProtocolV0)
+	protocolV0, ok := curProtocol.(*p0.ProtocolV0)
 	require.True(t, ok)
 	return protocolV0
 }

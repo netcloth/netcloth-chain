@@ -92,10 +92,20 @@ clean:
 
 ##############################################
 ### Test
-PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v '/netcloth/netcloth-chain/crypto')
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation' | grep -v mock | grep -v 'netcloth-chain/tests' | grep -v '/netcloth/netcloth-chain/crypto' | grep -v '/simapp')
 PACKAGES_CRYPTO=$(shell go list ./... | grep '/netcloth/netcloth-chain/crypto')
 
 test: test_unit_crypto test_unit
+simapptest:
+	@go test -mod=readonly github.com/netcloth/netcloth-chain/app/simapp \
+        -run=TestFullAppSimulation \
+        -Enabled=true \
+        -NumBlocks=100 \
+        -BlockSize=200 \
+        -Commit=true \
+        -Seed=99 \
+        -Period=5 \
+        -v -timeout 24h
 
 test_unit:
 	@go test -mod=readonly $(PACKAGES_NOSIMULATION)

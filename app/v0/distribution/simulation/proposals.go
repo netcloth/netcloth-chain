@@ -3,10 +3,10 @@ package simulation
 import (
 	"math/rand"
 
+	simappparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
-	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )

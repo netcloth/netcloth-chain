@@ -1,8 +1,8 @@
 package v0
 
 import (
+	v0 "github.com/netcloth/netcloth-chain/app/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/protocol"
-	v0 "github.com/netcloth/netcloth-chain/app/v0/mock/p0"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"

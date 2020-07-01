@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	simapparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/codec"
-	simapparams "github.com/netcloth/netcloth-chain/simapp/params"
 	"github.com/netcloth/netcloth-chain/types/module"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )

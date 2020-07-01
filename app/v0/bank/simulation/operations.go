@@ -5,12 +5,12 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
 	"github.com/netcloth/netcloth-chain/app/v0/bank/internal/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/bank/internal/types"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -26,7 +26,13 @@ func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak types
 
 func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "app invalid"), nil, nil
+		}
+
 		if !bk.GetSendEnabled(ctx) {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "transfers are not enabled"), nil, nil
 		}
@@ -39,7 +45,7 @@ func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operatio
 
 		msg := types.NewMsgSend(simAccount.Address, toSimAcc.Address, coins)
 
-		err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []crypto.PrivKey{simAccount.PrivKey})
+		err := sendMsgSend(r, a, bk, ak, msg, ctx, chainID, []crypto.PrivKey{simAccount.PrivKey})
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
 		}

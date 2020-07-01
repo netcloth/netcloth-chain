@@ -4,13 +4,13 @@ import (
 	"errors"
 	"math/rand"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
+	simappparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/slashing/types"
 	stakingkeeper "github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
-	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -50,7 +50,13 @@ func SimulateMsgUnjail(
 	k Keeper,
 	sk stakingkeeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "app invalid"), nil, nil
+		}
 
 		validator, ok := stakingkeeper.RandomValidator(r, sk, ctx)
 		if !ok {
@@ -98,7 +104,7 @@ func SimulateMsgUnjail(
 			simAccount.PrivKey,
 		)
 
-		_, res, err := app.Deliver(tx)
+		_, res, err := a.Deliver(tx)
 
 		// result should fail if:
 		// - validator cannot be unjailed due to tombstone

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/netcloth/netcloth-chain/app/simapp/helpers"
+	simappparams "github.com/netcloth/netcloth-chain/app/simapp/params"
 	"github.com/netcloth/netcloth-chain/app/v0/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp/helpers"
-	simappparams "github.com/netcloth/netcloth-chain/simapp/params"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
@@ -93,7 +93,13 @@ func WeightedOperations(
 // nolint: interfacer
 func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "app invalid"), nil, nil
+		}
+
 		acc, _ := simtypes.RandomAcc(r, accs)
 		address := sdk.ValAddress(acc.Address)
 
@@ -150,7 +156,7 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtype
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -162,7 +168,13 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtype
 // SimulateMsgEditValidator generates a MsgEditValidator with random values
 // nolint: interfacer
 func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditValidator, "app invalid"), nil, nil
+		}
+
 		if len(k.GetAllValidators(ctx)) == 0 {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditValidator, "number of validators equal zero"), nil, nil
 		}
@@ -212,7 +224,7 @@ func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.
 			acc.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -224,7 +236,13 @@ func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.
 // SimulateMsgDelegate generates a MsgDelegate with random values
 // nolint: interfacer
 func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "app invalid"), nil, nil
+		}
+
 		bondDenom := k.GetParams(ctx).BondDenom
 
 		if len(k.GetAllValidators(ctx)) == 0 {
@@ -261,7 +279,7 @@ func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Opera
 			acc.PrivKey,
 		)
 
-		_, _, err := app.Deliver(tx)
+		_, _, err := a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -273,7 +291,14 @@ func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Opera
 // SimulateMsgUndelegate generates a MsgUndelegate with random values
 // nolint: interfacer
 func SimulateMsgUndelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUndelegate, "app invalid"), nil, nil
+		}
+
 		validator, ok := keeper.RandomValidator(r, k, ctx)
 		if !ok {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUndelegate, "validator is not ok"), nil, nil
@@ -339,7 +364,7 @@ func SimulateMsgUndelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Ope
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
@@ -351,7 +376,15 @@ func SimulateMsgUndelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Ope
 // SimulateMsgBeginRedelegate generates a MsgBeginRedelegate with random values
 // nolint: interfacer
 func SimulateMsgBeginRedelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
-	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+
+		var a *baseapp.BaseApp
+		var ok = false
+		if a, ok = app.(*baseapp.BaseApp); !ok {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgBeginRedelegate, "app invalid"), nil, nil
+		}
+
 		srcVal, ok := keeper.RandomValidator(r, k, ctx)
 		if !ok {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgBeginRedelegate, "unable to pick validator"), nil, nil
@@ -442,7 +475,7 @@ func SimulateMsgBeginRedelegate(ak types.AccountKeeper, k keeper.Keeper) simtype
 			simAccount.PrivKey,
 		)
 
-		_, _, err = app.Deliver(tx)
+		_, _, err = a.Deliver(tx)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, err
 		}
