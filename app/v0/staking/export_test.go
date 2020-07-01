@@ -1,9 +1,6 @@
 package staking_test
 
 import (
-	"bytes"
-	"errors"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -18,11 +15,9 @@ import (
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
-	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
-	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
@@ -30,10 +25,7 @@ var (
 	initTokens   = sdk.TokensFromConsensusPower(100000)
 	bondCoin     = sdk.NewCoin(sdk.DefaultBondDenom, bondedTokens)
 	initCoin     = sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
-	bondCoins    = sdk.NewCoins(bondCoin)
 	initCoins    = sdk.NewCoins(initCoin)
-
-	commissionRates = staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
 )
 
 var (
@@ -146,90 +138,4 @@ func initGenAccount(t *testing.T, ctx sdk.Context, app *mock.NCHApp) {
 		acc.SetCoins(genAcc.GetCoins())
 		p0.AccountKeeper.SetAccount(ctx, acc)
 	}
-}
-
-// implement `Interface` in sort package.
-type sortByteArrays [][]byte
-
-func (b sortByteArrays) Len() int {
-	return len(b)
-}
-
-func (b sortByteArrays) Less(i, j int) bool {
-	// bytes package already implements Comparable for []byte.
-	switch bytes.Compare(b[i], b[j]) {
-	case -1:
-		return true
-	case 0, 1:
-		return false
-	default:
-		return false
-	}
-}
-
-func (b sortByteArrays) Swap(i, j int) {
-	b[j], b[i] = b[i], b[j]
-}
-
-// Public
-func SortByteArrays(src [][]byte) [][]byte {
-	sorted := sortByteArrays(src)
-	sort.Sort(sorted)
-	return sorted
-}
-
-// Sorts Addresses
-func SortAddresses(addrs []sdk.AccAddress) {
-	var byteAddrs [][]byte
-	for _, addr := range addrs {
-		byteAddrs = append(byteAddrs, addr.Bytes())
-	}
-	SortByteArrays(byteAddrs)
-	for i, byteAddr := range byteAddrs {
-		addrs[i] = byteAddr
-	}
-}
-
-func testProposal() gov.Content {
-	return gov.NewTextProposal("Test", "description")
-}
-
-func createValidators(t *testing.T, stakingHandler sdk.Handler, ctx sdk.Context, addrs []sdk.ValAddress, powerAmt []int64) {
-	require.True(t, len(addrs) <= len(pubkeys), "Not enough pubkeys specified at top of file.")
-
-	for i := 0; i < len(addrs); i++ {
-
-		valTokens := sdk.TokensFromConsensusPower(powerAmt[i])
-		valCreateMsg := staking.NewMsgCreateValidator(
-			addrs[i], pubkeys[i], sdk.NewCoin(sdk.DefaultBondDenom, valTokens),
-			testDescription, testCommissionRates, sdk.OneInt(),
-		)
-
-		res, err := stakingHandler(ctx, valCreateMsg)
-		require.NoError(t, err)
-		require.NotNil(t, res)
-	}
-}
-
-const contextKeyBadProposal = "contextKeyBadProposal"
-
-func badProposalHandler(ctx sdk.Context, c gov.Content, pid uint64, proposer sdk.AccAddress) error {
-	switch c.ProposalType() {
-	case gov.ProposalTypeText, gov.ProposalTypeSoftwareUpgrade:
-		v := ctx.Value(contextKeyBadProposal)
-
-		if v == nil || !v.(bool) {
-			return errors.New("proposal failed")
-		}
-
-		return nil
-
-	default:
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gov proposal type: %s", c.ProposalType())
-	}
-}
-
-func ProposalEqual(proposalA gov.Proposal, proposalB gov.Proposal) bool {
-	return bytes.Equal(types.ModuleCdc.MustMarshalBinaryBare(proposalA),
-		types.ModuleCdc.MustMarshalBinaryBare(proposalB))
 }
