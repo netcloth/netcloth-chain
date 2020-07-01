@@ -15,6 +15,7 @@ import (
 	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
+// WeightedOperations returns all the operations from the module with their respective weights
 func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak types.AccountKeeper, bk keeper.Keeper) simulation.WeightedOperations {
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
@@ -24,6 +25,9 @@ func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, ak types
 	}
 }
 
+// SimulateMsgSend tests and runs a single msg send where both
+// accounts already exist.
+// nolint: funlen
 func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operation {
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {

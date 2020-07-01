@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	ModuleName    = protocol.VmModuleName
+	ModuleName    = protocol.VMModuleName
 	StoreKey      = ModuleName
 	CodeKey       = StoreKey + "_code"
 	LogKey        = StoreKey + "_log"

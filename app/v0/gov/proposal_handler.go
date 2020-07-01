@@ -6,6 +6,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
+// NewGovProposalHandler returns an sdk.Handler for gov proposal
 func NewGovProposalHandler(k Keeper) Handler {
 	return func(ctx sdk.Context, content Content, pid uint64, proposer sdk.AccAddress) error {
 		switch {

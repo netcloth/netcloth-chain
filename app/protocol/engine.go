@@ -25,7 +25,7 @@ func NewProtocolEngine(protocolKeeper sdk.ProtocolKeeper) ProtocolEngine {
 
 func (pe *ProtocolEngine) LoadProtocol(version uint64) {
 	p, flag := pe.protocols[version]
-	if flag == false {
+	if !flag {
 		panic("unknown protocol version!!!")
 	}
 	p.LoadContext()

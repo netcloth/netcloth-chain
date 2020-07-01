@@ -96,9 +96,8 @@ func updateValidators(tb testing.TB, r *rand.Rand, params Params,
 
 			event("end_block", "validator_updates", "kicked")
 			delete(current, str)
-		} else if mVal, ok := current[str]; ok {
+		} else if _, ok := current[str]; ok {
 			// validator already exists
-			mVal.val = update
 			event("end_block", "validator_updates", "updated")
 
 		} else {

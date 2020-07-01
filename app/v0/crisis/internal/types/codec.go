@@ -4,7 +4,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
-// Register concrete types on codec codec
+// RegisterCodec - register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgVerifyInvariant{}, "nch/MsgVerifyInvariant", nil)
 }

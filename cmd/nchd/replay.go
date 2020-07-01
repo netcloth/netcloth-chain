@@ -62,8 +62,8 @@ func replayTxs(rootDir string, from, to int64) error {
 		statedbDir := filepath.Join(dataDir, "state.db")
 		appdbDir := filepath.Join(dataDir, "application.db")
 
-		fmt.Println(fmt.Sprintf("state database: %s", statedbDir))
-		fmt.Println(fmt.Sprintf("app database: %s", appdbDir))
+		fmt.Printf("state database: %s\n", statedbDir)
+		fmt.Printf("app database: %s\n", appdbDir)
 		err := os.RemoveAll(statedbDir)
 		if err != nil {
 			return err

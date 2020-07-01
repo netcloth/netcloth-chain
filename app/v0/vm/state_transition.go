@@ -123,7 +123,7 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, readonl
 		ctx.Simulate = true
 	}
 
-	if ctx.Simulate == false && ctx.GasMeter().Limit() == 0 {
+	if !ctx.Simulate && ctx.GasMeter().Limit() == 0 {
 		return nil, &sdk.Result{Data: nil}, ErrWrongCtx
 	}
 

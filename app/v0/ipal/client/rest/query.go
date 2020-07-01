@@ -52,6 +52,10 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		res, err := cliCtx.Codec.MarshalJSONIndent(ipalNodes, "", "  ")
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)

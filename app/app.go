@@ -32,30 +32,38 @@ var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.nchd")
 )
 
+// NCHApp extends BaseApp
 type NCHApp struct {
 	*baseapp.BaseApp
 }
 
+// Codec returns the current protocol  codec
 func (app *NCHApp) Codec() *codec.Codec {
 	return app.Engine.GetCurrentProtocol().GetCodec()
 }
 
+// BeginBlocker abci
 func (app *NCHApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.BeginBlock(req)
 }
 
+// EndBlocker abci
 func (app *NCHApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.EndBlock(req)
 }
 
+// InitChainer - custom logic for initialization
 func (app *NCHApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	return app.InitChain(req)
 }
 
+// TODO: check
+// ModuleAccountAddrs returns all the module account addresses
 func (app *NCHApp) ModuleAccountAddrs() map[string]bool {
 	return nil
 }
 
+// SimulationManager implements the SimulationApp interface
 func (app *NCHApp) SimulationManager() *module.SimulationManager {
 	smp := app.Engine.GetCurrentProtocol().GetSimulationManager()
 	sm, ok := smp.(*module.SimulationManager)
@@ -66,6 +74,7 @@ func (app *NCHApp) SimulationManager() *module.SimulationManager {
 	return sm
 }
 
+// NewNCHApp returns a reference to an initialized NCHApp
 func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *NCHApp {
 	baseApp := baseapp.NewBaseApp(appName, logger, db, baseAppOptions...)
 

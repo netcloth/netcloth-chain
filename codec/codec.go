@@ -10,14 +10,15 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
-// amino codec to marshal/unmarshal
+// Codec - amino codec to marshal/unmarshal
 type Codec = amino.Codec
 
+// New - new amino codec
 func New() *Codec {
 	return amino.NewCodec()
 }
 
-// Register the go-crypto to the codec
+// RegisterCrypto - Register the go-crypto to the codec
 func RegisterCrypto(cdc *Codec) {
 	cryptoamino.RegisterAmino(cdc)
 }
@@ -27,7 +28,7 @@ func RegisterEvidences(cdc *Codec) {
 	tmtypes.RegisterEvidences(cdc)
 }
 
-// attempt to make some pretty json
+// MarshalJSONIndent - attempt to make some pretty json
 func MarshalJSONIndent(cdc *Codec, obj interface{}) ([]byte, error) {
 	bz, err := cdc.MarshalJSON(obj)
 	if err != nil {
@@ -54,7 +55,7 @@ func MustMarshalJSONIndent(cdc *Codec, obj interface{}) []byte {
 
 //__________________________________________________________________
 
-// generic sealed codec to be used throughout sdk
+// Cdc - generic sealed codec to be used throughout sdk
 var Cdc *Codec
 
 func init() {
