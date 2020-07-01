@@ -117,8 +117,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			dump := make([]byte, len(payload)*2)
-			hex.Encode(dump[:], payload)
-			//fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
+			hex.Encode(dump, payload)
 
 			contractAddr, err := sdk.AccAddressFromBech32(viper.GetString(flagContractAddr))
 			if err != nil {

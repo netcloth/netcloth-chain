@@ -32,7 +32,7 @@ func newJournal() *journal {
 func (j *journal) append(entry journalEntry) {
 	j.entries = append(j.entries, entry)
 	if addr := entry.dirtied(); addr != nil {
-		j.dirties[(*addr).String()]++
+		j.dirties[addr.String()]++
 	}
 }
 
@@ -43,8 +43,8 @@ func (j *journal) revert(statedb *CommitStateDB, snapshot int) {
 
 		// drop any dirty tracking induced by the change
 		if addr := j.entries[i].dirtied(); addr != nil {
-			if j.dirties[(*addr).String()]--; j.dirties[(*addr).String()] == 0 {
-				delete(j.dirties, (*addr).String())
+			if j.dirties[addr.String()]--; j.dirties[addr.String()] == 0 {
+				delete(j.dirties, addr.String())
 			}
 		}
 	}

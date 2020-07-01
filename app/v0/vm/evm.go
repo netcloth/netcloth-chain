@@ -25,7 +25,7 @@ type (
 func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, error) {
 	if contract.CodeAddr != nil {
 		precompiles := PrecompiledContracts
-		if p := precompiles[(*contract.CodeAddr).String()]; p != nil {
+		if p := precompiles[contract.CodeAddr.String()]; p != nil {
 			fmt.Println("RunPrecompiledContract ...")
 			return RunPrecompiledContract(p, input, contract)
 		}

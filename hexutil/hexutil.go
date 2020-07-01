@@ -38,7 +38,7 @@ func Decode(input string) ([]byte, error) {
 		}
 	}
 
-	b, err := hex.DecodeString(input[:])
+	b, err := hex.DecodeString(input)
 	if err != nil {
 		err = mapError(err)
 	}

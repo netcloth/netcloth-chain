@@ -56,7 +56,7 @@ func (st *Stack) Print() {
 	fmt.Println("### stack ###")
 	if st.len() > 0 {
 		// print stack from top
-		for j := len(st.data) - 1; j >= 0; j = j - 1 {
+		for j := len(st.data) - 1; j >= 0; j-- {
 			fmt.Printf("%-3d %064x\n", len(st.data)-j, (st.data[j]))
 		}
 

@@ -84,7 +84,7 @@ func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, 
 
 func executeWrite(t *testing.T, cmdStr string, writes ...string) (exitSuccess bool) {
 	if strings.Contains(cmdStr, "--from") && strings.Contains(cmdStr, "--fee") {
-		cmdStr = cmdStr + " --commit"
+		cmdStr += " --commit"
 	}
 
 	exitSuccess, _, _ = executeWriteRetStreams(t, cmdStr, writes...)
