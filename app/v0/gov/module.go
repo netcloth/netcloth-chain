@@ -1,5 +1,7 @@
 package gov
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"
