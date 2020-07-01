@@ -279,7 +279,7 @@ func (k Keeper) getLastValidatorsByAddr(ctx sdk.Context) validatorsByAddr {
 		// power bytes is just the value
 		powerBytes := iterator.Value()
 		last[valAddr] = make([]byte, len(powerBytes))
-		copy(last[valAddr][:], powerBytes[:])
+		copy(last[valAddr], powerBytes)
 	}
 	return last
 }
@@ -292,7 +292,7 @@ func sortNoLongerBonded(last validatorsByAddr) [][]byte {
 	index := 0
 	for valAddrBytes := range last {
 		valAddr := make([]byte, sdk.AddrLen)
-		copy(valAddr[:], valAddrBytes[:])
+		copy(valAddr, valAddrBytes[:])
 		noLongerBonded[index] = valAddr
 		index++
 	}

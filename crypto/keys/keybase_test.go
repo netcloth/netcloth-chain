@@ -50,7 +50,7 @@ func TestKeyManagement(t *testing.T) {
 
 	algo := Secp256k1
 	n1, n2, n3 := "personal", "business", "other"
-	p1, p2 := "1234", "really-secure!@#$"
+	p1, p2 := passwd1234, "really-secure!@#$"
 
 	// Check empty state
 	l, err := cstore.List()
@@ -133,7 +133,7 @@ func TestSignVerify(t *testing.T) {
 	algo := Secp256k1
 
 	n1, n2, n3 := "some dude", "a dudette", "dude-ish"
-	p1, p2, p3 := "1234", "foobar", "foobar"
+	p1, p2, p3 := passwd1234, passwdfoobar, passwdfoobar
 
 	// create two users and get their info
 	i1, _, err := cstore.CreateMnemonic(n1, English, p1, algo)
@@ -283,7 +283,7 @@ func TestAdvancedKeyManagement(t *testing.T) {
 
 	algo := Secp256k1
 	n1, n2 := "old-name", "new name"
-	p1, p2 := "1234", "foobar"
+	p1, p2 := passwd1234, passwdfoobar
 
 	// make sure key works with initial password
 	_, _, err := cstore.CreateMnemonic(n1, English, p1, algo)
@@ -331,7 +331,7 @@ func TestSeedPhrase(t *testing.T) {
 
 	algo := Secp256k1
 	n1, n2 := "lost-key", "found-again"
-	p1, p2 := "1234", "foobar"
+	p1, p2 := passwd1234, passwdfoobar
 
 	// make sure key works with initial password
 	info, mnemonic, err := cstore.CreateMnemonic(n1, English, p1, algo)

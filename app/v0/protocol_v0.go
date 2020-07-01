@@ -1,11 +1,12 @@
 package v0
 
 import (
+	v0 "github.com/netcloth/netcloth-chain/app/mock/p0"
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
@@ -73,6 +74,7 @@ type ProtocolV0 struct {
 	logger  log.Logger
 
 	moduleManager *module.Manager
+	simManager    *module.SimulationManager
 
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper
@@ -97,10 +99,11 @@ type ProtocolV0 struct {
 
 	anteHandler      sdk.AnteHandler
 	feeRefundHandler sdk.FeeRefundHandler
-	initChainer      sdk.InitChainer
-	beginBlocker     sdk.BeginBlocker
-	endBlocker       sdk.EndBlocker
-	deliverTx        genutil.DeliverTxfn
+
+	initChainer  sdk.InitChainer
+	beginBlocker sdk.BeginBlocker
+	endBlocker   sdk.EndBlocker
+	deliverTx    genutil.DeliverTxfn
 
 	config *cfg.InstrumentationConfig
 
@@ -142,16 +145,16 @@ func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
 }
 
-func (p *ProtocolV0) Load() {
+func (p *ProtocolV0) LoadContext() {
 	p.configCodec()
 	p.configKeepers()
 	p.configModuleManager()
+	p.configSimulationManager()
 	p.configRouters()
 	p.configFeeHandlers()
-	//p.configParams()
 }
 
-func (p *ProtocolV0) Init(ctx sdk.Context) {
+func (p *ProtocolV0) Init() {
 }
 
 func (p *ProtocolV0) GetCodec() *codec.Codec {
@@ -288,9 +291,19 @@ func (p *ProtocolV0) configModuleManager() {
 		guardian.NewAppModule(p.guardianKeeper),
 	)
 
-	moduleManager.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+	moduleManager.SetOrderBeginBlockers(
+		mint.ModuleName,
+		distr.ModuleName,
+		slashing.ModuleName)
 
-	moduleManager.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
+	moduleManager.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+		ipal.ModuleName,
+		vm.ModuleName,
+		upgrade.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -317,12 +330,48 @@ func (p *ProtocolV0) configModuleManager() {
 	p.moduleManager = moduleManager
 }
 
+func (p *ProtocolV0) configSimulationManager() {
+	slashingModule := slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper)
+	slashingModuleP := slashingModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
+
+	distrModule := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
+	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
+
+	govModule := gov.NewAppModule(p.govKeeper, p.supplyKeeper)
+	govModuleP := govModule.WithAccountKeeper(p.accountKeeper)
+
+	ipalModule := ipal.NewAppModule(p.ipalKeeper)
+	ipalModuleP := ipalModule.WithAccountKeeper(p.accountKeeper)
+
+	vmModule := vm.NewAppModule(p.vmKeeper)
+	vmModuleP := vmModule.WithAccountKeeper(p.accountKeeper)
+
+	cipalModule := cipal.NewAppModule(p.cipalKeeper)
+	cipalModuleP := cipalModule.WithAccountKeeper(p.accountKeeper)
+
+	simManager := module.NewSimulationManager(
+		genaccounts.NewSimAppModule(p.accountKeeper),
+		auth.NewAppModule(p.accountKeeper),
+		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
+		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
+		slashingModuleP,
+		mint.NewAppModule(p.mintKeeper),
+		mint.NewAppModule(p.mintKeeper),
+		distrModuleP,
+		govModuleP,
+		ipalModuleP,
+		cipalModuleP,
+		vmModuleP,
+	)
+	p.simManager = simManager
+}
+
 func (p *ProtocolV0) configRouters() {
 	p.moduleManager.RegisterRoutes(p.router, p.queryRouter)
 }
 
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
+	var genesisState v0.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.moduleManager.InitGenesis(ctx, genesisState)
@@ -357,4 +406,9 @@ func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
 
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
+}
+
+// for simulation
+func (p *ProtocolV0) GetSimulationManager() interface{} {
+	return p.simManager
 }

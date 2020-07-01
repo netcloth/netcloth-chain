@@ -29,7 +29,7 @@ func GetIPALNodeKey(addr sdk.AccAddress) []byte {
 func GetIPALNodeByBondKey(obj IPALNode) []byte {
 	bond := obj.Bond.Amount.Int64()
 	bondBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(bondBytes[:], uint64(bond))
+	binary.BigEndian.PutUint64(bondBytes, uint64(bond))
 
 	bondBytesLen := len(bondBytes)
 

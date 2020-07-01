@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
+	"math/rand"
 	"strconv"
 	"testing"
 
@@ -205,7 +206,7 @@ func NewPubKey(pk string) (res crypto.PubKey) {
 	}
 
 	var pkEd ed25519.PubKeyEd25519
-	copy(pkEd[:], pkBytes[:])
+	copy(pkEd[:], pkBytes)
 	return pkEd
 }
 
@@ -231,4 +232,15 @@ func createTestPubKeys(numPubKeys int) []crypto.PubKey {
 func ValidatorByPowerIndexExists(ctx sdk.Context, keeper Keeper, power []byte) bool {
 	store := ctx.KVStore(keeper.storeKey)
 	return store.Has(power)
+}
+
+func RandomValidator(r *rand.Rand, keeper Keeper, ctx sdk.Context) (val types.Validator, ok bool) {
+	vals := keeper.GetAllValidators(ctx)
+	if len(vals) == 0 {
+		return types.Validator{}, false
+	}
+
+	i := r.Intn(len(vals))
+
+	return vals[i], true
 }

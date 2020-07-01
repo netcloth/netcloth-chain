@@ -157,7 +157,7 @@ func NewDecFromStr(str string) (d Dec, err error) {
 		if lenDecs == 0 || len(combinedStr) == 0 {
 			return Dec{}, ErrInvalidDecimalLength
 		}
-		combinedStr = combinedStr + strs[1]
+		combinedStr += strs[1]
 
 	} else if len(strs) > 2 {
 		return Dec{}, ErrInvalidDecimalStr
@@ -170,7 +170,7 @@ func NewDecFromStr(str string) (d Dec, err error) {
 	// add some extra zero's to correct to the Precision factor
 	zerosToAdd := Precision - lenDecs
 	zeros := fmt.Sprintf(`%0`+strconv.Itoa(zerosToAdd)+`s`, "")
-	combinedStr = combinedStr + zeros
+	combinedStr += zeros
 
 	combined, ok := new(big.Int).SetString(combinedStr, 10) // base 10
 	if !ok {

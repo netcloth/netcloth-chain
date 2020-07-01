@@ -881,3 +881,13 @@ func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
 
 	return
 }
+
+// for simulation
+func (csdb *CommitStateDB) GetAllHotContractAddrs() (accs []sdk.AccAddress) {
+	for _, obj := range csdb.stateObjects {
+		if len(obj.code) != 0 || len(obj.account.CodeHash) != 0 {
+			accs = append(accs, obj.address)
+		}
+	}
+	return
+}

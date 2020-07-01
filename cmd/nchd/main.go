@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/netcloth/netcloth-chain/baseapp"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -70,7 +72,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 	minGasPrices := viper.GetString(flagMinGasPrices)
 	return app.NewNCHApp(
 		logger, db, traceStore, true, invCheckPeriod,
-		app.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), app.SetMinGasPrices(minGasPrices),
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices),
 	)
 }
 

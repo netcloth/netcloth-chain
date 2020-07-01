@@ -7,7 +7,6 @@
 // In combination with the bip39 package in go-crypto this package provides the functionality for deriving keys using a
 // BIP 44 HD path, or, more general, by passing a BIP 32 path.
 //
-
 package hd
 
 import (
@@ -206,7 +205,7 @@ func DerivePrivateKeyForPath(privKeyBytes [32]byte, chainCode [32]byte, path str
 func derivePrivateKey(privKeyBytes [32]byte, chainCode [32]byte, index uint32, harden bool) ([32]byte, [32]byte) {
 	var data []byte
 	if harden {
-		index = index | 0x80000000
+		index |= 0x80000000
 		data = append([]byte{byte(0)}, privKeyBytes[:]...)
 	} else {
 		// this can't return an error:

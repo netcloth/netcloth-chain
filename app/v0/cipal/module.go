@@ -2,6 +2,9 @@ package cipal
 
 import (
 	"encoding/json"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/keeper"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/simulation"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -14,11 +17,13 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 type AppModuleBasic struct {
@@ -56,7 +61,13 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
+	keeper          Keeper
+	akForSimulation keeper.AccountKeeper // for simulation
+}
+
+func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
+	am.akForSimulation = ak
+	return am
 }
 
 func NewAppModule(keeper Keeper) AppModule {
@@ -102,4 +113,20 @@ func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 
 func (am AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, am.keeper)
+}
+
+// for simulation
+func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
+	return nil
+}
+
+func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }

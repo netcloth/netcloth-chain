@@ -48,7 +48,7 @@ func TestPubkeyToAddress(t *testing.T) {
 
 func TestPrivkeyToAddress(t *testing.T) {
 	rawPrivKey := types.FromHex("029f7211f39112e5d8c0eef8d8d034ab298078b763b6bd124c5cd297cfc9140b53")
-	_, pubkeyObject := btcsecp256k1.PrivKeyFromBytes(btcsecp256k1.S256(), rawPrivKey[:])
+	_, pubkeyObject := btcsecp256k1.PrivKeyFromBytes(btcsecp256k1.S256(), rawPrivKey)
 
 	var pubkeyBytes secp256k1.PubKeySecp256k1
 	copy(pubkeyBytes[:], pubkeyObject.SerializeCompressed())

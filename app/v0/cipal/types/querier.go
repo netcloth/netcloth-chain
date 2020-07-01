@@ -14,8 +14,8 @@ type QueryCIPALsParams struct {
 	AccAddrs []string `json:"acc_addrs"`
 }
 
-func NewQueryCIPALParams(AccAddr string) QueryCIPALParams {
+func NewQueryCIPALParams(accAddr string) QueryCIPALParams {
 	return QueryCIPALParams{
-		AccAddr: AccAddr,
+		AccAddr: accAddr,
 	}
 }

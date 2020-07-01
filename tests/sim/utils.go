@@ -3,7 +3,6 @@ package sim
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -21,13 +20,11 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/supply"
 	"github.com/netcloth/netcloth-chain/codec"
 	"github.com/netcloth/netcloth-chain/server"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tendermint/tendermint/types"
-
 	"github.com/netcloth/netcloth-chain/tests"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 const (
@@ -87,7 +84,7 @@ func initFixtures(t *testing.T) (chainID, servAddr, port, nchdHome, nchcliHome, 
 
 func executeWrite(t *testing.T, cmdStr string, writes ...string) (exitSuccess bool) {
 	if strings.Contains(cmdStr, "--from") && strings.Contains(cmdStr, "--fee") {
-		cmdStr = cmdStr + " --commit"
+		cmdStr += " --commit"
 	}
 
 	exitSuccess, _, _ = executeWriteRetStreams(t, cmdStr, writes...)
@@ -156,18 +153,6 @@ func executeGetAccount(t *testing.T, cmdStr string) (acc auth.BaseAccount) {
 	require.NoError(t, err, "acc %v, err %v", string(out), err)
 
 	return
-}
-
-func readGenesisFile(t *testing.T, genFile string) types.GenesisDoc {
-	var genDoc types.GenesisDoc
-	fp, err := os.Open(genFile)
-	require.NoError(t, err)
-	fileContents, err := ioutil.ReadAll(fp)
-	require.NoError(t, err)
-	defer fp.Close()
-	err = codec.Cdc.UnmarshalJSON(fileContents, &genDoc)
-	require.NoError(t, err)
-	return genDoc
 }
 
 func MakeCodec() *codec.Codec {
