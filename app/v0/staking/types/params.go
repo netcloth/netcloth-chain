@@ -11,7 +11,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/params"
 	"github.com/netcloth/netcloth-chain/codec"
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -57,15 +56,15 @@ var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for staking
 type Params struct {
+	NextExtendingTime time.Time `json:"next_extending_time" yaml:"next_extending_time"`
+	// note: we need to be a bit careful about potential overflow here, since this is user-determined
+	BondDenom                   string        `json:"bond_denom" yaml:"bond_denom"`                                         // bondable coin denomination
 	UnbondingTime               time.Duration `json:"unbonding_time" yaml:"unbonding_time"`                                 // time duration of unbonding
+	MaxLever                    sdk.Dec       `json:"max_lever" yaml:"max_lever"`                                           // max lever: total user delegate / self delegate < max_lever
 	MaxValidators               uint16        `json:"max_validators" yaml:"max_validators"`                                 // maximum number of validators (max uint16 = 65535)
 	MaxValidatorsExtendingLimit uint16        `json:"max_validators_extending_limit" yaml:"max_validators_extending_limit"` // upper limit
 	MaxValidatorsExtendingSpeed uint16        `json:"max_validators_extending_speed" yaml:"max_validators_extending_speed"` // extending delta
-	NextExtendingTime           time.Time     `json:"next_extending_time" yaml:"next_extending_time"`
-	MaxEntries                  uint16        `json:"max_entries" yaml:"max_entries"` // max entries for either unbonding delegation or redelegation (per pair/trio)
-	// note: we need to be a bit careful about potential overflow here, since this is user-determined
-	BondDenom string  `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
-	MaxLever  sdk.Dec `json:"max_lever" yaml:"max_lever"`   // max lever: total user delegate / self delegate < max_lever
+	MaxEntries                  uint16        `json:"max_entries" yaml:"max_entries"`                                       // max entries for either unbonding delegation or redelegation (per pair/trio)
 }
 
 // NewParams creates a new Params instance
@@ -115,7 +114,7 @@ func DefaultParams() Params {
 		DefaultMaxValidatorsExtendingSpeed,
 		tmtime.Now().Add(time.Second*MaxValidatorsExtendingInterval),
 		DefaultMaxEntries,
-		nchtypes.DefaultBondDenom,
+		sdk.DefaultBondDenom,
 		DefaultMaxLever)
 }
 

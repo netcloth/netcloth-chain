@@ -51,11 +51,11 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	gasLimitForVm := uint64(DefaultVmGasLimit)
+	gasLimitForVM := uint64(DefaultVMGasLimit)
 	if !ctx.Simulate {
-		gasLimitForVm = ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
+		gasLimitForVM = ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
 	}
-	evmCtx.GasLimit = gasLimitForVm
+	evmCtx.GasLimit = gasLimitForVM
 
 	curGasMeter := ctx.GasMeter()
 	gasMeterForEvm := sdk.NewInfiniteGasMeter()
@@ -74,10 +74,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 	)
 
 	if st.Recipient.Empty() {
-		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVm, st.Amount.BigInt())
-		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVm-leftOverGas, leftOverGas, vmerr))
+		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVM, st.Amount.BigInt())
+		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	} else {
-		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, gasLimitForVm, st.Amount.BigInt())
+		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, gasLimitForVM, st.Amount.BigInt())
 		if vmerr == ErrExecutionReverted {
 			reason := "null"
 			if len(ret) > 4 {
@@ -86,10 +86,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %s", reason))
 		}
 
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v, leftOverGas = %v, vm err = %v", ret, gasLimitForVm-leftOverGas, leftOverGas, vmerr))
+		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v, leftOverGas = %v, vm err = %v", ret, gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	}
 
-	vmGasUsed := gasLimitForVm - leftOverGas
+	vmGasUsed := gasLimitForVM - leftOverGas
 
 	if vmerr != nil {
 		return nil, &sdk.Result{Data: ret, GasUsed: curGasMeter.GasConsumed() + vmGasUsed}, vmerr

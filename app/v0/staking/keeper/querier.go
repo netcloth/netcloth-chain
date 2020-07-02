@@ -280,16 +280,23 @@ func queryRedelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byt
 
 	var redels []types.Redelegation
 
-	if !params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && !params.DstValidatorAddr.Empty() {
-		redel, found := k.GetRedelegation(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
-		if !found {
-			return nil, types.ErrNoRedelegation
+	switch {
+	case !params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && !params.DstValidatorAddr.Empty():
+		{
+			redel, found := k.GetRedelegation(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
+			if !found {
+				return nil, types.ErrNoRedelegation
+			}
+
+			redels = []types.Redelegation{redel}
 		}
 
-		redels = []types.Redelegation{redel}
-	} else if params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && params.DstValidatorAddr.Empty() {
-		redels = k.GetRedelegationsFromSrcValidator(ctx, params.SrcValidatorAddr)
-	} else {
+	case params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && params.DstValidatorAddr.Empty():
+		{
+			redels = k.GetRedelegationsFromSrcValidator(ctx, params.SrcValidatorAddr)
+		}
+
+	default:
 		redels = k.GetAllRedelegations(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
 	}
 

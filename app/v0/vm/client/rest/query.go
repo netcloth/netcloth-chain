@@ -65,7 +65,7 @@ func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		if params.From == nil || params.Payload == nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("bad request"))
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "bad request")
 			return
 		}
 
@@ -117,14 +117,14 @@ func getCode(cliCtx context.CLIContext) http.HandlerFunc {
 func getLog(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		txId := vars["txId"]
+		txID := vars["txId"]
 
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
 
-		route := fmt.Sprintf("custom/vm/logs/%s", txId)
+		route := fmt.Sprintf("custom/vm/logs/%s", txID)
 		res, height, err := cliCtx.Query(route)
 		if err != nil {
 			return

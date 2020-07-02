@@ -103,7 +103,7 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		var params types.QueryIPALNodesParams
 
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
-			fmt.Fprint(os.Stderr, fmt.Sprintf("params = %v\n", params))
+			fmt.Fprintf(os.Stderr, "params = %v\n", params)
 			return
 		}
 

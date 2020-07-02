@@ -2,8 +2,6 @@ package cipal
 
 import (
 	"encoding/json"
-	"github.com/netcloth/netcloth-chain/app/v0/cipal/keeper"
-	"github.com/netcloth/netcloth-chain/app/v0/cipal/simulation"
 	"math/rand"
 
 	"github.com/gorilla/mux"
@@ -12,6 +10,8 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/cipal/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/cipal/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/keeper"
+	"github.com/netcloth/netcloth-chain/app/v0/cipal/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/cipal/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"

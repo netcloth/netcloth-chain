@@ -99,7 +99,7 @@ func AccountTypeFromString(str string) (AccountType, error) {
 func (bt AccountType) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
-		s.Write([]byte(fmt.Sprintf("%s", bt.String())))
+		s.Write([]byte(bt.String()))
 	default:
 		s.Write([]byte(fmt.Sprintf("%v", byte(bt))))
 	}

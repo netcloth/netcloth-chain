@@ -27,9 +27,8 @@ func SimulateMsgCreateIpal(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Op
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgIPALNodeClaim, "app invalid"), nil, nil
 		}
 

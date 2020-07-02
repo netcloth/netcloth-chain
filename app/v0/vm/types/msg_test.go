@@ -16,7 +16,7 @@ func TestMsgContract(t *testing.T) {
 	coin0 := sdk.NewInt64Coin(sdk.NativeTokenName, 0)
 	coin123eth := sdk.NewInt64Coin("eth", 123)
 	coin0eth := sdk.NewInt64Coin("eth", 0)
-	coinNegative := sdk.Coin{sdk.NativeTokenName, sdk.NewInt(-123)}
+	coinNegative := sdk.Coin{Denom: sdk.NativeTokenName, Amount: sdk.NewInt(-123)}
 
 	payload := []byte("payload")
 	payloadEmpty := []byte("")

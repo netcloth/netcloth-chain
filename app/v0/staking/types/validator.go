@@ -411,15 +411,14 @@ func (v Validator) BondedTokens() sdk.Int {
 }
 
 // get current delegation lever
-func (v Validator) BondedLever(self_delegation bool, delta sdk.Dec) sdk.Dec {
-	if self_delegation {
+func (v Validator) BondedLever(selfDelegation bool, delta sdk.Dec) sdk.Dec {
+	if selfDelegation {
 		if v.SelfDelegation.Add(delta).LTE(sdk.ZeroDec()) {
 			return sdk.NewDec(int64(^uint32(0)))
 		}
 		return v.DelegatorShares.Add(delta).QuoTruncate(v.SelfDelegation.Add(delta))
-	} else {
-		return v.DelegatorShares.Add(delta).QuoTruncate(v.SelfDelegation)
 	}
+	return v.DelegatorShares.Add(delta).QuoTruncate(v.SelfDelegation)
 }
 
 // get the consensus-engine power

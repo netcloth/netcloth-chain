@@ -146,7 +146,7 @@ $ %s query vm code [address]`, version.ClientName)),
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No code found with address %s", args[0])
+				return fmt.Errorf("no code found with address %s", args[0])
 			}
 
 			dst := make([]byte, 2*len(res))
@@ -284,7 +284,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 			var payload []byte
 			if exist {
 				if len(m.Inputs) != len(argsBin)/32 {
-					return errors.New(fmt.Sprint("args count dismatch"))
+					return errors.New("args count dismatch")
 				}
 
 				readyArgs, err := m.Inputs.UnpackValues(argsBin)
@@ -297,7 +297,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 					return err
 				}
 			} else {
-				return errors.New(fmt.Sprintf("method %s not exist\n", method))
+				return fmt.Errorf("method %s not exist\n", method)
 			}
 
 			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)

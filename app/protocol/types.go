@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/json"
+
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/netcloth/netcloth-chain/codec"

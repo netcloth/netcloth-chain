@@ -66,9 +66,8 @@ func WeightedOperations(appParams simtypes.AppParams, cdc *codec.Codec, k keeper
 // SimulateMsgSetWithdrawAddress generates a MsgSetWithdrawAddress with random values.
 func SimulateMsgSetWithdrawAddress(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSetWithdrawAddress, "app invalid"), nil, nil
 		}
 
@@ -111,9 +110,8 @@ func SimulateMsgSetWithdrawAddress(ak keeper.AccountKeeper, k keeper.Keeper) sim
 // SimulateMsgWithdrawDelegatorReward generates a MsgWithdrawDelegatorReward with random values.
 func SimulateMsgWithdrawDelegatorReward(ak keeper.AccountKeeper, k keeper.Keeper, sk stakingkeeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgWithdrawDelegatorReward, "app invalid"), nil, nil
 		}
 
@@ -163,9 +161,8 @@ func SimulateMsgWithdrawDelegatorReward(ak keeper.AccountKeeper, k keeper.Keeper
 func SimulateMsgWithdrawValidatorCommission(ak keeper.AccountKeeper, k keeper.Keeper, sk stakingkeeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgWithdrawValidatorCommission, "app invalid"), nil, nil
 		}
 

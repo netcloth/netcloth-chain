@@ -52,9 +52,8 @@ func SimulateMsgUnjail(
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "app invalid"), nil, nil
 		}
 

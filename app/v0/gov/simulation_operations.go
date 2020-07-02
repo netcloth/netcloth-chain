@@ -107,9 +107,8 @@ func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.Cont
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSubmitProposal, "app invalid"), nil, nil
 		}
 
@@ -193,9 +192,8 @@ func SimulateSubmitProposal(ak AccountKeeper, k Keeper, contentSim simtypes.Cont
 // SimulateMsgDeposit generates a MsgDeposit with random values.
 func SimulateMsgDeposit(ak AccountKeeper, k Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDeposit, "app invalid"), nil, nil
 		}
 
@@ -255,9 +253,8 @@ func operationSimulateMsgVote(ak AccountKeeper, k Keeper,
 	simAccount simtypes.Account, proposalIDInt int64) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgVote, "app invalid"), nil, nil
 		}
 

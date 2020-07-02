@@ -24,8 +24,5 @@ func tally(ctx sdk.Context, versionProtocol uint64, k Keeper, threshold sdk.Dec)
 		"SiganlsVotingPower/TotalVotingPower", signalsVotingPower.Quo(totalVotingPower).String(),
 		"Threshold", threshold.String())
 
-	if signalsVotingPower.Quo(totalVotingPower).GT(threshold) {
-		return true
-	}
-	return false
+	return signalsVotingPower.Quo(totalVotingPower).GT(threshold)
 }

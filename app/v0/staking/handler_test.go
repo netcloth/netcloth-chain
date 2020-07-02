@@ -318,7 +318,7 @@ func TestIncrementsMsgDelegate(t *testing.T) {
 	msgDelegate := NewTestMsgDelegate(delegatorAddr, validatorAddr, bondAmount)
 
 	for i := int64(0); i < 5; i++ {
-		ctx = ctx.WithBlockHeight(int64(i))
+		ctx = ctx.WithBlockHeight(i)
 
 		_, err := handleMsgDelegate(ctx, msgDelegate, keeper)
 		require.Nil(t, err, "expected msg %d to be ok, got %v", i, err)

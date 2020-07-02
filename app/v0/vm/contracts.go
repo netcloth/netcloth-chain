@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
+	"golang.org/x/crypto/ripemd160"
+
 	btcsecp256k1 "github.com/btcsuite/btcd/btcec"
 	ethsecp256k1 "github.com/ethereum/go-ethereum/crypto/secp256k1"
-
-	"golang.org/x/crypto/ripemd160"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
@@ -108,8 +108,6 @@ func (c *ecrecover) Run(input []byte) ([]byte, error) {
 	fmt.Println(ss)
 
 	pubkey, _ := btcsecp256k1.ParsePubKey(pubkeyBin, btcsecp256k1.S256())
-
-	fmt.Println(fmt.Sprintf("cpubkey: %x", pubkey.SerializeCompressed()))
 
 	hasherSHA256 := sha256.New()
 	hasherSHA256.Write(pubkey.SerializeCompressed())

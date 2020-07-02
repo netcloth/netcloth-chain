@@ -1,9 +1,11 @@
 package gov_test
 
 import (
-	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestEqualProposalID(t *testing.T) {

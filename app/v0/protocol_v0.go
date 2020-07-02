@@ -100,10 +100,8 @@ type ProtocolV0 struct {
 	anteHandler      sdk.AnteHandler
 	feeRefundHandler sdk.FeeRefundHandler
 
-	initChainer  sdk.InitChainer
-	beginBlocker sdk.BeginBlocker
-	endBlocker   sdk.EndBlocker
-	deliverTx    genutil.DeliverTxfn
+	initChainer sdk.InitChainer
+	deliverTx   genutil.DeliverTxfn
 
 	config *cfg.InstrumentationConfig
 

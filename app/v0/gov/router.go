@@ -2,6 +2,7 @@ package gov
 
 import (
 	"fmt"
+
 	"github.com/netcloth/netcloth-chain/utils"
 )
 

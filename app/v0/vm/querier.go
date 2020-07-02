@@ -3,16 +3,18 @@ package vm
 import (
 	"encoding/hex"
 	"encoding/json"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
-	DefaultVmGasLimit = 100000000
+	DefaultVMGasLimit = 100000000
 )
 
 func NewQuerier(k keeper.Keeper) sdk.Querier {

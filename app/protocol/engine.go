@@ -68,7 +68,7 @@ func (pe *ProtocolEngine) GetUpgradeConfigByStore(store sdk.KVStore) (upgradeCon
 
 func (pe *ProtocolEngine) Add(p Protocol) Protocol {
 	if p.GetVersion() != pe.next {
-		panic(fmt.Errorf("Wrong version being added to the protocol engine: %d; Expecting %d", p.GetVersion(), pe.next))
+		panic(fmt.Errorf("wrong version being added to the protocol engine: %d; Expecting %d", p.GetVersion(), pe.next))
 	}
 	pe.protocols[pe.next] = p
 	pe.next++

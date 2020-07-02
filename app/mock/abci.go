@@ -152,10 +152,9 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	if success {
 		app.TxDecoder = auth.DefaultTxDecoder(app.Engine.GetCurrentProtocol().GetCodec())
 		return res
-	} else {
-		fmt.Println(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 	}
 
+	fmt.Printf("activate version from %d to %d failed, please upgrade your app\n", app.Engine.GetCurrentVersion(), appVersion)
 	return res
 }
 

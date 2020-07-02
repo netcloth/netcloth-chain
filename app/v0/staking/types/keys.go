@@ -144,8 +144,8 @@ func GetUBDByValIndexKey(delAddr sdk.AccAddress, valAddr sdk.ValAddress) []byte 
 }
 
 // rearranges the ValIndexKey to get the UBDKey
-func GetUBDKeyFromValIndexKey(Key []byte) []byte {
-	addrs := Key[1:] // remove prefix bytes
+func GetUBDKeyFromValIndexKey(key []byte) []byte {
+	addrs := key[1:] // remove prefix bytes
 	if len(addrs) != 2*sdk.AddrLen {
 		panic("unexpected key length")
 	}

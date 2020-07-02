@@ -67,7 +67,7 @@ func NewNCHApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	if !loaded {
 		cmn.Exit(fmt.Sprintf("Your software doesn't support the required protocol (version %d)!, to upgrade nchd", current))
 	} else {
-		fmt.Println(fmt.Sprintf("blockchain current protocol version :%d", current))
+		fmt.Printf("blockchain current protocol version :%d\n", current)
 	}
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
