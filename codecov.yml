@@ -14,13 +14,6 @@ coverage:
       default:
         enabled: yes
         threshold: 1% # allowed to drop X% and still result in a "success" commit status
-      app:
-        enabled: yes
-        target: 60%
-        flags: app
-      client:
-        enabled: yes
-        flags: client
     changes: false
 
 comment:
@@ -28,16 +21,6 @@ comment:
   behavior: default # update if exists else create new
   require_changes: true
 
-flags:
-  app:
-    paths:
-      - "app/"
-      - "baseapp/"
-      - "!app/**/client/" # ignore client package
-  client:
-    paths:
-      - "client/"
-      - "app/**/client/"
 
 ignore:
   - "docs"

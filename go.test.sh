@@ -9,6 +9,7 @@ $(go list ./... | grep -v 'server' | grep -v '/simulation' | grep -v mock | grep
 # filter out DONTCOVER
 excludelist="$(find . -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
 excludelist+=" $(find . -type f -name '*.pb.go')"
+excludelist+=" $(find . -type f -name 'test_common.go')"
 excludelist+=" $(find . -type f -path './tests/mocks/*.go')"
 for filename in ${excludelist}
 do
