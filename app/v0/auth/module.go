@@ -1,5 +1,7 @@
 package auth
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"

@@ -12,11 +12,14 @@ coverage:
     # Learn more at https://docs.codecov.io/docs/commit-status
     project:
       default:
-        threshold: 1% # allow this much decrease on project
+        enabled: yes
+        threshold: 1% # allowed to drop X% and still result in a "success" commit status
       app:
+        enabled: yes
         target: 60%
         flags: app
       client:
+        enabled: yes
         flags: client
     changes: false
 

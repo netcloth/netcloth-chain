@@ -1,5 +1,7 @@
 package crisis
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 

@@ -1,5 +1,7 @@
 package cipal
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"

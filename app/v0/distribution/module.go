@@ -1,5 +1,7 @@
 package distribution
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"

@@ -1,5 +1,7 @@
 package staking
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"

@@ -1,5 +1,7 @@
 package params
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 

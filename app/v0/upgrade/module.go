@@ -1,5 +1,7 @@
 package upgrade
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 

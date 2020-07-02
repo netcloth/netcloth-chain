@@ -1,5 +1,7 @@
 package ipal
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"

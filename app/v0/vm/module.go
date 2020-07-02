@@ -1,5 +1,7 @@
 package vm
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"fmt"

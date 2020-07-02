@@ -1,5 +1,7 @@
 package bank
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 	"math/rand"
