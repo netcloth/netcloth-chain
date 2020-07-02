@@ -16,3 +16,6 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  webhooks: https://oapi.dingtalk.com/robot/send?access_token=8c3beda804fc8770fce858b9d6bd62447bf7454ed587fdfa9c2cdea1891642da
