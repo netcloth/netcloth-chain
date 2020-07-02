@@ -6,7 +6,7 @@
 coverage:
   precision: 2
   round: down
-  range: 70...100
+  range: 50...90
 
   status:
     # Learn more at https://docs.codecov.io/docs/commit-status
@@ -14,11 +14,8 @@ coverage:
       default:
         threshold: 1% # allow this much decrease on project
       app:
-        target: 70%
+        target: 60%
         flags: app
-      modules:
-        target: 70%
-        flags: modules
       client:
         flags: client
     changes: false
@@ -33,19 +30,18 @@ flags:
     paths:
       - "app/"
       - "baseapp/"
-  modules:
-    paths:
-      - "modules/"
-      - "!modules/**/client/" # ignore client package
+      - "!app/**/client/" # ignore client package
   client:
     paths:
       - "client/"
-      - "modules/**/client/"
+      - "app/**/client/"
 
 ignore:
   - "docs"
   - "*.md"
   - "*.rst"
-  - "modules/**/test_common.go"
   - "scripts/"
   - "contrib"
+  - "tests/*"
+  - "tests/**"
+  - "app/**/test_common.go"
