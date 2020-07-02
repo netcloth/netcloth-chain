@@ -50,7 +50,7 @@ func TestNextInflation(t *testing.T) {
 		inflation := minter.NextInflationRate(params, tc.bondedRatio)
 		diffInflation := inflation.Sub(tc.setInflation)
 
-		fmt.Println(fmt.Sprintf("index: %v, bondedRatio: %v, setInflation:%v, inflation:%v, diffInflation:%v, expected:%v", i, tc.bondedRatio, tc.setInflation, inflation, diffInflation, tc.expChange))
+		fmt.Printf("index: %v, bondedRatio: %v, setInflation:%v, inflation:%v, diffInflation:%v, expected:%v", i, tc.bondedRatio, tc.setInflation, inflation, diffInflation, tc.expChange)
 
 		require.True(t, diffInflation.Equal(tc.expChange),
 			"Test Index: %v\nDiff:  %v\nExpected: %v\n", i, diffInflation, tc.expChange)

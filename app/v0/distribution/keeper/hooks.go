@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/netcloth/netcloth-chain/app/v0/distribution/types"
 	stakingtypes "github.com/netcloth/netcloth-chain/app/v0/staking/types"
 	sdk "github.com/netcloth/netcloth-chain/types"

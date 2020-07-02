@@ -108,7 +108,7 @@ $ %s query ipal node [address]`, version.ClientName)),
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No IPALNode found with address %s", addr)
+				return fmt.Errorf("IPAL with address %s not found", addr)
 			}
 
 			return cliCtx.PrintOutput(types.MustUnmarshalIPALNode(cdc, res))

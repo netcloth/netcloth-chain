@@ -41,9 +41,8 @@ func SimulateMsgContractCreate(ak keeper.AccountKeeper, k keeper.Keeper) simtype
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCreate, "app invalid"), nil, nil
 		}
 
@@ -94,9 +93,8 @@ func SimulateMsgContractCall(ak keeper.AccountKeeper, k keeper.Keeper) simtypes.
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgContractCall, "app invalid"), nil, nil
 		}
 

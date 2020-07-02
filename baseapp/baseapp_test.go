@@ -18,7 +18,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/netcloth/netcloth-chain/app/protocol"
-	"github.com/netcloth/netcloth-chain/app/v0/genutil"
 	"github.com/netcloth/netcloth-chain/codec"
 	store "github.com/netcloth/netcloth-chain/store/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
@@ -420,7 +419,7 @@ func (msg msgCounter) ValidateBasic() error {
 }
 
 func newTxCounter(txInt int64, msgInts ...int64) *txTest {
-	var msgs []sdk.Msg
+	msgs := make([]sdk.Msg, 0, len(msgInts))
 	for _, msgInt := range msgInts {
 		msgs = append(msgs, msgCounter{msgInt, false})
 	}
@@ -1405,7 +1404,6 @@ type MockProtocolV0 struct {
 	initChainer      sdk.InitChainer
 	beginBlocker     sdk.BeginBlocker
 	endBlocker       sdk.EndBlocker
-	deliverTx        genutil.DeliverTxfn
 }
 
 func newMockProtocolV0() *MockProtocolV0 {

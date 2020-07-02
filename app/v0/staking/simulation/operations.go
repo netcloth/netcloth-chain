@@ -94,9 +94,8 @@ func WeightedOperations(
 func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "app invalid"), nil, nil
 		}
 
@@ -169,9 +168,8 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, k keeper.Keeper) simtype
 // nolint: interfacer
 func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditValidator, "app invalid"), nil, nil
 		}
 
@@ -237,9 +235,8 @@ func SimulateMsgEditValidator(ak types.AccountKeeper, k keeper.Keeper) simtypes.
 // nolint: interfacer
 func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgDelegate, "app invalid"), nil, nil
 		}
 
@@ -293,9 +290,8 @@ func SimulateMsgDelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Opera
 func SimulateMsgUndelegate(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUndelegate, "app invalid"), nil, nil
 		}
 
@@ -379,9 +375,8 @@ func SimulateMsgBeginRedelegate(ak types.AccountKeeper, k keeper.Keeper) simtype
 
 	return func(r *rand.Rand, app interface{}, ctx sdk.Context, accs []simtypes.Account, chainID string) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		var a *baseapp.BaseApp
-		var ok = false
-		if a, ok = app.(*baseapp.BaseApp); !ok {
+		a := baseapp.DereferenceBaseApp(app)
+		if a == nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgBeginRedelegate, "app invalid"), nil, nil
 		}
 

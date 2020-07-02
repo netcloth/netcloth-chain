@@ -52,7 +52,7 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) (data types.GenesisState) {
 		localMissedBlocks := []types.MissedBlock{}
 
 		keeper.IterateValidatorMissedBlockBitArray(ctx, address, func(index int64, missed bool) (stop bool) {
-			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{Index: index, Missed: missed})
 			return false
 		})
 		missedBlocks[bechAddr] = localMissedBlocks

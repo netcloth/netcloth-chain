@@ -51,10 +51,6 @@ func (j *journal) revert(statedb *CommitStateDB, snapshot int) {
 	j.entries = j.entries[:snapshot]
 }
 
-func (j *journal) dirty(addr sdk.AccAddress) {
-	j.dirties[addr.String()]++
-}
-
 func (j *journal) length() int {
 	return len(j.entries)
 }

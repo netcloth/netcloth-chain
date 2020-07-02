@@ -68,7 +68,7 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 		privKeys []crypto.PrivKey
 	)
 
-	if genAccs == nil || len(genAccs) == 0 {
+	if len(genAccs) == 0 {
 		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(numGenAccs, valCoins)
 	}
 
@@ -184,7 +184,7 @@ func SortByteArrays(src [][]byte) [][]byte {
 
 // Sorts Addresses
 func SortAddresses(addrs []sdk.AccAddress) {
-	var byteAddrs [][]byte
+	byteAddrs := make([][]byte, 0, len(addrs))
 	for _, addr := range addrs {
 		byteAddrs = append(byteAddrs, addr.Bytes())
 	}

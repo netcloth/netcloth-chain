@@ -141,7 +141,7 @@ func (ga *GenesisAccount) ToAccount() auth.Account {
 type GenesisAccounts []GenesisAccount
 
 // genesis accounts contain an address
-func (gaccs GenesisAccounts) Contains(acc sdk.AccAddress) bool {
+func (gaccs GenesisAccounts) Contains(acc sdk.Address) bool {
 	for _, gacc := range gaccs {
 		if gacc.Address.Equals(acc) {
 			return true

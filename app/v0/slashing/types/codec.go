@@ -9,7 +9,6 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgUnjail{}, "nch/MsgUnjail", nil)
 }
 
-// module codec
 var ModuleCdc *codec.Codec
 
 func init() {

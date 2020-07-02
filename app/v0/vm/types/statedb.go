@@ -328,7 +328,7 @@ func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) (logs []*Log) {
 
 // Logs returns all the current logs in the state.
 func (csdb *CommitStateDB) Logs() []*Log { // todo: is should get all logs from store?
-	var logs []*Log
+	logs := make([]*Log, 0, len(csdb.logs))
 	for _, lgs := range csdb.logs {
 		logs = append(logs, lgs...)
 	}
@@ -408,7 +408,7 @@ func (csdb *CommitStateDB) commitLogs() {
 	ctx := csdb.ctx
 	store := ctx.KVStore(csdb.logKey)
 
-	var hs []string
+	hs := make([]string, 0, len(csdb.logs))
 	for h := range csdb.logs {
 		hs = append(hs, h.String())
 	}
@@ -438,13 +438,13 @@ func (csdb *CommitStateDB) updateLogIndexByOne(isSubtract bool) uint64 {
 
 		if isSubtract {
 			if value.Uint64() == 0 {
-				ctx.Logger().Error(fmt.Sprintf("current logIndex is 0, can not to be Subtracted"))
+				ctx.Logger().Error("current logIndex is 0, can not to be Subtracted")
 				return 0
 			}
 			value.SetUint64(value.Uint64() - 1)
 		} else {
 			if value.Uint64() == math.MaxUint64 {
-				ctx.Logger().Error(fmt.Sprintf("current logIndex will out of range"))
+				ctx.Logger().Error("current logIndex will out of range")
 				return value.Uint64()
 			}
 			value.SetUint64(value.Uint64() + 1)
@@ -838,7 +838,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	var so SO
 
 	for _, stateObject := range csdb.stateObjects {
-		if params.ContractOnly == true {
+		if params.ContractOnly {
 			if len(stateObject.CodeHash()) == 0 {
 				continue
 			}
@@ -851,7 +851,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 		so.DirtyCode = stateObject.dirtyCode
 		so.Suicided = stateObject.suicided
 		so.Deleted = stateObject.deleted
-		if params.ShowCode == false {
+		if !params.ShowCode {
 			so.Code = nil
 		} else {
 			so.Code = append(so.Code[:], stateObject.code...)

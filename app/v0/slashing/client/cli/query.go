@@ -62,7 +62,7 @@ $ <appcli> query slashing signing-info nchvalconspub1zcjduepqfhvwcmt7p06fvdgexxh
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("Validator %s not found in slashing store", consAddr)
+				return fmt.Errorf("validator %s not found in slashing store", consAddr)
 			}
 
 			var signingInfo types.ValidatorSigningInfo

@@ -24,7 +24,7 @@ var Cmd = &cobra.Command{
 		verInfo := NewInfo()
 
 		if !viper.GetBool(flagLong) {
-			fmt.Println(fmt.Sprintf("%s-%d", verInfo.Version, verInfo.AppVersion))
+			fmt.Printf("%s-%d\n", verInfo.Version, verInfo.AppVersion)
 			return nil
 		}
 

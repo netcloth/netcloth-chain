@@ -2,6 +2,7 @@ package guardian
 
 import (
 	"errors"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/netcloth/netcloth-chain/codec"

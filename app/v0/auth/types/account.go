@@ -163,12 +163,15 @@ func (acc *BaseAccount) Balance() sdk.Int {
 func (acc *BaseAccount) SetBalance(amt sdk.Int) {
 	coins := acc.GetCoins()
 	diff := amt.Sub(coins.AmountOf(sdk.NativeTokenName))
-	if diff.IsZero() {
+	switch {
+	case diff.IsZero():
 		return
-	} else if diff.IsPositive() {
+
+	case diff.IsPositive():
 		// Increase coins to amount
 		coins = coins.Add(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff)})
-	} else {
+
+	default:
 		// Decrease coin to amount
 		coins = coins.Sub(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff.Neg())})
 	}

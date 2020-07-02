@@ -85,9 +85,9 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	sis := make(map[string]types.ValidatorSigningInfo)
 
-	stakingStateJson := simState.GenState[staking.ModuleName]
+	stakingStateJSON := simState.GenState[staking.ModuleName]
 	var stakingState staking.GenesisState
-	staking.ModuleCdc.MustUnmarshalJSON(stakingStateJson, &stakingState)
+	staking.ModuleCdc.MustUnmarshalJSON(stakingStateJSON, &stakingState)
 	for i, validator := range stakingState.Validators {
 		sis[validator.ConsAddress().String()] = types.NewValidatorSigningInfo(validator.ConsAddress(), 1, int64(i), time.Unix(0, 0), false, 0)
 	}

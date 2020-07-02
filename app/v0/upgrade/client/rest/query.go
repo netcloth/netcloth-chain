@@ -23,7 +23,7 @@ type VersionInfo struct {
 	Version        string `json:"version"`
 	UpgradeVersion int64  `json:"upgrade_version"`
 	StartHeight    int64  `json:"start_height"`
-	ProposalId     int64  `json:"proposal_id"`
+	ProposalID     int64  `json:"proposal_id"`
 }
 
 // InfoHandlerFn - HTTP request handler to query the upgrade info
