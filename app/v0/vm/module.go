@@ -15,7 +15,6 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/rest"
-	"github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	"github.com/netcloth/netcloth-chain/client/context"
@@ -71,10 +70,10 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 type AppModule struct {
 	AppModuleBasic
 	keeper          Keeper
-	akForSimulation keeper.AccountKeeper // for simulation
+	akForSimulation AccountKeeper // for simulation
 }
 
-func (am *AppModule) WithAccountKeeper(ak keeper.AccountKeeper) *AppModule {
+func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
 	am.akForSimulation = ak
 	return am
 }

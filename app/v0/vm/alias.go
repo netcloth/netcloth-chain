@@ -19,6 +19,7 @@ const (
 
 type (
 	Keeper        = keeper.Keeper
+	AccountKeeper = types.AccountKeeper
 	MsgContract   = types.MsgContract
 	CommitStateDB = types.CommitStateDB
 	Log           = types.Log
