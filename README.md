@@ -11,6 +11,7 @@
 
 Welcome to the official Go implementation of the [NetCloth](https://www.netcloth.org) blockchain!
 
+Founded in February 2019, NetCloth is a next-generation high-performance public chain network with the consensus of BPoS. NetCloth chain assists developers and users to create their own "personal network" by providing virtual machines (compatible with EVM), IPAL on-chain addressing protocol, native support for meta transactions, loop transactions and other infrastructures, and promotes the "personal network" to become The basic network unit and application service provider of the Web3.0. NetCloth assists users to truly master their personal data and establish a digital economic system based on data assets.
 
 ## QuickStart
 
