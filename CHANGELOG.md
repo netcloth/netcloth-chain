@@ -8,6 +8,7 @@
 * fix out of memory caused by vm logs
 * fix consensus failure caused by vm
 * add and fix vm instruction test
+* add simulation module
 
 ## testnet-v1.2.0
 
