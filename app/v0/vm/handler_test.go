@@ -1,9 +1,12 @@
 package vm
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	"github.com/stretchr/testify/require"
 
@@ -64,7 +67,12 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	resCall, err := handler(ctx, msgCall)
 	require.Nil(t, err)
 	if len(resCall.Log) > 0 {
-		fmt.Println("logs: ", resCall.Log)
+		ctx.Logger().Debug(fmt.Sprintf("event logs: %v", resCall.Log))
 	}
 
+	// get event logs
+	logs := vmKeeper.GetLogs(ctx, sdk.BytesToHash(tmhash.Sum(ctx.TxBytes())))
+	d, err := json.Marshal(logs)
+	require.Nil(t, err)
+	ctx.Logger().Debug(fmt.Sprintf("get event logs: %s", string(d)))
 }
