@@ -32,6 +32,12 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 		"/vm/logs/{txId}",
 		getLogFn(cliCtx),
 	).Methods("GET")
+
+	// Get the current staking parameter values
+	r.HandleFunc(
+		"/vm/parameters",
+		paramsHandlerFn(cliCtx),
+	).Methods("GET")
 }
 
 func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
@@ -135,6 +141,23 @@ func getLog(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+func getParams(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		res, height, err := cliCtx.Query("custom/vm/params")
+		if err != nil {
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
 func getStorageFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return queryStorage(cliCtx)
 }
@@ -149,4 +172,9 @@ func getCodeFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 func getLogFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return getLog(cliCtx)
+}
+
+// HTTP request handler to query the staking params values
+func paramsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return getParams(cliCtx)
 }
