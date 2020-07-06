@@ -61,7 +61,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 	gasMeterForEvm := sdk.NewInfiniteGasMeter()
 
 	vmParams := k.GetParams(ctx) // will consume gas
-	st.StateDB.UpdateAccounts()  // wile consume gas
+	st.StateDB.UpdateAccounts()  // will consume gas
 
 	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
 	evm := NewEVM(evmCtx, st.StateDB.WithContext(ctx.WithGasMeter(gasMeterForEvm)), cfg)

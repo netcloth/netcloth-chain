@@ -99,6 +99,7 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 		ak:                db.ak,
 		storageKey:        db.storageKey,
 		codeKey:           db.codeKey,
+		logKey:            db.logKey,
 		storageDebugKey:   db.storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
