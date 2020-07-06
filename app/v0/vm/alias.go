@@ -28,6 +28,7 @@ type (
 )
 
 var (
+	// functions aliases
 	NewKeeper        = keeper.NewKeeper
 	NewCommitStateDB = types.NewCommitStateDB
 
@@ -53,4 +54,7 @@ var (
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
 	ErrNoPayload                = types.ErrNoPayload
 	ErrWrongCtx                 = types.ErrWrongCtx
+
+	// variable aliases
+	ModuleCdc = types.ModuleCdc
 )

@@ -4,9 +4,7 @@ package vm
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
-	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -78,6 +76,7 @@ func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
 	return am
 }
 
+// InitGenesis instantiates the genesis state
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -86,10 +85,11 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return nil
 }
 
+// ExportGenesis exports the genesis state to be used by daemon
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	kvs := am.keeper.StateDB.WithContext(ctx).ExportState()
-	fmt.Fprintf(os.Stderr, "len(kvs)=%d", len(kvs))
-	return types.ModuleCdc.MustMarshalJSON(kvs)
+	//fmt.Fprintf(os.Stderr, "len(kvs)=%d", len(kvs))
+	return ModuleCdc.MustMarshalJSON(kvs)
 }
 
 func (am AppModule) RegisterInvariants(sdk.InvariantRegistry) {
@@ -112,9 +112,11 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
-func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
+// BeginBlock function for module at start of each block
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 }
 
+// EndBlock function for module at end of block
 func (am AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, am.keeper)
 }
@@ -123,17 +125,25 @@ func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{keeper: keeper}
 }
 
+//____________________________________________________________________________
+
+// AppModuleSimulation functions
+
+// GenerateGenesisState creates a randomized GenState of the staking module.
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
 }
 
+// ProposalContents doesn't return any content functions for governance proposals.
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return nil
 }
 
+// RandomizedParams creates randomized staking param changes for the simulator.
 func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 
+// WeightedOperations returns the all the staking module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }
