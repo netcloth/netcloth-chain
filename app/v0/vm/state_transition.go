@@ -39,7 +39,7 @@ func (st StateTransition) GetHashFn(header abci.Header) func() sdk.Hash {
 }
 
 func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *sdk.Result, error) {
-	ctx = ctx.WithLogger(ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName)))
+	logger := k.Logger(ctx)
 
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
@@ -75,7 +75,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 
 	if st.Recipient.Empty() {
 		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVM, st.Amount.BigInt())
-		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVM-leftOverGas, leftOverGas, vmerr))
+		logger.Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, gasLimitForVM, st.Amount.BigInt())
 		if vmerr == ErrExecutionReverted {
@@ -83,10 +83,10 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 			if len(ret) > 4 {
 				reason = string(ret[4:])
 			}
-			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %s", reason))
+			logger.Info(fmt.Sprintf("VM revert error, reason provided by the contract: %s", reason))
 		}
 
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v, leftOverGas = %v, vm err = %v", ret, gasLimitForVM-leftOverGas, leftOverGas, vmerr))
+		logger.Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v, leftOverGas = %v, vm err = %v", ret, gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	}
 
 	vmGasUsed := gasLimitForVM - leftOverGas

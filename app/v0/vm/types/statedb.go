@@ -423,7 +423,7 @@ func (csdb *CommitStateDB) commitLogs() {
 			continue
 		}
 
-		ctx.Logger().Debug("save log----", hash.String(), ":", string(d))
+		ctx.Logger().Debug(fmt.Sprintf("set logs, txHash: %s, logs: %s", hash.String(), string(d)))
 		store.Set(hash.Bytes(), d)
 	}
 }
