@@ -142,6 +142,13 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		return nil, sdk.AccAddress{}, gas, ErrInsufficientBalance
 	}
 
+	// increase contract account nonce
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	}
+
 	// Ensure there's no existing contract already at the designated address
 	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
 	contractHash := evm.StateDB.GetCodeHash(address)
@@ -180,8 +187,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	// When an error was returned by the EVM or when setting the creation code
 	// above we revert to the snapshot and consume any gas remaining. Additionally
 	// when we're in homestead this also counts for code storage gas errors.
-	//if maxCodeSizeExceeded || (err != nil && (err != ErrCodeStoreOutOfGas)) { //TODO: why (err != ErrCodeStoreOutOfGas)?
-	if maxCodeSizeExceeded || err != nil {
+	if maxCodeSizeExceeded || (err != nil && (err != ErrCodeStoreOutOfGas)) {
 		evm.StateDB.RevertToSnapshot(snapshot)
 		if err != ErrExecutionReverted {
 			contract.UseGas(contract.Gas)
@@ -215,9 +221,15 @@ func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas 
 	if evm.depth > int(CallCreateDepth) {
 		return nil, gas, ErrDepth
 	}
-
 	if !evm.Context.CanTransfer(caller.Address(), value) {
 		return nil, gas, ErrInsufficientBalance
+	}
+
+	// increase contract account nonce
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
 	}
 
 	var (
