@@ -143,14 +143,10 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	}
 
 	// increase contract account nonce
-	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
-	if callerCodeHash != (sdk.Hash{}) {
-		nonce := evm.StateDB.GetNonce(caller.Address())
-		evm.StateDB.SetNonce(caller.Address(), nonce+1)
-	}
+	nonce := evm.StateDB.GetNonce(caller.Address())
+	evm.StateDB.SetNonce(caller.Address(), nonce+1)
 
 	// Ensure there's no existing contract already at the designated address
-	//contractHash := evm.StateDB.GetCodeHash(caller.Address())
 	contractHash := evm.StateDB.GetCodeHash(address)
 	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (sdk.Hash{})) {
 		return nil, sdk.AccAddress{}, 0, ErrContractAddressCollision
@@ -226,11 +222,8 @@ func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas 
 	}
 
 	// increase contract account nonce
-	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
-	if callerCodeHash != (sdk.Hash{}) {
-		nonce := evm.StateDB.GetNonce(caller.Address())
-		evm.StateDB.SetNonce(caller.Address(), nonce+1)
-	}
+	nonce := evm.StateDB.GetNonce(caller.Address())
+	evm.StateDB.SetNonce(caller.Address(), nonce+1)
 
 	var (
 		to       = AccountRef(addr)
