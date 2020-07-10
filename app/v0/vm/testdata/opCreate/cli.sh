@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo 11111111 | \
 nchcli vm create --code_file=./a.bc \
 --from=$(nchcli keys show -a alice) \
