@@ -6,11 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tendermint/tendermint/crypto/tmhash"
-
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 	keep "github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
@@ -75,4 +74,30 @@ func TestMsgContractCreateAndCall(t *testing.T) {
 	d, err := json.Marshal(logs)
 	require.Nil(t, err)
 	ctx.Logger().Debug(fmt.Sprintf("get event logs: %s", string(d)))
+}
+
+func TestMsgContractCreate2(t *testing.T) {
+	ctx, accountKeeper, vmKeeper, _ := keep.CreateTestInput(t, false, 1000)
+
+	acc := accountKeeper.GetAccount(ctx, keep.Addrs[0])
+	code := sdk.FromHex("608060405234801561001057600080fd5b50600060405161001f906100f2565b604051809103906000f08015801561003b573d6000803e3d6000fd5b509050806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600060405161008c906100f2565b604051809103906000f0801580156100a8573d6000803e3d6000fd5b509050806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050506100fe565b605c8061033d83390190565b6102308061010d6000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80630dbe671f1461003b578063bf335e6214610085575b600080fd5b61004361008f565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61008d6100b4565b005b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60006040516100c290610192565b604051809103906000f0801580156100de573d6000803e3d6000fd5b509050806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600060405161012f90610192565b604051809103906000f08015801561014b573d6000803e3d6000fd5b509050806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b605c8061019f8339019056fe6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220d6fb7706e410f931161fe3cdfc725ed403ca6dedeeb0f97cc9d553ce5e24111464736f6c63430006000033a26469706673582212205b15372174c4052e866c928fb26db18b5b939584c6476e65058b6a9c832d709064736f6c634300060000336080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220d6fb7706e410f931161fe3cdfc725ed403ca6dedeeb0f97cc9d553ce5e24111464736f6c63430006000033")
+
+	fmt.Printf("addr: %s, nonce: %d\n", acc.GetAddress().String(), acc.GetSequence())
+	contractAddr := CreateAddress(acc.GetAddress(), acc.GetSequence())
+	fmt.Printf("contract addr: %s\n", contractAddr.String())
+
+	handler := NewHandler(vmKeeper)
+
+	// test ContractCreate
+	msgCreate := types.NewMsgContract(acc.GetAddress(), nil, code, sdk.NewInt64Coin(sdk.NativeTokenName, 0))
+	require.NotNil(t, msgCreate)
+	require.Equal(t, msgCreate.Route(), RouterKey)
+	require.Equal(t, msgCreate.Type(), types.TypeMsgContractCreate)
+
+	resCreate, err := handler(ctx, msgCreate)
+	require.Nil(t, err)
+	if len(resCreate.Log) > 0 {
+		fmt.Println("logs: ", resCreate.Log)
+	}
+	require.NotNil(t, vmKeeper.StateDB.GetCode(contractAddr))
 }
