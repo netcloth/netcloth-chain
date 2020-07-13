@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -643,6 +644,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
 
 	if suberr == ErrCodeStoreOutOfGas {
+		fmt.Println(fmt.Sprintf("opCreate error: %v", suberr))
 		stack.push(interpreter.intPool.getZero())
 	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {
 		stack.push(interpreter.intPool.getZero())
@@ -653,6 +655,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	interpreter.intPool.put(value, offset, size)
 
 	if suberr == ErrExecutionReverted {
+		fmt.Println("opCreate execution reverted")
 		return res, nil
 	}
 	return nil, nil
