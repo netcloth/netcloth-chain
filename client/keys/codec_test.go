@@ -48,7 +48,7 @@ func TestMarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"basic", args{data.Keys[0]}, data.JSON[0], false},
-		{"mnemonic is optional", args{data.Keys[1]}, []byte(data.JSON[1]), false},
+		{"mnemonic is optional", args{data.Keys[1]}, data.JSON[1], false},
 
 		// REVIEW: Are the next results expected??
 		{"empty name", args{data.Keys[2]}, data.JSON[2], false},

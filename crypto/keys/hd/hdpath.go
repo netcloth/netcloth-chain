@@ -243,14 +243,14 @@ func uint32ToBytes(i uint32) []byte {
 }
 
 // i64 returns the two halfs of the SHA512 HMAC of key and data.
-func i64(key []byte, data []byte) (IL [32]byte, IR [32]byte) {
+func i64(key []byte, data []byte) (il [32]byte, ir [32]byte) {
 	mac := hmac.New(sha512.New, key)
 	// sha512 does not err
 	_, _ = mac.Write(data)
 
 	I := mac.Sum(nil)
-	copy(IL[:], I[:32])
-	copy(IR[:], I[32:])
+	copy(il[:], I[:32])
+	copy(ir[:], I[32:])
 
 	return
 }
