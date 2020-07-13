@@ -222,7 +222,7 @@ func (dkv *DebugAccKV) MarshalJSON() ([]byte, error) {
 	return ([]byte)(dkv.String()), nil
 }
 
-var DEBUG_KEY_PREFIX = ([]byte)("DEBUG:")
+var DebugKeyPrefix = ([]byte)("DEBUG:")
 
 func (dkv *DebugAccKV) Reset(accAddr sdk.AccAddress, k, v sdk.Hash) *DebugAccKV {
 	dkv.AccAddr = accAddr
@@ -233,14 +233,14 @@ func (dkv *DebugAccKV) Reset(accAddr sdk.AccAddress, k, v sdk.Hash) *DebugAccKV 
 }
 
 func (dkv *DebugAccKV) DebugAccKVFromKV(k, v []byte) {
-	addrByte := k[len(DEBUG_KEY_PREFIX) : len(DEBUG_KEY_PREFIX)+20]
+	addrByte := k[len(DebugKeyPrefix) : len(DebugKeyPrefix)+20]
 	dkv.AccAddr = addrByte
-	dkv.K = sdk.BytesToHash(k[len(DEBUG_KEY_PREFIX)+20:])
+	dkv.K = sdk.BytesToHash(k[len(DebugKeyPrefix)+20:])
 	dkv.V = sdk.BytesToHash(v)
 }
 
 func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
-	k = append(k, DEBUG_KEY_PREFIX...)
+	k = append(k, DebugKeyPrefix...)
 	k = append(k, dkv.AccAddr...)
 	k = append(k, dkv.K.Bytes()...)
 	v = dkv.V
