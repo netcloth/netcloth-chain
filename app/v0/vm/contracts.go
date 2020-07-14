@@ -4,16 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"math/big"
 
+	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/blake2b"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 
 	"golang.org/x/crypto/ripemd160"
 
 	btcsecp256k1 "github.com/btcsuite/btcd/btcec"
-	ethsecp256k1 "github.com/ethereum/go-ethereum/crypto/secp256k1"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
@@ -50,31 +49,6 @@ func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contr
 	return nil, ErrOutOfGas
 }
 
-var (
-	secp256k1N, _  = new(big.Int).SetString("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
-	secp256k1halfN = new(big.Int).Div(secp256k1N, big.NewInt(2))
-)
-
-// ValidateSignatureValues verifies whether the signature values are valid with
-// the given chain rules. The v value is assumed to be either 0 or 1.
-func ValidateSignatureValues(v byte, r, s *big.Int) bool {
-	if r.Cmp(common.Big1) < 0 || s.Cmp(common.Big1) < 0 {
-		return false
-	}
-	// reject upper range of s values (ECDSA malleability)
-	// see discussion in secp256k1/libsecp256k1/include/secp256k1.h
-	if s.Cmp(secp256k1halfN) > 0 {
-		return false
-	}
-	// Frontier: allow s to be in full N range
-	return r.Cmp(secp256k1N) < 0 && s.Cmp(secp256k1N) < 0 && (v == 0 || v == 1)
-}
-
-// Ecrecover returns the uncompressed public key that created the given signature.
-func Ecrecover(hash, sig []byte) ([]byte, error) {
-	return ethsecp256k1.RecoverPubkey(hash, sig)
-}
-
 // ECRECOVER implemented as a native contract.
 type ecrecover struct{}
 
@@ -94,8 +68,8 @@ func (c *ecrecover) Run(input []byte) ([]byte, error) {
 	v := input[63] - 27
 
 	// tighter sig s values input homestead only apply to tx sigs
-	if !allZero(input[32:64]) || !ValidateSignatureValues(v, r, s) {
-		//return nil, nil //TODO fixme allZero is failed
+	if !allZero(input[32:63]) || !ethcrypto.ValidateSignatureValues(v, r, s, false) {
+		return nil, nil
 	}
 
 	sig := make([]byte, 65)
@@ -103,24 +77,22 @@ func (c *ecrecover) Run(input []byte) ([]byte, error) {
 	sig[64] = v
 
 	// v needs to be at the end for libsecp256k1
-	pubkeyBin, err := Ecrecover(input[:32], sig)
+	pubkeyBin, err := ethcrypto.Ecrecover(input[:32], sig)
 	// make sure the public key is a valid one
 	if err != nil {
 		return nil, nil
 	}
-
-	ss := fmt.Sprintf("pubkey: %x", pubkeyBin)
-	fmt.Println(ss)
+	//fmt.Println(fmt.Sprintf("pubkey: %x", pubkeyBin))
 
 	pubkey, _ := btcsecp256k1.ParsePubKey(pubkeyBin, btcsecp256k1.S256())
 
+	// sha256
 	hasherSHA256 := sha256.New()
 	hasherSHA256.Write(pubkey.SerializeCompressed())
 	sha := hasherSHA256.Sum(nil)
-
+	// ripemd160
 	hasherRIPEMD160 := ripemd160.New()
 	hasherRIPEMD160.Write(sha)
-
 	return common.LeftPadBytes(hasherRIPEMD160.Sum(nil), 32), nil
 }
 
