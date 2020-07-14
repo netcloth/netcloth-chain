@@ -1,10 +1,13 @@
 #!/bin/bash
 set -x
 
-passwd="yourpassword"
+passwd="11111111"
+
+kill -9 $(pgrep nchd)
+kill -9 $(pgrep nchcli)
 
 rm -rf ~/.nchd
-rm -rf ~/.nchcli
+#rm -rf ~/.nchcli
 
 # set moniker and chain-id
 nchd init mymoniker --chain-id nch-chain
@@ -46,4 +49,4 @@ nchd collect-gentxs
 nchd validate-genesis
 
 # start the node
-nchd start
+nchd start --log_level "*:debug" --trace
