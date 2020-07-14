@@ -2,8 +2,13 @@ package vm
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/crypto/blake2b"
+	"github.com/ethereum/go-ethereum/crypto/bn256"
 
 	"golang.org/x/crypto/ripemd160"
 
@@ -30,10 +35,10 @@ var PrecompiledContracts = map[string]PrecompiledContract{
 	(sdk.BytesToAddress([]byte{3})).String(): &ripemd160hash{},
 	(sdk.BytesToAddress([]byte{4})).String(): &dataCopy{},
 	(sdk.BytesToAddress([]byte{5})).String(): &bigModExp{},
-	//(sdk.BytesToAddress([]byte{6})).String(): &bn256Add{},
-	//(sdk.BytesToAddress([]byte{7})).String(): &bn256ScalarMul{},
-	//(sdk.BytesToAddress([]byte{8})).String(): &bn256Pairing{},
-	//(sdk.BytesToAddress([]byte{9})).String(): &blake2F{},
+	(sdk.BytesToAddress([]byte{6})).String(): &bn256Add{},
+	(sdk.BytesToAddress([]byte{7})).String(): &bn256ScalarMul{},
+	(sdk.BytesToAddress([]byte{8})).String(): &bn256Pairing{},
+	(sdk.BytesToAddress([]byte{9})).String(): &blake2F{},
 }
 
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
@@ -244,4 +249,184 @@ func (c *bigModExp) Run(input []byte) ([]byte, error) {
 		return common.LeftPadBytes([]byte{}, int(modLen)), nil
 	}
 	return common.LeftPadBytes(base.Exp(base, exp, mod).Bytes(), int(modLen)), nil
+}
+
+type blake2F struct{}
+
+const (
+	blake2FInputLength        = 213
+	blake2FFinalBlockBytes    = byte(1)
+	blake2FNonFinalBlockBytes = byte(0)
+)
+
+var (
+	errBlake2FInvalidInputLength = errors.New("invalid input length")
+	errBlake2FInvalidFinalFlag   = errors.New("invalid final flag")
+)
+
+func (c *blake2F) RequiredGas(input []byte) uint64 {
+	// If the input is malformed, we can't calculate the gas, return 0 and let the
+	// actual call choke and fault.
+	if len(input) != blake2FInputLength {
+		return 0
+	}
+	return uint64(binary.BigEndian.Uint32(input[0:4]))
+}
+
+func (c *blake2F) Run(input []byte) ([]byte, error) {
+	// Make sure the input is valid (correct lenth and final flag)
+	if len(input) != blake2FInputLength {
+		return nil, errBlake2FInvalidInputLength
+	}
+	if input[212] != blake2FNonFinalBlockBytes && input[212] != blake2FFinalBlockBytes {
+		return nil, errBlake2FInvalidFinalFlag
+	}
+	// Parse the input into the Blake2b call parameters
+	var (
+		rounds = binary.BigEndian.Uint32(input[0:4])
+		final  = (input[212] == blake2FFinalBlockBytes)
+
+		h [8]uint64
+		m [16]uint64
+		t [2]uint64
+	)
+	for i := 0; i < 8; i++ {
+		offset := 4 + i*8
+		h[i] = binary.LittleEndian.Uint64(input[offset : offset+8])
+	}
+	for i := 0; i < 16; i++ {
+		offset := 68 + i*8
+		m[i] = binary.LittleEndian.Uint64(input[offset : offset+8])
+	}
+	t[0] = binary.LittleEndian.Uint64(input[196:204])
+	t[1] = binary.LittleEndian.Uint64(input[204:212])
+
+	// Execute the compression function, extract and return the result
+	blake2b.F(&h, m, t, final, rounds)
+
+	output := make([]byte, 64)
+	for i := 0; i < 8; i++ {
+		offset := i * 8
+		binary.LittleEndian.PutUint64(output[offset:offset+8], h[i])
+	}
+	return output, nil
+}
+
+// bn256Pairing implements a pairing pre-compile for the bn256 curve
+type bn256Pairing struct{}
+
+var (
+	// true32Byte is returned if the bn256 pairing check succeeds.
+	true32Byte = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+
+	// false32Byte is returned if the bn256 pairing check fails.
+	false32Byte = make([]byte, 32)
+
+	// errBadPairingInput is returned if the bn256 pairing input is invalid.
+	errBadPairingInput = errors.New("bad elliptic curve pairing size")
+)
+
+// newCurvePoint unmarshals a binary blob into a bn256 elliptic curve point,
+// returning it, or an error if the point is invalid.
+func newCurvePoint(blob []byte) (*bn256.G1, error) {
+	p := new(bn256.G1)
+	if _, err := p.Unmarshal(blob); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// newTwistPoint unmarshals a binary blob into a bn256 elliptic curve point,
+// returning it, or an error if the point is invalid.
+func newTwistPoint(blob []byte) (*bn256.G2, error) {
+	p := new(bn256.G2)
+	if _, err := p.Unmarshal(blob); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// RequiredGas returns the gas required to execute the pre-compiled contract.
+func (c *bn256Pairing) RequiredGas(input []byte) uint64 {
+	return Bn256PairingBaseGas + uint64(len(input)/192)*Bn256PairingPerPointGas
+}
+
+func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
+	// Handle some corner cases cheaply
+	if len(input)%192 > 0 {
+		return nil, errBadPairingInput
+	}
+	// Convert the input into a set of coordinates
+	var (
+		cs []*bn256.G1
+		ts []*bn256.G2
+	)
+	for i := 0; i < len(input); i += 192 {
+		c, err := newCurvePoint(input[i : i+64])
+		if err != nil {
+			return nil, err
+		}
+		t, err := newTwistPoint(input[i+64 : i+192])
+		if err != nil {
+			return nil, err
+		}
+		cs = append(cs, c)
+		ts = append(ts, t)
+	}
+	// Execute the pairing checks and return the results
+	if bn256.PairingCheck(cs, ts) {
+		return true32Byte, nil
+	}
+	return false32Byte, nil
+}
+
+// runBn256Add implements the Bn256Add precompile
+func runBn256Add(input []byte) ([]byte, error) {
+	x, err := newCurvePoint(getData(input, 0, 64))
+	if err != nil {
+		return nil, err
+	}
+	y, err := newCurvePoint(getData(input, 64, 64))
+	if err != nil {
+		return nil, err
+	}
+	res := new(bn256.G1)
+	res.Add(x, y)
+	return res.Marshal(), nil
+}
+
+// bn256Add implements a native elliptic curve point addition
+type bn256Add struct{}
+
+// RequiredGas returns the gas required to execute the pre-compiled contract.
+func (c *bn256Add) RequiredGas(input []byte) uint64 {
+	return Bn256AddGas
+}
+
+func (c *bn256Add) Run(input []byte) ([]byte, error) {
+	return runBn256Add(input)
+}
+
+// bn256ScalarMul implements a native elliptic curve scalar
+// multiplication.
+type bn256ScalarMul struct{}
+
+// runBn256ScalarMul implements the Bn256ScalarMul precompile
+func runBn256ScalarMul(input []byte) ([]byte, error) {
+	p, err := newCurvePoint(getData(input, 0, 64))
+	if err != nil {
+		return nil, err
+	}
+	res := new(bn256.G1)
+	res.ScalarMult(p, new(big.Int).SetBytes(getData(input, 64, 32)))
+	return res.Marshal(), nil
+}
+
+// RequiredGas returns the gas required to execute the pre-compiled contract.
+func (c *bn256ScalarMul) RequiredGas(input []byte) uint64 {
+	return Bn256ScalarMulGas
+}
+
+func (c *bn256ScalarMul) Run(input []byte) ([]byte, error) {
+	return runBn256ScalarMul(input)
 }
