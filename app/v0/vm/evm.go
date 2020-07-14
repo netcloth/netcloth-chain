@@ -143,8 +143,11 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	}
 
 	// increase contract account nonce
-	nonce := evm.StateDB.GetNonce(caller.Address())
-	evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	}
 
 	// Ensure there's no existing contract already at the designated address
 	contractHash := evm.StateDB.GetCodeHash(address)
@@ -222,8 +225,11 @@ func (evm *EVM) Call(caller ContractRef, addr sdk.AccAddress, input []byte, gas 
 	}
 
 	// increase contract account nonce
-	nonce := evm.StateDB.GetNonce(caller.Address())
-	evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	}
 
 	var (
 		to       = AccountRef(addr)
@@ -280,6 +286,13 @@ func (evm *EVM) CallCode(caller ContractRef, addr sdk.AccAddress, input []byte, 
 		return nil, gas, ErrInsufficientBalance
 	}
 
+	// increase contract account nonce
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	}
+
 	var (
 		snapshot = evm.StateDB.Snapshot()
 		to       = AccountRef(caller.Address())
@@ -308,6 +321,13 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr sdk.AccAddress, input []by
 		return nil, gas, ErrDepth
 	}
 
+	// increase contract account nonce
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
+	}
+
 	var (
 		snapshot = evm.StateDB.Snapshot()
 		to       = AccountRef(caller.Address())
@@ -334,6 +354,13 @@ func (evm *EVM) StaticCall(caller ContractRef, addr sdk.AccAddress, input []byte
 	// Fail if we're trying to execute above the call depth limit
 	if evm.depth > int(CallCreateDepth) {
 		return nil, gas, ErrDepth
+	}
+
+	// increase contract account nonce
+	callerCodeHash := evm.StateDB.GetCodeHash(caller.Address())
+	if callerCodeHash != (sdk.Hash{}) {
+		nonce := evm.StateDB.GetNonce(caller.Address())
+		evm.StateDB.SetNonce(caller.Address(), nonce+1)
 	}
 
 	var (
