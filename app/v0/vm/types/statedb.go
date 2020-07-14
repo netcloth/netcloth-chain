@@ -12,6 +12,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
+	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -858,49 +859,124 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 }
 
 func (csdb *CommitStateDB) ExportState() (s GenesisState) {
-	s.Contracts = csdb.ExportContracts()
+	s.Storage = csdb.exportStorage()
+	s.Codes = csdb.exportCodes()
+	s.VMLogs = csdb.exportLogs()
 	return
 }
 
 func (csdb *CommitStateDB) ImportState(s GenesisState) {
+	err := csdb.importCodes(s.Codes)
+	if err != nil {
+		panic(err)
+	}
+
+	err = csdb.importStorage(s.Storage)
+	if err != nil {
+		panic(err)
+	}
+
+	err = csdb.importLogs(s.VMLogs)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func (csdb *CommitStateDB) ExportContracts() (cs []Contract) {
-	//contracts := make(map[string]Contract, 10240)
+func (csdb *CommitStateDB) exportCodes() map[string]sdk.Code {
+	store := csdb.ctx.KVStore(csdb.codeKey)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
 
+	codes := make(map[string]sdk.Code, 10240)
+	for ; iter.Valid(); iter.Next() {
+		codes[hexutil.Encode(iter.Key())] = iter.Value()
+	}
+
+	return codes
+}
+
+func (csdb *CommitStateDB) importCodes(codes map[string]sdk.Code) error {
+	store := csdb.ctx.KVStore(csdb.codeKey)
+
+	for k, v := range codes {
+		K, err := hexutil.Decode(k)
+		if err != nil {
+			return err
+		}
+		store.Set(K, v)
+	}
+
+	return nil
+}
+
+func (csdb *CommitStateDB) exportStorage() (gs []GenesisStorage) {
 	store := csdb.ctx.KVStore(csdb.storageKey)
 	iter := store.Iterator(nil, nil)
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
-		iter.Key()
+		gs = append(gs, GenesisStorage{
+			Key:   iter.Key(),
+			Value: iter.Value(),
+		})
 	}
 
 	return
 }
 
-func (csdb *CommitStateDB) ImportContracts(cs []Contract) bool {
-	return true
+func (csdb *CommitStateDB) importStorage(gs []GenesisStorage) error {
+	store := csdb.ctx.KVStore(csdb.storageKey)
+
+	for _, item := range gs {
+		store.Set(item.Key, item.Value)
+	}
+
+	return nil
 }
 
-func (csdb *CommitStateDB) ExportLog() {
+func (csdb *CommitStateDB) exportLogs() (vmLogs VMLogs) {
 	store := csdb.ctx.KVStore(csdb.logKey)
 	iter := store.Iterator(nil, nil)
 	defer iter.Close()
 
+	vmLogs.Logs = make(map[string]string, 10240)
+
 	for ; iter.Valid(); iter.Next() {
+		vmLogs.Logs[hexutil.Encode(iter.Key())] = string(iter.Value())
 	}
 
-	// TODO export logIndex
+	delete(vmLogs.Logs, hexutil.Encode(LogIndexKey))
+
+	vmLogs.LogIndex = -1
+	if store.Has(LogIndexKey) {
+		logIndex := big.NewInt(-1)
+		logIndex.SetBytes(store.Get(LogIndexKey))
+		vmLogs.LogIndex = logIndex.Int64()
+	}
+
+	return
 }
 
-func (csdb *CommitStateDB) ExportCode() {
-	store := csdb.ctx.KVStore(csdb.codeKey)
-	iter := store.Iterator(nil, nil)
-	defer iter.Close()
+func (csdb *CommitStateDB) importLogs(vmLogs VMLogs) error {
+	store := csdb.ctx.KVStore(csdb.logKey)
 
-	for ; iter.Valid(); iter.Next() {
+	if vmLogs.LogIndex == -1 {
+		return nil
 	}
+
+	logIndex := big.NewInt(vmLogs.LogIndex)
+	store.Set(LogIndexKey, logIndex.Bytes())
+
+	for txHashStr, logs := range vmLogs.Logs {
+		txHash, err := hexutil.Decode(txHashStr)
+		if err != nil {
+			return err
+		}
+
+		store.Set(txHash, []byte(logs))
+	}
+
+	return nil
 }
 
 // for simulation

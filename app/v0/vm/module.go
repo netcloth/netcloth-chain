@@ -82,17 +82,19 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	am.keeper.SetParams(ctx, genesisState.Params)
 
+	am.keeper.StateDB.WithContext(ctx).ImportState(genesisState)
+
 	return nil
 }
 
 // ExportGenesis exports the genesis state to be used by daemon
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	vmState := am.keeper.StateDB.WithContext(ctx).ExportState()
+	vmState.Params = am.keeper.GetParams(ctx)
 	return ModuleCdc.MustMarshalJSON(vmState)
 }
 
 func (am AppModule) RegisterInvariants(sdk.InvariantRegistry) {
-	panic("implement me")
 }
 
 func (am AppModule) Route() string {
