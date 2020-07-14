@@ -226,22 +226,24 @@ func (p *ProtocolV0) configKeepers() {
 	p.cipalKeeper = cipal.NewKeeper(
 		protocol.Keys[cipal.StoreKey],
 		p.cdc,
-		cipalSubspace)
+		cipalSubspace,
+	)
 
 	p.ipalKeeper = ipal.NewKeeper(
 		protocol.Keys[ipal.StoreKey],
 		p.cdc,
 		p.supplyKeeper,
-		ipalSubspace)
+		ipalSubspace,
+	)
 
 	p.vmKeeper = vm.NewKeeper(
 		p.cdc,
 		protocol.Keys[protocol.VMStoreKey],
 		protocol.Keys[protocol.VMCodeStoreKey],
 		protocol.Keys[protocol.VMLogStoreKey],
-		protocol.Keys[protocol.VMStoreKey],
 		vmSubspace,
-		p.accountKeeper)
+		p.accountKeeper,
+	)
 
 	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
 

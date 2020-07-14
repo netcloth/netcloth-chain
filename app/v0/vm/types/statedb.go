@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"sort"
 	"sync"
 
@@ -31,11 +30,11 @@ type CommitStateDB struct {
 	// StateDB interface. Perhaps there is a better way.
 	ctx sdk.Context
 
-	ak              auth.AccountKeeper
-	storageKey      sdk.StoreKey
-	codeKey         sdk.StoreKey
-	logKey          sdk.StoreKey
-	storageDebugKey sdk.StoreKey
+	ak auth.AccountKeeper
+
+	storageKey sdk.StoreKey
+	codeKey    sdk.StoreKey
+	logKey     sdk.StoreKey
 
 	// maps that hold 'live' objects, which will get modified while processing a
 	// state transition
@@ -68,8 +67,6 @@ type CommitStateDB struct {
 
 	// mutex for state deep copying
 	lock sync.Mutex
-
-	debug bool
 }
 
 // NewCommitStateDB returns a reference to a newly initialized CommitStateDB
@@ -78,19 +75,17 @@ type CommitStateDB struct {
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
 //func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, logKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, logKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
 		storageKey:        storageKey,
 		codeKey:           codeKey,
 		logKey:            logKey,
-		storageDebugKey:   storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
-		debug:             true,
 	}
 }
 
@@ -100,13 +95,11 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 		storageKey:        db.storageKey,
 		codeKey:           db.codeKey,
 		logKey:            db.logKey,
-		storageDebugKey:   db.storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
-		debug:             true,
 	}
 }
 
@@ -864,23 +857,50 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	return sos
 }
 
-func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
-	debug := true // TODO config in stateDB
+func (csdb *CommitStateDB) ExportState() (s GenesisState) {
+	s.Contracts = csdb.ExportContracts()
+	return
+}
 
-	if debug {
-		store := csdb.ctx.KVStore(csdb.storageDebugKey)
-		iter := store.Iterator(nil, nil)
-		defer iter.Close()
+func (csdb *CommitStateDB) ImportState(s GenesisState) {
+}
 
-		var kv DebugAccKV
-		for ; iter.Valid(); iter.Next() {
-			kv.DebugAccKVFromKV(iter.Key(), iter.Value())
-			fmt.Fprintln(os.Stderr, kv.String())
-			kvs = append(kvs, kv)
-		}
+func (csdb *CommitStateDB) ExportContracts() (cs []Contract) {
+	//contracts := make(map[string]Contract, 10240)
+
+	store := csdb.ctx.KVStore(csdb.storageKey)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		iter.Key()
 	}
 
 	return
+}
+
+func (csdb *CommitStateDB) ImportContracts(cs []Contract) bool {
+	return true
+}
+
+func (csdb *CommitStateDB) ExportLog() {
+	store := csdb.ctx.KVStore(csdb.logKey)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+	}
+
+	// TODO export logIndex
+}
+
+func (csdb *CommitStateDB) ExportCode() {
+	store := csdb.ctx.KVStore(csdb.codeKey)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+	}
 }
 
 // for simulation

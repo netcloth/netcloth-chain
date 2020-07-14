@@ -251,7 +251,6 @@ func (p *ProtocolV0) configKeepers() {
 		protocol.Keys[protocol.VMStoreKey],
 		protocol.Keys[protocol.VMCodeStoreKey],
 		protocol.Keys[protocol.VMLogStoreKey],
-		protocol.Keys[protocol.VMStoreKey],
 		vmSubspace,
 		p.AccountKeeper)
 

@@ -5,13 +5,12 @@ import (
 )
 
 const (
-	ModuleName    = protocol.VMModuleName
-	StoreKey      = ModuleName
-	CodeKey       = StoreKey + "_code"
-	LogKey        = StoreKey + "_log"
-	StoreDebugKey = StoreKey + "_debug"
-	QuerierRoute  = ModuleName
-	RouterKey     = ModuleName
+	ModuleName   = protocol.VMModuleName
+	StoreKey     = ModuleName
+	CodeKey      = StoreKey + "_code"
+	LogKey       = StoreKey + "_log"
+	QuerierRoute = ModuleName
+	RouterKey    = ModuleName
 )
 
 var (
