@@ -29,7 +29,7 @@ type GenesisAccount struct {
 	// module account fields
 	ModuleName        string   `json:"module_name" yaml:"module_name"`               // name of the module account
 	ModulePermissions []string `json:"module_permissions" yaml:"module_permissions"` // permissions of module account
-	CodeHash []byte `json:"code_hash" yaml:"code_hash"`
+	CodeHash          []byte   `json:"code_hash" yaml:"code_hash"`
 }
 
 // Validate checks for errors on the vesting and module account parameters

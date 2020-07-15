@@ -858,7 +858,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	return sos
 }
 
-// export vm state to genesis file
+// ExportState: export vm state to genesis file
 func (csdb *CommitStateDB) ExportState() (s GenesisState) {
 	s.Storage = csdb.exportStorage()
 	s.Codes = csdb.exportCodes()
@@ -866,7 +866,7 @@ func (csdb *CommitStateDB) ExportState() (s GenesisState) {
 	return
 }
 
-// import vm state from genesis file
+// ImportState: import vm state from genesis file
 func (csdb *CommitStateDB) ImportState(s GenesisState) {
 	err := csdb.importCodes(s.Codes)
 	if err != nil {
