@@ -6,11 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tendermint/tendermint/crypto/tmhash"
-
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 	keep "github.com/netcloth/netcloth-chain/app/v0/vm/keeper"
