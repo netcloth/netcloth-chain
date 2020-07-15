@@ -38,7 +38,7 @@ func executeGetIPALNodes(t *testing.T, cmdStr string) (nodes itypes.IPALNodes) {
 	cdc := MakeCodec()
 
 	err := cdc.UnmarshalJSON([]byte(out), &nodes)
-	require.NoError(t, err, "acc %v, err %v", string(out), err)
+	require.NoError(t, err, "acc %v, err %v", out, err)
 
 	return
 }

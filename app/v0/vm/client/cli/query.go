@@ -297,7 +297,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 					return err
 				}
 			} else {
-				return fmt.Errorf("method %s not exist\n", method)
+				return fmt.Errorf("method %s not exist", method)
 			}
 
 			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)
