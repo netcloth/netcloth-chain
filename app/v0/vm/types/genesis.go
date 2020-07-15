@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	// GenesisState: vm genesis state, include params, vm storage, vm codes, vm logs
+	// GenesisState vm genesis state, include params, vm storage, vm codes, vm logs
 	GenesisState struct {
 		Params  Params              `json:"params"`
 		Storage []Storage           `json:"storage"`
@@ -14,13 +14,13 @@ type (
 		VMLogs  VMLogs              `json:"vm_logs"`
 	}
 
-	// Storage: vm storage of k, v pairs
+	// Storage vm storage of k, v pairs
 	Storage struct {
 		Key   hexutil.Bytes `json:"key"`
 		Value hexutil.Bytes `json:"value"`
 	}
 
-	// VMLogs: vm logs, include log index, logs which conclude k(txHash), v(logs) pairs
+	// VMLogs vm logs, include log index, logs which conclude k(txHash), v(logs) pairs
 	VMLogs struct {
 		Logs     map[string]string `json:"logs"`
 		LogIndex int64             `json:"log_index"`
