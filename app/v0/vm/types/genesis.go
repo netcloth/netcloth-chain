@@ -6,18 +6,21 @@ import (
 )
 
 type (
+	// vm genesis state, include params, vm storage, vm codes, vm logs
 	GenesisState struct {
 		Params  Params              `json:"params"`
-		Storage []GenesisStorage    `json:"storage"`
+		Storage []Storage           `json:"storage"`
 		Codes   map[string]sdk.Code `json:"codes"`
 		VMLogs  VMLogs              `json:"vm_logs""`
 	}
 
-	GenesisStorage struct {
+	// vm storage of k, v pairs
+	Storage struct {
 		Key   hexutil.Bytes `json:"key"`
 		Value hexutil.Bytes `json:"value"`
 	}
 
+	// vm logs, include log index, logs which conclude k(txHash), v(logs) pairs
 	VMLogs struct {
 		Logs     map[string]string `json:"logs"`
 		LogIndex int64             `json:"log_index"`
@@ -27,7 +30,7 @@ type (
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		Params:  DefaultParams(),
-		Storage: make([]GenesisStorage, 0),
+		Storage: make([]Storage, 0),
 	}
 }
 

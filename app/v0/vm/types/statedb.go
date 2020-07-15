@@ -858,6 +858,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	return sos
 }
 
+// export vm state to genesis file
 func (csdb *CommitStateDB) ExportState() (s GenesisState) {
 	s.Storage = csdb.exportStorage()
 	s.Codes = csdb.exportCodes()
@@ -865,6 +866,7 @@ func (csdb *CommitStateDB) ExportState() (s GenesisState) {
 	return
 }
 
+// import vm state from genesis file
 func (csdb *CommitStateDB) ImportState(s GenesisState) {
 	err := csdb.importCodes(s.Codes)
 	if err != nil {
@@ -909,13 +911,13 @@ func (csdb *CommitStateDB) importCodes(codes map[string]sdk.Code) error {
 	return nil
 }
 
-func (csdb *CommitStateDB) exportStorage() (gs []GenesisStorage) {
+func (csdb *CommitStateDB) exportStorage() (gs []Storage) {
 	store := csdb.ctx.KVStore(csdb.storageKey)
 	iter := store.Iterator(nil, nil)
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
-		gs = append(gs, GenesisStorage{
+		gs = append(gs, Storage{
 			Key:   iter.Key(),
 			Value: iter.Value(),
 		})
@@ -924,7 +926,7 @@ func (csdb *CommitStateDB) exportStorage() (gs []GenesisStorage) {
 	return
 }
 
-func (csdb *CommitStateDB) importStorage(gs []GenesisStorage) error {
+func (csdb *CommitStateDB) importStorage(gs []Storage) error {
 	store := csdb.ctx.KVStore(csdb.storageKey)
 
 	for _, item := range gs {
