@@ -55,6 +55,7 @@ func ValidateGenesis(data GenesisState) error {
 	return validateVMCommonGasParams(vmCommonGasParams)
 }
 
+// Equal judge GenesisState equal
 func (a GenesisState) Equal(b GenesisState) bool {
 	aJSON, err := json.Marshal(a)
 	if err != nil {
@@ -75,6 +76,7 @@ func (a GenesisState) Equal(b GenesisState) bool {
 	return string(aJSONSorted) == string(bJSONSorted)
 }
 
+// EqualWithoutParams judge GenesisState equal without compare GenesisState.Params
 func (a GenesisState) EqualWithoutParams(b GenesisState) bool {
 	a.Params = Params{}
 	b.Params = Params{}

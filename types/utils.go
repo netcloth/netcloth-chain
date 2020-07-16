@@ -32,6 +32,7 @@ func SortJSON(toSortJSON []byte) ([]byte, error) {
 	return js, nil
 }
 
+// JSONEqual judge json equal after json been sorted
 func JSONEqual(a, b []byte) bool {
 	switch {
 	case a == nil && b == nil:
