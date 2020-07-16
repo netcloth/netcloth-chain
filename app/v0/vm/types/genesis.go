@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/json"
+
 	"github.com/netcloth/netcloth-chain/hexutil"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
@@ -51,4 +53,30 @@ func ValidateGenesis(data GenesisState) error {
 
 	vmCommonGasParams := data.Params.VMCommonGasParams
 	return validateVMCommonGasParams(vmCommonGasParams)
+}
+
+func (a GenesisState) Equal(b GenesisState) bool {
+	aJSON, err := json.Marshal(a)
+	if err != nil {
+		return false
+	}
+	bJSON, err := json.Marshal(b)
+	if err != nil {
+		return false
+	}
+	aJSONSorted, err := sdk.SortJSON(aJSON)
+	if err != nil {
+		return false
+	}
+	bJSONSorted, err := sdk.SortJSON(bJSON)
+	if err != nil {
+		return false
+	}
+	return string(aJSONSorted) == string(bJSONSorted)
+}
+
+func (a GenesisState) EqualWithoutParams(b GenesisState) bool {
+	a.Params = Params{}
+	b.Params = Params{}
+	return a.Equal(b)
 }
