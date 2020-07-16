@@ -42,7 +42,6 @@ func TestStoreCapture(t *testing.T) {
 		sdk.NewKVStoreKey(StoreKey),
 		sdk.NewKVStoreKey(CodeKey),
 		sdk.NewKVStoreKey(LogKey),
-		sdk.NewKVStoreKey(StoreDebugKey),
 		paramsKeeper.Subspace(bank.DefaultParamspace),
 		accountKeeper)
 

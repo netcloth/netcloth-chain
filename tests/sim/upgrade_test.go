@@ -2,10 +2,11 @@ package sim
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/netcloth/netcloth-chain/tests"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_Upgrade(t *testing.T) {

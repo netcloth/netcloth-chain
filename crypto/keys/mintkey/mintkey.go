@@ -77,11 +77,11 @@ func unarmorBytes(armorStr, blockType string) (bz []byte, err error) {
 		return
 	}
 	if bType != blockType {
-		err = fmt.Errorf("Unrecognized armor type %q, expected: %q", bType, blockType)
+		err = fmt.Errorf("unrecognized armor type %q, expected: %q", bType, blockType)
 		return
 	}
 	if header["version"] != "0.0.0" {
-		err = fmt.Errorf("Unrecognized version: %v", header["version"])
+		err = fmt.Errorf("unrecognized version: %v", header["version"])
 		return
 	}
 	return
@@ -123,7 +123,7 @@ func UnarmorDecryptPrivKey(armorStr string, passphrase string) (crypto.PrivKey, 
 		return privKey, err
 	}
 	if blockType != blockTypePrivKey {
-		return privKey, fmt.Errorf("Unrecognized armor type: %v", blockType)
+		return privKey, fmt.Errorf("unrecognized armor type: %v", blockType)
 	}
 	if header["kdf"] != "bcrypt" {
 		return privKey, fmt.Errorf("Unrecognized KDF type: %v", header["KDF"])

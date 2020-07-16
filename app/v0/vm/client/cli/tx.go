@@ -58,7 +58,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 			if len(argList) != 0 {
 				abiFile := viper.GetString(flagAbiFile)
 				if len(abiFile) == 0 {
-					return fmt.Errorf("must use --abi_file to appoint abi file when use constructor params\n")
+					return fmt.Errorf("must use --abi_file to appoint abi file when use constructor params")
 				}
 				payload, _, err = GenPayload(abiFile, "", argList)
 				if err != nil {

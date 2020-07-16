@@ -150,7 +150,7 @@ func executeGetAccount(t *testing.T, cmdStr string) (acc auth.BaseAccount) {
 	cdc := MakeCodec()
 
 	err = cdc.UnmarshalJSON([]byte(out), &acc)
-	require.NoError(t, err, "acc %v, err %v", string(out), err)
+	require.NoError(t, err, "acc %v, err %v", out, err)
 
 	return
 }

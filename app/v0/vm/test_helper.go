@@ -27,5 +27,5 @@ func newEVM() *EVM {
 	ms.MountStoreWithDB(authKey, sdk.StoreTypeDB, db)
 	ms.LoadLatestVersion()
 
-	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, authKey, authKey, authKey, sdk.NewKVStoreKey(StoreDebugKey)).WithContext(sdk.NewContext(ms, abci.Header{}, false, logger)), Config{})
+	return NewEVM(Context{}, NewCommitStateDB(accountKeeper, authKey, authKey, authKey).WithContext(sdk.NewContext(ms, abci.Header{}, false, logger)), Config{})
 }

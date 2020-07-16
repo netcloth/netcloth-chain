@@ -207,56 +207,10 @@ func (so *stateObject) markSuicided() {
 }
 
 // commitState commits all dirty storage to a KVStore.
-
-type DebugAccKV struct {
-	AccAddr sdk.AccAddress `json:"acc_addr"`
-	K       sdk.Hash       `json:"k"`
-	V       sdk.Hash       `json:"v"`
-}
-
-func (dkv *DebugAccKV) String() string {
-	return fmt.Sprintf(`{"K": "%s_%s", "V": "%s"}`, dkv.AccAddr.String(), dkv.K.String(), dkv.V.String())
-}
-
-func (dkv *DebugAccKV) MarshalJSON() ([]byte, error) {
-	return ([]byte)(dkv.String()), nil
-}
-
-var DEBUG_KEY_PREFIX = ([]byte)("DEBUG:")
-
-func (dkv *DebugAccKV) Reset(accAddr sdk.AccAddress, k, v sdk.Hash) *DebugAccKV {
-	dkv.AccAddr = accAddr
-	dkv.K = k
-	dkv.V = v
-
-	return dkv
-}
-
-func (dkv *DebugAccKV) DebugAccKVFromKV(k, v []byte) {
-	addrByte := k[len(DEBUG_KEY_PREFIX) : len(DEBUG_KEY_PREFIX)+20]
-	dkv.AccAddr = addrByte
-	dkv.K = sdk.BytesToHash(k[len(DEBUG_KEY_PREFIX)+20:])
-	dkv.V = sdk.BytesToHash(v)
-}
-
-func (dkv *DebugAccKV) DebugAccKVToKV() (k []byte, v sdk.Hash) {
-	k = append(k, DEBUG_KEY_PREFIX...)
-	k = append(k, dkv.AccAddr...)
-	k = append(k, dkv.K.Bytes()...)
-	v = dkv.V
-	return
-}
-
 func (so *stateObject) commitState() {
 	ctx := so.stateDB.ctx
 	store := ctx.KVStore(so.stateDB.storageKey)
 
-	debugStore := (sdk.KVStore)(nil)
-	if so.stateDB.debug {
-		debugStore = ctx.KVStore(so.stateDB.storageDebugKey)
-	}
-
-	var kv DebugAccKV
 	for key, value := range so.dirtyStorage {
 		delete(so.dirtyStorage, key)
 
@@ -268,23 +222,11 @@ func (so *stateObject) commitState() {
 
 		if (value == sdk.Hash{}) {
 			store.Delete(key.Bytes())
-
-			if debugStore != nil {
-				k, _ := kv.Reset(so.address, key, value).DebugAccKVToKV()
-				debugStore.Delete(k)
-			}
-
 			continue
 		}
 
 		store.Set(key.Bytes(), value.Bytes())
-
-		if debugStore != nil {
-			k, v := kv.Reset(so.address, key, value).DebugAccKVToKV()
-			debugStore.Set(k, v.Bytes())
-		}
 	}
-
 }
 
 // commitCode persists the state object's code to the KVStore.

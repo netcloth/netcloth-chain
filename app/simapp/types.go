@@ -2,6 +2,7 @@ package simapp
 
 import (
 	"encoding/json"
+
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"

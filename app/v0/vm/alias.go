@@ -11,7 +11,6 @@ const (
 	StoreKey          = types.StoreKey
 	CodeKey           = types.CodeKey
 	LogKey            = types.LogKey
-	StoreDebugKey     = types.StoreDebugKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = keeper.DefaultParamspace
