@@ -4,6 +4,9 @@
 
 ### nchd
 
+* add add precompiled contracts for VM moudle
+* fix opCreate instruction
+* add export/import for VM module
 * fix upgrade module
 * fix out of memory caused by vm logs
 * fix consensus failure caused by vm
