@@ -249,8 +249,6 @@ func (p *ProtocolV0) configKeepers() {
 	p.vmKeeper = vm.NewKeeper(
 		p.Cdc,
 		protocol.Keys[protocol.VMStoreKey],
-		protocol.Keys[protocol.VMCodeStoreKey],
-		protocol.Keys[protocol.VMLogStoreKey],
 		vmSubspace,
 		p.AccountKeeper)
 

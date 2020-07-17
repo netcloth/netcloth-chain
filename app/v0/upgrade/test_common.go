@@ -79,8 +79,6 @@ func CreateTestInput(t *testing.T, initPower int64) (ctx sdk.Context, keeper Kee
 		cipal.StoreKey,
 		ipal.StoreKey,
 		types.StoreKey,
-		types.CodeKey,
-		types.LogKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
