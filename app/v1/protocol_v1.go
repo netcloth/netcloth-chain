@@ -108,6 +108,11 @@ type ProtocolV1 struct {
 }
 
 func (p *ProtocolV1) LoadContext() {
+	p.configCodec()
+	p.configKeepers()
+	p.configModuleManager()
+	p.configRouters()
+	p.configFeeHandlers()
 }
 
 func (p *ProtocolV1) GetSimulationManager() interface{} {
@@ -147,14 +152,6 @@ func (p *ProtocolV1) GetAnteHandler() sdk.AnteHandler {
 
 func (p *ProtocolV1) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
-}
-
-func (p *ProtocolV1) Load() {
-	p.configCodec()
-	p.configKeepers()
-	p.configModuleManager()
-	p.configRouters()
-	p.configFeeHandlers()
 }
 
 func (p *ProtocolV1) Init() {
