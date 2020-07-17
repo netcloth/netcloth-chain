@@ -18,11 +18,12 @@ type Keeper struct {
 	StateDB    *types.CommitStateDB
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey, codeKey, logKey sdk.StoreKey, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
+// NewKeeper returns vm keeper
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
 	return Keeper{
 		Cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
-		StateDB:    types.NewCommitStateDB(ak, storeKey, codeKey, logKey),
+		StateDB:    types.NewCommitStateDB(ak, storeKey),
 	}
 }
 

@@ -40,8 +40,6 @@ func TestStoreCapture(t *testing.T) {
 	vmKeeper := NewKeeper(
 		types.ModuleCdc,
 		sdk.NewKVStoreKey(StoreKey),
-		sdk.NewKVStoreKey(CodeKey),
-		sdk.NewKVStoreKey(LogKey),
 		paramsKeeper.Subspace(bank.DefaultParamspace),
 		accountKeeper)
 

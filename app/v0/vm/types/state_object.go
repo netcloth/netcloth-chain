@@ -8,6 +8,7 @@ import (
 
 	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
+	"github.com/netcloth/netcloth-chain/store/prefix"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -209,7 +210,7 @@ func (so *stateObject) markSuicided() {
 // commitState commits all dirty storage to a KVStore.
 func (so *stateObject) commitState() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
+	store := prefix.NewStore(ctx.KVStore(so.stateDB.storageKey), AddressStoragePrefix(so.address))
 
 	for key, value := range so.dirtyStorage {
 		delete(so.dirtyStorage, key)
@@ -232,7 +233,7 @@ func (so *stateObject) commitState() {
 // commitCode persists the state object's code to the KVStore.
 func (so *stateObject) commitCode() {
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
+	store := prefix.NewStore(ctx.KVStore(so.stateDB.storageKey), KeyPrefixCode)
 	store.Set(so.CodeHash(), so.code)
 }
 
@@ -271,7 +272,7 @@ func (so *stateObject) Code() []byte {
 	}
 
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.codeKey)
+	store := prefix.NewStore(ctx.KVStore(so.stateDB.storageKey), KeyPrefixCode)
 	code := store.Get(so.CodeHash())
 
 	if len(code) == 0 {
@@ -310,7 +311,7 @@ func (so *stateObject) GetCommittedState(key sdk.Hash) sdk.Hash {
 
 	// otherwise load the value from the KVStore
 	ctx := so.stateDB.ctx
-	store := ctx.KVStore(so.stateDB.storageKey)
+	store := prefix.NewStore(ctx.KVStore(so.stateDB.storageKey), AddressStoragePrefix(so.address))
 	rawValue := store.Get(prefixKey.Bytes())
 
 	if len(rawValue) > 0 {

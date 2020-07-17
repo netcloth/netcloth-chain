@@ -38,9 +38,6 @@ const (
 	IpalStoreKey         = IpalModuleName
 	CIpalStoreKey        = CIpalModuleName
 	VMStoreKey           = VMModuleName
-	VMCodeStoreKey       = VMStoreKey + "_code"
-	VMLogStoreKey        = VMStoreKey + "_log"
-	VMDebugStoreKey      = VMStoreKey + "_debug"
 
 	ParamsTStoreKey  = "transient_" + ParamsStoreKey
 	StakingTStoreKey = "transient_" + StakingStoreKey
@@ -59,9 +56,6 @@ var (
 		CIpalStoreKey,
 		IpalStoreKey,
 		VMStoreKey,
-		VMCodeStoreKey,
-		VMLogStoreKey,
-		VMDebugStoreKey,
 		GovStoreKey,
 		AuthStoreKey,
 		UpgradeStoreKey,

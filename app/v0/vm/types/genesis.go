@@ -18,8 +18,8 @@ type (
 
 	// Storage vm storage of k, v pairs
 	Storage struct {
-		Key   hexutil.Bytes `json:"key"`
-		Value hexutil.Bytes `json:"value"`
+		Key   hexutil.Bytes `json:"k"`
+		Value hexutil.Bytes `json:"v"`
 	}
 
 	// VMLogs vm logs, include log index, logs which conclude k(txHash), v(logs) pairs

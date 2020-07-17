@@ -78,8 +78,6 @@ func CreateTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 		cipal.StoreKey,
 		ipal.StoreKey,
 		types.StoreKey,
-		types.CodeKey,
-		types.LogKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -136,8 +134,6 @@ func CreateTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 	keeper := NewKeeper(
 		cdc,
 		keys[types.StoreKey],
-		keys[types.CodeKey],
-		keys[types.LogKey],
 		paramsKeeper.Subspace(DefaultParamspace),
 		accountKeeper,
 	)
