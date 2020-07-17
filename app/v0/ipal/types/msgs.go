@@ -50,7 +50,7 @@ type MsgIPALNodeClaim struct {
 	Bond            sdk.Coin       `json:"bond" yaml:"bond"`                         // bond coin for ranking
 }
 
-func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, Bond sdk.Coin) MsgIPALNodeClaim {
+func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, extension string, endpoints Endpoints, bond sdk.Coin) MsgIPALNodeClaim {
 	return MsgIPALNodeClaim{
 		OperatorAddress: operator,
 		Moniker:         moniker,
@@ -58,7 +58,7 @@ func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, ext
 		Details:         details,
 		Extension:       extension,
 		Endpoints:       endpoints,
-		Bond:            Bond,
+		Bond:            bond,
 	}
 }
 
@@ -90,7 +90,7 @@ func (msg MsgIPALNodeClaim) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrEmptyInputs, "bond amount must > 0 ")
 	}
 
-	if len(msg.Endpoints) <= 0 {
+	if len(msg.Endpoints) == 0 {
 		return ErrEndpointsEmpty
 	}
 

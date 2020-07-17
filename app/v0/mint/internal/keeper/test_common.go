@@ -69,9 +69,9 @@ func newTestInput(t *testing.T) testInput {
 	bankKeeper := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), blacklistedAddrs)
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
-		types.ModuleName:          []string{supply.Minter},
-		staking.NotBondedPoolName: []string{supply.Burner, supply.Staking},
-		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
+		types.ModuleName:          {supply.Minter},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 	}
 	supplyKeeper := supply.NewKeeper(types.ModuleCdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 	supplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))

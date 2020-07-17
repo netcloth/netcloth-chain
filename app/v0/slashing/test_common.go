@@ -91,8 +91,8 @@ func createTestInput(t *testing.T, defaults Params) (sdk.Context, bank.Keeper, s
 	bk := bank.NewBaseKeeper(accountKeeper, paramsKeeper.Subspace(bank.DefaultParamspace), blacklistedAddrs)
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
-		staking.NotBondedPoolName: []string{supply.Burner, supply.Staking},
-		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 	}
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bk, maccPerms)
 
@@ -118,7 +118,7 @@ func createTestInput(t *testing.T, defaults Params) (sdk.Context, bank.Keeper, s
 	sk.SetHooks(keeper.Hooks())
 
 	require.NotPanics(t, func() {
-		InitGenesis(ctx, keeper, sk, GenesisState{defaults, nil, nil})
+		InitGenesis(ctx, keeper, sk, GenesisState{Params: defaults})
 	})
 
 	return ctx, bk, sk, paramstore, keeper
@@ -130,13 +130,8 @@ func newPubKey(pk string) (res crypto.PubKey) {
 		panic(err)
 	}
 	var pkEd ed25519.PubKeyEd25519
-	copy(pkEd[:], pkBytes[:])
+	copy(pkEd[:], pkBytes)
 	return pkEd
-}
-
-func testAddr(addr string) sdk.AccAddress {
-	res := []byte(addr)
-	return res
 }
 
 func NewTestMsgCreateValidator(address sdk.ValAddress, pubKey crypto.PubKey, amt sdk.Int) staking.MsgCreateValidator {
@@ -145,9 +140,4 @@ func NewTestMsgCreateValidator(address sdk.ValAddress, pubKey crypto.PubKey, amt
 		address, pubKey, sdk.NewCoin(sdk.DefaultBondDenom, amt),
 		staking.Description{}, commission, sdk.OneInt(),
 	)
-}
-
-func newTestMsgDelegate(delAddr sdk.AccAddress, valAddr sdk.ValAddress, delAmount sdk.Int) staking.MsgDelegate {
-	amount := sdk.NewCoin(sdk.DefaultBondDenom, delAmount)
-	return staking.NewMsgDelegate(delAddr, valAddr, amount)
 }

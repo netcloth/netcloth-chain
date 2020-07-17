@@ -18,7 +18,6 @@ import (
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/version"
 )
@@ -250,7 +249,7 @@ $ %s tx staking unbond nchvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100pnch
 
 var (
 	defaultTokens                  = sdk.TokensFromConsensusPower(100)
-	defaultAmount                  = defaultTokens.String() + nchtypes.DefaultBondDenom
+	defaultAmount                  = defaultTokens.String() + sdk.DefaultBondDenom
 	defaultCommissionRate          = "0.1"
 	defaultCommissionMaxRate       = "0.2"
 	defaultCommissionMaxChangeRate = "0.01"

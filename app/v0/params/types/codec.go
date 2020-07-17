@@ -4,7 +4,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
-// module codec
+// ModuleCdc - generic sealed codec to be used throughout module
 var ModuleCdc *codec.Codec
 
 func init() {

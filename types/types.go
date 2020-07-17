@@ -141,7 +141,7 @@ func (h Hash) Value() (driver.Value, error) {
 }
 
 // ImplementsGraphQLType returns true if Hash implements the specified GraphQL type.
-func (_ Hash) ImplementsGraphQLType(name string) bool { return name == "Bytes32" }
+func (Hash) ImplementsGraphQLType(name string) bool { return name == "Bytes32" }
 
 // UnmarshalGraphQL unmarshals the provided GraphQL query data.
 func (h *Hash) UnmarshalGraphQL(input interface{}) error {

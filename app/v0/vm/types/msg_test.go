@@ -16,7 +16,7 @@ func TestMsgContract(t *testing.T) {
 	coin0 := sdk.NewInt64Coin(sdk.NativeTokenName, 0)
 	coin123eth := sdk.NewInt64Coin("eth", 123)
 	coin0eth := sdk.NewInt64Coin("eth", 0)
-	coinNegative := sdk.Coin{sdk.NativeTokenName, sdk.NewInt(-123)}
+	coinNegative := sdk.Coin{Denom: sdk.NativeTokenName, Amount: sdk.NewInt(-123)}
 
 	payload := []byte("payload")
 	payloadEmpty := []byte("")
@@ -103,12 +103,12 @@ func TestMsgContractRoute(t *testing.T) {
 	msg := NewMsgContract(addr1, nil, payload, coin)
 
 	require.Equal(t, msg.Route(), RouterKey)
-	require.Equal(t, msg.Type(), TypeMsgContract)
+	require.Equal(t, msg.Type(), TypeMsgContractCreate)
 
 	// construct a MsgContract
 	addr2 := sdk.AccAddress([]byte("to"))
 	msg = NewMsgContract(addr1, addr2, payload, coin)
 	require.Equal(t, msg.Route(), RouterKey)
-	require.Equal(t, msg.Type(), TypeMsgContract)
+	require.Equal(t, msg.Type(), TypeMsgContractCall)
 
 }

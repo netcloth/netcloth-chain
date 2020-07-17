@@ -1,9 +1,11 @@
 package protocol
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
 var testHandler = func(_ sdk.Context, _ sdk.Msg) (*sdk.Result, error) {

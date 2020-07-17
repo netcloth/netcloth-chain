@@ -9,6 +9,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// Protocol shows the expected behavior for any protocol version
 type Protocol interface {
 	GetVersion() uint64
 	GetRouter() sdk.Router
@@ -21,8 +22,8 @@ type Protocol interface {
 
 	ExportAppStateAndValidators(ctx sdk.Context, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error)
 
-	Load()
-	Init(ctx sdk.Context)
+	LoadContext()
+	Init()
 	GetCodec() *codec.Codec
 
 	//for test
@@ -30,4 +31,7 @@ type Protocol interface {
 	SetQuearyRouter(sdk.QueryRouter)
 	SetAnteHandler(anteHandler sdk.AnteHandler)
 	SetInitChainer(sdk.InitChainer)
+
+	//for simulation
+	GetSimulationManager() interface{}
 }

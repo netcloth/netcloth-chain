@@ -56,23 +56,12 @@ func queryCIPAL(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 
 func queryCIPALCount(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var params types.QueryCIPALsParams
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
-			return
-		}
-
-		bz, err := cliCtx.Codec.MarshalJSON(params)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
 
-		res, height, err := cliCtx.QueryWithData(endpoint, bz)
+		res, height, err := cliCtx.QueryWithData(endpoint, nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -117,7 +106,7 @@ func CIPALFn(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 func CIPALCountFn(cliCtx context.CLIContext) http.HandlerFunc {
-	return queryCIPAL(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryCIPALCount))
+	return queryCIPALCount(cliCtx, fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryCIPALCount))
 }
 
 func CIPALsFn(cliCtx context.CLIContext) http.HandlerFunc {

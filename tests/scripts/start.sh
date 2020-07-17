@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 export PATH=$PATH:/root/go/bin
 pkill nchd
 pkill nchcli

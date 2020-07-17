@@ -38,18 +38,6 @@ import (
 var (
 	Addrs = createTestAddrs(500)
 	PKs   = createTestPubKeys(500)
-
-	addrDels = []sdk.AccAddress{
-		Addrs[0],
-		Addrs[1],
-	}
-	addrVals = []sdk.ValAddress{
-		sdk.ValAddress(Addrs[2]),
-		sdk.ValAddress(Addrs[3]),
-		sdk.ValAddress(Addrs[4]),
-		sdk.ValAddress(Addrs[5]),
-		sdk.ValAddress(Addrs[6]),
-	}
 )
 
 var (
@@ -90,9 +78,6 @@ func CreateTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 		cipal.StoreKey,
 		ipal.StoreKey,
 		types.StoreKey,
-		types.CodeKey,
-		types.LogKey,
-		types.StoreDebugKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, staking.TStoreKey, params.TStoreKey)
 
@@ -149,9 +134,6 @@ func CreateTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 	keeper := NewKeeper(
 		cdc,
 		keys[types.StoreKey],
-		keys[types.CodeKey],
-		keys[types.LogKey],
-		keys[types.StoreDebugKey],
 		paramsKeeper.Subspace(DefaultParamspace),
 		accountKeeper,
 	)
@@ -219,7 +201,7 @@ func NewPubKey(pk string) (res crypto.PubKey) {
 	}
 
 	var pkEd ed25519.PubKeyEd25519
-	copy(pkEd[:], pkBytes[:])
+	copy(pkEd[:], pkBytes)
 	return pkEd
 }
 

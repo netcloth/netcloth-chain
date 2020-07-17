@@ -6,9 +6,9 @@ type GenesisState struct {
 }
 
 // NewGenesisState creates a new genesis state.
-func NewGenesisState(CIPALObjs CIPALObjects) GenesisState {
+func NewGenesisState(objs CIPALObjects) GenesisState {
 	return GenesisState{
-		CIPALObjs: CIPALObjs,
+		CIPALObjs: objs,
 	}
 }
 

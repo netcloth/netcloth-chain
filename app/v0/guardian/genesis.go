@@ -38,7 +38,7 @@ func DefaultGenesisState() GenesisState {
 	return NewGenesisState([]types.Guardian{})
 }
 
-func (gs GenesisState) Contains(addr sdk.AccAddress) bool {
+func (gs GenesisState) Contains(addr sdk.Address) bool {
 	for _, p := range gs.Profilers {
 		if p.Address.Equals(addr) {
 			return true

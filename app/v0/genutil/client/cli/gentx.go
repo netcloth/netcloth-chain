@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"io"
 	"io/ioutil"
 	"os"
@@ -19,6 +18,7 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/app/v0/genutil"

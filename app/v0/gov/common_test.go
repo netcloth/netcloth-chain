@@ -13,6 +13,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/netcloth/netcloth-chain/app/mock"
+	v0 "github.com/netcloth/netcloth-chain/app/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
@@ -20,17 +22,13 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/app/v0/supply"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/simapp"
-	v0 "github.com/netcloth/netcloth-chain/simapp/p0"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
 var (
-	valTokens  = sdk.TokensFromConsensusPower(1000)
-	initTokens = sdk.TokensFromConsensusPower(100000)
-	valCoins   = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
-	initCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
+	valTokens = sdk.TokensFromConsensusPower(1000)
+	valCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
 )
 
 var (
@@ -45,7 +43,7 @@ var (
 )
 
 type testInput struct {
-	mApp     *simapp.NCHApp
+	mApp     *mock.NCHApp
 	keeper   gov.Keeper
 	sk       staking.Keeper
 	ak       auth.AccountKeeper
@@ -54,7 +52,7 @@ type testInput struct {
 	privKeys []crypto.PrivKey
 }
 
-func getProtocolV0(t *testing.T, app *simapp.NCHApp) *v0.ProtocolV0 {
+func getProtocolV0(t *testing.T, app *mock.NCHApp) *v0.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
 	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
 	require.True(t, ok)
@@ -70,8 +68,8 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 		privKeys []crypto.PrivKey
 	)
 
-	if genAccs == nil || len(genAccs) == 0 {
-		genAccs, addrs, pubKeys, privKeys = simapp.CreateGenAccounts(numGenAccs, valCoins)
+	if len(genAccs) == 0 {
+		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(numGenAccs, valCoins)
 	}
 
 	protocolV0 := getProtocolV0(t, mApp)
@@ -82,10 +80,10 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
 }
 
-func NewNCHApp(t *testing.T) *simapp.NCHApp {
+func NewNCHApp(t *testing.T) *mock.NCHApp {
 	logger := log.NewNopLogger()
 	db := dbm.NewMemDB()
-	baseApp := simapp.NewBaseApp("nchmock", logger, db)
+	baseApp := mock.NewBaseApp("nchmock", logger, db)
 
 	baseApp.SetCommitMultiStoreTracer(nil)
 	baseApp.SetAppVersion("v0")
@@ -106,10 +104,10 @@ func NewNCHApp(t *testing.T) *simapp.NCHApp {
 
 	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
 
-	return &simapp.NCHApp{BaseApp: baseApp}
+	return &mock.NCHApp{BaseApp: baseApp}
 }
 
-func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
+func setGenesis(app *mock.NCHApp, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
 	app.GenesisAccounts = accs
 
 	genesisState := v0.NewDefaultGenesisState()
@@ -134,14 +132,14 @@ func setGenesis(app *simapp.NCHApp, cdc *codec.Codec, accs []auth.Account, genSt
 	return nil
 }
 
-func setTotalSupply(t *testing.T, app *simapp.NCHApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
+func setTotalSupply(t *testing.T, app *mock.NCHApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
 	p0 := getProtocolV0(t, app)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(p0.StakingKeeper.BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
 	prevSupply := p0.SupplyKeeper.GetSupply(ctx)
 	p0.SupplyKeeper.SetSupply(ctx, supply.NewSupply(prevSupply.GetTotal().Add(totalSupply)))
 }
 
-func initGenAccount(t *testing.T, ctx sdk.Context, app *simapp.NCHApp) {
+func initGenAccount(t *testing.T, ctx sdk.Context, app *mock.NCHApp) {
 	p0 := getProtocolV0(t, app)
 	accAmt := sdk.NewInt(0)
 	for _, genAcc := range app.GenesisAccounts {
@@ -186,7 +184,7 @@ func SortByteArrays(src [][]byte) [][]byte {
 
 // Sorts Addresses
 func SortAddresses(addrs []sdk.AccAddress) {
-	var byteAddrs [][]byte
+	byteAddrs := make([][]byte, 0, len(addrs))
 	for _, addr := range addrs {
 		byteAddrs = append(byteAddrs, addr.Bytes())
 	}

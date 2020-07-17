@@ -3,7 +3,6 @@ package auth
 import (
 	auth "github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/codec"
-	"github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
@@ -20,7 +19,7 @@ func NewRefundKeeper(cdc *codec.Codec, key sdk.StoreKey) RefundKeeper {
 	}
 }
 
-func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk RefundKeeper) types.FeeRefundHandler {
+func NewFeeRefundHandler(am AccountKeeper, supplyKeeper auth.SupplyKeeper, rk RefundKeeper) sdk.FeeRefundHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, txResult sdk.Result) (actualCostFee sdk.Coin, err error) {
 		txAccount := GetFeePayers(ctx)
 		if txAccount == nil {

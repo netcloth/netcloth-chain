@@ -181,26 +181,26 @@ Where proposal.json contains:
 				return err
 			}
 
-			var proposalJson SoftwareUpgradeProposalJson
-			err = json.Unmarshal(contents, &proposalJson)
+			var proposalJSON SoftwareUpgradeProposalJSON
+			err = json.Unmarshal(contents, &proposalJSON)
 			if err != nil {
 				return err
 			}
 
 			var proposal types.SoftwareUpgradeProposal
 
-			proposal.Title = proposalJson.Title
-			proposal.Description = proposalJson.Description
-			proposal.Version = proposalJson.Version
-			proposal.Software = proposalJson.Software
-			proposal.SwitchHeight = proposalJson.SwitchHeight
-			proposal.Threshold = proposalJson.Threshold
+			proposal.Title = proposalJSON.Title
+			proposal.Description = proposalJSON.Description
+			proposal.Version = proposalJSON.Version
+			proposal.Software = proposalJSON.Software
+			proposal.SwitchHeight = proposalJSON.SwitchHeight
+			proposal.Threshold = proposalJSON.Threshold
 
 			if err = proposal.ValidateBasic(); err != nil {
 				return err
 			}
 
-			msg := types.NewMsgSubmitProposal(proposal, sdk.NewCoins(proposalJson.Deposit), cliCtx.FromAddress)
+			msg := types.NewMsgSubmitProposal(proposal, sdk.NewCoins(proposalJSON.Deposit), cliCtx.FromAddress)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -20,7 +20,7 @@ var (
 )
 
 func TestMsgIPALNodeClaimRoute(t *testing.T) {
-	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond, "1")
 
 	require.Equal(t, msg.Route(), RouterKey)
 	require.Equal(t, msg.Type(), TypeMsgIPALNodeClaim)
@@ -42,14 +42,14 @@ func TestMsgIPALNodeClaimValidation(t *testing.T) {
 		valid bool
 		tx    MsgIPALNodeClaim
 	}{
-		{true, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)}, // valid
+		{true, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond, "1")}, // valid
 
-		{false, NewMsgIPALNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond)}, // empty from addr
-		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, bond)},          // empty moniker
-		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, xnchCoin)},      //  other bond coins
-		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin)},  //  negative coins
-		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond)},   // empty endpoints
-		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond)},  // duplicate endpoints
+		{false, NewMsgIPALNodeClaim(emptyAddr, moniker, website, details, extension, endpoints, bond, "1")}, // empty from addr
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, bond, "1")},          // empty moniker
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, xnchCoin, "1")},      //  other bond coins
+		{false, NewMsgIPALNodeClaim(addr1, "", website, details, extension, endpoints, negativeCoin, "1")},  //  negative coins
+		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, Endpoints{}, bond, "1")},   // empty endpoints
+		{false, NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, dupEndPoints, bond, "1")},  // duplicate endpoints
 	}
 
 	for _, tc := range cases {
@@ -63,15 +63,15 @@ func TestMsgIPALNodeClaimValidation(t *testing.T) {
 }
 
 func TestMsgIPALNodeClaimGetSignBytes(t *testing.T) {
-	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond)
+	var msg = NewMsgIPALNodeClaim(addr1, moniker, website, details, extension, endpoints, bond, "1")
 	res := msg.GetSignBytes()
 
-	expected := `{"type":"nch/IPALClaim","value":{"bond":{"amount":"1000000000000","denom":"pnch"},"details":"details","endpoints":[{"endpoint":"http://1.1.1.1","type":"1"},{"endpoint":"http://2.2.2.2","type":"3"}],"extension":"","moniker":"moniker","operator_address":"nch1veex7mg3k0xqr","website":"website"}}`
+	expected := `{"type":"nch/IPALClaim","value":{"app_version":"1","bond":{"amount":"1000000000000","denom":"pnch"},"details":"details","endpoints":[{"endpoint":"http://1.1.1.1","type":"1"},{"endpoint":"http://2.2.2.2","type":"3"}],"extension":"","moniker":"moniker","operator_address":"nch1veex7mg3k0xqr","website":"website"}}`
 	require.Equal(t, expected, string(res))
 }
 
 func TestMsgIPALNodeClaimGetSigners(t *testing.T) {
-	var msg = NewMsgIPALNodeClaim(sdk.AccAddress([]byte("input1")), moniker, website, details, extension, endpoints, bond)
+	var msg = NewMsgIPALNodeClaim(sdk.AccAddress([]byte("input1")), moniker, website, details, extension, endpoints, bond, "1")
 	res := msg.GetSigners()
 
 	require.Equal(t, fmt.Sprintf("%v", res), "[696E70757431]")

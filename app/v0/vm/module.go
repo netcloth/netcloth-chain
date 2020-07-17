@@ -1,9 +1,10 @@
 package vm
 
+// DONTCOVER
+
 import (
 	"encoding/json"
-	"fmt"
-	"os"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -12,16 +13,19 @@ import (
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/cli"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/client/rest"
+	"github.com/netcloth/netcloth-chain/app/v0/vm/simulation"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 type AppModuleBasic struct{}
@@ -63,52 +67,84 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 type AppModule struct {
 	AppModuleBasic
-	keeper Keeper
+	keeper          Keeper
+	akForSimulation AccountKeeper // for simulation
+}
+
+func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
+	am.akForSimulation = ak
+	return am
+}
+
+// InitGenesis instantiates the genesis state
+func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+	var genesisState types.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	am.keeper.SetParams(ctx, genesisState.Params)
+
+	am.keeper.StateDB.WithContext(ctx).ImportState(genesisState)
+
+	return nil
+}
+
+// ExportGenesis exports the genesis state to be used by daemon
+func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+	vmState := am.keeper.StateDB.WithContext(ctx).ExportState()
+	vmState.Params = am.keeper.GetParams(ctx)
+	return ModuleCdc.MustMarshalJSON(vmState)
+}
+
+func (am AppModule) RegisterInvariants(sdk.InvariantRegistry) {
+}
+
+func (am AppModule) Route() string {
+	return RouterKey
+}
+
+func (am AppModule) NewHandler() sdk.Handler {
+	return NewHandler(am.keeper)
+}
+
+func (am AppModule) QuerierRoute() string {
+	return QuerierRoute
+}
+
+func (am AppModule) NewQuerierHandler() sdk.Querier {
+	return NewQuerier(am.keeper)
+}
+
+// BeginBlock function for module at start of each block
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
+}
+
+// EndBlock function for module at end of block
+func (am AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return EndBlocker(ctx, am.keeper)
 }
 
 func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{keeper: keeper}
 }
 
-func (a AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	a.keeper.SetParams(ctx, genesisState.Params)
+//____________________________________________________________________________
 
+// AppModuleSimulation functions
+
+// GenerateGenesisState creates a randomized GenState of the vm module.
+func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+}
+
+// ProposalContents doesn't return any content functions for governance proposals.
+func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return nil
 }
 
-func (a AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	kvs := a.keeper.StateDB.WithContext(ctx).ExportState()
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("len(kvs)=%d", len(kvs)))
-	return types.ModuleCdc.MustMarshalJSON(kvs)
+// RandomizedParams creates randomized staking param changes for the simulator.
+func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
+	return nil
 }
 
-func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {
-	panic("implement me")
-}
-
-func (a AppModule) Route() string {
-	return RouterKey
-}
-
-func (a AppModule) NewHandler() sdk.Handler {
-	return NewHandler(a.keeper)
-}
-
-func (a AppModule) QuerierRoute() string {
-	return QuerierRoute
-}
-
-func (a AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(a.keeper)
-}
-
-func (a AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
-	// TODO
-}
-
-func (a AppModule) EndBlock(ctx sdk.Context, end abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return EndBlocker(ctx, a.keeper)
-
+// WeightedOperations returns the all the staking module operations with their respective weights.
+func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper)
 }

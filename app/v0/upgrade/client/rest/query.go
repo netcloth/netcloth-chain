@@ -18,13 +18,15 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("GET")
 }
 
+// VersionInfo is the struct of version info
 type VersionInfo struct {
 	Version        string `json:"version"`
 	UpgradeVersion int64  `json:"upgrade_version"`
 	StartHeight    int64  `json:"start_height"`
-	ProposalId     int64  `json:"proposal_id"`
+	ProposalID     int64  `json:"proposal_id"`
 }
 
+// InfoHandlerFn - HTTP request handler to query the upgrade info
 func InfoHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cdc := cliCtx.Codec

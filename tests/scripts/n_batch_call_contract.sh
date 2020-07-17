@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 n=$1
 contract_addr=$2
 accs=$3

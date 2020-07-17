@@ -7,10 +7,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
-	"github.com/netcloth/netcloth-chain/hexutil"
-
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
+	"github.com/netcloth/netcloth-chain/app/v0/vm/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -50,15 +48,6 @@ type StructLog struct {
 	Depth         int                   `json:"depth"`
 	RefundCounter uint64                `json:"refund"`
 	Err           error                 `json:"-"`
-}
-
-type structLogMarshaling struct {
-	Stack       []*math.HexOrDecimal256
-	Gas         math.HexOrDecimal64
-	GasCost     math.HexOrDecimal64
-	Memory      hexutil.Bytes
-	OpName      string `json:"opName"` // adds call to OpName() in MarshalJSON
-	ErrorString string `json:"error"`  // adds call to ErrorString() in MarshalJSON
 }
 
 // OpName formats the operand name in a human-readable format

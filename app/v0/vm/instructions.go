@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -638,12 +639,12 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 		gas          = contract.Gas
 	)
 	gas -= gas / 64
+	contract.UseGas(gas)
 
-	contract.UseGas(0)
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
-	if suberr == ErrCodeStoreOutOfGas {
-		stack.push(interpreter.intPool.getZero())
-	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {
+
+	if suberr != nil {
+		fmt.Println(fmt.Sprintf("opCreate error: %v", suberr))
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetBytes(addr.Bytes()))
@@ -652,6 +653,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	interpreter.intPool.put(value, offset, size)
 
 	if suberr == ErrExecutionReverted {
+		fmt.Println("opCreate execution reverted")
 		return res, nil
 	}
 	return nil, nil
@@ -851,7 +853,7 @@ func opPush1(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory
 		integer = interpreter.intPool.get()
 	)
 
-	*pc += 1
+	*pc++
 	if *pc < codeLen {
 		stack.push(integer.SetUint64(uint64(contract.Code[*pc])))
 	} else {

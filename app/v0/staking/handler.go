@@ -139,13 +139,13 @@ func handleMsgEditValidator(ctx sdk.Context, msg MsgEditValidator, k keeper.Keep
 	}
 
 	if msg.MinSelfDelegation != nil {
-		if !(*msg.MinSelfDelegation).GT(validator.MinSelfDelegation) {
+		if !msg.MinSelfDelegation.GT(validator.MinSelfDelegation) {
 			return nil, ErrMinSelfDelegationDecreased
 		}
-		if (*msg.MinSelfDelegation).GT(validator.Tokens) {
+		if msg.MinSelfDelegation.GT(validator.Tokens) {
 			return nil, ErrSelfDelegationBelowMinimum
 		}
-		validator.MinSelfDelegation = (*msg.MinSelfDelegation)
+		validator.MinSelfDelegation = *msg.MinSelfDelegation
 	}
 
 	k.SetValidator(ctx, validator)

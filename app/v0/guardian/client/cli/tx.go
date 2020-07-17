@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/netcloth/netcloth-chain/client"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -10,6 +9,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/client/utils"
 	"github.com/netcloth/netcloth-chain/app/v0/guardian/types"
+	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/client/context"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"

@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	maxUserAddressLength   = 256
-	maxServerAddressLength = 256
+	maxUserAddressLength = 256
 )
 
 var (
@@ -32,11 +31,11 @@ type ADParam struct {
 
 type CIPALUserRequest struct {
 	Params ADParam           `json:"params" yaml:"params"`
-	Sig    auth.StdSignature `json:"signature" yaml:"signature`
+	Sig    auth.StdSignature `json:"signature" yaml:"signature"`
 }
 
 type MsgCIPALClaim struct {
-	From        sdk.AccAddress   `json:"from" yaml:"from`
+	From        sdk.AccAddress   `json:"from" yaml:"from"`
 	UserRequest CIPALUserRequest `json:"user_request" yaml:"user_request"`
 }
 

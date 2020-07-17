@@ -57,22 +57,6 @@ func getQueriedParams(t *testing.T, ctx sdk.Context, cdc *codec.Codec, querier s
 	return depositParams, votingParams, tallyParams
 }
 
-func getQueriedProposal(t *testing.T, ctx sdk.Context, cdc *codec.Codec, querier sdk.Querier, proposalID uint64) Proposal {
-	query := abci.RequestQuery{
-		Path: strings.Join([]string{custom, QuerierRoute, QueryProposal}, "/"),
-		Data: cdc.MustMarshalJSON(NewQueryProposalParams(proposalID)),
-	}
-
-	bz, err := querier(ctx, []string{QueryProposal}, query)
-	require.Nil(t, err)
-	require.NotNil(t, bz)
-
-	var proposal Proposal
-	err2 := cdc.UnmarshalJSON(bz, proposal)
-	require.Nil(t, err2)
-	return proposal
-}
-
 func getQueriedProposals(t *testing.T, ctx sdk.Context, cdc *codec.Codec, querier sdk.Querier, depositor, voter sdk.AccAddress, status ProposalStatus, limit uint64) []Proposal {
 	query := abci.RequestQuery{
 		Path: strings.Join([]string{custom, QuerierRoute, QueryProposals}, "/"),
@@ -153,22 +137,6 @@ func getQueriedVotes(t *testing.T, ctx sdk.Context, cdc *codec.Codec, querier sd
 	return votes
 }
 
-func getQueriedTally(t *testing.T, ctx sdk.Context, cdc *codec.Codec, querier sdk.Querier, proposalID uint64) TallyResult {
-	query := abci.RequestQuery{
-		Path: strings.Join([]string{custom, QuerierRoute, QueryTally}, "/"),
-		Data: cdc.MustMarshalJSON(NewQueryProposalParams(proposalID)),
-	}
-
-	bz, err := querier(ctx, []string{QueryTally}, query)
-	require.Nil(t, err)
-	require.NotNil(t, bz)
-
-	var tally TallyResult
-	err2 := cdc.UnmarshalJSON(bz, &tally)
-	require.Nil(t, err2)
-	return tally
-}
-
 func TestQueryParams(t *testing.T) {
 	cdc := codec.New()
 	input := getMockApp(t, 1000, GenesisState{}, nil)
@@ -220,9 +188,9 @@ func TestQueries(t *testing.T) {
 	cdc.MustUnmarshalBinaryLengthPrefixed(res.Data, &proposalID3)
 
 	// input.addrs[1] deposits on proposals #2 & #3
-	res, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID2, depositParams.MinDeposit))
+	_, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID2, depositParams.MinDeposit))
 	require.Nil(t, err)
-	res, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID3, depositParams.MinDeposit))
+	_, err = handler(ctx, NewMsgDeposit(input.addrs[1], proposalID3, depositParams.MinDeposit))
 	require.Nil(t, err)
 
 	// check deposits on proposal1 match individual deposits

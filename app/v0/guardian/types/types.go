@@ -95,20 +95,11 @@ func AccountTypeFromString(str string) (AccountType, error) {
 	}
 }
 
-// is defined AccountType?
-func validAccountType(bt AccountType) bool {
-	if bt == Genesis ||
-		bt == Ordinary {
-		return true
-	}
-	return false
-}
-
 // For Printf / Sprintf, returns bech32 when using %s
 func (bt AccountType) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
-		s.Write([]byte(fmt.Sprintf("%s", bt.String())))
+		s.Write([]byte(bt.String()))
 	default:
 		s.Write([]byte(fmt.Sprintf("%v", byte(bt))))
 	}

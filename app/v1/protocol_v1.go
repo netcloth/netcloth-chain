@@ -107,6 +107,13 @@ type ProtocolV1 struct {
 	invCheckPeriod uint
 }
 
+func (p *ProtocolV1) LoadContext() {
+}
+
+func (p *ProtocolV1) GetSimulationManager() interface{} {
+	return nil
+}
+
 func NewProtocolV1(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV1 {
 	p1 := ProtocolV1{
 		version:        version,
@@ -148,10 +155,9 @@ func (p *ProtocolV1) Load() {
 	p.configModuleManager()
 	p.configRouters()
 	p.configFeeHandlers()
-	//p.configParams()
 }
 
-func (p *ProtocolV1) Init(ctx sdk.Context) {
+func (p *ProtocolV1) Init() {
 }
 
 func (p *ProtocolV1) GetCodec() *codec.Codec {
@@ -235,10 +241,7 @@ func (p *ProtocolV1) configKeepers() {
 
 	p.vmKeeper = vm.NewKeeper(
 		p.cdc,
-		protocol.Keys[protocol.VmStoreKey],
-		protocol.Keys[protocol.VmCodeStoreKey],
-		protocol.Keys[protocol.VmLogStoreKey],
-		protocol.Keys[protocol.VmStoreKey],
+		protocol.Keys[protocol.VMStoreKey],
 		vmSubspace,
 		p.accountKeeper)
 

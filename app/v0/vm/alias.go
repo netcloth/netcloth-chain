@@ -9,9 +9,6 @@ import (
 const (
 	ModuleName        = types.ModuleName
 	StoreKey          = types.StoreKey
-	CodeKey           = types.CodeKey
-	LogKey            = types.LogKey
-	StoreDebugKey     = types.StoreDebugKey
 	RouterKey         = types.RouterKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = keeper.DefaultParamspace
@@ -19,6 +16,7 @@ const (
 
 type (
 	Keeper        = keeper.Keeper
+	AccountKeeper = types.AccountKeeper
 	MsgContract   = types.MsgContract
 	CommitStateDB = types.CommitStateDB
 	Log           = types.Log
@@ -27,6 +25,7 @@ type (
 )
 
 var (
+	// functions aliases
 	NewKeeper        = keeper.NewKeeper
 	NewCommitStateDB = types.NewCommitStateDB
 
@@ -52,4 +51,7 @@ var (
 	ErrGasUintOverflow          = types.ErrGasUintOverflow
 	ErrNoPayload                = types.ErrNoPayload
 	ErrWrongCtx                 = types.ErrWrongCtx
+
+	// variable aliases
+	ModuleCdc = types.ModuleCdc
 )

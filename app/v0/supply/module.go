@@ -1,5 +1,7 @@
 package supply
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 

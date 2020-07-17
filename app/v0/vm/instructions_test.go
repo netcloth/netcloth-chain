@@ -3,16 +3,23 @@ package vm
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/netcloth/netcloth-chain/hexutil"
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/types/time"
 	"io/ioutil"
 	"math/big"
 	"reflect"
 	"testing"
 
+	"github.com/netcloth/netcloth-chain/hexutil"
+	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/types/time"
+
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
+)
+
+var (
+	x = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	z = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
 )
 
 type TwoOperandTestcase struct {
@@ -34,7 +41,6 @@ type OneOperandTestcase struct {
 	Expected string
 }
 
-var oneOpParams []string
 var oneOpMethods map[string]executionFunc
 
 func init() {
@@ -371,9 +377,6 @@ func BenchmarkOpSub256(b *testing.B) {
 }
 
 func BenchmarkOpMul(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opMul, x, y)
 }
 
@@ -403,65 +406,38 @@ func BenchmarkOpSdiv(b *testing.B) {
 }
 
 func BenchmarkOpMod(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opMod, x, y)
 }
 
 func BenchmarkOpSmod(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opSmod, x, y)
 }
 
 func BenchmarkOpExp(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opExp, x, y)
 }
 
 func BenchmarkOpSignExtend(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opSignExtend, x, y)
 }
 
 func BenchmarkOpLt(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opLt, x, y)
 }
 
 func BenchmarkOpGt(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opGt, x, y)
 }
 
 func BenchmarkOpSlt(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opSlt, x, y)
 }
 
 func BenchmarkOpSgt(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opSgt, x, y)
 }
 
 func BenchmarkOpEq(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opEq, x, y)
 }
 
@@ -472,46 +448,26 @@ func BenchmarkOpEq2(b *testing.B) {
 }
 
 func BenchmarkOpAnd(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opAnd, x, y)
 }
 
 func BenchmarkOpOr(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opOr, x, y)
 }
 
 func BenchmarkOpXor(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opXor, x, y)
 }
 
 func BenchmarkOpByte(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opByte, x, y)
 }
 
 func BenchmarkOpAddmod(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	z := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opAddmod, x, y, z)
 }
 
 func BenchmarkOpMulmod(b *testing.B) {
-	x := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	z := "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-
 	opBenchmark(b, opMulmod, x, y, z)
 }
 
@@ -1622,6 +1578,7 @@ func TestOpJumpi(t *testing.T) {
 	stack.push(big.NewInt(0))  // cond == 0 can not jump, and the pc will puls 1
 	stack.push(big.NewInt(22)) // code[22] == '6b': 91 is JUMPDEST
 	_, err := opJumpi(&pc, interpreter, contract, nil, stack)
+	require.Nil(t, err)
 	require.Equal(t, uint64(1), pc)
 
 	stack.push(big.NewInt(1))  // cond != 0 can jump

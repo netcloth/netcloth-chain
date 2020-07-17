@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 acc_basename=$1
 acc_number=$2
 passwd=$3

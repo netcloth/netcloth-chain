@@ -26,7 +26,7 @@ var (
 	Name       = ""
 	ServerName = "<appd>"
 	ClientName = "<appcli>"
-	Version    = ""
+	Version    = "1"
 	Commit     = ""
 	BuildTags  = ""
 	AppVersion = uint64(1)
@@ -37,7 +37,7 @@ type Info struct {
 	ServerName string `json:"server_name" yaml:"server_name"`
 	ClientName string `json:"client_name" yaml:"client_name"`
 	Version    string `json:"version" yaml:"version"`
-	AppVersion uint64 `json:app_version" yaml:"app_version""`
+	AppVersion uint64 `json:"app_version" yaml:"app_version"`
 	GitCommit  string `json:"commit" yaml:"commit"`
 	BuildTags  string `json:"build_tags" yaml:"build_tags"`
 	GoVersion  string `json:"go" yaml:"go"`

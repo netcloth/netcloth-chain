@@ -91,12 +91,6 @@ func TestLogContext(t *testing.T) {
 	require.Equal(t, *logger.logs, []string{"debug", "info", "error"})
 }
 
-type dummy int64
-
-func (d dummy) Clone() interface{} {
-	return d
-}
-
 // Testing saving/loading sdk type values to/from the context
 func TestContextWithCustom(t *testing.T) {
 	var ctx types.Context

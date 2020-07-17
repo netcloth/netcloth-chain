@@ -19,14 +19,8 @@ type QueryIPALNodesParams struct {
 	AccAddrs []sdk.AccAddress `json:"acc_addrs"`
 }
 
-func NewQueryIPALNodeParams(AccAddr sdk.AccAddress) QueryIPALNodeParams {
+func NewQueryIPALNodeParams(accAddr sdk.AccAddress) QueryIPALNodeParams {
 	return QueryIPALNodeParams{
-		AccAddr: AccAddr,
-	}
-}
-
-func NewQueryIPALNodesParams(AccAddrs []sdk.AccAddress) QueryIPALNodesParams {
-	return QueryIPALNodesParams{
-		AccAddrs: AccAddrs,
+		AccAddr: accAddr,
 	}
 }

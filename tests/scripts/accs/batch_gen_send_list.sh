@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 accs_file_list=($@)
 #echo ${accs_file_list[@]}
 

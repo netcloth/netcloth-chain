@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 from_acc_file=$1
 to_accs_file=$2
 passwd=$3

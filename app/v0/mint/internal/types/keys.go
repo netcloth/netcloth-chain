@@ -1,6 +1,6 @@
 package types
 
-// the one key to use for the keeper store
+// MinterKey - the one key to use for the keeper store
 var MinterKey = []byte{0x00}
 
 // nolint

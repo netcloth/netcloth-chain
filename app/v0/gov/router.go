@@ -2,13 +2,12 @@ package gov
 
 import (
 	"fmt"
-	"regexp"
+
+	"github.com/netcloth/netcloth-chain/utils"
 )
 
 var (
 	_ Router = (*router)(nil)
-
-	isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
 )
 
 // Router implements a governance Handler router.
@@ -48,7 +47,7 @@ func (rtr *router) AddRoute(path string, h Handler) Router {
 		panic("router sealed; cannot add route handler")
 	}
 
-	if !isAlphaNumeric(path) {
+	if !utils.IsAlphaNumeric(path) {
 		panic("route expressions can only contain alphanumeric characters")
 	}
 	if rtr.HasRoute(path) {

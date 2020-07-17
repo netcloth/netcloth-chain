@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	flagTags   = "tags"
 	flagEvents = "events"
 	flagPage   = "page"
 	flagLimit  = "limit"
@@ -68,7 +67,7 @@ $ <appcli> query auth params
 
 			var params types.Params
 			if err := cdc.UnmarshalJSON(res, &params); err != nil {
-				return fmt.Errorf("failed to unmarshal params: %w", err)
+				return fmt.Errorf("failed to unmarshal params: %v", err)
 			}
 
 			return cliCtx.PrintOutput(params)
@@ -209,7 +208,7 @@ func QueryTxCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			if output.Empty() {
-				return fmt.Errorf("No transaction found with hash %s", args[0])
+				return fmt.Errorf("transaction with hash %s not found", args[0])
 			}
 
 			return cliCtx.PrintOutput(output)

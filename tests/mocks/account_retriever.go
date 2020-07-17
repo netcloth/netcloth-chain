@@ -1,8 +1,9 @@
 package mocks
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
+	"reflect"
+
+	"github.com/golang/mock/gomock"
 )
 
 type MockNodeQuerier struct {

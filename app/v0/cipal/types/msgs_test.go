@@ -28,7 +28,7 @@ func TestIPALUserRequestSig(t *testing.T) {
 	// parse private key
 	rawPrivKey := sdk.FromHex("a869398c1d25422b6bda112c91552a1de9464411767765d9a54fea44899a7f3d")
 	var privKeyBytes [32]byte
-	copy(privKeyBytes[:], rawPrivKey[:])
+	copy(privKeyBytes[:], rawPrivKey)
 	privKey := secp256k1.PrivKeySecp256k1(privKeyBytes)
 
 	// sign

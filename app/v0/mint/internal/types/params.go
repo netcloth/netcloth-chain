@@ -9,7 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/netcloth/netcloth-chain/app/v0/params"
-	nchtypes "github.com/netcloth/netcloth-chain/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -61,10 +60,10 @@ func (p Params) Equal(p2 Params) bool {
 // default minting module parameters
 func DefaultParams() Params {
 	return Params{
-		MintDenom:           nchtypes.DefaultBondDenom,
-		InflationRateChange: sdk.NewDecWithPrec(10, 2),
-		InflationMax:        sdk.NewDecWithPrec(20, 2),
-		InflationMin:        sdk.NewDecWithPrec(10, 2),
+		MintDenom:           sdk.DefaultBondDenom,
+		InflationRateChange: sdk.NewDecWithPrec(3, 2),
+		InflationMax:        sdk.NewDecWithPrec(5, 2),
+		InflationMin:        sdk.NewDecWithPrec(2, 2),
 		GoalBonded:          sdk.NewDecWithPrec(67, 2),
 		BlocksPerYear:       uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
 	}

@@ -146,100 +146,100 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	return AccAddress(bz), nil
 }
 
-func (ad AccAddress) Address() AccAddress {
-	return ad
+func (a AccAddress) Address() AccAddress {
+	return a
 }
 
 // Returns boolean for whether two AccAddresses are Equal
-func (aa AccAddress) Equals(aa2 Address) bool {
-	if aa.Empty() && aa2.Empty() {
+func (a AccAddress) Equals(a2 Address) bool {
+	if a.Empty() && a2.Empty() {
 		return true
 	}
 
-	return bytes.Equal(aa.Bytes(), aa2.Bytes())
+	return bytes.Equal(a.Bytes(), a2.Bytes())
 }
 
 // Returns boolean for whether an AccAddress is empty
-func (aa AccAddress) Empty() bool {
-	if aa == nil {
+func (a AccAddress) Empty() bool {
+	if a == nil {
 		return true
 	}
 
-	aa2 := AccAddress{}
-	return bytes.Equal(aa.Bytes(), aa2.Bytes())
+	a2 := AccAddress{}
+	return bytes.Equal(a.Bytes(), a2.Bytes())
 }
 
 // Marshal returns the raw address bytes. It is needed for protobuf
 // compatibility.
-func (aa AccAddress) Marshal() ([]byte, error) {
-	return aa, nil
+func (a AccAddress) Marshal() ([]byte, error) {
+	return a, nil
 }
 
 // Unmarshal sets the address to the given data. It is needed for protobuf
 // compatibility.
-func (aa *AccAddress) Unmarshal(data []byte) error {
-	*aa = data
+func (a *AccAddress) Unmarshal(data []byte) error {
+	*a = data
 	return nil
 }
 
 // MarshalJSON marshals to JSON using Bech32.
-func (aa AccAddress) MarshalJSON() ([]byte, error) {
-	return json.Marshal(aa.String())
+func (a AccAddress) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
 }
 
 // MarshalYAML marshals to YAML using Bech32.
-func (aa AccAddress) MarshalYAML() (interface{}, error) {
-	return aa.String(), nil
+func (a AccAddress) MarshalYAML() (interface{}, error) {
+	return a.String(), nil
 }
 
 // UnmarshalJSON unmarshals from JSON assuming Bech32 encoding.
-func (aa *AccAddress) UnmarshalJSON(data []byte) error {
+func (a *AccAddress) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)
 	if err != nil {
 		return err
 	}
 
-	aa2, err := AccAddressFromBech32(s)
+	a2, err := AccAddressFromBech32(s)
 	if err != nil {
 		return err
 	}
 
-	*aa = aa2
+	*a = a2
 	return nil
 }
 
 // UnmarshalYAML unmarshals from JSON assuming Bech32 encoding.
-func (aa *AccAddress) UnmarshalYAML(data []byte) error {
+func (a *AccAddress) UnmarshalYAML(data []byte) error {
 	var s string
 	err := yaml.Unmarshal(data, &s)
 	if err != nil {
 		return err
 	}
 
-	aa2, err := AccAddressFromBech32(s)
+	a2, err := AccAddressFromBech32(s)
 	if err != nil {
 		return err
 	}
 
-	*aa = aa2
+	*a = a2
 	return nil
 }
 
 // Bytes returns the raw address bytes.
-func (aa AccAddress) Bytes() []byte {
-	return aa
+func (a AccAddress) Bytes() []byte {
+	return a
 }
 
 // String implements the Stringer interface.
-func (aa AccAddress) String() string {
-	if aa.Empty() {
+func (a AccAddress) String() string {
+	if a.Empty() {
 		return ""
 	}
 
 	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
 
-	bech32Addr, err := bech32.ConvertAndEncode(bech32PrefixAccAddr, aa.Bytes())
+	bech32Addr, err := bech32.ConvertAndEncode(bech32PrefixAccAddr, a.Bytes())
 	if err != nil {
 		panic(err)
 	}
@@ -249,21 +249,21 @@ func (aa AccAddress) String() string {
 
 // Format implements the fmt.Formatter interface.
 // nolint: errcheck
-func (aa AccAddress) Format(s fmt.State, verb rune) {
+func (a AccAddress) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
-		s.Write([]byte(aa.String()))
+		s.Write([]byte(a.String()))
 	case 'p':
-		s.Write([]byte(fmt.Sprintf("%p", aa)))
+		s.Write([]byte(fmt.Sprintf("%p", a)))
 	default:
-		s.Write([]byte(fmt.Sprintf("%X", []byte(aa))))
+		s.Write([]byte(fmt.Sprintf("%X", []byte(a))))
 	}
 }
 
 // BytesToAddress returns Address with value b.
 // If b is larger than len(h), b will be cropped from the left.
 func BytesToAddress(b []byte) AccAddress {
-	return AccAddress(b)
+	return b
 }
 
 // BigToAddress returns Address with byte values of b.
@@ -273,6 +273,9 @@ func BigToAddress(b *big.Int) AccAddress { return BytesToAddress(b.Bytes()) }
 // HexToAddress returns Address with byte values of s.
 // If s is larger than len(h), s will be cropped from the left.
 func HexToAddress(s string) AccAddress { return BytesToAddress(FromHex(s)) }
+
+// Hash converts an address to a hash by left-padding it with zeros.
+func (a AccAddress) Hash() Hash { return BytesToHash(a[:]) }
 
 // ----------------------------------------------------------------------------
 // validator operator

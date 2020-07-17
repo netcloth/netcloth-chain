@@ -29,6 +29,7 @@ type GenesisAccount struct {
 	// module account fields
 	ModuleName        string   `json:"module_name" yaml:"module_name"`               // name of the module account
 	ModulePermissions []string `json:"module_permissions" yaml:"module_permissions"` // permissions of module account
+	CodeHash          []byte   `json:"code_hash" yaml:"code_hash"`
 }
 
 // Validate checks for errors on the vesting and module account parameters
@@ -89,6 +90,10 @@ func NewGenesisAccountI(acc authexported.Account) (GenesisAccount, error) {
 		Sequence:      acc.GetSequence(),
 	}
 
+	if len(acc.GetCodeHash()) > 0 {
+		gacc.CodeHash = acc.GetCodeHash()
+	}
+
 	if err := gacc.Validate(); err != nil {
 		return gacc, err
 	}
@@ -111,6 +116,7 @@ func NewGenesisAccountI(acc authexported.Account) (GenesisAccount, error) {
 // ToAccount converts a GenesisAccount to an Account interface
 func (ga *GenesisAccount) ToAccount() auth.Account {
 	bacc := auth.NewBaseAccount(ga.Address, ga.Coins.Sort(), nil, ga.AccountNumber, ga.Sequence)
+	bacc.SetCodeHash(ga.CodeHash)
 
 	// vesting accounts
 	if !ga.OriginalVesting.IsZero() {
@@ -141,7 +147,7 @@ func (ga *GenesisAccount) ToAccount() auth.Account {
 type GenesisAccounts []GenesisAccount
 
 // genesis accounts contain an address
-func (gaccs GenesisAccounts) Contains(acc sdk.AccAddress) bool {
+func (gaccs GenesisAccounts) Contains(acc sdk.Address) bool {
 	for _, gacc := range gaccs {
 		if gacc.Address.Equals(acc) {
 			return true

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"sort"
 	"sync"
 
@@ -13,6 +12,8 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/types"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
+	"github.com/netcloth/netcloth-chain/hexutil"
+	"github.com/netcloth/netcloth-chain/store/prefix"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
@@ -31,11 +32,9 @@ type CommitStateDB struct {
 	// StateDB interface. Perhaps there is a better way.
 	ctx sdk.Context
 
-	ak              auth.AccountKeeper
-	storageKey      sdk.StoreKey
-	codeKey         sdk.StoreKey
-	logKey          sdk.StoreKey
-	storageDebugKey sdk.StoreKey
+	ak auth.AccountKeeper
+
+	storageKey sdk.StoreKey
 
 	// maps that hold 'live' objects, which will get modified while processing a
 	// state transition
@@ -68,8 +67,6 @@ type CommitStateDB struct {
 
 	// mutex for state deep copying
 	lock sync.Mutex
-
-	debug bool
 }
 
 // NewCommitStateDB returns a reference to a newly initialized CommitStateDB
@@ -78,19 +75,15 @@ type CommitStateDB struct {
 // CONTRACT: Stores used for state must be cache-wrapped as the ordering of the
 // key/value space matters in determining the merkle root.
 //func NewCommitStateDB(ctx sdk.Context, ak auth.AccountKeeper, storageKey, codeKey sdk.StoreKey) *CommitStateDB {
-func NewCommitStateDB(ak auth.AccountKeeper, storageKey, codeKey, logKey, storageDebugKey sdk.StoreKey) *CommitStateDB {
+func NewCommitStateDB(ak auth.AccountKeeper, storageKey sdk.StoreKey) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                ak,
 		storageKey:        storageKey,
-		codeKey:           codeKey,
-		logKey:            logKey,
-		storageDebugKey:   storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
-		debug:             true,
 	}
 }
 
@@ -98,14 +91,11 @@ func NewStateDB(db *CommitStateDB) *CommitStateDB {
 	return &CommitStateDB{
 		ak:                db.ak,
 		storageKey:        db.storageKey,
-		codeKey:           db.codeKey,
-		storageDebugKey:   db.storageDebugKey,
 		stateObjects:      make(map[string]*stateObject),
 		stateObjectsDirty: make(map[string]struct{}),
 		logs:              make(map[sdk.Hash][]*Log),
 		preimages:         make(map[sdk.Hash][]byte),
 		journal:           newJournal(),
-		debug:             true,
 	}
 }
 
@@ -315,7 +305,7 @@ func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) (logs []*Log) {
 	}
 
 	ctx := csdb.ctx
-	store := ctx.KVStore(csdb.logKey)
+	store := prefix.NewStore(ctx.KVStore(csdb.storageKey), KeyPrefixLogs)
 	d := store.Get(hash.Bytes())
 	err := json.Unmarshal(d, &logs)
 	if err != nil {
@@ -328,7 +318,7 @@ func (csdb *CommitStateDB) GetLogs(hash sdk.Hash) (logs []*Log) {
 
 // Logs returns all the current logs in the state.
 func (csdb *CommitStateDB) Logs() []*Log { // todo: is should get all logs from store?
-	var logs []*Log
+	logs := make([]*Log, 0, len(csdb.logs))
 	for _, lgs := range csdb.logs {
 		logs = append(logs, lgs...)
 	}
@@ -337,7 +327,7 @@ func (csdb *CommitStateDB) Logs() []*Log { // todo: is should get all logs from 
 }
 
 func (csdb *CommitStateDB) ClearLogs() {
-	for k, _ := range csdb.logs {
+	for k := range csdb.logs {
 		delete(csdb.logs, k)
 	}
 }
@@ -406,9 +396,9 @@ func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err e
 
 func (csdb *CommitStateDB) commitLogs() {
 	ctx := csdb.ctx
-	store := ctx.KVStore(csdb.logKey)
+	store := prefix.NewStore(ctx.KVStore(csdb.storageKey), KeyPrefixLogs)
 
-	var hs []string
+	hs := make([]string, 0, len(csdb.logs))
 	for h := range csdb.logs {
 		hs = append(hs, h.String())
 	}
@@ -422,14 +412,14 @@ func (csdb *CommitStateDB) commitLogs() {
 			continue
 		}
 
-		ctx.Logger().Debug("save log----", hash.String(), ":", string(d))
+		ctx.Logger().Debug(fmt.Sprintf("set logs, txHash: %s, logs: %s", hash.String(), string(d)))
 		store.Set(hash.Bytes(), d)
 	}
 }
 
 func (csdb *CommitStateDB) updateLogIndexByOne(isSubtract bool) uint64 {
 	ctx := csdb.ctx
-	store := ctx.KVStore(csdb.logKey)
+	store := prefix.NewStore(ctx.KVStore(csdb.storageKey), KeyPrefixLogsIndex)
 
 	value := big.NewInt(0)
 	if store.Has(LogIndexKey) {
@@ -438,13 +428,13 @@ func (csdb *CommitStateDB) updateLogIndexByOne(isSubtract bool) uint64 {
 
 		if isSubtract {
 			if value.Uint64() == 0 {
-				ctx.Logger().Error(fmt.Sprintf("current logIndex is 0, can not to be Subtracted"))
+				ctx.Logger().Error("current logIndex is 0, can not to be Subtracted")
 				return 0
 			}
 			value.SetUint64(value.Uint64() - 1)
 		} else {
 			if value.Uint64() == math.MaxUint64 {
-				ctx.Logger().Error(fmt.Sprintf("current logIndex will out of range"))
+				ctx.Logger().Error("current logIndex will out of range")
 				return value.Uint64()
 			}
 			value.SetUint64(value.Uint64() + 1)
@@ -690,7 +680,6 @@ func (csdb *CommitStateDB) Copy() *CommitStateDB {
 		ctx:               csdb.ctx,
 		ak:                csdb.ak,
 		storageKey:        csdb.storageKey,
-		codeKey:           csdb.codeKey,
 		stateObjects:      make(map[string]*stateObject, len(csdb.journal.dirties)),
 		stateObjectsDirty: make(map[string]struct{}, len(csdb.journal.dirties)),
 		refund:            csdb.refund,
@@ -748,7 +737,7 @@ func (csdb *CommitStateDB) ForEachStorage(addr sdk.AccAddress, cb func(key, valu
 		return nil
 	}
 
-	store := csdb.ctx.KVStore(csdb.storageKey)
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixStorage)
 	iter := sdk.KVStorePrefixIterator(store, so.Address().Bytes())
 
 	for ; iter.Valid(); iter.Next() {
@@ -838,7 +827,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	var so SO
 
 	for _, stateObject := range csdb.stateObjects {
-		if params.ContractOnly == true {
+		if params.ContractOnly {
 			if len(stateObject.CodeHash()) == 0 {
 				continue
 			}
@@ -851,7 +840,7 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 		so.DirtyCode = stateObject.dirtyCode
 		so.Suicided = stateObject.suicided
 		so.Deleted = stateObject.deleted
-		if params.ShowCode == false {
+		if !params.ShowCode {
 			so.Code = nil
 		} else {
 			so.Code = append(so.Code[:], stateObject.code...)
@@ -863,21 +852,134 @@ func (csdb *CommitStateDB) ExportStateObjects(params QueryStateParams) (sos SOs)
 	return sos
 }
 
-func (csdb *CommitStateDB) ExportState() (kvs []DebugAccKV) {
-	debug := true // TODO config in stateDB
+// ExportState used to export vm state to genesis file
+func (csdb *CommitStateDB) ExportState() (s GenesisState) {
+	s.Storage = csdb.exportStorage()
+	s.Codes = csdb.exportCodes()
+	s.VMLogs = csdb.exportLogs()
+	return
+}
 
-	if debug {
-		store := csdb.ctx.KVStore(csdb.storageDebugKey)
-		iter := store.Iterator(nil, nil)
-		defer iter.Close()
-
-		var kv DebugAccKV
-		for ; iter.Valid(); iter.Next() {
-			kv.DebugAccKVFromKV(iter.Key(), iter.Value())
-			fmt.Fprintln(os.Stderr, kv.String())
-			kvs = append(kvs, kv)
-		}
+// ImportState used to import vm state from genesis file
+func (csdb *CommitStateDB) ImportState(s GenesisState) {
+	err := csdb.importCodes(s.Codes)
+	if err != nil {
+		panic(err)
 	}
 
+	err = csdb.importStorage(s.Storage)
+	if err != nil {
+		panic(err)
+	}
+
+	err = csdb.importLogs(s.VMLogs)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (csdb *CommitStateDB) exportCodes() map[string]sdk.Code {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixCode)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	codes := make(map[string]sdk.Code, 10240)
+	for ; iter.Valid(); iter.Next() {
+		codes[hexutil.Encode(iter.Key())] = iter.Value()
+	}
+
+	return codes
+}
+
+func (csdb *CommitStateDB) importCodes(codes map[string]sdk.Code) error {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixCode)
+
+	for k, v := range codes {
+		K, err := hexutil.Decode(k)
+		if err != nil {
+			return err
+		}
+		store.Set(K, v)
+	}
+
+	return nil
+}
+
+func (csdb *CommitStateDB) exportStorage() (gs []Storage) {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixStorage)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		gs = append(gs, Storage{
+			Key:   iter.Key(),
+			Value: iter.Value(),
+		})
+	}
+
+	return
+}
+
+func (csdb *CommitStateDB) importStorage(gs []Storage) error {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixStorage)
+
+	for _, item := range gs {
+		store.Set(item.Key, item.Value)
+	}
+
+	return nil
+}
+
+func (csdb *CommitStateDB) exportLogs() (vmLogs VMLogs) {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixLogs)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+
+	vmLogs.Logs = make(map[string]string, 10240)
+
+	for ; iter.Valid(); iter.Next() {
+		vmLogs.Logs[hexutil.Encode(iter.Key())] = string(iter.Value())
+	}
+
+	logIndexStore := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixLogsIndex)
+	vmLogs.LogIndex = -1
+	if logIndexStore.Has(LogIndexKey) {
+		vmLogs.LogIndex = big.NewInt(0).SetBytes(logIndexStore.Get(LogIndexKey)).Int64()
+	}
+
+	return
+}
+
+func (csdb *CommitStateDB) importLogs(vmLogs VMLogs) error {
+	store := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixLogs)
+
+	if vmLogs.LogIndex == -1 {
+		return nil
+	}
+
+	for txHashStr, logs := range vmLogs.Logs {
+		txHash, err := hexutil.Decode(txHashStr)
+		if err != nil {
+			return err
+		}
+
+		store.Set(txHash, []byte(logs))
+	}
+
+	logIndexStore := prefix.NewStore(csdb.ctx.KVStore(csdb.storageKey), KeyPrefixLogsIndex)
+
+	logIndex := big.NewInt(vmLogs.LogIndex)
+	logIndexStore.Set(LogIndexKey, logIndex.Bytes())
+
+	return nil
+}
+
+// for simulation
+func (csdb *CommitStateDB) GetAllHotContractAddrs() (accs []sdk.AccAddress) {
+	for _, obj := range csdb.stateObjects {
+		if len(obj.code) != 0 || len(obj.account.CodeHash) != 0 {
+			accs = append(accs, obj.address)
+		}
+	}
 	return
 }

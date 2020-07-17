@@ -32,6 +32,12 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 		"/vm/logs/{txId}",
 		getLogFn(cliCtx),
 	).Methods("GET")
+
+	// Get the current staking parameter values
+	r.HandleFunc(
+		"/vm/parameters",
+		paramsHandlerFn(cliCtx),
+	).Methods("GET")
 }
 
 func queryStorage(cliCtx context.CLIContext) http.HandlerFunc {
@@ -65,7 +71,7 @@ func estimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		if params.From == nil || params.Payload == nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("bad request"))
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "bad request")
 			return
 		}
 
@@ -117,15 +123,32 @@ func getCode(cliCtx context.CLIContext) http.HandlerFunc {
 func getLog(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		txId := vars["txId"]
+		txID := vars["txId"]
 
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
 
-		route := fmt.Sprintf("custom/vm/logs/%s", txId)
+		route := fmt.Sprintf("custom/vm/logs/%s", txID)
 		res, height, err := cliCtx.Query(route)
+		if err != nil {
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getParams(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		res, height, err := cliCtx.Query("custom/vm/params")
 		if err != nil {
 			return
 		}
@@ -149,4 +172,9 @@ func getCodeFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 func getLogFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return getLog(cliCtx)
+}
+
+// HTTP request handler to query the staking params values
+func paramsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	return getParams(cliCtx)
 }

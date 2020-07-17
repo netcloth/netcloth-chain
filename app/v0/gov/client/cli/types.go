@@ -4,7 +4,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-type SoftwareUpgradeProposalJson struct {
+type SoftwareUpgradeProposalJSON struct {
 	Title        string   `json:"title"`
 	Description  string   `json:"description"`
 	Type         string   `json:"type"`
