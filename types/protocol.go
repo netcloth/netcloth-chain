@@ -2,6 +2,10 @@ package types
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/netcloth/netcloth-chain/codec"
 )
@@ -68,7 +72,36 @@ func NewProtocolKeeper(key StoreKey) ProtocolKeeper {
 	return ProtocolKeeper{key, cdc}
 }
 
+func getCurAppVersionFromGenesisFile(home string) int {
+	genFile := home + "/" + ".nchd/config/genesis.json"
+	fp, err := os.OpenFile(genFile, os.O_RDONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer fp.Close()
+
+	genData, err := ioutil.ReadAll(fp)
+	if err != nil {
+		panic(err)
+	}
+
+	reg := regexp.MustCompile(`"cur_app_version"\s*:\s*"(\d*)",`)
+	submatch := reg.FindStringSubmatch(string(genData))
+	if submatch == nil || len(submatch) != 2 {
+		panic("get cur_app_version failed")
+	}
+	v, err := strconv.Atoi(submatch[1])
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 func (pk ProtocolKeeper) GetCurrentVersionByStore(store KVStore) uint64 {
+	if !store.Has(CurrentVersionKey) { //app first start from genesis file
+		return uint64(getCurAppVersionFromGenesisFile("~"))
+	}
+
 	bz := store.Get(CurrentVersionKey)
 	if bz == nil {
 		return 0
