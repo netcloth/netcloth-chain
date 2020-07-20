@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/app/v0/params"
@@ -14,9 +15,10 @@ const (
 	DefaultGasPerByte          = 200
 )
 
+// nolint
 var (
 	KeyMaxCodeSize                 = []byte("MaxCodeSize")
-	KeyCallCreateDepth             = []byte("MaxCallCreateDepth")
+	KeyMaxCallCreateDepth          = []byte("MaxCallCreateDepth")
 	KeyVMOpGasParams               = []byte("VMOpGasParams")
 	KeyVMContractCreationGasParams = []byte("VMContractCreationGasParams")
 
@@ -31,9 +33,10 @@ var (
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32000, 700, 700, 0, 700, 32000, 0, 0, 0, 0, 700, 0, 0, 0, 0, 0, //224-255
 	}
 
-	DefaultVMCommonGasParams = VMContractCreationGasParams{Gas: DefaultContractCreationGas, GasPerByte: DefaultGasPerByte}
+	vmContractCreationGasParams = VMContractCreationGasParams{Gas: DefaultContractCreationGas, GasPerByte: DefaultGasPerByte}
 )
 
+// VMContractCreationGasParams contract creation gas params
 type VMContractCreationGasParams struct {
 	Gas        uint64 `json:"gas" yaml:"gas"`
 	GasPerByte uint64 `json:"gas_per_byte" yaml:"gas_per_byte"`
@@ -48,19 +51,20 @@ type Params struct {
 
 var _ params.ParamSet = (*Params)(nil)
 
-func NewParams(maxCodeSize, callCreateDepth uint64, vmOpGasParams [256]uint64, vmCommonGasParams VMContractCreationGasParams) Params {
+// NewParams return Params
+func NewParams(maxCodeSize, callCreateDepth uint64, vmOpGasParams [256]uint64, vmContractCreationGasParams VMContractCreationGasParams) Params {
 	return Params{
 		MaxCodeSize:                 maxCodeSize,
 		MaxCallCreateDepth:          callCreateDepth,
 		VMOpGasParams:               vmOpGasParams,
-		VMContractCreationGasParams: vmCommonGasParams,
+		VMContractCreationGasParams: vmContractCreationGasParams,
 	}
 }
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		params.NewParamSetPair(KeyMaxCodeSize, &p.MaxCodeSize, validateMaxCodeSize),
-		params.NewParamSetPair(KeyCallCreateDepth, &p.MaxCallCreateDepth, validateMaxCallCreateDepth),
+		params.NewParamSetPair(KeyMaxCallCreateDepth, &p.MaxCallCreateDepth, validateMaxCallCreateDepth),
 		params.NewParamSetPair(KeyVMOpGasParams, &p.VMOpGasParams, validateVMOpGasParams),
 		params.NewParamSetPair(KeyVMContractCreationGasParams, &p.VMContractCreationGasParams, validateVMCommonGasParams),
 	}
@@ -71,20 +75,19 @@ func DefaultParams() Params {
 		DefaultMaxCodeSize,
 		DefaultCallCreateDepth,
 		DefaultVMOpGasParams,
-		DefaultVMCommonGasParams,
+		vmContractCreationGasParams,
 	)
 }
 
 func (p Params) String() string {
-	return fmt.Sprintf(`Params:
-  MaxCodeSize   : %v`,
-		p.MaxCodeSize)
+	d, _ := json.Marshal(p)
+	return fmt.Sprintf("%s", string(d))
 }
 
 func validateMaxCodeSize(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("MaxCodeSize'type must be uint64: %T", i)
 	}
 
 	if v == 0 {
@@ -97,7 +100,7 @@ func validateMaxCodeSize(i interface{}) error {
 func validateMaxCallCreateDepth(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("MaxCallCreateDepth'type must be uint64: %T", i)
 	}
 
 	return nil
@@ -110,7 +113,7 @@ func validateVMOpGasParams(i interface{}) error {
 func validateVMCommonGasParams(i interface{}) error {
 	v, ok := i.(VMContractCreationGasParams)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("invalid type: %T", i)
 	}
 
 	if v.Gas == 0 {
