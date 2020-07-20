@@ -105,6 +105,16 @@ func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 	return csdb
 }
 
+// ContractCreatedEvent emit event of contract created
+func (csdb *CommitStateDB) ContractCreatedEvent(addr sdk.AccAddress) {
+	csdb.ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			EventTypeNewContract,
+			sdk.NewAttribute(AttributeKeyAddress, addr.String()),
+		),
+	})
+}
+
 func (csdb *CommitStateDB) WithTxHash(txHash []byte) *CommitStateDB {
 	csdb.thash = sdk.BytesToHash(txHash)
 	return csdb

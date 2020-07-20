@@ -69,12 +69,11 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 	var (
 		ret         []byte
 		leftOverGas uint64
-		addr        sdk.AccAddress
 		vmerr       error
 	)
 
 	if st.Recipient.Empty() {
-		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVM, st.Amount.BigInt())
+		ret, _, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVM, st.Amount.BigInt())
 		logger.Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	} else {
 		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, gasLimitForVM, st.Amount.BigInt())
@@ -92,6 +91,7 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 	vmGasUsed := gasLimitForVM - leftOverGas
 
 	if vmerr != nil {
+		ctx.EventManager().Clear()
 		return nil, &sdk.Result{Data: ret, GasUsed: curGasMeter.GasConsumed() + vmGasUsed}, vmerr
 	}
 
@@ -99,13 +99,6 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 
 	// comsume vm gas
 	ctx.WithGasMeter(curGasMeter).GasMeter().ConsumeGas(vmGasUsed, "VM execution consumption")
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNewContract,
-			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
-		),
-	})
 
 	return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed()}, nil
 }
