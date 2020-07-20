@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	DefaultMaxCodeSize     = 1024 * 1024
-	DefaultCallCreateDepth = 1024
+	defaultMaxCodeSize     = 1024 * 1024
+	defaultCallCreateDepth = 1024
 
-	DefaultContractCreationGas = 53000
-	DefaultGasPerByte          = 200
+	defaultContractCreationGas = 53000
+	defaultGasPerByte          = 200
 )
 
 // nolint
@@ -33,7 +33,7 @@ var (
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32000, 700, 700, 0, 700, 32000, 0, 0, 0, 0, 700, 0, 0, 0, 0, 0, //224-255
 	}
 
-	vmContractCreationGasParams = VMContractCreationGasParams{Gas: DefaultContractCreationGas, GasPerByte: DefaultGasPerByte}
+	vmContractCreationGasParams = VMContractCreationGasParams{Gas: defaultContractCreationGas, GasPerByte: defaultGasPerByte}
 )
 
 // VMContractCreationGasParams contract creation gas params
@@ -72,8 +72,8 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 
 func DefaultParams() Params {
 	return NewParams(
-		DefaultMaxCodeSize,
-		DefaultCallCreateDepth,
+		defaultMaxCodeSize,
+		defaultCallCreateDepth,
 		DefaultVMOpGasParams,
 		vmContractCreationGasParams,
 	)
