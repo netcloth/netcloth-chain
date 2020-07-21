@@ -212,9 +212,10 @@ func StringifyEvent(e abci.Event) StringEvent {
 	return res
 }
 
+// nolint
 // StringifyEvents converts a slice of Event objects into a slice of StringEvent objects.
 func StringifyEvents(events []abci.Event) StringEvents {
-	res := make(StringEvents, len(events))
+	var res StringEvents
 
 	for _, e := range events {
 		res = append(res, StringifyEvent(e))

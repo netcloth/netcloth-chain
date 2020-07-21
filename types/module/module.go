@@ -190,11 +190,13 @@ type Manager struct {
 	OrderEndBlockers   []string
 }
 
+// nolint
 // NewModuleManager creates a new Manager object
 func NewManager(modules ...AppModule) *Manager {
 
 	moduleMap := make(map[string]AppModule)
-	modulesStr := make([]string, len(modules))
+	var modulesStr []string
+
 	for _, module := range modules {
 		moduleMap[module.Name()] = module
 		modulesStr = append(modulesStr, module.Name())
