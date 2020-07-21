@@ -110,6 +110,7 @@ func opExp(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	base, exponent := stack.pop(), stack.pop()
 
 	cmpToOne := exponent.Cmp(common.Big1)
+	// nolint
 	if cmpToOne < 0 { // Exponent is zero
 		// x ^ 0 == 1
 		stack.push(base.SetUint64(1))

@@ -234,6 +234,7 @@ func (kb dbKeybase) Sign(name, passphrase string, msg []byte) (sig []byte, pub t
 
 	var priv tmcrypto.PrivKey
 
+	// nolint
 	switch info.(type) {
 	case localInfo:
 		linfo := info.(localInfo)
@@ -296,6 +297,7 @@ func (kb dbKeybase) ExportPrivateKeyObject(name string, passphrase string) (tmcr
 
 	var priv tmcrypto.PrivKey
 
+	// nolint
 	switch info.(type) {
 	case localInfo:
 		linfo := info.(localInfo)
@@ -433,6 +435,7 @@ func (kb dbKeybase) Update(name, oldpass string, getNewpass func() (string, erro
 	if err != nil {
 		return err
 	}
+	// nolint
 	switch info.(type) {
 	case localInfo:
 		linfo := info.(localInfo)
