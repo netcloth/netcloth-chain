@@ -171,9 +171,9 @@ func (se StringEvents) String() string {
 	return strings.TrimRight(sb.String(), "\n")
 }
 
-// nolint
 // Flatten returns a flattened version of StringEvents by grouping all attributes
 // per unique event type.
+// nolint
 func (se StringEvents) Flatten() StringEvents {
 	flatEvents := make(map[string][]Attribute)
 
