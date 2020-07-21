@@ -171,6 +171,7 @@ func (se StringEvents) String() string {
 	return strings.TrimRight(sb.String(), "\n")
 }
 
+// nolint
 // Flatten returns a flattened version of StringEvents by grouping all attributes
 // per unique event type.
 func (se StringEvents) Flatten() StringEvents {
@@ -211,10 +212,9 @@ func StringifyEvent(e abci.Event) StringEvent {
 	return res
 }
 
-// StringifyEvents converts a slice of Event objects into a slice of StringEvent
-// objects.
+// StringifyEvents converts a slice of Event objects into a slice of StringEvent objects.
 func StringifyEvents(events []abci.Event) StringEvents {
-	var res StringEvents
+	res := make(StringEvents, len(events))
 
 	for _, e := range events {
 		res = append(res, StringifyEvent(e))
