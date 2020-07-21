@@ -18,6 +18,7 @@ import (
 	"github.com/netcloth/netcloth-chain/types"
 )
 
+// nolint
 func TestBaseReqValidateBasic(t *testing.T) {
 	fromAddr := "nch15vydw287t4qvgrulyhqm3st08k968gww8mqpnq"
 	tenstakes, err := types.ParseCoins("10stake")
