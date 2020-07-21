@@ -16,6 +16,7 @@ type testCases struct {
 	JSON    [][]byte
 }
 
+// nolint
 func getTestCases() testCases {
 	return testCases{
 		[]keys.KeyOutput{
