@@ -17,10 +17,11 @@ import (
 )
 
 const (
-	x  = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y  = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	z  = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	x2 = "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	z              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	x2             = "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	inputHexData20 = "0000000000000000000000000000000000000000000000000000000000000020"
 )
 
 type TwoOperandTestcase struct {
@@ -1165,7 +1166,7 @@ func TestOpCallDataLoad(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 
@@ -1190,7 +1191,7 @@ func TestOpCallDataSize(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 
@@ -1214,7 +1215,7 @@ func TestOpCallDataCopy(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 
