@@ -11,9 +11,7 @@ type queryRouter struct {
 	routes map[string]sdk.Querier
 }
 
-var _ sdk.QueryRouter = NewQueryRouter()
-
-func NewQueryRouter() *queryRouter {
+func NewQueryRouter() sdk.QueryRouter {
 	return &queryRouter{
 		routes: map[string]sdk.Querier{},
 	}

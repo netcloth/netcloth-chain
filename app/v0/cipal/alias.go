@@ -37,5 +37,4 @@ type (
 	MsgIPALClaim    = types.MsgCIPALClaim
 	IPALUserRequest = types.CIPALUserRequest
 	ADParam         = types.ADParam
-	CIPALObject     = types.CIPALObject
 )
