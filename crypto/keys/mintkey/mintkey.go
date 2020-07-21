@@ -22,7 +22,6 @@ const (
 	blockTypePubKey  = "TENDERMINT PUBLIC KEY"
 )
 
-// nolint
 // Make bcrypt security parameter var, so it can be changed within the lcd test
 // Making the bcrypt security parameter a var shouldn't be a security issue:
 // One can't verify an invalid key by maliciously changing the bcrypt
@@ -36,6 +35,7 @@ const (
 // than what they see, which is a significantly cheaper attack then breaking
 // a bcrypt hash. (Recall that the nonce still exists to break rainbow tables)
 // For further notes on security parameter choice, see README.md
+// nolint
 var BcryptSecurityParameter = 12
 
 //-----------------------------------------------------------------

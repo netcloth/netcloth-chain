@@ -363,11 +363,11 @@ func (csdb *CommitStateDB) HasSuicided(addr sdk.AccAddress) bool {
 // Persistence
 // ----------------------------------------------------------------------------
 
-// nolint
 // Commit writes the state to the appropriate KVStores. For each state object
 // in the cache, it will either be removed, or have it's code set and/or it's
 // state (storage) updated. In addition, the state object (account) itself will
 // be written. Finally, the root hash (version) will be returned.
+// nolint
 func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err error) {
 	defer csdb.clearJournalAndRefund()
 

@@ -90,6 +90,7 @@ func SimulateMsgContractCreate(ak types.AccountKeeper, k keeper.Keeper) simtypes
 	}
 }
 
+// SimulateMsgContractCall sim op
 // nolint
 func SimulateMsgContractCall(ak types.AccountKeeper, k keeper.Keeper) simtypes.Operation {
 

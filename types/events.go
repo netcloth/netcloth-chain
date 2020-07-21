@@ -212,8 +212,8 @@ func StringifyEvent(e abci.Event) StringEvent {
 	return res
 }
 
-// nolint
 // StringifyEvents converts a slice of Event objects into a slice of StringEvent objects.
+// nolint
 func StringifyEvents(events []abci.Event) StringEvents {
 	var res StringEvents
 

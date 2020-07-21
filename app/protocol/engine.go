@@ -7,6 +7,7 @@ import (
 )
 
 // nolint
+// ProtocolEngine protocol engine
 type ProtocolEngine struct {
 	protocols      map[uint64]Protocol
 	current        uint64
