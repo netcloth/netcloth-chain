@@ -40,6 +40,11 @@ func (em EventManager) ABCIEvents() []abci.Event {
 	return em.events.ToABCIEvents()
 }
 
+// Clear clear all events
+func (em *EventManager) Clear() {
+	em.events = EmptyEvents()
+}
+
 // ----------------------------------------------------------------------------
 // Events
 // ----------------------------------------------------------------------------

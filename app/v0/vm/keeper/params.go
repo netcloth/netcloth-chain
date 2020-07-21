@@ -23,6 +23,17 @@ func (k Keeper) SetMaxCodeSize(ctx sdk.Context, maxCodeSize uint64) {
 	k.paramstore.Set(ctx, types.KeyMaxCodeSize, maxCodeSize)
 }
 
+// GetMaxCallCreateDepth return MaxCallCreateDepth from store
+func (k Keeper) GetMaxCallCreateDepth(ctx sdk.Context) (res uint64) {
+	k.paramstore.Get(ctx, types.KeyMaxCallCreateDepth, &res)
+	return
+}
+
+// SetMaxCallCreateDepth save MaxCallCreateDepth to store
+func (k Keeper) SetMaxCallCreateDepth(ctx sdk.Context, maxCallCreateDepth uint64) {
+	k.paramstore.Set(ctx, types.KeyMaxCallCreateDepth, maxCallCreateDepth)
+}
+
 func (k Keeper) GetVMOpGasParams(ctx sdk.Context) (params [256]uint64) {
 	k.paramstore.Get(ctx, types.KeyVMOpGasParams, &params)
 	return
@@ -32,20 +43,23 @@ func (k Keeper) SetVMOpGasParams(ctx sdk.Context, params [256]uint64) {
 	k.paramstore.Set(ctx, types.KeyVMOpGasParams, params)
 }
 
-func (k Keeper) GetVMCommonGasParams(ctx sdk.Context) (params types.VMCommonGasParams) {
-	k.paramstore.Get(ctx, types.KeyVMCommonGasParams, &params)
+// GetVMContractCreationGasParams return VMContractCreationGasParams from store
+func (k Keeper) GetVMContractCreationGasParams(ctx sdk.Context) (params types.VMContractCreationGasParams) {
+	k.paramstore.Get(ctx, types.KeyVMContractCreationGasParams, &params)
 	return
 }
 
-func (k Keeper) SetVMCommonGasParams(ctx sdk.Context, params types.VMCommonGasParams) {
-	k.paramstore.Set(ctx, types.KeyVMCommonGasParams, params)
+// SetVMContractCreationGasParams save VMContractCreationGasParams to store
+func (k Keeper) SetVMContractCreationGasParams(ctx sdk.Context, params types.VMContractCreationGasParams) {
+	k.paramstore.Set(ctx, types.KeyVMContractCreationGasParams, params)
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) (res types.Params) {
 	return types.NewParams(
 		k.GetMaxCodeSize(ctx),
+		k.GetMaxCallCreateDepth(ctx),
 		k.GetVMOpGasParams(ctx),
-		k.GetVMCommonGasParams(ctx),
+		k.GetVMContractCreationGasParams(ctx),
 	)
 }
 

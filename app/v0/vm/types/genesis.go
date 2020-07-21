@@ -41,8 +41,11 @@ func NewGenesisState(params Params) GenesisState {
 }
 
 func ValidateGenesis(data GenesisState) error {
-	maxCodeSize := data.Params.MaxCodeSize
-	if err := validateMaxCodeSize(maxCodeSize); err != nil {
+	if err := validateMaxCodeSize(data.Params.MaxCodeSize); err != nil {
+		return err
+	}
+
+	if err := validateMaxCallCreateDepth(data.Params.MaxCallCreateDepth); err != nil {
 		return err
 	}
 
@@ -51,8 +54,7 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	vmCommonGasParams := data.Params.VMCommonGasParams
-	return validateVMCommonGasParams(vmCommonGasParams)
+	return validateVMCommonGasParams(data.Params.VMContractCreationGasParams)
 }
 
 // Equal judge GenesisState equal
