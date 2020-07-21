@@ -645,7 +645,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
 
 	if suberr != nil {
-		fmt.Println(fmt.Sprintf("opCreate error: %v", suberr))
+		fmt.Printf("opCreate error: %s\n", suberr)
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetBytes(addr.Bytes()))
