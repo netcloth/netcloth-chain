@@ -18,14 +18,6 @@ type precompiledTest struct {
 	noBenchmark     bool // Benchmark primarily the worst-cases
 }
 
-// precompiledFailureTest defines the input/error pairs for precompiled
-// contract failure tests.
-type precompiledFailureTest struct {
-	input         string
-	expectedError error
-	name          string
-}
-
 // modexpTests are the test and benchmark data for the modexp precompiled contract.
 var modexpTests = []precompiledTest{
 	{
