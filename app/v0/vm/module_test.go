@@ -39,6 +39,7 @@ func (st *VMTestSuite) reset() {
 	st.SetupTest()
 }
 
+// nolint
 func getContractAddr(events sdk.Events) (addr sdk.AccAddress, err error) {
 	for _, e := range events {
 		if e.Type == types.EventTypeNewContract {

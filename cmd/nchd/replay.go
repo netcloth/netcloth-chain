@@ -177,7 +177,7 @@ func replayTxs(rootDir string, from, to int64) error {
 			fmt.Printf("Couldn't find block meta %d... done?\n", i)
 			return nil
 		}
-		block := blockStore.LoadBlock(int64(i))
+		block := blockStore.LoadBlock(i)
 		if block == nil {
 			return fmt.Errorf("couldn't find block %d", i)
 		}

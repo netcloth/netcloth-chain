@@ -1,18 +1,18 @@
 package vm
 
+// nolint
 import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"math/big"
 
-	ethcrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/crypto/blake2b"
-	"github.com/ethereum/go-ethereum/crypto/bn256"
-
 	"golang.org/x/crypto/ripemd160"
 
 	btcsecp256k1 "github.com/btcsuite/btcd/btcec"
+	ethcrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/blake2b"
+	"github.com/ethereum/go-ethereum/crypto/bn256"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
