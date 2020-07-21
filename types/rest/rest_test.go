@@ -196,6 +196,7 @@ func TestProcessPostResponse(t *testing.T) {
 	runPostProcessResponse(t, ctx, acc, expectedWithIndent, true)
 }
 
+// nolint
 // asserts that ResponseRecorder returns the expected code and body
 // runs PostProcessResponse on the objects regular interface and on
 // the marshalled struct.
