@@ -363,6 +363,7 @@ func (csdb *CommitStateDB) HasSuicided(addr sdk.AccAddress) bool {
 // Persistence
 // ----------------------------------------------------------------------------
 
+// nolint
 // Commit writes the state to the appropriate KVStores. For each state object
 // in the cache, it will either be removed, or have it's code set and/or it's
 // state (storage) updated. In addition, the state object (account) itself will

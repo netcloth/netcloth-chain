@@ -223,6 +223,7 @@ func getHeight(tree Tree, req abci.RequestQuery) int64 {
 	return height
 }
 
+// nolint
 // Query implements ABCI interface, allows queries
 //
 // by default we will return from (latest height -1),

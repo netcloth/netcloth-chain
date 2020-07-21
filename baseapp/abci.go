@@ -60,7 +60,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// There may be some application state in the genesis file, so always init the metrics.
 	//app.Engine.GetCurrentProtocol().InitMetrics(app.cms)
 
-	return
+	return res
 }
 
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
@@ -140,7 +140,8 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 
 	// set the signed validators for addition to context in deliverTx
 	app.voteInfos = req.LastCommitInfo.GetVotes()
-	return
+
+	return res
 }
 
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {

@@ -63,6 +63,7 @@ func MakeTestCodec() *codec.Codec {
 	return cdc
 }
 
+// nolint
 func CreateTestInput(t *testing.T, initPower int64) (ctx sdk.Context, keeper Keeper, stakingKeeper staking.Keeper, paramsKeeper params.Keeper) {
 	keys := sdk.NewKVStoreKeys(
 		"main",
