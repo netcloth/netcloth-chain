@@ -2,7 +2,6 @@ package store
 
 import (
 	"github.com/netcloth/netcloth-chain/store/types"
-	stypes "github.com/netcloth/netcloth-chain/store/types"
 )
 
 // nolint
@@ -26,9 +25,9 @@ type (
 	StoreType        = types.StoreType
 	Queryable        = types.Queryable
 	TraceContext     = types.TraceContext
-	Gas              = stypes.Gas
+	Gas              = types.Gas
 	GasMeter         = types.GasMeter
-	GasConfig        = stypes.GasConfig
+	GasConfig        = types.GasConfig
 )
 
 // nolint - reexport

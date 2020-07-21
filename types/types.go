@@ -150,7 +150,7 @@ func (h *Hash) UnmarshalGraphQL(input interface{}) error {
 	case string:
 		*h = HexToHash(input)
 	default:
-		err = fmt.Errorf("Unexpected type for Bytes32: %v", input)
+		err = fmt.Errorf("unexpected type for Bytes32: %v", input)
 	}
 	return err
 }

@@ -22,6 +22,7 @@ const (
 	blockTypePubKey  = "TENDERMINT PUBLIC KEY"
 )
 
+// nolint
 // Make bcrypt security parameter var, so it can be changed within the lcd test
 // Making the bcrypt security parameter a var shouldn't be a security issue:
 // One can't verify an invalid key by maliciously changing the bcrypt
@@ -126,14 +127,14 @@ func UnarmorDecryptPrivKey(armorStr string, passphrase string) (crypto.PrivKey, 
 		return privKey, fmt.Errorf("unrecognized armor type: %v", blockType)
 	}
 	if header["kdf"] != "bcrypt" {
-		return privKey, fmt.Errorf("Unrecognized KDF type: %v", header["KDF"])
+		return privKey, fmt.Errorf("unrecognized KDF type: %v", header["KDF"])
 	}
 	if header["salt"] == "" {
-		return privKey, fmt.Errorf("Missing salt bytes")
+		return privKey, fmt.Errorf("missing salt bytes")
 	}
 	saltBytes, err := hex.DecodeString(header["salt"])
 	if err != nil {
-		return privKey, fmt.Errorf("Error decoding salt: %v", err.Error())
+		return privKey, fmt.Errorf("error decoding salt: %v", err.Error())
 	}
 	privKey, err = decryptPrivKey(saltBytes, encBytes, passphrase)
 	return privKey, err
