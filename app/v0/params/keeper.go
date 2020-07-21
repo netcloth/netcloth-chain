@@ -19,6 +19,7 @@ type Keeper struct {
 	spaces map[string]*Subspace
 }
 
+// nolint
 // NewKeeper constructs a params keeper
 func NewKeeper(cdc *codec.Codec, key *sdk.KVStoreKey, tkey *sdk.TransientStoreKey) (k Keeper) {
 	k = Keeper{

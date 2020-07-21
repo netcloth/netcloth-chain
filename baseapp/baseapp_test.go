@@ -472,6 +472,7 @@ func testTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	}
 }
 
+// nolint
 func anteHandlerTxTest(t *testing.T, capKey *sdk.KVStoreKey, storeKey []byte) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 		kvStore := ctx.KVStore(capKey)
@@ -490,6 +491,7 @@ func anteHandlerTxTest(t *testing.T, capKey *sdk.KVStoreKey, storeKey []byte) sd
 	}
 }
 
+// nolint
 func handlerMsgCounter(t *testing.T, capKey *sdk.KVStoreKey, deliverKey []byte) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		kvStore := ctx.KVStore(capKey)

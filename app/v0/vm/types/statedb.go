@@ -106,6 +106,7 @@ func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 }
 
 // ContractCreatedEvent emit event of contract created
+// nolint
 func (csdb *CommitStateDB) ContractCreatedEvent(addr sdk.AccAddress) {
 	csdb.ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

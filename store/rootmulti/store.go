@@ -377,7 +377,7 @@ func parsePath(path string) (storeName string, subpath string, err error) {
 }
 
 //----------------------------------------
-
+// nolint
 func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID, params storeParams) (store types.CommitStore, err error) {
 	var db dbm.DB
 
