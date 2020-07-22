@@ -9,6 +9,7 @@ linters:
     - depguard
     - dogsled
     - goconst
+    - interfacer
     - gocritic
     - gofmt
     - goimports
