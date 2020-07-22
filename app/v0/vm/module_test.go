@@ -85,7 +85,7 @@ func (st *VMTestSuite) TestContractExportImport() {
 	)
 
 	ensFactoryCode, err := hexutil.Decode(CodeWithConstructorPayloadHex)
-	st.Require().True(err == nil, "failed to decode vm code")
+	st.Require().NoError(err, "failed to decode vm code")
 	address := st.deployContract(st.acc.GetAddress(), ensFactoryCode)
 	vm.EndBlocker(st.ctx, st.vmKeeper)
 
@@ -97,7 +97,7 @@ func (st *VMTestSuite) TestContractExportImport() {
 
 	// sanity check that contract was deployed
 	deployedEnsFactoryCode, err := hexutil.Decode(CodeInVMHex)
-	st.Require().True(err == nil, "failed to decode vm code")
+	st.Require().NoError(err, "failed to decode vm code")
 	code := st.vmKeeper.GetCode(st.ctx, address)
 	st.Require().Equal(deployedEnsFactoryCode, code)
 
@@ -117,7 +117,7 @@ func (st *VMTestSuite) TestContractExportImport() {
 	st.callContract(st.acc.GetAddress(), address, callPayload, sdk.NewCoin(sdk.NativeTokenName, sdk.NewInt(1000)))
 	vm.EndBlocker(st.ctx, st.vmKeeper)
 
-	// export vm state after call contrat
+	// export vm state after call contract
 	st.gs = st.vmModule.ExportGenesis(st.ctx)
 
 	// reset db
@@ -131,6 +131,7 @@ func (st *VMTestSuite) TestContractExportImport() {
 	newGS := st.vmModule.ExportGenesis(st.ctx)
 
 	st.Require().True(sdk.JSONEqual(st.gs, newGS))
+	st.Require().Equal(newGS, st.gs)
 }
 
 func TestStart(t *testing.T) {
