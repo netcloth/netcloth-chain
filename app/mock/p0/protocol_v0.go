@@ -332,7 +332,7 @@ func (p *ProtocolV0) configRouters() {
 }
 
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
+	var genesisState sdk.GenesisState
 	p.Cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.moduleManager.InitGenesis(ctx, genesisState)
