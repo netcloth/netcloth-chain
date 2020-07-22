@@ -1,3 +1,5 @@
+// nolint
+
 package v0
 
 import (
@@ -11,6 +13,10 @@ func (p *ProtocolV0) GovKeeper() gov.Keeper {
 	return p.govKeeper
 }
 
+func (p *ProtocolV0) SetGovKeeper(gk gov.Keeper) {
+	p.govKeeper = gk
+}
+
 func (p *ProtocolV0) StakingKeeper() staking.Keeper {
 	return p.stakingKeeper
 }
@@ -21,8 +27,4 @@ func (p *ProtocolV0) AccountKeeper() auth.AccountKeeper {
 
 func (p *ProtocolV0) SupplyKeeper() supply.Keeper {
 	return p.supplyKeeper
-}
-
-func (p *ProtocolV0) SetGovKeeper(gk gov.Keeper) {
-	p.govKeeper = gk
 }
