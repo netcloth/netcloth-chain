@@ -81,7 +81,7 @@ func DefaultParams() Params {
 
 func (p Params) String() string {
 	d, _ := json.Marshal(p)
-	return fmt.Sprintf("%s", string(d))
+	return string(d)
 }
 
 func validateMaxCodeSize(i interface{}) error {

@@ -230,6 +230,7 @@ func getHeight(tree Tree, req abci.RequestQuery) int64 {
 // If latest-1 is not present, use latest (which must be present)
 // if you care to have the latest data to see a tx results, you must
 // explicitly set the height you want to see
+// nolint
 func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	if len(req.Data) == 0 {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrTxDecode, "query cannot be zero length"))

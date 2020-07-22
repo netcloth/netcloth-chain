@@ -9,6 +9,7 @@ linters:
     - depguard
     - dogsled
     - goconst
+    - interfacer
     - gocritic
     - gofmt
     - goimports
@@ -17,12 +18,9 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck

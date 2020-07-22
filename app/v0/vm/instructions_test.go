@@ -16,10 +16,12 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common"
 )
 
-var (
-	x = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	y = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
-	z = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+const (
+	x              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	y              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	z              = "ABCDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff"
+	x2             = "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	inputHexData20 = "0000000000000000000000000000000000000000000000000000000000000020"
 )
 
 type TwoOperandTestcase struct {
@@ -255,6 +257,7 @@ func TestSAR(t *testing.T) {
 	testTwoOperandOp(t, tests, opSAR, "sar")
 }
 
+// nolint
 // getResult is a convenience function to generate the expected values
 func getResult(args []*twoOperandParams, opFn executionFunc) []TwoOperandTestcase {
 	var (
@@ -287,7 +290,7 @@ func TestWriteExpectedValues(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_ = ioutil.WriteFile(fmt.Sprintf("testdata/testcases_%v.json", name), data, 0644)
+		_ = ioutil.WriteFile(fmt.Sprintf("testdata/testcases_%v.json", name), data, 0600)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -442,7 +445,7 @@ func BenchmarkOpEq(b *testing.B) {
 }
 
 func BenchmarkOpEq2(b *testing.B) {
-	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x := x2
 	y := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201fffffffe"
 	opBenchmark(b, opEq, x, y)
 }
@@ -472,28 +475,28 @@ func BenchmarkOpMulmod(b *testing.B) {
 }
 
 func BenchmarkOpSHL(b *testing.B) {
-	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x := x2
 	y := "ff"
 
 	opBenchmark(b, opSHL, x, y)
 }
 
 func BenchmarkOpSHR(b *testing.B) {
-	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x := x2
 	y := "ff"
 
 	opBenchmark(b, opSHR, x, y)
 }
 
 func BenchmarkOpSAR(b *testing.B) {
-	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x := x2
 	y := "ff"
 
 	opBenchmark(b, opSAR, x, y)
 }
 
 func BenchmarkOpIsZero(b *testing.B) {
-	x := "FBCDEF090807060504030201ffffffffFBCDEF090807060504030201ffffffff"
+	x := x2
 	opBenchmark(b, opIszero, x)
 }
 
@@ -1164,7 +1167,7 @@ func TestOpCallDataLoad(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 
@@ -1189,7 +1192,7 @@ func TestOpCallDataSize(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 
@@ -1213,7 +1216,7 @@ func TestOpCallDataCopy(t *testing.T) {
 	interpreter.intPool = poolOfIntPools.get()
 	pc := uint64(0)
 
-	inputHexData := "0000000000000000000000000000000000000000000000000000000000000020"
+	inputHexData := inputHexData20
 	inputData, _ := hexutil.Decode(inputHexData)
 	contract.Input = inputData
 

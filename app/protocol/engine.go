@@ -6,6 +6,8 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// ProtocolEngine protocol engine
+// nolint
 type ProtocolEngine struct {
 	protocols      map[uint64]Protocol
 	current        uint64

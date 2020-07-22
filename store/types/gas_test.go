@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// nolint
 func TestGasMeter(t *testing.T) {
 	cases := []struct {
 		limit Gas

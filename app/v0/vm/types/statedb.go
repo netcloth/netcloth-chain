@@ -106,6 +106,7 @@ func (csdb *CommitStateDB) WithContext(ctx sdk.Context) *CommitStateDB {
 }
 
 // ContractCreatedEvent emit event of contract created
+// nolint
 func (csdb *CommitStateDB) ContractCreatedEvent(addr sdk.AccAddress) {
 	csdb.ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -366,6 +367,7 @@ func (csdb *CommitStateDB) HasSuicided(addr sdk.AccAddress) bool {
 // in the cache, it will either be removed, or have it's code set and/or it's
 // state (storage) updated. In addition, the state object (account) itself will
 // be written. Finally, the root hash (version) will be returned.
+// nolint
 func (csdb *CommitStateDB) Commit(deleteEmptyObjects bool) (root sdk.Hash, err error) {
 	defer csdb.clearJournalAndRefund()
 

@@ -247,6 +247,7 @@ func PostProcessResponseBare(w http.ResponseWriter, cliCtx context.CLIContext, b
 		err  error
 	)
 
+	// nolint
 	switch body.(type) {
 	case []byte:
 		resp = body.([]byte)
@@ -279,6 +280,7 @@ func PostProcessResponse(w http.ResponseWriter, cliCtx context.CLIContext, resp 
 		return
 	}
 
+	// nolint
 	switch resp.(type) {
 	case []byte:
 		result = resp.([]byte)

@@ -16,6 +16,7 @@ type testCases struct {
 	JSON    [][]byte
 }
 
+// nolint
 func getTestCases() testCases {
 	return testCases{
 		[]keys.KeyOutput{
@@ -34,6 +35,7 @@ func getTestCases() testCases {
 	}
 }
 
+// nolint
 func TestMarshalJSON(t *testing.T) {
 	type args struct {
 		o keys.KeyOutput
@@ -69,6 +71,7 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
+// nolint
 func TestUnmarshalJSON(t *testing.T) {
 	type args struct {
 		bz  []byte

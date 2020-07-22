@@ -108,6 +108,7 @@ func (store *Store) Write() {
 
 	// TODO: Consider allowing usage of Batch, which would allow the write to
 	// at least happen atomically.
+	// nolint
 	for _, key := range keys {
 		cacheValue := store.cache[key]
 		if cacheValue.deleted {
