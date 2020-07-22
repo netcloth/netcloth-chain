@@ -87,6 +87,7 @@ func ValidateAccountInGenesis(appGenesisState map[string]json.RawMessage,
 	return nil
 }
 
+// DeliverTxfn
 type DeliverTxfn func(abci.RequestDeliverTx) abci.ResponseDeliverTx
 
 // DeliverGenTxs - deliver a genesis transaction

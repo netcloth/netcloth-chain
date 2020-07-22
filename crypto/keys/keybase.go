@@ -54,7 +54,7 @@ const (
 )
 
 const (
-	// used for deriving seed from mnemonic
+	// DefaultBIP39Passphrase - used for deriving seed from mnemonic
 	DefaultBIP39Passphrase = ""
 
 	// bits of entropy to draw when creating a mnemonic

@@ -67,6 +67,7 @@ var maccPerms = map[string][]string{
 	ipal.ModuleName:           {supply.Staking},
 }
 
+// ProtocolV0 is the struct of the original protocol
 type ProtocolV0 struct {
 	version uint64
 	cdc     *codec.Codec
@@ -107,6 +108,7 @@ type ProtocolV0 struct {
 	invCheckPeriod uint
 }
 
+// NewProtocolV0 creates a new instance of ProtocolV0
 func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
@@ -122,26 +124,32 @@ func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, delive
 	return &p0
 }
 
+// GetVersion gets the version of this protocol
 func (p *ProtocolV0) GetVersion() uint64 {
 	return p.version
 }
 
+// GetRouter
 func (p *ProtocolV0) GetRouter() sdk.Router {
 	return p.router
 }
 
+// GetQueryRouter
 func (p *ProtocolV0) GetQueryRouter() sdk.QueryRouter {
 	return p.queryRouter
 }
 
+// GetAnteHandler
 func (p *ProtocolV0) GetAnteHandler() sdk.AnteHandler {
 	return p.anteHandler
 }
 
+// GetFeeRefundHandler
 func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
 }
 
+// LoadContext updates the context for the app after the upgrade of protocol
 func (p *ProtocolV0) LoadContext() {
 	p.configCodec()
 	p.configKeepers()
@@ -151,21 +159,26 @@ func (p *ProtocolV0) LoadContext() {
 	p.configFeeHandlers()
 }
 
+// Init
 func (p *ProtocolV0) Init() {
 }
 
+// GetCodec gets tx codec
 func (p *ProtocolV0) GetCodec() *codec.Codec {
 	return p.cdc
 }
 
+// GetInitChainer
 func (p *ProtocolV0) GetInitChainer() sdk.InitChainer {
 	return p.InitChainer
 }
 
+// GetBeginBlocker
 func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
 	return p.BeginBlocker
 }
 
+// GetEndBlocker
 func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
 	return p.EndBlocker
 }
@@ -174,6 +187,7 @@ func (p *ProtocolV0) configCodec() {
 	p.cdc = MakeCodec()
 }
 
+// MakeCodec registers codec
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
@@ -185,6 +199,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
+// ModuleAccountAddrs returns all the module account addresses
 func ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
@@ -367,6 +382,7 @@ func (p *ProtocolV0) configRouters() {
 	p.moduleManager.RegisterRoutes(p.router, p.queryRouter)
 }
 
+// InitChainer initializes application state at genesis as a hook
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState sdk.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -374,10 +390,12 @@ func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 	return p.moduleManager.InitGenesis(ctx, genesisState)
 }
 
+// BeginBlocker set function to BaseApp as a hook
 func (p *ProtocolV0) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return p.moduleManager.BeginBlock(ctx, req)
 }
 
+// EndBlocker sets function to BaseApp as a hook
 func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return p.moduleManager.EndBlock(ctx, req)
 }
@@ -389,23 +407,27 @@ func (p *ProtocolV0) configFeeHandlers() {
 
 //for test
 
+// SetInitChainer
 func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
 	p.initChainer = initChainer
 }
 
+// SetRouter
 func (p *ProtocolV0) SetRouter(router sdk.Router) {
 	p.router = router
 }
 
+// SetQuearyRouter
 func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
 	p.queryRouter = queryRouter
 }
 
+// SetAnteHandler
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
 }
 
-// for simulation
+// GetSimulationManager - for simulation
 func (p *ProtocolV0) GetSimulationManager() interface{} {
 	return p.simManager
 }

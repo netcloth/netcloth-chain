@@ -17,7 +17,7 @@ type (
 	MigrationMap map[string]MigrationCallback
 )
 
-// ModuleName is genutil
+// ModuleName defines the name of the module
 const ModuleName = "genutil"
 
 // InitConfig common config options for init

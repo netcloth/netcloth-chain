@@ -1,6 +1,6 @@
 package types
 
 const (
-	// module name
+	// ModuleName defines the name of the module
 	ModuleName = "crisis"
 )

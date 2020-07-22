@@ -10,7 +10,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgMultiSend{}, "nch/MsgMultiSend", nil)
 }
 
-// ModuleCdc codec
+// ModuleCdc generic sealed codec to be used throughout module
 var ModuleCdc *codec.Codec
 
 func init() {

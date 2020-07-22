@@ -18,7 +18,7 @@ import (
 	"github.com/netcloth/netcloth-chain/types/rest"
 )
 
-// query accountREST Handler
+// QueryAccountRequestHandlerFn - query accountREST Handler
 func QueryAccountRequestHandlerFn(storeName string, cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -55,7 +55,7 @@ func QueryAccountRequestHandlerFn(storeName string, cliCtx context.CLIContext) h
 	}
 }
 
-// QueryTxsHandlerFn implements a REST handler that searches for transactions.
+// QueryTxsRequestHandlerFn implements a REST handler that searches for transactions.
 // Genesis transactions are returned if the height parameter is set to zero,
 // otherwise the transactions are searched for by events.
 func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
@@ -159,6 +159,7 @@ func queryParamsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+// EstimateGas
 func EstimateGas(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req BroadcastReq

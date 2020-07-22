@@ -18,14 +18,12 @@ var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
-const moduleName = "params"
-
 // app module basics object
 type AppModuleBasic struct{}
 
 // module name
 func (AppModuleBasic) Name() string {
-	return moduleName
+	return ModuleName
 }
 
 // register module codec

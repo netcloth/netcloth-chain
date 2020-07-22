@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// module name
+	// ModuleName defines the name of the module
 	ModuleName = protocol.AuthModuleName
 
 	// StoreKey is string representation of the store key for auth

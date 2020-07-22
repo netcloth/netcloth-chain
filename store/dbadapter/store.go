@@ -10,7 +10,7 @@ import (
 	"github.com/netcloth/netcloth-chain/store/types"
 )
 
-// Wrapper type for dbm.Db with implementation of KVStore
+// Store - Wrapper type for dbm.Db with implementation of KVStore
 type Store struct {
 	dbm.DB
 }
