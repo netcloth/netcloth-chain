@@ -42,13 +42,13 @@ var (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger    log.Logger
-	name      string               // application name from abci.Info
-	db        dbm.DB               // common DB backend
-	cms       sdk.CommitMultiStore // Main (uncached) state
-	txDecoder sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+	name   string // application name from abci.Info
+	logger log.Logger
+	db     dbm.DB               // common DB backend
+	cms    sdk.CommitMultiStore // Main (uncached) state
 
-	Engine *protocol.ProtocolEngine
+	txDecoder sdk.TxDecoder // unmarshal []byte into sdk.Tx
+	Engine    *protocol.ProtocolEngine
 
 	// set upon LoadVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms

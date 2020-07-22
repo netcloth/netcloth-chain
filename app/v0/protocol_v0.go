@@ -1,7 +1,6 @@
 package v0
 
 import (
-	v0 "github.com/netcloth/netcloth-chain/app/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/protocol"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
@@ -369,7 +368,7 @@ func (p *ProtocolV0) configRouters() {
 }
 
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState v0.GenesisState
+	var genesisState sdk.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.moduleManager.InitGenesis(ctx, genesisState)

@@ -37,7 +37,7 @@ type NCHApp struct {
 	*baseapp.BaseApp
 }
 
-// Codec returns the current protocol  codec
+// Codec returns the current protocol codec
 func (app *NCHApp) Codec() *codec.Codec {
 	return app.Engine.GetCurrentProtocol().GetCodec()
 }

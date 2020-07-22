@@ -13,14 +13,15 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/netcloth/netcloth-chain/app/mock"
-	v0 "github.com/netcloth/netcloth-chain/app/mock/p0"
 	"github.com/netcloth/netcloth-chain/app/protocol"
+	v0 "github.com/netcloth/netcloth-chain/app/v0"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
+	authexported "github.com/netcloth/netcloth-chain/app/v0/auth/exported"
 	"github.com/netcloth/netcloth-chain/app/v0/gov"
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/app/v0/supply"
+	"github.com/netcloth/netcloth-chain/baseapp"
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
@@ -42,8 +43,13 @@ var (
 	testCommissionRates = staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
 )
 
+type NCHAppWithGenAccounts struct {
+	*baseapp.BaseApp
+	GenesisAccounts []authexported.Account
+}
+
 type testInput struct {
-	mApp     *mock.NCHApp
+	mApp     *NCHAppWithGenAccounts
 	keeper   gov.Keeper
 	sk       staking.Keeper
 	ak       auth.AccountKeeper
@@ -52,7 +58,7 @@ type testInput struct {
 	privKeys []crypto.PrivKey
 }
 
-func getProtocolV0(t *testing.T, app *mock.NCHApp) *v0.ProtocolV0 {
+func getProtocolV0(t *testing.T, app *NCHAppWithGenAccounts) *v0.ProtocolV0 {
 	curProtocol := app.Engine.GetCurrentProtocol()
 	protocolV0, ok := curProtocol.(*v0.ProtocolV0)
 	require.True(t, ok)
@@ -69,21 +75,21 @@ func getMockApp(t *testing.T, numGenAccs int, genState gov.GenesisState, genAccs
 	)
 
 	if len(genAccs) == 0 {
-		genAccs, addrs, pubKeys, privKeys = mock.CreateGenAccounts(numGenAccs, valCoins)
+		genAccs, addrs, pubKeys, privKeys = gov.CreateGenAccounts(numGenAccs, valCoins)
 	}
 
 	protocolV0 := getProtocolV0(t, mApp)
 
-	err := setGenesis(mApp, protocolV0.Cdc, genAccs, genState)
+	err := setGenesis(mApp, protocolV0.GetCodec(), genAccs, genState)
 	require.Nil(t, err)
 
-	return testInput{mApp, protocolV0.GovKeeper, protocolV0.StakingKeeper, protocolV0.AccountKeeper, addrs, pubKeys, privKeys}
+	return testInput{mApp, protocolV0.GovKeeper(), protocolV0.StakingKeeper(), protocolV0.AccountKeeper(), addrs, pubKeys, privKeys}
 }
 
-func NewNCHApp(t *testing.T) *mock.NCHApp {
+func NewNCHApp(t *testing.T) *NCHAppWithGenAccounts {
 	logger := log.NewNopLogger()
 	db := dbm.NewMemDB()
-	baseApp := mock.NewBaseApp("nchmock", logger, db)
+	baseApp := baseapp.NewBaseApp("nchmock", logger, db)
 
 	baseApp.SetCommitMultiStoreTracer(nil)
 	baseApp.SetAppVersion("v0")
@@ -102,12 +108,12 @@ func NewNCHApp(t *testing.T) *mock.NCHApp {
 
 	engine.LoadProtocol(0)
 
-	baseApp.TxDecoder = auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec())
+	baseApp.SetTxDecoder(auth.DefaultTxDecoder(engine.GetCurrentProtocol().GetCodec()))
 
-	return &mock.NCHApp{BaseApp: baseApp}
+	return &NCHAppWithGenAccounts{BaseApp: baseApp}
 }
 
-func setGenesis(app *mock.NCHApp, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
+func setGenesis(app *NCHAppWithGenAccounts, cdc *codec.Codec, accs []auth.Account, genState gov.GenesisState) error {
 	app.GenesisAccounts = accs
 
 	genesisState := v0.NewDefaultGenesisState()
@@ -132,20 +138,20 @@ func setGenesis(app *mock.NCHApp, cdc *codec.Codec, accs []auth.Account, genStat
 	return nil
 }
 
-func setTotalSupply(t *testing.T, app *mock.NCHApp, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
+func setTotalSupply(t *testing.T, app *NCHAppWithGenAccounts, ctx sdk.Context, accAmt sdk.Int, totalAccounts int) {
 	p0 := getProtocolV0(t, app)
-	totalSupply := sdk.NewCoins(sdk.NewCoin(p0.StakingKeeper.BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
-	prevSupply := p0.SupplyKeeper.GetSupply(ctx)
-	p0.SupplyKeeper.SetSupply(ctx, supply.NewSupply(prevSupply.GetTotal().Add(totalSupply)))
+	totalSupply := sdk.NewCoins(sdk.NewCoin(p0.StakingKeeper().BondDenom(ctx), accAmt.MulRaw(int64(totalAccounts))))
+	prevSupply := p0.SupplyKeeper().GetSupply(ctx)
+	p0.SupplyKeeper().SetSupply(ctx, supply.NewSupply(prevSupply.GetTotal().Add(totalSupply)))
 }
 
-func initGenAccount(t *testing.T, ctx sdk.Context, app *mock.NCHApp) {
+func initGenAccount(t *testing.T, ctx sdk.Context, app *NCHAppWithGenAccounts) {
 	p0 := getProtocolV0(t, app)
 	accAmt := sdk.NewInt(0)
 	for _, genAcc := range app.GenesisAccounts {
-		acc := p0.AccountKeeper.NewAccountWithAddress(ctx, genAcc.GetAddress())
+		acc := p0.AccountKeeper().NewAccountWithAddress(ctx, genAcc.GetAddress())
 		acc.SetCoins(genAcc.GetCoins())
-		p0.AccountKeeper.SetAccount(ctx, acc)
+		p0.AccountKeeper().SetAccount(ctx, acc)
 		accAmt = accAmt.Add(genAcc.GetCoins()[0].Amount)
 	}
 
