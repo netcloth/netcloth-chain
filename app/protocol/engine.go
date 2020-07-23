@@ -55,7 +55,11 @@ func (pe *ProtocolEngine) Activate(version uint64) bool {
 }
 
 func (pe *ProtocolEngine) GetCurrentProtocol() Protocol {
-	return pe.protocols[pe.current]
+	p, flag := pe.protocols[pe.current]
+	if !flag {
+		panic("Invalid Protocol")
+	}
+	return p
 }
 
 func (pe *ProtocolEngine) GetCurrentVersion() uint64 {
