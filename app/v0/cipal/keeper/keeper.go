@@ -70,5 +70,5 @@ func (k Keeper) SetCIPALObject(ctx sdk.Context, obj types.CIPALObject) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalCIPALObject(k.cdc, obj)
 	store.Set(types.GetCIPALObjectKey(obj.UserAddress), bz)
-	ctx.Logger().Info(string(types.GetCIPALObjectKey(obj.UserAddress)))
+	//ctx.Logger().Info(string(types.GetCIPALObjectKey(obj.UserAddress)))
 }

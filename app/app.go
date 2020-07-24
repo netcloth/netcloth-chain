@@ -151,6 +151,7 @@ func (app *NCHApp) postEndBlocker(res *abci.ResponseEndBlock) {
 	app.Log(fmt.Sprintf("activate version from %d to %d failed, please upgrade your app", app.Engine.GetCurrentVersion(), appVersion))
 }
 
+// ExportAppStateAndValidators exports the state of application for a genesis file
 func (app *NCHApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
 	return app.Engine.GetCurrentProtocol().ExportAppStateAndValidators(ctx, forZeroHeight, jailWhiteList)

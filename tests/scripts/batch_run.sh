@@ -6,5 +6,5 @@ set -x
 
 for machine in `cat $machine_list`
 do
-ssh $machine "$what"
+ssh "$machine" "$what"
 done
