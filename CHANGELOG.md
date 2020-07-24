@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## testnet-v1.3.0
 
 ### nchd
 
