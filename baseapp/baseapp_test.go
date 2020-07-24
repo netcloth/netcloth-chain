@@ -26,12 +26,14 @@ var (
 	capKey1 = sdk.NewKVStoreKey("key1")
 	capKey2 = sdk.NewKVStoreKey("key2")
 
-	mockProtocolV0 = protocol.NewMockProtocol(0)
+	anteKey    = []byte("ante-key")
+	counterKey = []byte("counter-key")
 )
 
 func newEngine(options ...func(*protocol.MockProtocol)) protocol.ProtocolEngine {
 	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(pk)
+	mockProtocolV0 := protocol.NewMockProtocol(0)
 	for _, option := range options {
 		option(mockProtocolV0)
 	}
@@ -102,6 +104,7 @@ func setupProtocol(app *BaseApp, capKey sdk.StoreKey) {
 	pk := sdk.NewProtocolKeeper(capKey)
 	engine := protocol.NewProtocolEngine(pk)
 	app.SetProtocolEngine(&engine)
+	mockProtocolV0 := protocol.NewMockProtocol(0)
 	engine.Add(mockProtocolV0)
 	engine.LoadProtocol(0)
 }
@@ -546,10 +549,6 @@ func incrementingCounter(t *testing.T, store sdk.KVStore, counterKey []byte, cou
 // on the store within a block, and that the CheckTx state
 // gets reset to the latest committed state during Commit
 func TestCheckTx(t *testing.T) {
-	// This ante handler reads the key and checks that the value matches the current counter.
-	// This ensures changes to the kvstore persist across successive CheckTx.
-	counterKey := []byte("counter-key")
-
 	anteOpt := func(p *protocol.MockProtocol) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, counterKey))
 	}
@@ -599,7 +598,6 @@ func TestCheckTx(t *testing.T) {
 // on the store, both within and across blocks.
 func TestDeliverTx(t *testing.T) {
 	// test increments in the ante
-	anteKey := []byte("ante-key")
 	anteOpt := func(p *protocol.MockProtocol) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
@@ -650,7 +648,6 @@ func TestMultiMsgCheckTx(t *testing.T) {
 // One call to DeliverTx should process all the messages, in order.
 func TestMultiMsgDeliverTx(t *testing.T) {
 	// increment the tx counter
-	anteKey := []byte("ante-key")
 	anteOpt := func(p *protocol.MockProtocol) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
@@ -1080,7 +1077,6 @@ func TestMaxBlockGasLimits(t *testing.T) {
 }
 
 func TestBaseAppAnteHandler(t *testing.T) {
-	anteKey := []byte("ante-key")
 	anteOpt := func(p *protocol.MockProtocol) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}
@@ -1350,7 +1346,6 @@ func (rtr *testCustomRouter) Route(ctx sdk.Context, path string) sdk.Handler {
 }
 
 func TestWithRouter(t *testing.T) {
-	anteKey := []byte("ante-key")
 	anteOpt := func(p *protocol.MockProtocol) {
 		p.SetAnteHandler(anteHandlerTxTest(t, capKey1, anteKey))
 	}

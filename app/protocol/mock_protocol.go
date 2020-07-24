@@ -78,7 +78,7 @@ func (m MockProtocol) GetEndBlocker() sdk.EndBlocker {
 	return m.endBlocker
 }
 
-// ExportAppStateAndValidators
+// ExportAppStateAndValidators exports the application state for a genesis file
 func (m *MockProtocol) ExportAppStateAndValidators(ctx sdk.Context, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []types.GenesisValidator, err error) {
 	return json.RawMessage{}, nil, nil
 }
