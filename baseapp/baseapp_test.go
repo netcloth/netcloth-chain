@@ -30,6 +30,43 @@ var (
 	counterKey = []byte("counter-key")
 )
 
+const (
+	gasGranted = uint64(10)
+)
+
+var (
+	anteOpt = func(p *protocol.MockProtocol) {
+		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
+
+			defer func() {
+				if r := recover(); r != nil {
+					switch rType := r.(type) {
+					case sdk.ErrorOutOfGas:
+						err = sdkerrors.Wrapf(sdkerrors.ErrOutOfGas, "out of gas in location: %v", rType.Descriptor)
+					default:
+						panic(r)
+					}
+				}
+			}()
+
+			count := tx.(*txTest).Counter
+			newCtx.GasMeter().ConsumeGas(uint64(count), "counter-ante")
+
+			return
+		})
+
+	}
+
+	routerOpt = func(p *protocol.MockProtocol) {
+		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+			count := msg.(msgCounter).Counter
+			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
+			return &sdk.Result{}, nil
+		})
+	}
+)
+
 func newEngine(options ...func(*protocol.MockProtocol)) protocol.ProtocolEngine {
 	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(pk)
@@ -890,38 +927,6 @@ func TestRunInvalidTransaction(t *testing.T) {
 
 // Test that transactions exceeding gas limits fail
 func TestTxGasLimits(t *testing.T) {
-	gasGranted := uint64(10)
-	anteOpt := func(p *protocol.MockProtocol) {
-		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
-			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
-
-			defer func() {
-				if r := recover(); r != nil {
-					switch rType := r.(type) {
-					case sdk.ErrorOutOfGas:
-						err = sdkerrors.Wrapf(sdkerrors.ErrOutOfGas, "out of gas in location: %v", rType.Descriptor)
-					default:
-						panic(r)
-					}
-				}
-			}()
-
-			count := tx.(*txTest).Counter
-			newCtx.GasMeter().ConsumeGas(uint64(count), "counter-ante")
-
-			return newCtx, nil
-		})
-
-	}
-
-	routerOpt := func(p *protocol.MockProtocol) {
-		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
-			count := msg.(msgCounter).Counter
-			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
-			return &sdk.Result{}, nil
-		})
-	}
-
 	engine := newEngine(anteOpt, routerOpt)
 	app := setupBaseApp(t, &engine)
 
@@ -975,38 +980,6 @@ func TestTxGasLimits(t *testing.T) {
 
 // Test that transactions exceeding gas limits fail
 func TestMaxBlockGasLimits(t *testing.T) {
-	gasGranted := uint64(10)
-	anteOpt := func(p *protocol.MockProtocol) {
-		p.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
-			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasGranted))
-
-			defer func() {
-				if r := recover(); r != nil {
-					switch rType := r.(type) {
-					case sdk.ErrorOutOfGas:
-						err = sdkerrors.Wrapf(sdkerrors.ErrOutOfGas, "out of gas in location: %v", rType.Descriptor)
-					default:
-						panic(r)
-					}
-				}
-			}()
-
-			count := tx.(*txTest).Counter
-			newCtx.GasMeter().ConsumeGas(uint64(count), "counter-ante")
-
-			return
-		})
-
-	}
-
-	routerOpt := func(p *protocol.MockProtocol) {
-		p.GetRouter().AddRoute(routeMsgCounter, func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
-			count := msg.(msgCounter).Counter
-			ctx.GasMeter().ConsumeGas(uint64(count), "counter-handler")
-			return &sdk.Result{}, nil
-		})
-	}
-
 	engine := newEngine(anteOpt, routerOpt)
 	app := setupBaseApp(t, &engine)
 
