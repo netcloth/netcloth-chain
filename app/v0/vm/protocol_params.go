@@ -62,7 +62,7 @@ const (
 	// Introduced in Tangerine Whistle (Eip 150)
 	CreateBySelfdestructGas uint64 = 25000
 
-	MaxCodeSize = 24576 // Maximum bytecode to permit for a contract
+	MaxCodeSize = 49152 // Maximum bytecode to permit for a contract
 
 	// Precompiled contract gas prices
 
@@ -75,12 +75,8 @@ const (
 	IdentityPerWordGas  uint64 = 3    // Per-work price for a data copy operation
 	ModExpQuadCoeffDiv  uint64 = 20   // Divisor for the quadratic particle of the big int modular exponentiation
 
-	Bn256AddGasByzantium             uint64 = 500    // Byzantium gas needed for an elliptic curve addition
-	Bn256AddGasIstanbul              uint64 = 150    // Gas needed for an elliptic curve addition
-	Bn256ScalarMulGasByzantium       uint64 = 40000  // Byzantium gas needed for an elliptic curve scalar multiplication
-	Bn256ScalarMulGasIstanbul        uint64 = 6000   // Gas needed for an elliptic curve scalar multiplication
-	Bn256PairingBaseGasByzantium     uint64 = 100000 // Byzantium base price for an elliptic curve pairing check
-	Bn256PairingBaseGasIstanbul      uint64 = 45000  // Base price for an elliptic curve pairing check
-	Bn256PairingPerPointGasByzantium uint64 = 80000  // Byzantium per-point price for an elliptic curve pairing check
-	Bn256PairingPerPointGasIstanbul  uint64 = 34000  // Per-point price for an elliptic curve pairing check
+	Bn256AddGas             uint64 = 150   // Gas needed for an elliptic curve addition
+	Bn256ScalarMulGas       uint64 = 6000  // Gas needed for an elliptic curve scalar multiplication
+	Bn256PairingBaseGas     uint64 = 45000 // Base price for an elliptic curve pairing check
+	Bn256PairingPerPointGas uint64 = 34000 // Per-point price for an elliptic curve pairing check
 )

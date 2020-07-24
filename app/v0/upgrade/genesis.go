@@ -6,12 +6,19 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
-var protocolV0 = version.AppVersion
-
+// GenesisState contains all upgrade state that must be provided at genesis
 type GenesisState struct {
-	GenesisVersion types.VersionInfo `json:genesis_version`
+	GenesisVersion types.VersionInfo `json:"genesis_version" yaml:"genesis_version"`
 }
 
+// DefaultGenesisState returns default raw genesis raw message
+func DefaultGenesisState() GenesisState {
+	return GenesisState{
+		GenesisVersion: types.NewVersionInfo(sdk.DefaultUpgradeConfig(version.AppVersion, "https://github.com/netcloth/netcloth-chain/releases/tag/v"+version.Version), true),
+	}
+}
+
+// InitGenesis builds the genesis version for first version
 func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
 	genesisVersion := data.GenesisVersion
 
@@ -20,14 +27,9 @@ func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
 	k.protocolKeeper.SetCurrentVersion(ctx, genesisVersion.UpgradeInfo.Protocol.Version)
 }
 
+// ExportGenesis outputs genesis state
 func ExportGenesis() GenesisState {
 	return GenesisState{
-		types.NewVersionInfo(sdk.DefaultUpgradeConfig(protocolV0, "https://github.com/netcloth/netcloth-chain/releases/tag/v"+version.Version), true),
-	}
-}
-
-func DefaultGenesisState() GenesisState {
-	return GenesisState{
-		types.NewVersionInfo(sdk.DefaultUpgradeConfig(protocolV0, "https://github.com/netcloth/netcloth-chain/releases/tag/v"+version.Version), true),
+		GenesisVersion: types.NewVersionInfo(sdk.DefaultUpgradeConfig(version.AppVersion, "https://github.com/netcloth/netcloth-chain/releases/tag/v"+version.Version), true),
 	}
 }

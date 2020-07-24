@@ -2,6 +2,7 @@ package gov
 
 import (
 	"fmt"
+
 	"github.com/netcloth/netcloth-chain/app/v0/gov/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"

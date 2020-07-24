@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -109,6 +110,7 @@ func opExp(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *
 	base, exponent := stack.pop(), stack.pop()
 
 	cmpToOne := exponent.Cmp(common.Big1)
+	// nolint
 	if cmpToOne < 0 { // Exponent is zero
 		// x ^ 0 == 1
 		stack.push(base.SetUint64(1))
@@ -532,6 +534,7 @@ func opNumber(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 }
 
 func opDifficulty(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
+	stack.push(interpreter.intPool.get().SetInt64(1)) //difficulty is always 1, just fulfil stack rules
 	return nil, nil
 }
 
@@ -637,12 +640,12 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 		gas          = contract.Gas
 	)
 	gas -= gas / 64
+	contract.UseGas(gas)
 
-	contract.UseGas(0)
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
-	if suberr == ErrCodeStoreOutOfGas {
-		stack.push(interpreter.intPool.getZero())
-	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {
+
+	if suberr != nil {
+		fmt.Printf("opCreate error: %s\n", suberr)
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetBytes(addr.Bytes()))
@@ -651,6 +654,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	interpreter.intPool.put(value, offset, size)
 
 	if suberr == ErrExecutionReverted {
+		fmt.Println("opCreate execution reverted")
 		return res, nil
 	}
 	return nil, nil
@@ -850,7 +854,7 @@ func opPush1(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory
 		integer = interpreter.intPool.get()
 	)
 
-	*pc += 1
+	*pc++
 	if *pc < codeLen {
 		stack.push(integer.SetUint64(uint64(contract.Code[*pc])))
 	} else {
@@ -905,10 +909,8 @@ func opSelfBalance(pc *uint64, interpreter *EVMInterpreter, contract *Contract, 
 	return nil, nil
 }
 
-// opChainID implements CHAINID opcode
 func opChainID(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-	//TODO: chain-id is a string type
-	//chainId := interpreter.intPool.get().Set(interpreter.evm.chainConfig.ChainID)
-	//stack.push(chainId)
+	chainID := interpreter.intPool.get().SetBytes([]byte(interpreter.evm.chainConfig.ChainID))
+	stack.push(chainID)
 	return nil, nil
 }

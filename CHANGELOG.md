@@ -1,6 +1,20 @@
 # Changelog
 
-## [Unreleased]
+## [unreleased]
+
+### nchd
+
+* add add precompiled contracts for VM moudle
+* fix opCreate instruction
+* add export/import for VM module
+* fix upgrade module
+* fix out of memory caused by vm logs
+* fix consensus failure caused by vm
+* add and fix vm instruction test
+* add simulation module
+
+## testnet-v1.2.0
+
 ### nchd
 
 * add extension for IPAL transaction

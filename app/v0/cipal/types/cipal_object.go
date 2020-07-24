@@ -10,7 +10,7 @@ import (
 
 type CIPALObject struct {
 	UserAddress  string        `json:"user_address" yaml:"user_address"`
-	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos`
+	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos"`
 }
 
 type CIPALObjects []CIPALObject

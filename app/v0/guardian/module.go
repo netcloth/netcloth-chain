@@ -1,5 +1,7 @@
 package guardian
 
+// DONTCOVER
+
 import (
 	"encoding/json"
 

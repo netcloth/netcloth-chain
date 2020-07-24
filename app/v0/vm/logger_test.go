@@ -30,12 +30,6 @@ func (d *dummyContractRef) SetBalance(*big.Int)        {}
 func (d *dummyContractRef) SetNonce(uint64)            {}
 func (d *dummyContractRef) Balance() *big.Int          { return new(big.Int) }
 
-type dummyStatedb struct {
-	CommitStateDB
-}
-
-func (*dummyStatedb) GetRefund() uint64 { return 1337 }
-
 func TestStoreCapture(t *testing.T) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
@@ -46,8 +40,6 @@ func TestStoreCapture(t *testing.T) {
 	vmKeeper := NewKeeper(
 		types.ModuleCdc,
 		sdk.NewKVStoreKey(StoreKey),
-		sdk.NewKVStoreKey(CodeKey),
-		sdk.NewKVStoreKey(StoreDebugKey),
 		paramsKeeper.Subspace(bank.DefaultParamspace),
 		accountKeeper)
 

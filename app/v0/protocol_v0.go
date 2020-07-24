@@ -1,11 +1,11 @@
 package v0
 
 import (
+	"github.com/netcloth/netcloth-chain/app/protocol"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/netcloth/netcloth-chain/app/protocol"
 	"github.com/netcloth/netcloth-chain/app/v0/auth"
 	"github.com/netcloth/netcloth-chain/app/v0/auth/ante"
 	"github.com/netcloth/netcloth-chain/app/v0/bank"
@@ -34,7 +34,7 @@ import (
 
 var _ protocol.Protocol = (*ProtocolV0)(nil)
 
-// The module BasicManager is in charge of setting up basic,
+// ModuleBasics - The module BasicManager is in charge of setting up basic,
 // non-dependant module elements, such as codec registration
 // and genesis verification.
 var ModuleBasics = module.NewBasicManager(
@@ -67,12 +67,14 @@ var maccPerms = map[string][]string{
 	ipal.ModuleName:           {supply.Staking},
 }
 
+// ProtocolV0 is the struct of the original protocol
 type ProtocolV0 struct {
 	version uint64
 	cdc     *codec.Codec
 	logger  log.Logger
 
 	moduleManager *module.Manager
+	simManager    *module.SimulationManager
 
 	accountKeeper  auth.AccountKeeper
 	refundKeeper   auth.RefundKeeper
@@ -97,16 +99,16 @@ type ProtocolV0 struct {
 
 	anteHandler      sdk.AnteHandler
 	feeRefundHandler sdk.FeeRefundHandler
-	initChainer      sdk.InitChainer
-	beginBlocker     sdk.BeginBlocker
-	endBlocker       sdk.EndBlocker
-	deliverTx        genutil.DeliverTxfn
+
+	initChainer sdk.InitChainer
+	deliverTx   genutil.DeliverTxfn
 
 	config *cfg.InstrumentationConfig
 
 	invCheckPeriod uint
 }
 
+// NewProtocolV0 creates a new instance of ProtocolV0
 func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, deliverTx genutil.DeliverTxfn, invCheckPeriod uint, config *cfg.InstrumentationConfig) *ProtocolV0 {
 	p0 := ProtocolV0{
 		version:        version,
@@ -122,50 +124,61 @@ func NewProtocolV0(version uint64, log log.Logger, pk sdk.ProtocolKeeper, delive
 	return &p0
 }
 
+// GetVersion gets the version of this protocol
 func (p *ProtocolV0) GetVersion() uint64 {
 	return p.version
 }
 
+// GetRouter
 func (p *ProtocolV0) GetRouter() sdk.Router {
 	return p.router
 }
 
+// GetQueryRouter
 func (p *ProtocolV0) GetQueryRouter() sdk.QueryRouter {
 	return p.queryRouter
 }
 
+// GetAnteHandler
 func (p *ProtocolV0) GetAnteHandler() sdk.AnteHandler {
 	return p.anteHandler
 }
 
+// GetFeeRefundHandler
 func (p *ProtocolV0) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return p.feeRefundHandler
 }
 
-func (p *ProtocolV0) Load() {
+// LoadContext updates the context for the app after the upgrade of protocol
+func (p *ProtocolV0) LoadContext() {
 	p.configCodec()
 	p.configKeepers()
 	p.configModuleManager()
+	p.configSimulationManager()
 	p.configRouters()
 	p.configFeeHandlers()
-	//p.configParams()
 }
 
-func (p *ProtocolV0) Init(ctx sdk.Context) {
+// Init
+func (p *ProtocolV0) Init() {
 }
 
+// GetCodec gets tx codec
 func (p *ProtocolV0) GetCodec() *codec.Codec {
 	return p.cdc
 }
 
+// GetInitChainer
 func (p *ProtocolV0) GetInitChainer() sdk.InitChainer {
 	return p.InitChainer
 }
 
+// GetBeginBlocker
 func (p *ProtocolV0) GetBeginBlocker() sdk.BeginBlocker {
 	return p.BeginBlocker
 }
 
+// GetEndBlocker
 func (p *ProtocolV0) GetEndBlocker() sdk.EndBlocker {
 	return p.EndBlocker
 }
@@ -174,6 +187,7 @@ func (p *ProtocolV0) configCodec() {
 	p.cdc = MakeCodec()
 }
 
+// MakeCodec registers codec
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
@@ -185,6 +199,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
+// ModuleAccountAddrs returns all the module account addresses
 func ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
@@ -225,21 +240,22 @@ func (p *ProtocolV0) configKeepers() {
 	p.cipalKeeper = cipal.NewKeeper(
 		protocol.Keys[cipal.StoreKey],
 		p.cdc,
-		cipalSubspace)
+		cipalSubspace,
+	)
 
 	p.ipalKeeper = ipal.NewKeeper(
 		protocol.Keys[ipal.StoreKey],
 		p.cdc,
 		p.supplyKeeper,
-		ipalSubspace)
+		ipalSubspace,
+	)
 
 	p.vmKeeper = vm.NewKeeper(
 		p.cdc,
-		protocol.Keys[protocol.VmStoreKey],
-		protocol.Keys[protocol.VmCodeStoreKey],
-		protocol.Keys[protocol.VmStoreKey],
+		protocol.Keys[protocol.VMStoreKey],
 		vmSubspace,
-		p.accountKeeper)
+		p.accountKeeper,
+	)
 
 	p.guardianKeeper = guardian.NewKeeper(p.cdc, protocol.Keys[protocol.GuardianStoreKey])
 
@@ -287,9 +303,19 @@ func (p *ProtocolV0) configModuleManager() {
 		guardian.NewAppModule(p.guardianKeeper),
 	)
 
-	moduleManager.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+	moduleManager.SetOrderBeginBlockers(
+		mint.ModuleName,
+		distr.ModuleName,
+		slashing.ModuleName)
 
-	moduleManager.SetOrderEndBlockers(types.ModuleName, crisis.ModuleName, gov.ModuleName, staking.ModuleName, ipal.ModuleName, vm.ModuleName) // TODO upgrade should be the first or the last?
+	moduleManager.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+		ipal.ModuleName,
+		vm.ModuleName,
+		upgrade.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -316,21 +342,60 @@ func (p *ProtocolV0) configModuleManager() {
 	p.moduleManager = moduleManager
 }
 
+func (p *ProtocolV0) configSimulationManager() {
+	slashingModule := slashing.NewAppModule(p.slashingKeeper, p.stakingKeeper)
+	slashingModuleP := slashingModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
+
+	distrModule := distr.NewAppModule(p.distrKeeper, p.supplyKeeper)
+	distrModuleP := distrModule.WithAccountKeeper(p.accountKeeper).WithStakingKeeper(p.stakingKeeper)
+
+	govModule := gov.NewAppModule(p.govKeeper, p.supplyKeeper)
+	govModuleP := govModule.WithAccountKeeper(p.accountKeeper)
+
+	ipalModule := ipal.NewAppModule(p.ipalKeeper)
+	ipalModuleP := ipalModule.WithAccountKeeper(p.accountKeeper)
+
+	vmModule := vm.NewAppModule(p.vmKeeper)
+	vmModuleP := vmModule.WithAccountKeeper(p.accountKeeper)
+
+	cipalModule := cipal.NewAppModule(p.cipalKeeper)
+	cipalModuleP := cipalModule.WithAccountKeeper(p.accountKeeper)
+
+	simManager := module.NewSimulationManager(
+		genaccounts.NewSimAppModule(p.accountKeeper),
+		auth.NewAppModule(p.accountKeeper),
+		bank.NewAppModule(p.bankKeeper, p.accountKeeper),
+		staking.NewAppModule(p.stakingKeeper, p.distrKeeper, p.accountKeeper, p.supplyKeeper),
+		slashingModuleP,
+		mint.NewAppModule(p.mintKeeper),
+		mint.NewAppModule(p.mintKeeper),
+		distrModuleP,
+		govModuleP,
+		ipalModuleP,
+		cipalModuleP,
+		vmModuleP,
+	)
+	p.simManager = simManager
+}
+
 func (p *ProtocolV0) configRouters() {
 	p.moduleManager.RegisterRoutes(p.router, p.queryRouter)
 }
 
+// InitChainer initializes application state at genesis as a hook
 func (p *ProtocolV0) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState GenesisState
+	var genesisState sdk.GenesisState
 	p.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
 	return p.moduleManager.InitGenesis(ctx, genesisState)
 }
 
+// BeginBlocker set function to BaseApp as a hook
 func (p *ProtocolV0) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return p.moduleManager.BeginBlock(ctx, req)
 }
 
+// EndBlocker sets function to BaseApp as a hook
 func (p *ProtocolV0) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return p.moduleManager.EndBlock(ctx, req)
 }
@@ -342,18 +407,27 @@ func (p *ProtocolV0) configFeeHandlers() {
 
 //for test
 
+// SetInitChainer set the initChainer
 func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
 	p.initChainer = initChainer
 }
 
+// SetRouter allows us to customize the router
 func (p *ProtocolV0) SetRouter(router sdk.Router) {
 	p.router = router
 }
 
-func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+// SetQueryRouter allows us to customize the query router
+func (p *ProtocolV0) SetQueryRouter(queryRouter sdk.QueryRouter) {
 	p.queryRouter = queryRouter
 }
 
+// SetAnteHandler set the anteHandler
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
+}
+
+// GetSimulationManager - for simulation
+func (p *ProtocolV0) GetSimulationManager() interface{} {
+	return p.simManager
 }

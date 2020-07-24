@@ -17,6 +17,15 @@ type Guardian struct {
 	AddedBy     sdk.AccAddress `json:"added_by"` // address that initiated the AddGuardian tx
 }
 
+const MaxDescLenght = 70
+
+func (g Guardian) Validate() error {
+	if len(g.Description) > MaxDescLenght || len(g.Description) == 0 {
+		return ErrInvalidDescription()
+	}
+	return nil
+}
+
 type Profilers []Guardian
 
 func (ps Profilers) String() (out string) {
@@ -86,20 +95,11 @@ func AccountTypeFromString(str string) (AccountType, error) {
 	}
 }
 
-// is defined AccountType?
-func validAccountType(bt AccountType) bool {
-	if bt == Genesis ||
-		bt == Ordinary {
-		return true
-	}
-	return false
-}
-
 // For Printf / Sprintf, returns bech32 when using %s
 func (bt AccountType) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
-		s.Write([]byte(fmt.Sprintf("%s", bt.String())))
+		s.Write([]byte(bt.String()))
 	default:
 		s.Write([]byte(fmt.Sprintf("%v", byte(bt))))
 	}

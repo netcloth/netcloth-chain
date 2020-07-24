@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/netcloth/netcloth-chain/types"
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
@@ -35,7 +36,7 @@ func ErrProfilerExists(profiler sdk.AccAddress) error {
 }
 
 func ErrInvalidDescription() error {
-	return sdkerrors.New(ModuleName, CodeInvalidDescription, "description is empty")
+	return sdkerrors.New(ModuleName, CodeInvalidDescription, fmt.Sprintf("description is invalid, length should be in range 1 to %d", MaxDescLenght))
 }
 
 func ErrAddressEmpty() error {

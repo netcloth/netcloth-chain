@@ -76,12 +76,13 @@ func TestList(t *testing.T) {
 	require.Equal(t, TestStruct{3, true}, res)
 }
 
+// nolint
 func TestListRandom(t *testing.T) {
 	key := sdk.NewKVStoreKey("test")
 	ctx, cdc := defaultComponents(key)
 	store := ctx.KVStore(key)
 	list := NewList(cdc, store)
-	mocklist := []uint32{}
+	var mocklist []uint32
 
 	for i := 0; i < 100; i++ {
 		item := rand.Uint32()

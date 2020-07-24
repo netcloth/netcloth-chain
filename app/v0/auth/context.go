@@ -8,10 +8,12 @@ const (
 	contextKeyFeePayers contextKey = iota
 )
 
+// WithFeePayers - initialize Context with FeePayer
 func WithFeePayers(ctx sdk.Context, account Account) sdk.Context {
 	return ctx.WithValue(contextKeyFeePayers, account)
 }
 
+// GetFeePayers - get FeePayer from Context
 func GetFeePayers(ctx sdk.Context) Account {
 	v := ctx.Value(contextKeyFeePayers)
 	if v == nil {

@@ -4,7 +4,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
-// module codec
+// ModuleCdc - generic sealed codec to be used throughout this module
 var ModuleCdc = codec.New()
 
 // RegisterCodec registers all the necessary types and interfaces for

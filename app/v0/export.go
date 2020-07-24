@@ -2,7 +2,6 @@ package v0
 
 import (
 	"encoding/json"
-	"log"
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -39,7 +38,7 @@ func (p *ProtocolV0) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []s
 	for _, addr := range jailWhiteList {
 		_, err := sdk.ValAddressFromBech32(addr)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 		whiteListMap[addr] = true
 	}
@@ -98,7 +97,6 @@ func (p *ProtocolV0) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []s
 	iter := sdk.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
 	counter := int16(0)
 
-	var valConsAddrs []sdk.ConsAddress
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(iter.Key()[1:])
 		validator, found := p.stakingKeeper.GetValidator(ctx, addr)
@@ -107,7 +105,6 @@ func (p *ProtocolV0) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []s
 		}
 
 		validator.UnbondingHeight = 0
-		valConsAddrs = append(valConsAddrs, validator.ConsAddress())
 		if applyWhiteList && !whiteListMap[addr.String()] {
 			validator.Jailed = true
 		}

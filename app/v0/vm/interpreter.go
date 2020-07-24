@@ -16,9 +16,11 @@ type Config struct {
 	NoRecursion             bool   // Disables call, callcode, delegate call and create
 	EnablePreimageRecording bool   // Enables recording of SHA3/keccak preimages
 
-	JumpTable        [256]operation // EVM instruction table, automatically populated if unset
-	OpConstGasConfig *[256]uint64
-	CommonGasConfig  *types.VMCommonGasParams
+	JumpTable                 [256]operation // EVM instruction table, automatically populated if unset
+	OpConstGasConfig          *[256]uint64
+	ContractCreationGasConfig *types.VMContractCreationGasParams
+	MaxCodeSize               uint64
+	MaxCallCreateDepth        uint64
 
 	EWASMInterpreter string // External EWASM interpreter options
 	EVMInterpreter   string // External EVM interpreter options
@@ -62,6 +64,11 @@ type EVMInterpreter struct {
 	hasherBuf  sdk.Hash
 	readOnly   bool   // whether to throw on stateful modifications
 	returnData []byte // last CALL's return data for subsequent reuse
+}
+
+//for test
+func (in *EVMInterpreter) SetReturnData(d []byte) {
+	in.returnData = d
 }
 
 // Run loops and evaluates the contract's code with the given input data and returns

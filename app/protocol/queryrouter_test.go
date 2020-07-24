@@ -1,10 +1,12 @@
 package protocol
 
 import (
-	sdk "github.com/netcloth/netcloth-chain/types"
-	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	sdk "github.com/netcloth/netcloth-chain/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var testQuerier = func(_ sdk.Context, _ []string, _ abci.RequestQuery) (res []byte, err error) {

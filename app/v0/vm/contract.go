@@ -40,6 +40,7 @@ type Contract struct {
 	value *big.Int
 }
 
+// NewContract creates a new Contract object
 func NewContract(caller ContractRef, object ContractRef, value *big.Int, gas uint64) *Contract {
 	c := &Contract{CallerAddress: caller.Address(), caller: caller, self: object}
 
@@ -86,6 +87,8 @@ func (c *Contract) validJumpdest(dest *big.Int) bool {
 	return c.analysis.codeSegment(udest)
 }
 
+// AsDelegate sets the contract to be a delegate call and returns the current
+// contract (for chaining calls)
 func (c *Contract) AsDelegate() *Contract {
 	// NOTE: caller must, at all times be a contract.
 	parent := c.caller.(*Contract)

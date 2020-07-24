@@ -26,8 +26,8 @@ type ProtocolDefinition struct {
 }
 
 type UpgradeConfig struct {
-	ProposalID uint64
-	Protocol   ProtocolDefinition
+	ProposalID uint64             `json:"proposal_id"`
+	Protocol   ProtocolDefinition `json:"protocol"`
 }
 
 func (uc UpgradeConfig) String() string {
@@ -52,10 +52,10 @@ func NewUpgradeConfig(proposalID uint64, protocol ProtocolDefinition) UpgradeCon
 	}
 }
 
-func DefaultUpgradeConfig(protocolId uint64, software string) UpgradeConfig {
+func DefaultUpgradeConfig(protocolID uint64, software string) UpgradeConfig {
 	return UpgradeConfig{
 		ProposalID: uint64(0),
-		Protocol:   NewProtocolDefinition(protocolId, software, uint64(1), NewDecWithPrec(9, 1)),
+		Protocol:   NewProtocolDefinition(protocolID, software, uint64(1), NewDecWithPrec(9, 1)),
 	}
 }
 
@@ -151,7 +151,7 @@ func (pk ProtocolKeeper) IsValidVersion(ctx Context, version uint64) bool {
 func isValidVersion(currentVersion uint64, lastFailedVersion uint64, version uint64) bool {
 	if currentVersion >= lastFailedVersion {
 		return currentVersion+1 == version
-	} else {
-		return lastFailedVersion == version || lastFailedVersion+1 == version
 	}
+
+	return lastFailedVersion == version || lastFailedVersion+1 == version
 }

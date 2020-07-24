@@ -18,7 +18,7 @@ const (
 //
 // The returned gas is gas - base * 63 / 64.
 func callGas(availableGas, base uint64, callCost *big.Int) (uint64, error) {
-	availableGas = availableGas - base
+	availableGas -= base
 	gas := availableGas - availableGas/64
 	// If the bit length exceeds 64 bit we know that the newly calculated "gas" for EIP150
 	// is smaller than the requested amount. Therefor we return the new gas instead

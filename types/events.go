@@ -40,6 +40,11 @@ func (em EventManager) ABCIEvents() []abci.Event {
 	return em.events.ToABCIEvents()
 }
 
+// Clear clear all events
+func (em *EventManager) Clear() {
+	em.events = EmptyEvents()
+}
+
 // ----------------------------------------------------------------------------
 // Events
 // ----------------------------------------------------------------------------
@@ -111,7 +116,7 @@ func (e Events) AppendEvents(events Events) Events {
 // ToABCIEvents converts a slice of Event objects to a slice of abci.Event
 // objects.
 func (e Events) ToABCIEvents() []abci.Event {
-	res := make([]abci.Event, len(e), len(e))
+	res := make([]abci.Event, len(e))
 	for i, ev := range e {
 		res[i] = abci.Event{Type: ev.Type, Attributes: ev.Attributes}
 	}
@@ -168,6 +173,7 @@ func (se StringEvents) String() string {
 
 // Flatten returns a flattened version of StringEvents by grouping all attributes
 // per unique event type.
+// nolint
 func (se StringEvents) Flatten() StringEvents {
 	flatEvents := make(map[string][]Attribute)
 
@@ -206,8 +212,8 @@ func StringifyEvent(e abci.Event) StringEvent {
 	return res
 }
 
-// StringifyEvents converts a slice of Event objects into a slice of StringEvent
-// objects.
+// StringifyEvents converts a slice of Event objects into a slice of StringEvent objects.
+// nolint
 func StringifyEvents(events []abci.Event) StringEvents {
 	var res StringEvents
 

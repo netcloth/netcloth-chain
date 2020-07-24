@@ -72,6 +72,7 @@ func PersistentPreRunEFn(context *Context) func(*cobra.Command, []string) error 
 	}
 }
 
+// nolint
 // If a new config is created, change some of the default tendermint settings
 func interceptLoadConfig() (conf *cfg.Config, err error) {
 	tmpConf := cfg.DefaultConfig()

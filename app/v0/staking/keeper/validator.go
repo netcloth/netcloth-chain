@@ -374,6 +374,7 @@ func (k Keeper) InsertValidatorQueue(ctx sdk.Context, val types.Validator) {
 	if len(timeSlice) == 0 {
 		keys = []sdk.ValAddress{val.OperatorAddress}
 	} else {
+		// nolint
 		keys = append(timeSlice, val.OperatorAddress)
 	}
 	k.SetValidatorQueueTimeSlice(ctx, val.UnbondingCompletionTime, keys)

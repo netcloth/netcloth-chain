@@ -32,6 +32,26 @@ func SortJSON(toSortJSON []byte) ([]byte, error) {
 	return js, nil
 }
 
+// JSONEqual judge json equal after json been sorted
+func JSONEqual(a, b []byte) bool {
+	switch {
+	case a == nil && b == nil:
+		return true
+	case a == nil || b == nil:
+		return false
+	default:
+		aSorted, err := SortJSON(a)
+		if err != nil {
+			return false
+		}
+		bSorted, err := SortJSON(b)
+		if err != nil {
+			return false
+		}
+		return string(aSorted) == string(bSorted)
+	}
+}
+
 // MustSortJSON is like SortJSON but panic if an error occurs, e.g., if
 // the passed JSON isn't valid.
 func MustSortJSON(toSortJSON []byte) []byte {

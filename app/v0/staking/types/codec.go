@@ -4,7 +4,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
-// Register concrete types on codec codec
+// RegisterCodec - register concrete types on codec codec
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateValidator{}, "nch/MsgCreateValidator", nil)
 	cdc.RegisterConcrete(MsgEditValidator{}, "nch/MsgEditValidator", nil)
@@ -13,7 +13,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgBeginRedelegate{}, "nch/MsgBeginRedelegate", nil)
 }
 
-// generic sealed codec to be used throughout this module
+// ModuleCdc - generic sealed codec to be used throughout module
 var ModuleCdc *codec.Codec
 
 func init() {

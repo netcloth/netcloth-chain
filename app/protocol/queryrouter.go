@@ -2,23 +2,24 @@ package protocol
 
 import (
 	"fmt"
+
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/utils"
 )
 
 type queryRouter struct {
 	routes map[string]sdk.Querier
 }
 
-var _ sdk.QueryRouter = NewQueryRouter()
-
-func NewQueryRouter() *queryRouter {
+// NewQueryRouter return QueryRouter
+func NewQueryRouter() sdk.QueryRouter {
 	return &queryRouter{
 		routes: map[string]sdk.Querier{},
 	}
 }
 
 func (qrt *queryRouter) AddRoute(path string, q sdk.Querier) sdk.QueryRouter {
-	if !isAlphaNumeric(path) {
+	if !utils.IsAlphaNumeric(path) {
 		panic("route expressions can only contain alphanumeric characters")
 	}
 	if qrt.routes[path] != nil {

@@ -117,7 +117,6 @@ func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err 
 				}
 			} else if m.Bond.IsLT(n.Bond) {
 				k.toUnbondingQueue(ctx, m.OperatorAddress, n.Bond.Sub(m.Bond))
-			} else {
 			}
 
 			ipalNode := types.NewIPALNode(m.OperatorAddress, m.Moniker, m.Website, m.Details, m.Extension, m.Endpoints, m.Bond)

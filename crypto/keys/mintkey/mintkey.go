@@ -35,6 +35,7 @@ const (
 // than what they see, which is a significantly cheaper attack then breaking
 // a bcrypt hash. (Recall that the nonce still exists to break rainbow tables)
 // For further notes on security parameter choice, see README.md
+// nolint
 var BcryptSecurityParameter = 12
 
 //-----------------------------------------------------------------
@@ -77,11 +78,11 @@ func unarmorBytes(armorStr, blockType string) (bz []byte, err error) {
 		return
 	}
 	if bType != blockType {
-		err = fmt.Errorf("Unrecognized armor type %q, expected: %q", bType, blockType)
+		err = fmt.Errorf("unrecognized armor type %q, expected: %q", bType, blockType)
 		return
 	}
 	if header["version"] != "0.0.0" {
-		err = fmt.Errorf("Unrecognized version: %v", header["version"])
+		err = fmt.Errorf("unrecognized version: %v", header["version"])
 		return
 	}
 	return
@@ -123,17 +124,17 @@ func UnarmorDecryptPrivKey(armorStr string, passphrase string) (crypto.PrivKey, 
 		return privKey, err
 	}
 	if blockType != blockTypePrivKey {
-		return privKey, fmt.Errorf("Unrecognized armor type: %v", blockType)
+		return privKey, fmt.Errorf("unrecognized armor type: %v", blockType)
 	}
 	if header["kdf"] != "bcrypt" {
-		return privKey, fmt.Errorf("Unrecognized KDF type: %v", header["KDF"])
+		return privKey, fmt.Errorf("unrecognized KDF type: %v", header["KDF"])
 	}
 	if header["salt"] == "" {
-		return privKey, fmt.Errorf("Missing salt bytes")
+		return privKey, fmt.Errorf("missing salt bytes")
 	}
 	saltBytes, err := hex.DecodeString(header["salt"])
 	if err != nil {
-		return privKey, fmt.Errorf("Error decoding salt: %v", err.Error())
+		return privKey, fmt.Errorf("error decoding salt: %v", err.Error())
 	}
 	privKey, err = decryptPrivKey(saltBytes, encBytes, passphrase)
 	return privKey, err

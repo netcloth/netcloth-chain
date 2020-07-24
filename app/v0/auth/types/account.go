@@ -163,12 +163,15 @@ func (acc *BaseAccount) Balance() sdk.Int {
 func (acc *BaseAccount) SetBalance(amt sdk.Int) {
 	coins := acc.GetCoins()
 	diff := amt.Sub(coins.AmountOf(sdk.NativeTokenName))
-	if diff.IsZero() {
+	switch {
+	case diff.IsZero():
 		return
-	} else if diff.IsPositive() {
+
+	case diff.IsPositive():
 		// Increase coins to amount
 		coins = coins.Add(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff)})
-	} else {
+
+	default:
 		// Decrease coin to amount
 		coins = coins.Sub(sdk.Coins{sdk.NewCoin(sdk.NativeTokenName, diff.Neg())})
 	}
@@ -395,18 +398,16 @@ func NewContinuousVestingAccountRaw(bva *BaseVestingAccount,
 }
 
 // NewContinuousVestingAccount returns a new ContinuousVestingAccount
-func NewContinuousVestingAccount(
-	baseAcc *BaseAccount, StartTime, EndTime int64,
-) *ContinuousVestingAccount {
+func NewContinuousVestingAccount(baseAcc *BaseAccount, startTime, endTime int64) *ContinuousVestingAccount {
 
 	baseVestingAcc := &BaseVestingAccount{
 		BaseAccount:     baseAcc,
 		OriginalVesting: baseAcc.Coins,
-		EndTime:         EndTime,
+		EndTime:         endTime,
 	}
 
 	return &ContinuousVestingAccount{
-		StartTime:          StartTime,
+		StartTime:          startTime,
 		BaseVestingAccount: baseVestingAcc,
 	}
 }
@@ -493,11 +494,11 @@ func NewDelayedVestingAccountRaw(bva *BaseVestingAccount) *DelayedVestingAccount
 }
 
 // NewDelayedVestingAccount returns a DelayedVestingAccount
-func NewDelayedVestingAccount(baseAcc *BaseAccount, EndTime int64) *DelayedVestingAccount {
+func NewDelayedVestingAccount(baseAcc *BaseAccount, endTime int64) *DelayedVestingAccount {
 	baseVestingAcc := &BaseVestingAccount{
 		BaseAccount:     baseAcc,
 		OriginalVesting: baseAcc.Coins,
-		EndTime:         EndTime,
+		EndTime:         endTime,
 	}
 
 	return &DelayedVestingAccount{baseVestingAcc}

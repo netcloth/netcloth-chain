@@ -14,7 +14,6 @@ import (
 // StateTransition defines data to transitionDB in vm
 type StateTransition struct {
 	Sender    sdk.AccAddress
-	GasLimit  uint64
 	Recipient sdk.AccAddress
 	Amount    sdk.Int
 	Payload   []byte
@@ -39,75 +38,74 @@ func (st StateTransition) GetHashFn(header abci.Header) func() sdk.Hash {
 	}
 }
 
-func (st StateTransition) TransitionCSDB(ctx sdk.Context, vmParams *types.Params) (*big.Int, *sdk.Result, error) {
-	ctx = ctx.WithLogger(ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName)))
+func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *sdk.Result, error) {
+	logger := k.Logger(ctx)
+
 	evmCtx := Context{
 		CanTransfer: st.CanTransfer,
 		Transfer:    st.Transfer,
 		GetHash:     st.GetHashFn(ctx.BlockHeader()),
-
-		Origin: st.Sender,
-
-		CoinBase:    ctx.BlockHeader().ProposerAddress, // validator consensus address, not account address
-		Time:        sdk.NewInt(int64(ctx.BlockHeader().Time.Unix())).BigInt(),
-		GasLimit:    st.GasLimit,
+		Origin:      st.Sender,
+		CoinBase:    ctx.BlockHeader().ProposerAddress,
+		Time:        sdk.NewInt(ctx.BlockHeader().Time.Unix()).BigInt(),
 		BlockNumber: sdk.NewInt(ctx.BlockHeader().Height).BigInt(),
 	}
 
-	// This gas meter is set up to consume gas from gaskv during evm execution and be ignored
-	currentGasMeter := ctx.GasMeter()
-	csdb := st.StateDB.WithContext(ctx.WithGasMeter(sdk.NewInfiniteGasMeter())).WithTxHash(tmhash.Sum(ctx.TxBytes()))
-	// Clear cache of accounts to handle changes outside of the EVM
-	csdb.UpdateAccounts()
+	gasLimitForVM := uint64(DefaultVMGasLimit)
+	if !ctx.Simulate {
+		gasLimitForVM = ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
+	}
+	evmCtx.GasLimit = gasLimitForVM
 
-	cfg := Config{OpConstGasConfig: &vmParams.VMOpGasParams, CommonGasConfig: &vmParams.VMCommonGasParams}
-	evm := NewEVM(evmCtx, csdb, cfg)
+	curGasMeter := ctx.GasMeter()
+	gasMeterForEvm := sdk.NewInfiniteGasMeter()
+
+	vmParams := k.GetParams(ctx) // will consume gas
+	st.StateDB.UpdateAccounts()  // will consume gas
+
+	cfg := Config{
+		OpConstGasConfig:          &vmParams.VMOpGasParams,
+		ContractCreationGasConfig: &vmParams.VMContractCreationGasParams,
+		MaxCodeSize:               vmParams.MaxCodeSize,
+		MaxCallCreateDepth:        vmParams.MaxCallCreateDepth,
+	}
+	evm := NewEVM(evmCtx, st.StateDB.WithContext(ctx.WithGasMeter(gasMeterForEvm)), cfg)
 
 	var (
 		ret         []byte
 		leftOverGas uint64
-		addr        sdk.AccAddress
 		vmerr       error
 	)
 
 	if st.Recipient.Empty() {
-		ret, addr, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, st.GasLimit, st.Amount.BigInt())
-		ctx.Logger().Info(fmt.Sprintf("create contract, consumed gas = %v , leftOverGas = %v, vm err = %v ", st.GasLimit-leftOverGas, leftOverGas, vmerr))
+		ret, _, leftOverGas, vmerr = evm.Create(st.Sender, st.Payload, gasLimitForVM, st.Amount.BigInt())
+		logger.Info(fmt.Sprintf("create contract, consumed gas = %v, leftOverGas = %v, vm err = %v ", gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	} else {
-		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, st.GasLimit, st.Amount.BigInt())
-
-		if vmerr == ErrExecutionReverted && len(ret) > 4 {
-			ctx.Logger().Info(fmt.Sprintf("VM revert error, reason provided by the contract: %v", string(ret[4:])))
+		ret, leftOverGas, vmerr = evm.Call(st.Sender, st.Recipient, st.Payload, gasLimitForVM, st.Amount.BigInt())
+		if vmerr == ErrExecutionReverted {
+			reason := "null"
+			if len(ret) > 4 {
+				reason = string(ret[4:])
+			}
+			logger.Info(fmt.Sprintf("VM revert error, reason provided by the contract: %s", reason))
 		}
 
-		ctx.Logger().Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v , leftOverGas = %v, vm err = %v", ret, st.GasLimit-leftOverGas, leftOverGas, vmerr))
+		logger.Info(fmt.Sprintf("call contract, ret = %x, consumed gas = %v, leftOverGas = %v, vm err = %v", ret, gasLimitForVM-leftOverGas, leftOverGas, vmerr))
 	}
 
-	vmGasUsed := st.GasLimit - leftOverGas
+	vmGasUsed := gasLimitForVM - leftOverGas
 
 	if vmerr != nil {
-		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, vmerr
+		ctx.EventManager().Clear()
+		return nil, &sdk.Result{Data: ret, GasUsed: curGasMeter.GasConsumed() + vmGasUsed}, vmerr
 	}
-
-	if ctx.GasMeter().GasConsumed()+vmGasUsed > ctx.GasMeter().Limit() {
-		// vm rum out of gas
-		ctx.Logger().Info("VM run out of gas")
-		return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed() + vmGasUsed}, ErrOutOfGas
-	}
-
-	// comsume vm gas
-	ctx.WithGasMeter(currentGasMeter).GasMeter().ConsumeGas(vmGasUsed, "EVM execution consumption")
 
 	st.StateDB.Finalise(true)
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNewContract,
-			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
-		),
-	})
+	// comsume vm gas
+	ctx.WithGasMeter(curGasMeter).GasMeter().ConsumeGas(vmGasUsed, "VM execution consumption")
 
-	return nil, &sdk.Result{Data: ret, GasUsed: st.GasLimit - leftOverGas}, nil
+	return nil, &sdk.Result{Data: ret, GasUsed: ctx.GasMeter().GasConsumed()}, nil
 }
 
 func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, readonly bool) (*big.Int, *sdk.Result, error) {
@@ -116,16 +114,20 @@ func DoStateTransition(ctx sdk.Context, msg types.MsgContract, k Keeper, readonl
 		Recipient: msg.To,
 		Payload:   msg.Payload,
 		Amount:    msg.Amount.Amount,
-		StateDB:   k.StateDB.WithContext(ctx),
+		StateDB:   k.StateDB.WithContext(ctx).WithTxHash(tmhash.Sum(ctx.TxBytes())),
 	}
 
 	if readonly {
-		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
-		st.GasLimit = DefaultGasLimit
+		ctx.Simulate = true
 	}
 
-	params := k.GetParams(ctx)
-	gasLimit := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	st.GasLimit = gasLimit
-	return st.TransitionCSDB(ctx, &params)
+	if !ctx.Simulate && ctx.GasMeter().Limit() == 0 {
+		return nil, &sdk.Result{Data: nil}, ErrWrongCtx
+	}
+
+	if ctx.Simulate {
+		st.StateDB = types.NewStateDB(k.StateDB).WithContext(ctx)
+	}
+
+	return st.TransitionCSDB(ctx, k)
 }

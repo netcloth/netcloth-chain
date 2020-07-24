@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/netcloth/netcloth-chain/baseapp"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -17,6 +19,7 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/genaccounts"
 	genaccscli "github.com/netcloth/netcloth-chain/app/v0/genaccounts/client/cli"
 	genutilcli "github.com/netcloth/netcloth-chain/app/v0/genutil/client/cli"
+	"github.com/netcloth/netcloth-chain/app/v0/guardian"
 	"github.com/netcloth/netcloth-chain/app/v0/staking"
 	"github.com/netcloth/netcloth-chain/client"
 	"github.com/netcloth/netcloth-chain/server"
@@ -51,6 +54,7 @@ func main() {
 	rootCmd.AddCommand(genutilcli.GenTxCmd(ctx, cdc, staking.AppModuleBasic{}, genaccounts.AppModuleBasic{}, app.DefaultNodeHome, app.DefaultCLIHome))
 	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc))
 	rootCmd.AddCommand(genaccscli.AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
+	rootCmd.AddCommand(guardian.AddGenesisGuardianCmd(ctx, cdc, app.DefaultNodeHome))
 	rootCmd.AddCommand(client.NewCompletionCmd(rootCmd, true))
 	rootCmd.AddCommand(replayCmd())
 	rootCmd.AddCommand(client.LineBreak)
@@ -68,7 +72,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 	minGasPrices := viper.GetString(flagMinGasPrices)
 	return app.NewNCHApp(
 		logger, db, traceStore, true, invCheckPeriod,
-		app.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), app.SetMinGasPrices(minGasPrices),
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(minGasPrices),
 	)
 }
 

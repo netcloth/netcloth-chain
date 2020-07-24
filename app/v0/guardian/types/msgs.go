@@ -102,7 +102,7 @@ func (g AddGuardian) ValidateBasic() error {
 }
 
 func (g AddGuardian) EnsureLength() error {
-	if len(g.Description) > 70 {
+	if len(g.Description) > MaxDescLenght {
 		return ErrInvalidDescription()
 	}
 

@@ -54,14 +54,6 @@ func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration) Depo
 	}
 }
 
-// Equal returns a boolean determining if two Param types are identical.
-// TODO: This is slower than comparing struct fields directly
-func (p Params) Equal(p2 Params) bool {
-	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
-	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
-	return bytes.Equal(bz1, bz2)
-}
-
 // DefaultDepositParams default parameters for deposits
 func DefaultDepositParams() DepositParams {
 	return NewDepositParams(
@@ -195,9 +187,9 @@ type Params struct {
 	DepositParams DepositParams `json:"deposit_params" yaml:"deposit_parmas"`
 }
 
-func (gp Params) String() string {
-	return gp.VotingParams.String() + "\n" +
-		gp.TallyParams.String() + "\n" + gp.DepositParams.String()
+func (p Params) String() string {
+	return p.VotingParams.String() + "\n" +
+		p.TallyParams.String() + "\n" + p.DepositParams.String()
 }
 
 func NewParams(vp VotingParams, tp TallyParams, dp DepositParams) Params {
@@ -211,4 +203,12 @@ func NewParams(vp VotingParams, tp TallyParams, dp DepositParams) Params {
 // DefaultParams default governance params
 func DefaultParams() Params {
 	return NewParams(DefaultVotingParams(), DefaultTallyParams(), DefaultDepositParams())
+}
+
+// Equal returns a boolean determining if two Param types are identical.
+// TODO: This is slower than comparing struct fields directly
+func (p Params) Equal(p2 Params) bool {
+	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
 }

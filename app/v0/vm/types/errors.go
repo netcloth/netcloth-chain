@@ -21,4 +21,5 @@ var (
 	ErrExecutionReverted        = sdkerrors.New(ModuleName, 14, "evm: execution reverted")
 	ErrInvalidJump              = sdkerrors.New(ModuleName, 15, "evm: invalid jump destination")
 	ErrGasUintOverflow          = sdkerrors.New(ModuleName, 16, "gas uint64 overflow")
+	ErrWrongCtx                 = sdkerrors.New(ModuleName, 17, "must be simulate mode when gas limit is 0")
 )

@@ -1,23 +1,26 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/netcloth/netcloth-chain/app/v0/params"
 )
 
 const (
-	DefaultMaxCodeSize uint64 = 1024 * 1024
-	CallCreateDepth    uint64 = 1024
+	defaultMaxCodeSize     = 1024 * 1024
+	defaultCallCreateDepth = 1024
 
-	DefaultContractCreationGas = 53000
-	DefaultCreateDataGas       = 200
+	defaultContractCreationGas = 53000
+	defaultGasPerByte          = 200
 )
 
+// nolint
 var (
-	KeyMaxCodeSize       = []byte("MaxCodeSize")
-	KeyVMOpGasParams     = []byte("VMOpGasParams")
-	KeyVMCommonGasParams = []byte("VMCommonGasParams")
+	KeyMaxCodeSize                 = []byte("MaxCodeSize")
+	KeyMaxCallCreateDepth          = []byte("MaxCallCreateDepth")
+	KeyVMOpGasParams               = []byte("VMOpGasParams")
+	KeyVMContractCreationGasParams = []byte("VMContractCreationGasParams")
 
 	DefaultVMOpGasParams = [256]uint64{
 		0, 3, 5, 3, 5, 5, 5, 5, 8, 8, 0, 5, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, //0-31
@@ -30,60 +33,74 @@ var (
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32000, 700, 700, 0, 700, 32000, 0, 0, 0, 0, 700, 0, 0, 0, 0, 0, //224-255
 	}
 
-	DefaultVMCommonGasParams = VMCommonGasParams{ContractCreationGas: DefaultContractCreationGas, CreateDataGas: DefaultCreateDataGas} //protocol_params.go::CreateDataGas
+	vmContractCreationGasParams = VMContractCreationGasParams{Gas: defaultContractCreationGas, GasPerByte: defaultGasPerByte}
 )
 
-type VMCommonGasParams struct {
-	ContractCreationGas uint64 `json: "contract_creation_gas" yaml:"contract_creation_gas"`
-	CreateDataGas       uint64 `json:"create_data_gas" yaml:"create_data_gas"`
+// VMContractCreationGasParams contract creation gas params
+type VMContractCreationGasParams struct {
+	Gas        uint64 `json:"gas" yaml:"gas"`
+	GasPerByte uint64 `json:"gas_per_byte" yaml:"gas_per_byte"`
 }
 
 type Params struct {
-	MaxCodeSize       uint64            `json:"max_code_size" yaml:"max_code_size"`
-	VMOpGasParams     [256]uint64       `json:"vm_op_gas_params" yaml:"vm_op_gas_params"`
-	VMCommonGasParams VMCommonGasParams `json:"vm_common_gas_params" yaml:"vm_common_gas_params"`
+	MaxCodeSize                 uint64                      `json:"max_code_size" yaml:"max_code_size"`
+	MaxCallCreateDepth          uint64                      `json:"max_call_create_depth" yaml:"max_call_create_depth"`
+	VMOpGasParams               [256]uint64                 `json:"vm_op_gas_params" yaml:"vm_op_gas_params"`
+	VMContractCreationGasParams VMContractCreationGasParams `json:"vm_contract_creation_gas_params" yaml:"vm_contract_creation_gas_params"`
 }
 
 var _ params.ParamSet = (*Params)(nil)
 
-func NewParams(maxCodeSize uint64, vmOpGasParams [256]uint64, vmCommonGasParams VMCommonGasParams) Params {
+// NewParams return Params
+func NewParams(maxCodeSize, callCreateDepth uint64, vmOpGasParams [256]uint64, vmContractCreationGasParams VMContractCreationGasParams) Params {
 	return Params{
-		MaxCodeSize:       maxCodeSize,
-		VMOpGasParams:     vmOpGasParams,
-		VMCommonGasParams: vmCommonGasParams,
+		MaxCodeSize:                 maxCodeSize,
+		MaxCallCreateDepth:          callCreateDepth,
+		VMOpGasParams:               vmOpGasParams,
+		VMContractCreationGasParams: vmContractCreationGasParams,
 	}
 }
 
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		params.NewParamSetPair(KeyMaxCodeSize, &p.MaxCodeSize, validateMaxCodeSize),
+		params.NewParamSetPair(KeyMaxCallCreateDepth, &p.MaxCallCreateDepth, validateMaxCallCreateDepth),
 		params.NewParamSetPair(KeyVMOpGasParams, &p.VMOpGasParams, validateVMOpGasParams),
-		params.NewParamSetPair(KeyVMCommonGasParams, &p.VMCommonGasParams, validateVMCommonGasParams),
+		params.NewParamSetPair(KeyVMContractCreationGasParams, &p.VMContractCreationGasParams, validateVMCommonGasParams),
 	}
 }
 
 func DefaultParams() Params {
 	return NewParams(
-		DefaultMaxCodeSize,
+		defaultMaxCodeSize,
+		defaultCallCreateDepth,
 		DefaultVMOpGasParams,
-		DefaultVMCommonGasParams,
+		vmContractCreationGasParams,
 	)
 }
 
 func (p Params) String() string {
-	return fmt.Sprintf(`Params:
-  MaxCodeSize   : %v`,
-		p.MaxCodeSize)
+	d, _ := json.Marshal(p)
+	return string(d)
 }
 
 func validateMaxCodeSize(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+		return fmt.Errorf("MaxCodeSize'type must be uint64: %T", i)
 	}
 
 	if v == 0 {
 		return fmt.Errorf("max code size must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxCallCreateDepth(i interface{}) error {
+	_, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("MaxCallCreateDepth'type must be uint64: %T", i)
 	}
 
 	return nil
@@ -94,17 +111,17 @@ func validateVMOpGasParams(i interface{}) error {
 }
 
 func validateVMCommonGasParams(i interface{}) error {
-	v, ok := i.(VMCommonGasParams)
+	v, ok := i.(VMContractCreationGasParams)
 	if !ok {
-		return fmt.Errorf("validateVMCommonGasParams invalid parameter type: %T", i)
+		return fmt.Errorf("invalid type: %T", i)
 	}
 
-	if v.ContractCreationGas == 0 {
-		return fmt.Errorf("contract_creation_gas must be positive: %d", v.ContractCreationGas)
+	if v.Gas == 0 {
+		return fmt.Errorf("gas must be positive: %d", v.Gas)
 	}
 
-	if v.CreateDataGas == 0 {
-		return fmt.Errorf("create_data_gas must be positive: %d", v.CreateDataGas)
+	if v.GasPerByte == 0 {
+		return fmt.Errorf("gas_per_byte must be positive: %d", v.GasPerByte)
 	}
 
 	return nil

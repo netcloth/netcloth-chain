@@ -18,14 +18,16 @@ type Keeper struct {
 	StateDB    *types.CommitStateDB
 }
 
-func NewKeeper(cdc *codec.Codec, storeKey, codeKey, storageDebugKey sdk.StoreKey, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
+// NewKeeper returns vm keeper
+func NewKeeper(cdc *codec.Codec, storeKey sdk.StoreKey, paramstore params.Subspace, ak auth.AccountKeeper) Keeper {
 	return Keeper{
 		Cdc:        cdc,
 		paramstore: paramstore.WithKeyTable(ParamKeyTable()),
-		StateDB:    types.NewCommitStateDB(ak, storeKey, codeKey, storageDebugKey),
+		StateDB:    types.NewCommitStateDB(ak, storeKey),
 	}
 }
 
+// Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("modules/%s", types.ModuleName))
 }
@@ -40,4 +42,8 @@ func (k *Keeper) GetCode(ctx sdk.Context, addr sdk.AccAddress) []byte {
 
 func (k *Keeper) GetLogs(ctx sdk.Context, hash sdk.Hash) []*types.Log {
 	return k.StateDB.WithContext(ctx).GetLogs(hash)
+}
+
+func (k *Keeper) GetAllHostContractAddresses(ctx sdk.Context) []sdk.AccAddress {
+	return k.StateDB.WithContext(ctx).GetAllHotContractAddrs()
 }

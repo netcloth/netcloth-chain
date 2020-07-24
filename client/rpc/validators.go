@@ -64,7 +64,7 @@ func ValidatorCommand(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-// Validator output in bech32 format
+// ValidatorOutput -  output validator in bech32 format
 type ValidatorOutput struct {
 	Address          sdk.ConsAddress `json:"address"`
 	PubKey           string          `json:"pub_key"`
@@ -72,7 +72,7 @@ type ValidatorOutput struct {
 	VotingPower      int64           `json:"voting_power"`
 }
 
-// Validators at a certain height output in bech32 format
+// ResultValidatorsOutput - Validators at a certain height output in bech32 format
 type ResultValidatorsOutput struct {
 	BlockHeight int64             `json:"block_height"`
 	Validators  []ValidatorOutput `json:"validators"`
@@ -154,7 +154,7 @@ func GetValidators(cliCtx context.CLIContext, height *int64) (ResultValidatorsOu
 
 // REST
 
-// Validator Set at a height REST handler
+// ValidatorSetRequestHandlerFn - Validator Set at a height REST handler
 func ValidatorSetRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -184,7 +184,7 @@ func ValidatorSetRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-// Latest Validator Set REST handler
+// LatestValidatorSetRequestHandlerFn - Latest Validator Set REST handler
 func LatestValidatorSetRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		output, err := GetValidators(cliCtx, nil)

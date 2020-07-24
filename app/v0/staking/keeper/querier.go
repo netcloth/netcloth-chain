@@ -61,7 +61,7 @@ func queryValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, 
 	filteredVals := make([]types.Validator, 0, len(validators))
 
 	for _, val := range validators {
-		if strings.ToLower(val.GetStatus().String()) == strings.ToLower(params.Status) {
+		if strings.EqualFold(val.GetStatus().String(), params.Status) {
 			filteredVals = append(filteredVals, val)
 		}
 	}
@@ -280,16 +280,23 @@ func queryRedelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byt
 
 	var redels []types.Redelegation
 
-	if !params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && !params.DstValidatorAddr.Empty() {
-		redel, found := k.GetRedelegation(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
-		if !found {
-			return nil, types.ErrNoRedelegation
+	switch {
+	case !params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && !params.DstValidatorAddr.Empty():
+		{
+			redel, found := k.GetRedelegation(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
+			if !found {
+				return nil, types.ErrNoRedelegation
+			}
+
+			redels = []types.Redelegation{redel}
 		}
 
-		redels = []types.Redelegation{redel}
-	} else if params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && params.DstValidatorAddr.Empty() {
-		redels = k.GetRedelegationsFromSrcValidator(ctx, params.SrcValidatorAddr)
-	} else {
+	case params.DelegatorAddr.Empty() && !params.SrcValidatorAddr.Empty() && params.DstValidatorAddr.Empty():
+		{
+			redels = k.GetRedelegationsFromSrcValidator(ctx, params.SrcValidatorAddr)
+		}
+
+	default:
 		redels = k.GetAllRedelegations(ctx, params.DelegatorAddr, params.SrcValidatorAddr, params.DstValidatorAddr)
 	}
 
@@ -359,7 +366,7 @@ func delegationsToDelegationResponses(
 	ctx sdk.Context, k Keeper, delegations types.Delegations,
 ) (types.DelegationResponses, error) {
 
-	resp := make(types.DelegationResponses, len(delegations), len(delegations))
+	resp := make(types.DelegationResponses, len(delegations))
 	for i, del := range delegations {
 		delResp, err := delegationToDelegationResponse(ctx, k, del)
 		if err != nil {
@@ -376,14 +383,14 @@ func redelegationsToRedelegationResponses(
 	ctx sdk.Context, k Keeper, redels types.Redelegations,
 ) (types.RedelegationResponses, error) {
 
-	resp := make(types.RedelegationResponses, len(redels), len(redels))
+	resp := make(types.RedelegationResponses, len(redels))
 	for i, redel := range redels {
 		val, found := k.GetValidator(ctx, redel.ValidatorDstAddress)
 		if !found {
 			return nil, types.ErrNoValidatorFound
 		}
 
-		entryResponses := make([]types.RedelegationEntryResponse, len(redel.Entries), len(redel.Entries))
+		entryResponses := make([]types.RedelegationEntryResponse, len(redel.Entries))
 		for j, entry := range redel.Entries {
 			entryResponses[j] = types.NewRedelegationEntryResponse(
 				entry.CreationHeight,

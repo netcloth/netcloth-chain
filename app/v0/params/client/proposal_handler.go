@@ -6,5 +6,5 @@ import (
 	"github.com/netcloth/netcloth-chain/app/v0/params/client/rest"
 )
 
-// param change proposal handler
+// ProposalHandler - param change proposal handler
 var ProposalHandler = govclient.NewProposalHandler(cli.GetCmdSubmitProposal, rest.ProposalRESTHandler)

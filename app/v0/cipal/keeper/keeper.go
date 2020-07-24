@@ -41,16 +41,16 @@ func (k Keeper) GetCIPALObject(ctx sdk.Context, userAddress string) (obj types.C
 	return obj, true
 }
 
-func (k Keeper) GetAllCIPALObjects(ctx sdk.Context) (CIPALObjs []types.CIPALObject) {
+func (k Keeper) GetAllCIPALObjects(ctx sdk.Context) (objs []types.CIPALObject) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.CIPALObjectKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		obj := types.MustUnmarshalCIPALObject(k.cdc, iterator.Value())
-		CIPALObjs = append(CIPALObjs, obj)
+		objs = append(objs, obj)
 	}
-	return CIPALObjs
+	return objs
 }
 
 // get the set of all cipal object with no limits
@@ -70,5 +70,5 @@ func (k Keeper) SetCIPALObject(ctx sdk.Context, obj types.CIPALObject) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalCIPALObject(k.cdc, obj)
 	store.Set(types.GetCIPALObjectKey(obj.UserAddress), bz)
-	ctx.Logger().Info(string(types.GetCIPALObjectKey(obj.UserAddress)))
+	//ctx.Logger().Info(string(types.GetCIPALObjectKey(obj.UserAddress)))
 }

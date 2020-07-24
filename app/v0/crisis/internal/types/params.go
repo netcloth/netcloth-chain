@@ -13,11 +13,11 @@ const (
 )
 
 var (
-	// key for constant fee parameter
+	// ParamStoreKeyConstantFee - key for constant fee parameter
 	ParamStoreKeyConstantFee = []byte("ConstantFee")
 )
 
-// type declaration for parameters
+// ParamKeyTable - type declaration for parameters
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable(
 		params.NewParamSetPair(ParamStoreKeyConstantFee, sdk.Coin{}, validateConstantFee),

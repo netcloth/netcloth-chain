@@ -192,8 +192,8 @@ func cpIncr(bz []byte) []byte {
 
 // Error returns an error if the prefixIterator is invalid defined by the Valid
 // method.
-func (pi *prefixIterator) Error() error {
-	if !pi.Valid() {
+func (iter *prefixIterator) Error() error {
+	if !iter.Valid() {
 		return errors.New("invalid prefixIterator")
 	}
 

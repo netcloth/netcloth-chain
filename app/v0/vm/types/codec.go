@@ -4,12 +4,12 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
-// Register concrete types on codec codec
+// RegisterCodec - register the sdk message type
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgContract{}, "nch/MsgContract", nil)
 }
 
-// generic sealed codec to be used throughout this module
+// ModuleCdc - generic sealed codec to be used throughout this module
 var ModuleCdc *codec.Codec
 
 func init() {

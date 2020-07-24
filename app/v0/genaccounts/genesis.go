@@ -30,6 +30,7 @@ func ExportGenesis(ctx sdk.Context, accountKeeper types.AccountKeeper) GenesisSt
 			if err != nil {
 				panic(err)
 			}
+
 			accounts = append(accounts, account)
 			return false
 		},

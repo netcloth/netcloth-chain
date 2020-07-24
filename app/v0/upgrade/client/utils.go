@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
-	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 
+	"github.com/netcloth/netcloth-chain/app/v0/upgrade/types"
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 

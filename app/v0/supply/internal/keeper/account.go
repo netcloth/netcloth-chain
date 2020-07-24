@@ -56,6 +56,7 @@ func (k Keeper) GetModuleAccount(ctx sdk.Context, moduleName string) exported.Mo
 }
 
 // SetModuleAccount sets the module account to the auth account store
+// nolint
 func (k Keeper) SetModuleAccount(ctx sdk.Context, macc exported.ModuleAccountI) {
 	k.ak.SetAccount(ctx, macc)
 }

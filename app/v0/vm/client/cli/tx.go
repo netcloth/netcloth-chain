@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -59,7 +58,7 @@ func ContractCreateCmd(cdc *codec.Codec) *cobra.Command {
 			if len(argList) != 0 {
 				abiFile := viper.GetString(flagAbiFile)
 				if len(abiFile) == 0 {
-					return errors.New(fmt.Sprintf("must use --abi_file to appoint abi file when use constructor params\n"))
+					return fmt.Errorf("must use --abi_file to appoint abi file when use constructor params")
 				}
 				payload, _, err = GenPayload(abiFile, "", argList)
 				if err != nil {
@@ -117,8 +116,7 @@ func ContractCallCmd(cdc *codec.Codec) *cobra.Command {
 			}
 
 			dump := make([]byte, len(payload)*2)
-			hex.Encode(dump[:], payload)
-			//fmt.Fprintf(os.Stderr, fmt.Sprintf("paylaod = %s\n", string(dump)))
+			hex.Encode(dump, payload)
 
 			contractAddr, err := sdk.AccAddressFromBech32(viper.GetString(flagContractAddr))
 			if err != nil {

@@ -52,6 +52,10 @@ func listHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		res, err := cliCtx.Codec.MarshalJSONIndent(ipalNodes, "", "  ")
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
@@ -99,7 +103,7 @@ func queryNodes(cliCtx context.CLIContext, endpoint string) http.HandlerFunc {
 		var params types.QueryIPALNodesParams
 
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &params) {
-			fmt.Fprint(os.Stderr, fmt.Sprintf("params = %v\n", params))
+			fmt.Fprintf(os.Stderr, "params = %v\n", params)
 			return
 		}
 

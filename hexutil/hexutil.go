@@ -38,7 +38,7 @@ func Decode(input string) ([]byte, error) {
 		}
 	}
 
-	b, err := hex.DecodeString(input[:])
+	b, err := hex.DecodeString(input)
 	if err != nil {
 		err = mapError(err)
 	}
@@ -57,7 +57,7 @@ func MustDecode(input string) []byte {
 // Encode encodes b as a hex string with 0x prefix.
 func Encode(b []byte) string {
 	enc := make([]byte, len(b)*2)
-	hex.Encode(enc[:], b)
+	hex.Encode(enc, b)
 	return string(enc)
 }
 

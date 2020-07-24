@@ -2,12 +2,10 @@ package protocol
 
 import (
 	"fmt"
-	"regexp"
 
 	sdk "github.com/netcloth/netcloth-chain/types"
+	"github.com/netcloth/netcloth-chain/utils"
 )
-
-var isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
 
 type Router struct {
 	routes map[string]sdk.Handler
@@ -22,7 +20,7 @@ func NewRouter() *Router {
 }
 
 func (rtr *Router) AddRoute(path string, h sdk.Handler) sdk.Router {
-	if !isAlphaNumeric(path) {
+	if !utils.IsAlphaNumeric(path) {
 		panic("route expressions can only contain alphanumeric characters")
 	}
 	if rtr.routes[path] != nil {

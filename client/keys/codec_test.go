@@ -16,6 +16,7 @@ type testCases struct {
 	JSON    [][]byte
 }
 
+// nolint
 func getTestCases() testCases {
 	return testCases{
 		[]keys.KeyOutput{
@@ -34,6 +35,7 @@ func getTestCases() testCases {
 	}
 }
 
+// nolint
 func TestMarshalJSON(t *testing.T) {
 	type args struct {
 		o keys.KeyOutput
@@ -47,12 +49,12 @@ func TestMarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"basic", args{data.Keys[0]}, []byte(data.JSON[0]), false},
+		{"basic", args{data.Keys[0]}, data.JSON[0], false},
 		{"mnemonic is optional", args{data.Keys[1]}, []byte(data.JSON[1]), false},
 
 		// REVIEW: Are the next results expected??
-		{"empty name", args{data.Keys[2]}, []byte(data.JSON[2]), false},
-		{"empty object", args{data.Keys[3]}, []byte(data.JSON[3]), false},
+		{"empty name", args{data.Keys[2]}, data.JSON[2], false},
+		{"empty object", args{data.Keys[3]}, data.JSON[3], false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -69,6 +71,7 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
+// nolint
 func TestUnmarshalJSON(t *testing.T) {
 	type args struct {
 		bz  []byte

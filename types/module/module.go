@@ -191,10 +191,12 @@ type Manager struct {
 }
 
 // NewModuleManager creates a new Manager object
+// nolint
 func NewManager(modules ...AppModule) *Manager {
 
 	moduleMap := make(map[string]AppModule)
 	var modulesStr []string
+
 	for _, module := range modules {
 		moduleMap[module.Name()] = module
 		modulesStr = append(modulesStr, module.Name())

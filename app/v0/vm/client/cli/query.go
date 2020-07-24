@@ -128,7 +128,7 @@ func GetCmdQueryCode(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "code",
 		Short: "Querying commands for Contract Code",
-		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by accAddr.
+		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by Account Address.
 Example:
 $ %s query vm code [address]`, version.ClientName)),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -146,7 +146,7 @@ $ %s query vm code [address]`, version.ClientName)),
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No code found with address %s", args[0])
+				return fmt.Errorf("no code found with address %s", args[0])
 			}
 
 			dst := make([]byte, 2*len(res))
@@ -163,7 +163,7 @@ func GetCmdGetStorage(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "storage [account] [key]",
 		Short: "Querying storage for an account at a given key",
-		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by accAddr.
+		Long: strings.TrimSpace(fmt.Sprintf(`Query Contract Code by Account Address.
 Example:
 $ %s query vm code [address]`, version.ClientName)),
 		Args: cobra.ExactArgs(2),
@@ -229,7 +229,7 @@ $ %s query vm feecreate [code_file] [from_accaddr]`, version.ClientName)),
 				return err
 			}
 
-			code, err := CodeFromFile(args[0])
+			code, _ := CodeFromFile(args[0])
 			msg := types.NewMsgContractQuery(from, nil, code, ZeroAmount)
 			data, err := cliCtx.Codec.MarshalJSON(msg)
 			if err != nil {
@@ -284,7 +284,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 			var payload []byte
 			if exist {
 				if len(m.Inputs) != len(argsBin)/32 {
-					return errors.New(fmt.Sprint("args count dismatch"))
+					return errors.New("args count dismatch")
 				}
 
 				readyArgs, err := m.Inputs.UnpackValues(argsBin)
@@ -297,7 +297,7 @@ $ %s query vm feecall nch1mfztsv6eq5rhtaz2l6jjp3yup3q80agsqra9qe nch1rk47h83x4nz
 					return err
 				}
 			} else {
-				return errors.New(fmt.Sprintf("method %s not exist\n", method))
+				return fmt.Errorf("method %s not exist", method)
 			}
 
 			msg := types.NewMsgContractQuery(fromAddr, toAddr, payload, ZeroAmount)

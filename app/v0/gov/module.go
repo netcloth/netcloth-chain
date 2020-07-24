@@ -1,7 +1,10 @@
 package gov
 
+// DONTCOVER
+
 import (
 	"encoding/json"
+	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -16,11 +19,13 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 	sdk "github.com/netcloth/netcloth-chain/types"
 	"github.com/netcloth/netcloth-chain/types/module"
+	simtypes "github.com/netcloth/netcloth-chain/types/simulation"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModuleSimulation = AppModule{}
 )
 
 // app module basics object
@@ -64,7 +69,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // register rest routes
 func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	var proposalRESTHandlers []rest.ProposalRESTHandler
+	proposalRESTHandlers := make([]rest.ProposalRESTHandler, 0, len(a.proposalHandlers))
 	for _, proposalHandler := range a.proposalHandlers {
 		proposalRESTHandlers = append(proposalRESTHandlers, proposalHandler.RESTHandler(ctx))
 	}
@@ -74,8 +79,7 @@ func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Rout
 
 // get the root tx command of this module
 func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-
-	var proposalCLIHandlers []*cobra.Command
+	proposalCLIHandlers := make([]*cobra.Command, 0, len(a.proposalHandlers))
 	for _, proposalHandler := range a.proposalHandlers {
 		proposalCLIHandlers = append(proposalCLIHandlers, proposalHandler.CLIHandler(cdc))
 	}
@@ -92,8 +96,9 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 // app module
 type AppModule struct {
 	AppModuleBasic
-	keeper       Keeper
-	supplyKeeper SupplyKeeper
+	keeper          Keeper
+	supplyKeeper    SupplyKeeper
+	akForSimulation AccountKeeper // for simulation
 }
 
 // NewAppModule creates a new AppModule object
@@ -103,6 +108,11 @@ func NewAppModule(keeper Keeper, supplyKeeper SupplyKeeper) AppModule {
 		keeper:         keeper,
 		supplyKeeper:   supplyKeeper,
 	}
+}
+
+func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
+	am.akForSimulation = ak
+	return am
 }
 
 // module name
@@ -156,4 +166,21 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	EndBlocker(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
+}
+
+// for simulation
+func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
+	RandomizedGenState(simState)
+}
+
+func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+	return WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper, simState.Contents)
+}
+
+func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
+	return nil
+}
+
+func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
+	return nil
 }

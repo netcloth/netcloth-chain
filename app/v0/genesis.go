@@ -1,11 +1,9 @@
 package v0
 
 import (
-	"encoding/json"
+	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
-type GenesisState map[string]json.RawMessage
-
-func NewDefaultGenesisState() GenesisState {
+func NewDefaultGenesisState() sdk.GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }

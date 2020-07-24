@@ -80,7 +80,7 @@ func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			if len(res) == 0 {
-				return fmt.Errorf("No cipal object found with address %s", addr)
+				return fmt.Errorf("cipal with address %s not found", addr)
 			}
 
 			return cliCtx.PrintOutput(types.MustUnmarshalCIPALObject(cdc, res))
