@@ -2,7 +2,6 @@ package v0
 
 import (
 	"encoding/json"
-	"log"
 
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -39,7 +38,7 @@ func (p *ProtocolV0) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []s
 	for _, addr := range jailWhiteList {
 		_, err := sdk.ValAddressFromBech32(addr)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 		whiteListMap[addr] = true
 	}
