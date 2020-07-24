@@ -25,12 +25,13 @@ import (
 var (
 	capKey1 = sdk.NewKVStoreKey("key1")
 	capKey2 = sdk.NewKVStoreKey("key2")
+
+	mockProtocolV0 = protocol.NewMockProtocol(0)
 )
 
 func newEngine(options ...func(*protocol.MockProtocol)) protocol.ProtocolEngine {
 	pk := sdk.NewProtocolKeeper(protocol.Keys[protocol.MainStoreKey])
 	engine := protocol.NewProtocolEngine(pk)
-	mockProtocolV0 := protocol.NewMockProtocol(0)
 	for _, option := range options {
 		option(mockProtocolV0)
 	}
@@ -101,7 +102,6 @@ func setupProtocol(app *BaseApp, capKey sdk.StoreKey) {
 	pk := sdk.NewProtocolKeeper(capKey)
 	engine := protocol.NewProtocolEngine(pk)
 	app.SetProtocolEngine(&engine)
-	mockProtocolV0 := protocol.NewMockProtocol(0)
 	engine.Add(mockProtocolV0)
 	engine.LoadProtocol(0)
 }

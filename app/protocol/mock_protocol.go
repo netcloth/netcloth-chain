@@ -63,17 +63,17 @@ func (m *MockProtocol) GetFeeRefundHandler() sdk.FeeRefundHandler {
 	return m.feeRefundHandler
 }
 
-// GetInitChainer
+// GetInitChainer get initChainer
 func (m *MockProtocol) GetInitChainer() sdk.InitChainer {
 	return m.initChainer
 }
 
-// GetBeginBlocker
+// GetBeginBlocker gets beginBlocker
 func (m MockProtocol) GetBeginBlocker() sdk.BeginBlocker {
 	return m.beginBlocker
 }
 
-// GetEndBlocker
+// GetEndBlocker gets endBlocker
 func (m MockProtocol) GetEndBlocker() sdk.EndBlocker {
 	return m.endBlocker
 }
@@ -83,36 +83,42 @@ func (m *MockProtocol) ExportAppStateAndValidators(ctx sdk.Context, forZeroHeigh
 	return json.RawMessage{}, nil, nil
 }
 
-// LoadContext
+// LoadContext - do nothing
 func (m *MockProtocol) LoadContext() {
+	// do nothing
 }
 
-// Init
+// Init - initialize
 func (m *MockProtocol) Init() {
+	// do nothing
 }
 
-// GetCodec
+// GetCodec gets codec
 func (m *MockProtocol) GetCodec() *codec.Codec {
 	return codec.New()
 }
 
+// SetRouter allows us to customize the router
 func (m *MockProtocol) SetRouter(router sdk.Router) {
 	m.router = router
 }
 
-func (m *MockProtocol) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+// SetQueryRouter allows us to customize the query router
+func (m *MockProtocol) SetQueryRouter(queryRouter sdk.QueryRouter) {
 	m.queryRouter = queryRouter
 }
 
+// SetAnteHandler set the anteHandler
 func (m *MockProtocol) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	m.anteHandler = anteHandler
 }
 
+// SetInitChainer set the initChainer
 func (m *MockProtocol) SetInitChainer(initChainer sdk.InitChainer) {
 	m.initChainer = initChainer
 }
 
-// for simulation
+// GetSimulationManager - for simulation
 func (m *MockProtocol) GetSimulationManager() interface{} {
 	return nil
 }

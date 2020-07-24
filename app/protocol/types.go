@@ -28,7 +28,7 @@ type Protocol interface {
 
 	//for test
 	SetRouter(sdk.Router)
-	SetQuearyRouter(sdk.QueryRouter)
+	SetQueryRouter(sdk.QueryRouter)
 	SetAnteHandler(anteHandler sdk.AnteHandler)
 	SetInitChainer(sdk.InitChainer)
 

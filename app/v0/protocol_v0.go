@@ -407,22 +407,22 @@ func (p *ProtocolV0) configFeeHandlers() {
 
 //for test
 
-// SetInitChainer
+// SetInitChainer set the initChainer
 func (p *ProtocolV0) SetInitChainer(initChainer sdk.InitChainer) {
 	p.initChainer = initChainer
 }
 
-// SetRouter
+// SetRouter allows us to customize the router
 func (p *ProtocolV0) SetRouter(router sdk.Router) {
 	p.router = router
 }
 
-// SetQuearyRouter
-func (p *ProtocolV0) SetQuearyRouter(queryRouter sdk.QueryRouter) {
+// SetQueryRouter allows us to customize the query router
+func (p *ProtocolV0) SetQueryRouter(queryRouter sdk.QueryRouter) {
 	p.queryRouter = queryRouter
 }
 
-// SetAnteHandler
+// SetAnteHandler set the anteHandler
 func (p *ProtocolV0) SetAnteHandler(anteHandler sdk.AnteHandler) {
 	p.anteHandler = anteHandler
 }
