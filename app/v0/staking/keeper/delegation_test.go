@@ -314,7 +314,7 @@ func TestUndelegateSelfDelegationBelowMinSelfDelegation(t *testing.T) {
 
 	// create a second delegation to this validator
 	keeper.DeleteValidatorByPowerIndex(ctx, validator)
-	validator, issuedShares = validator.AddTokensFromDel(delTokens, false)
+	validator, issuedShares = validator.AddTokensFromDel(delTokens, true)
 	require.True(t, validator.IsBonded())
 	require.Equal(t, delTokens, issuedShares.RoundInt())
 
