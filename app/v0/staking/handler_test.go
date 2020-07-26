@@ -780,25 +780,26 @@ func TestUnbondingPeriod(t *testing.T) {
 
 	origHeader := ctx.BlockHeader()
 
+	errMsg := "should not have unbonded"
 	_, found := keeper.GetUnbondingDelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	require.True(t, found, "should not have unbonded")
+	require.True(t, found, errMsg)
 
 	// cannot complete unbonding at same time
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetUnbondingDelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	require.True(t, found, "should not have unbonded")
+	require.True(t, found, errMsg)
 
 	// cannot complete unbonding at time 6 seconds later
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 6))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetUnbondingDelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	require.True(t, found, "should not have unbonded")
+	require.True(t, found, errMsg)
 
 	// can complete unbonding at time 7 seconds later
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 7))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetUnbondingDelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	require.False(t, found, "should have unbonded")
+	require.False(t, found, errMsg")
 }
 
 func TestUnbondingFromUnbondingValidator(t *testing.T) {
@@ -890,22 +891,24 @@ func TestRedelegationPeriod(t *testing.T) {
 
 	origHeader := ctx.BlockHeader()
 
+	errMsg := "should not have unbonded"
+
 	// cannot complete redelegation at same time
 	EndBlocker(ctx, keeper)
 	_, found := keeper.GetRedelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr, validatorAddr2)
-	require.True(t, found, "should not have unbonded")
+	require.True(t, found, errMsg)
 
 	// cannot complete redelegation at time 6 seconds later
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 6))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetRedelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr, validatorAddr2)
-	require.True(t, found, "should not have unbonded")
+	require.True(t, found, errMsg)
 
 	// can complete redelegation at time 7 seconds later
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 7))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetRedelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr, validatorAddr2)
-	require.False(t, found, "should have unbonded")
+	require.False(t, found, errMsg")
 }
 
 func TestTransitiveRedelegation(t *testing.T) {

@@ -110,7 +110,9 @@ func TestValidateGenesis(t *testing.T) {
 		mutate  func(*types.GenesisState)
 		wantErr bool
 	}{
-		{"default", func(*types.GenesisState) {}, false},
+		{"default", func(*types.GenesisState) {
+			// empty genesis
+		}, false},
 		// validate genesis validators
 		{"duplicate validator", func(data *types.GenesisState) {
 			data.Validators = genValidators1
