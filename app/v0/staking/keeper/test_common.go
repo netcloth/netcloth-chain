@@ -228,10 +228,49 @@ func createTestPubKeys(numPubKeys int) []crypto.PubKey {
 
 //_____________________________________________________________________________________
 
-// does a certain by-power index record exist
+// ValidatorByPowerIndexExists - does a certain by-power index record exist
 func ValidatorByPowerIndexExists(ctx sdk.Context, keeper Keeper, power []byte) bool {
 	store := ctx.KVStore(keeper.storeKey)
 	return store.Has(power)
+}
+
+// TestingUpdateValidator - update validator for testing
+func TestingUpdateValidator(keeper Keeper, ctx sdk.Context, validator types.Validator, apply bool) types.Validator {
+	keeper.SetValidator(ctx, validator)
+
+	// Remove any existing power key for validator.
+	store := ctx.KVStore(keeper.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.ValidatorsByPowerIndexKey)
+	defer iterator.Close()
+	deleted := false
+	for ; iterator.Valid(); iterator.Next() {
+		valAddr := types.ParseValidatorPowerRankKey(iterator.Key())
+		if bytes.Equal(valAddr, validator.OperatorAddress) {
+			if deleted {
+				panic("found duplicate power index key")
+			} else {
+				deleted = true
+			}
+			store.Delete(iterator.Key())
+		}
+	}
+
+	keeper.SetValidatorByPowerIndex(ctx, validator)
+	if apply {
+		keeper.ApplyAndReturnValidatorSetUpdates(ctx)
+		validator, found := keeper.GetValidator(ctx, validator.OperatorAddress)
+		if !found {
+			panic("validator expected but not found")
+		}
+		return validator
+	}
+	cachectx, _ := ctx.CacheContext()
+	keeper.ApplyAndReturnValidatorSetUpdates(cachectx)
+	validator, found := keeper.GetValidator(cachectx, validator.OperatorAddress)
+	if !found {
+		panic("validator expected but not found")
+	}
+	return validator
 }
 
 func RandomValidator(r *rand.Rand, keeper Keeper, ctx sdk.Context) (val types.Validator, ok bool) {
