@@ -799,7 +799,7 @@ func TestUnbondingPeriod(t *testing.T) {
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 7))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetUnbondingDelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
-	require.False(t, found, errMsg")
+	require.False(t, found, errMsg)
 }
 
 func TestUnbondingFromUnbondingValidator(t *testing.T) {
@@ -908,7 +908,7 @@ func TestRedelegationPeriod(t *testing.T) {
 	ctx = ctx.WithBlockTime(origHeader.Time.Add(time.Second * 7))
 	EndBlocker(ctx, keeper)
 	_, found = keeper.GetRedelegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr, validatorAddr2)
-	require.False(t, found, errMsg")
+	require.False(t, found, errMsg)
 }
 
 func TestTransitiveRedelegation(t *testing.T) {
