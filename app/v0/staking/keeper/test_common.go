@@ -228,13 +228,13 @@ func createTestPubKeys(numPubKeys int) []crypto.PubKey {
 
 //_____________________________________________________________________________________
 
-// does a certain by-power index record exist
+// ValidatorByPowerIndexExists - does a certain by-power index record exist
 func ValidatorByPowerIndexExists(ctx sdk.Context, keeper Keeper, power []byte) bool {
 	store := ctx.KVStore(keeper.storeKey)
 	return store.Has(power)
 }
 
-// update validator for testing
+// TestingUpdateValidator - update validator for testing
 func TestingUpdateValidator(keeper Keeper, ctx sdk.Context, validator types.Validator, apply bool) types.Validator {
 	keeper.SetValidator(ctx, validator)
 
