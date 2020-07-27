@@ -224,6 +224,7 @@ func TestPossibleOverflow(t *testing.T) {
 		OperatorAddress: sdk.ValAddress(pk1.Address().Bytes()),
 		ConsPubKey:      pk1,
 		Status:          sdk.Bonded,
+		SelfDelegation:  sdk.NewDec(2159),
 		Tokens:          sdk.NewInt(2159),
 		DelegatorShares: delShares,
 	}
@@ -239,7 +240,7 @@ func TestValidatorMarshalUnmarshalJSON(t *testing.T) {
 	js, err := codec.Cdc.MarshalJSON(validator)
 	require.NoError(t, err)
 	require.NotEmpty(t, js)
-	require.Contains(t, string(js), "\"consensus_pubkey\":\"cosmosvalconspu")
+	require.Contains(t, string(js), "\"consensus_pubkey\":\"nchvalconspub")
 	got := &Validator{}
 	err = codec.Cdc.UnmarshalJSON(js, got)
 	assert.NoError(t, err)
@@ -297,7 +298,6 @@ func TestValidatorMarshalYAML(t *testing.T) {
     moniker: ""
     identity: ""
     website: ""
-    security_contact: ""
     details: ""
   unbondingheight: 0
   unbondingcompletiontime: 1970-01-01T00:00:00Z
@@ -308,6 +308,7 @@ func TestValidatorMarshalYAML(t *testing.T) {
       max_change_rate: "0.000000000000000000"
     update_time: 1970-01-01T00:00:00Z
   minselfdelegation: "1"
+  selfdelegation: "0.000000000000000000"
 `, validator.OperatorAddress.String(), bechifiedPub)
 	require.Equal(t, want, string(bs))
 }
