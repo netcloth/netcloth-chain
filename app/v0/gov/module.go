@@ -28,7 +28,7 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// app module basics object
+// AppModuleBasic defines the basic application module used by the gov module.
 type AppModuleBasic struct {
 	proposalHandlers []client.ProposalHandler // proposal handlers which live in governance cli and rest
 }
@@ -42,22 +42,23 @@ func NewAppModuleBasic(proposalHandlers ...client.ProposalHandler) AppModuleBasi
 
 var _ module.AppModuleBasic = AppModuleBasic{}
 
-// module name
+// Name returns the gov module's name.
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-// register module codec
+// RegisterCodec registers the gov module's types for the given codec.
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	RegisterCodec(cdc)
 }
 
-// default genesis state
+// DefaultGenesis returns default genesis state as raw bytes for the gov
+// module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
-// module validate genesis
+// ValidateGenesis performs genesis state validation for the gov module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	var data GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
@@ -67,7 +68,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	return ValidateGenesis(data)
 }
 
-// register rest routes
+// RegisterRESTRoutes registers the REST routes for the gov module.
 func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
 	proposalRESTHandlers := make([]rest.ProposalRESTHandler, 0, len(a.proposalHandlers))
 	for _, proposalHandler := range a.proposalHandlers {
@@ -77,7 +78,7 @@ func (a AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Rout
 	rest.RegisterRoutes(ctx, rtr, proposalRESTHandlers)
 }
 
-// get the root tx command of this module
+// GetTxCmd returns the root tx command for the gov module.
 func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	proposalCLIHandlers := make([]*cobra.Command, 0, len(a.proposalHandlers))
 	for _, proposalHandler := range a.proposalHandlers {
@@ -87,13 +88,13 @@ func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetTxCmd(StoreKey, cdc, proposalCLIHandlers)
 }
 
-// get the root query command of this module
+// GetQueryCmd returns the root query command for the gov module.
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
 //___________________________
-// app module
+// AppModule implements an application module for the gov module.
 type AppModule struct {
 	AppModuleBasic
 	keeper          Keeper
@@ -115,37 +116,38 @@ func (am *AppModule) WithAccountKeeper(ak AccountKeeper) *AppModule {
 	return am
 }
 
-// module name
+// Name returns the gov module's name.
 func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-// register invariants
+// RegisterInvariants registers module invariants
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 	RegisterInvariants(ir, am.keeper)
 }
 
-// module message route name
+// Route returns the message routing key for the gov module.
 func (AppModule) Route() string {
 	return RouterKey
 }
 
-// module handler
+// NewHandler returns an sdk.Handler for the gov module.
 func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.keeper)
 }
 
-// module querier route name
+// QuerierRoute returns the gov module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return QuerierRoute
 }
 
-// module querier
+// NewQuerierHandler returns no sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
-// module init-genesis
+// InitGenesis performs genesis initialization for the gov module. It returns
+// no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -153,34 +155,41 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-// module export genesis
+// ExportGenesis returns the exported genesis state as raw bytes for the gov
+// module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }
 
-// module begin-block
+// BeginBlock performs a no-op.
 func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
-// module end-block
+// EndBlock returns the end blocker for the gov module. It returns no validator
+// updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	EndBlocker(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
 }
 
 // for simulation
+// GenerateGenesisState creates a randomized GenState of the gov module.
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	RandomizedGenState(simState)
 }
 
+// WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return WeightedOperations(simState.AppParams, simState.Cdc, am.akForSimulation, am.keeper, simState.Contents)
 }
 
+// ProposalContents returns all the gov content functions used to
+// simulate governance proposals.
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return nil
 }
 
+// RandomizedParams creates randomized gov param changes for the simulator.
 func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }

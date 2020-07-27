@@ -28,7 +28,7 @@ const (
 	eventFormat = "{eventType}.{eventAttribute}={value}"
 )
 
-// GetTxCmd returns the transaction commands for this module
+// GetQueryCmd returns the root query command for the auth module.
 func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
