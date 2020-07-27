@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -106,6 +107,28 @@ func (v Validators) ToSDKValidators() (validators []exported.ValidatorI) {
 	return validators
 }
 
+// Sort Validators sorts validator array in ascending operator address order
+func (v Validators) Sort() {
+	sort.Sort(v)
+}
+
+// Implements sort interface
+func (v Validators) Len() int {
+	return len(v)
+}
+
+// Implements sort interface
+func (v Validators) Less(i, j int) bool {
+	return bytes.Compare(v[i].OperatorAddress, v[j].OperatorAddress) == -1
+}
+
+// Implements sort interface
+func (v Validators) Swap(i, j int) {
+	it := v[i]
+	v[i] = v[j]
+	v[j] = it
+}
+
 // NewValidator - initialize a new validator
 func NewValidator(operator sdk.ValAddress, pubKey crypto.PubKey, description Description) Validator {
 	return Validator{
@@ -124,12 +147,12 @@ func NewValidator(operator sdk.ValAddress, pubKey crypto.PubKey, description Des
 	}
 }
 
-// return the redelegation
+// MustMarshalValidator - return the redelegation
 func MustMarshalValidator(cdc *codec.Codec, validator Validator) []byte {
 	return cdc.MustMarshalBinaryLengthPrefixed(validator)
 }
 
-// unmarshal a redelegation from a store value
+// MustUnmarshalValidator - unmarshal a redelegation from a store value
 func MustUnmarshalValidator(cdc *codec.Codec, value []byte) Validator {
 	validator, err := UnmarshalValidator(cdc, value)
 	if err != nil {
@@ -138,7 +161,7 @@ func MustUnmarshalValidator(cdc *codec.Codec, value []byte) Validator {
 	return validator
 }
 
-// unmarshal a redelegation from a store value
+// UnmarshalValidator - unmarshal a redelegation from a store value
 func UnmarshalValidator(cdc *codec.Codec, value []byte) (validator Validator, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(value, &validator)
 	return validator, err

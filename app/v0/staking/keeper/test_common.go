@@ -45,6 +45,11 @@ var (
 	}
 )
 
+// intended to be used with require/assert:  require.True(ValEq(...))
+func ValEq(t *testing.T, exp, got types.Validator) (*testing.T, bool, string, types.Validator, types.Validator) {
+	return t, exp.TestEquivalent(got), "expected:\t%v\ngot:\t\t%v", exp, got
+}
+
 // create a codec used only for testing
 func MakeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -273,6 +278,13 @@ func TestingUpdateValidator(keeper Keeper, ctx sdk.Context, validator types.Vali
 	return validator
 }
 
+// nolint:deadcode, unused
+func validatorByPowerIndexExists(k Keeper, ctx sdk.Context, power []byte) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(power)
+}
+
+// RandomValidator returns a random validator given access to the keeper and ctx
 func RandomValidator(r *rand.Rand, keeper Keeper, ctx sdk.Context) (val types.Validator, ok bool) {
 	vals := keeper.GetAllValidators(ctx)
 	if len(vals) == 0 {
