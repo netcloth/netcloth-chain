@@ -46,6 +46,8 @@ func setupTestInput() testInput {
 
 	return testInput{cdc: cdc, ctx: ctx, ak: ak}
 }
+
+// KeyTestPubAddr gets new test privKey/pubKey/address
 func KeyTestPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 	key := secp256k1.GenPrivKey()
 	pub := key.PubKey()
