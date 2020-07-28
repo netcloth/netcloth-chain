@@ -9,6 +9,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
+// Keeper defines the keeper struct of the upgrade store
 type Keeper struct {
 	storeKey       sdk.StoreKey
 	cdc            *codec.Codec
@@ -16,6 +17,7 @@ type Keeper struct {
 	sk             staking.Keeper
 }
 
+// NewKeeper creates a new upgrade keeper
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, protocolKeeper sdk.ProtocolKeeper, sk staking.Keeper) Keeper {
 	keeper := Keeper{
 		key,
@@ -26,6 +28,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, protocolKeeper sdk.ProtocolKe
 	return keeper
 }
 
+// AddNewVersionInfo adds new version info
 func (k Keeper) AddNewVersionInfo(ctx sdk.Context, versionInfo types.VersionInfo) {
 	kvStore := ctx.KVStore(k.storeKey)
 
@@ -47,6 +50,7 @@ func (k Keeper) AddNewVersionInfo(ctx sdk.Context, versionInfo types.VersionInfo
 	}
 }
 
+// SetSignal sets signal for upgrade
 func (k Keeper) SetSignal(ctx sdk.Context, protocol uint64, address string) {
 	kvStore := ctx.KVStore(k.storeKey)
 	cmsgBytes, err := k.cdc.MarshalBinaryLengthPrefixed(true)
@@ -56,6 +60,7 @@ func (k Keeper) SetSignal(ctx sdk.Context, protocol uint64, address string) {
 	kvStore.Set(types.GetSignalKey(protocol, address), cmsgBytes)
 }
 
+// GetSignal gets signal
 func (k Keeper) GetSignal(ctx sdk.Context, protocol uint64, address string) bool {
 	kvStore := ctx.KVStore(k.storeKey)
 	flagBytes := kvStore.Get(types.GetSignalKey(protocol, address))
@@ -70,6 +75,7 @@ func (k Keeper) GetSignal(ctx sdk.Context, protocol uint64, address string) bool
 	return false
 }
 
+// DeleteSignal removes signal
 func (k Keeper) DeleteSignal(ctx sdk.Context, protocol uint64, address string) bool {
 	if ok := k.GetSignal(ctx, protocol, address); ok {
 		kvStore := ctx.KVStore(k.storeKey)

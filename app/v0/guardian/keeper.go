@@ -5,11 +5,13 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// Keeper defines the guardian store
 type Keeper struct {
 	storeKey sdk.StoreKey
 	cdc      *codec.Codec
 }
 
+// NewKeeper creates a new guardian Keeper instance
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey) Keeper {
 	keeper := Keeper{
 		storeKey: key,
