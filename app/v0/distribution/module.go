@@ -145,7 +145,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	return ModuleCdc.MustMarshalJSON(gs)
 }
 
-// module begin-block
+// BeginBlock returns the begin blocker for the distr module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	BeginBlocker(ctx, req, am.keeper)
 }

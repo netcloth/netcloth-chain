@@ -88,6 +88,9 @@ type BaseApp struct {
 	PostEndBlocker sdk.PostEndBlockHandler
 }
 
+// NewBaseApp returns a reference to an initialized BaseApp. It accepts a
+// variadic number of option functions, which act on the BaseApp to set
+// configuration choices.
 func NewBaseApp(name string, logger log.Logger, db dbm.DB, options ...func(*BaseApp)) *BaseApp { //TODO fixme crash if options use protocol instance(nil)
 	app := &BaseApp{
 		logger:         logger,
@@ -109,14 +112,17 @@ func (app *BaseApp) WithEngine(engine *protocol.ProtocolEngine) *BaseApp {
 	return app
 }
 
+// Name returns the name of the BaseApp.
 func (app *BaseApp) Name() string {
 	return app.name
 }
 
+// AppVersion returns the application's version string.
 func (app *BaseApp) AppVersion() string {
 	return app.appVersion
 }
 
+// Logger returns the logger of the BaseApp.
 func (app *BaseApp) Logger() log.Logger {
 	return app.logger
 }
@@ -142,7 +148,7 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 	}
 }
 
-// MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
+// MountKVStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
 func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 	for _, key := range keys {
@@ -156,7 +162,7 @@ func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 	}
 }
 
-// MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
+// MountTransientStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
 func (app *BaseApp) MountTransientStores(keys map[string]*sdk.TransientStoreKey) {
 	for _, key := range keys {
