@@ -6,6 +6,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
+// NewHandler returns a handler for "vm" type messages.
 func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())

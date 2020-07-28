@@ -55,6 +55,7 @@ func (am AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return nil
 }
 
+// GetQueryCmd returns the root query command for the cipal module.
 func (am AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }

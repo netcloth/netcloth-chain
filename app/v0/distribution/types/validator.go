@@ -23,7 +23,7 @@ type ValidatorHistoricalRewards struct {
 	ReferenceCount        uint16       `json:"reference_count" yaml:"reference_count"`
 }
 
-// create a new ValidatorHistoricalRewards
+// NewValidatorHistoricalRewards creates a new ValidatorHistoricalRewards
 func NewValidatorHistoricalRewards(cumulativeRewardRatio sdk.DecCoins, referenceCount uint16) ValidatorHistoricalRewards {
 	return ValidatorHistoricalRewards{
 		CumulativeRewardRatio: cumulativeRewardRatio,
@@ -31,7 +31,7 @@ func NewValidatorHistoricalRewards(cumulativeRewardRatio sdk.DecCoins, reference
 	}
 }
 
-// current rewards and current period for a validator
+// ValidatorCurrentRewards - current rewards and current period for a validator
 // kept as a running counter and incremented each block
 // as long as the validator's tokens remain constant
 type ValidatorCurrentRewards struct {
@@ -39,7 +39,7 @@ type ValidatorCurrentRewards struct {
 	Period  uint64       `json:"period" yaml:"period"`   // current period
 }
 
-// create a new ValidatorCurrentRewards
+// NewValidatorCurrentRewards creates a new ValidatorCurrentRewards
 func NewValidatorCurrentRewards(rewards sdk.DecCoins, period uint64) ValidatorCurrentRewards {
 	return ValidatorCurrentRewards{
 		Rewards: rewards,
@@ -47,16 +47,16 @@ func NewValidatorCurrentRewards(rewards sdk.DecCoins, period uint64) ValidatorCu
 	}
 }
 
-// accumulated commission for a validator
+// ValidatorAccumulatedCommission - accumulated commission for a validator
 // kept as a running counter, can be withdrawn at any time
 type ValidatorAccumulatedCommission = sdk.DecCoins
 
-// return the initial accumulated commission (zero)
+// InitialValidatorAccumulatedCommission returns the initial accumulated commission (zero)
 func InitialValidatorAccumulatedCommission() ValidatorAccumulatedCommission {
 	return ValidatorAccumulatedCommission{}
 }
 
-// validator slash event
+// ValidatorSlashEvent - validator slash event
 // height is implicit within the store key
 // needed to calculate appropriate amounts of staking token
 // for delegations which withdraw after a slash has occurred
@@ -65,7 +65,7 @@ type ValidatorSlashEvent struct {
 	Fraction        sdk.Dec `json:"fraction" yaml:"fraction"`                 // slash fraction
 }
 
-// create a new ValidatorSlashEvent
+// NewValidatorSlashEvent creates a new ValidatorSlashEvent
 func NewValidatorSlashEvent(validatorPeriod uint64, fraction sdk.Dec) ValidatorSlashEvent {
 	return ValidatorSlashEvent{
 		ValidatorPeriod: validatorPeriod,
@@ -92,6 +92,6 @@ func (vs ValidatorSlashEvents) String() string {
 	return strings.TrimSpace(out)
 }
 
-// outstanding (un-withdrawn) rewards for a validator
+// ValidatorOutstandingRewards - outstanding (un-withdrawn) rewards for a validator
 // inexpensive to track, allows simple sanity checks
 type ValidatorOutstandingRewards = sdk.DecCoins

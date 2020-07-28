@@ -13,6 +13,7 @@ import (
 	"github.com/netcloth/netcloth-chain/version"
 )
 
+// GetQueryCmd returns the root query command for the cipal module.
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cipalQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -30,6 +31,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return cipalQueryCmd
 }
 
+// GetCmdCountCIPAL returns the command handler for query cipal count.
 func GetCmdCountCIPAL(queryRouter string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "count",
@@ -55,6 +57,7 @@ func GetCmdCountCIPAL(queryRouter string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// GetCmdQueryCIPAL returns the command handler for query cipal .
 func GetCmdQueryCIPAL(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "query_cipal",

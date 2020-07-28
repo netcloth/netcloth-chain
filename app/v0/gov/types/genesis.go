@@ -28,7 +28,7 @@ func NewGenesisState(startingProposalID uint64, dp DepositParams, vp VotingParam
 	}
 }
 
-// get raw genesis raw message for testing
+// DefaultGenesisState gets raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
 	minDepositTokens := sdk.TokensFromConsensusPower(10)
 	return GenesisState{
@@ -48,14 +48,14 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
-// Checks whether 2 GenesisState structs are equivalent.
+// Equal- Checks whether 2 GenesisState structs are equivalent.
 func (data GenesisState) Equal(data2 GenesisState) bool {
 	b1 := ModuleCdc.MustMarshalBinaryBare(data)
 	b2 := ModuleCdc.MustMarshalBinaryBare(data2)
 	return bytes.Equal(b1, b2)
 }
 
-// Returns if a GenesisState is empty or has data in it
+// IsEmpty - Returns if a GenesisState is empty or has data in it
 func (data GenesisState) IsEmpty() bool {
 	emptyGenState := GenesisState{}
 	return data.Equal(emptyGenState)

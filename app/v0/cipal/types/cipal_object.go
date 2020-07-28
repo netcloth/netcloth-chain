@@ -8,6 +8,7 @@ import (
 	"github.com/netcloth/netcloth-chain/codec"
 )
 
+// CIPALObject defines the struct of cipal
 type CIPALObject struct {
 	UserAddress  string        `json:"user_address" yaml:"user_address"`
 	ServiceInfos []ServiceInfo `json:"service_infos" yaml:"service_infos"`
@@ -15,6 +16,7 @@ type CIPALObject struct {
 
 type CIPALObjects []CIPALObject
 
+// NewCIPALObject creates a new cipal object
 func NewCIPALObject(userAddress string, serviceAddress string, serviceType uint64) CIPALObject {
 	si := ServiceInfo{serviceType, serviceAddress}
 	sis := make([]ServiceInfo, 0)
@@ -25,6 +27,7 @@ func NewCIPALObject(userAddress string, serviceAddress string, serviceType uint6
 	}
 }
 
+// MarshalYAML returns the YAML representation of an account.
 func (obj CIPALObject) MarshalYAML() (interface{}, error) {
 	bs, err := yaml.Marshal(struct {
 		UserAddress  string

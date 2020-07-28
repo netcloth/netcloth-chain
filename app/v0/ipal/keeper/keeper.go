@@ -10,6 +10,7 @@ import (
 	sdkerrors "github.com/netcloth/netcloth-chain/types/errors"
 )
 
+// Keeper defines the ipal store
 type Keeper struct {
 	storeKey     sdk.StoreKey
 	cdc          *codec.Codec
@@ -17,6 +18,7 @@ type Keeper struct {
 	paramstore   params.Subspace
 }
 
+// NewKeeper creates a new ipal Keeper instance
 func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.SupplyKeeper, paramstore params.Subspace) Keeper {
 	if addr := supplyKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
@@ -30,6 +32,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, supplyKeeper types.Suppl
 	}
 }
 
+// GetIPALNode returns a IPAL object by operator address
 func (k Keeper) GetIPALNode(ctx sdk.Context, operator sdk.AccAddress) (obj types.IPALNode, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.GetIPALNodeKey(operator))
@@ -79,6 +82,7 @@ func (k Keeper) delIPALNodeByMonikerIndex(ctx sdk.Context, moniker string) {
 	store.Delete(types.GetIPALNodeByMonikerKey(moniker))
 }
 
+// CreateIPALNode sets a new IPAL object
 func (k Keeper) CreateIPALNode(ctx sdk.Context, node types.IPALNode) {
 	k.setIPALNode(ctx, node)
 	k.setIPALNodeByBond(ctx, node)
@@ -105,6 +109,7 @@ func (k Keeper) bond(ctx sdk.Context, aa sdk.AccAddress, amt sdk.Coin) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, aa, types.ModuleName, sdk.Coins{amt})
 }
 
+// DoIPALNodeClaim - updates ipal object and bond coins
 func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err error) {
 	minBond := k.GetMinBond(ctx)
 	n, found := k.GetIPALNode(ctx, m.OperatorAddress)
@@ -142,6 +147,7 @@ func (k Keeper) DoIPALNodeClaim(ctx sdk.Context, m types.MsgIPALNodeClaim) (err 
 	return nil
 }
 
+// GetAllIPALNodes - lists all ipal objects
 func (k Keeper) GetAllIPALNodes(ctx sdk.Context) (ipalNodes types.IPALNodes) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.IPALNodeByBondKey)

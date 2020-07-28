@@ -154,13 +154,14 @@ func (keeper Keeper) GetProposalID(ctx sdk.Context) (proposalID uint64, err erro
 	return proposalID, nil
 }
 
-// Set the proposal ID
+// setProposalID sets the new proposal ID to the store
 func (keeper Keeper) setProposalID(ctx sdk.Context, proposalID uint64) {
 	store := ctx.KVStore(keeper.storeKey)
 	bz := keeper.cdc.MustMarshalBinaryLengthPrefixed(proposalID)
 	store.Set(ProposalIDKey, bz)
 }
 
+// ActivateVotingPeriod - active voting period
 func (keeper Keeper) ActivateVotingPeriod(ctx sdk.Context, proposal Proposal) { //TODO rename to activateVotingPeriod
 	proposal.VotingStartTime = ctx.BlockHeader().Time
 	votingPeriod := keeper.GetVotingParams(ctx).VotingPeriod

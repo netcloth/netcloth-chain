@@ -10,6 +10,7 @@ import (
 	sdk "github.com/netcloth/netcloth-chain/types"
 )
 
+// AfterValidatorBonded - call hook if registered
 func (k Keeper) AfterValidatorBonded(ctx sdk.Context, address sdk.ConsAddress, _ sdk.ValAddress) {
 	// Update the signing info start height or create a new signing info
 	_, found := k.GetValidatorSigningInfo(ctx, address)
@@ -26,13 +27,13 @@ func (k Keeper) AfterValidatorBonded(ctx sdk.Context, address sdk.ConsAddress, _
 	}
 }
 
-// When a validator is created, add the address-pubkey relation.
+// AfterValidatorCreated - When a validator is created, add the address-pubkey relation.
 func (k Keeper) AfterValidatorCreated(ctx sdk.Context, valAddr sdk.ValAddress) {
 	validator := k.sk.Validator(ctx, valAddr)
 	k.addPubkey(ctx, validator.GetConsPubKey())
 }
 
-// When a validator is removed, delete the address-pubkey relation.
+// AfterValidatorRemoved - When a validator is removed, delete the address-pubkey relation.
 func (k Keeper) AfterValidatorRemoved(ctx sdk.Context, address sdk.ConsAddress) {
 	k.deleteAddrPubkeyRelation(ctx, crypto.Address(address))
 }
@@ -46,31 +47,43 @@ type Hooks struct {
 
 var _ types.StakingHooks = Hooks{}
 
-// Return the wrapper struct
+// Hooks return the wrapper struct
 func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
 }
 
-// Implements sdk.ValidatorHooks
+// AfterValidatorBonded - Implements sdk.ValidatorHooks
 func (h Hooks) AfterValidatorBonded(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
 	h.k.AfterValidatorBonded(ctx, consAddr, valAddr)
 }
 
-// Implements sdk.ValidatorHooks
+// AfterValidatorRemoved - Implements sdk.ValidatorHooks
 func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, _ sdk.ValAddress) {
 	h.k.AfterValidatorRemoved(ctx, consAddr)
 }
 
-// Implements sdk.ValidatorHooks
+// AfterValidatorCreated - Implements sdk.ValidatorHooks
 func (h Hooks) AfterValidatorCreated(ctx sdk.Context, valAddr sdk.ValAddress) {
 	h.k.AfterValidatorCreated(ctx, valAddr)
 }
 
-// nolint - unused hooks
-func (h Hooks) AfterValidatorBeginUnbonding(_ sdk.Context, _ sdk.ConsAddress, _ sdk.ValAddress)  {}
-func (h Hooks) BeforeValidatorModified(_ sdk.Context, _ sdk.ValAddress)                          {}
-func (h Hooks) BeforeDelegationCreated(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress)        {}
+// AfterValidatorBeginUnbonding - unused hooks
+func (h Hooks) AfterValidatorBeginUnbonding(_ sdk.Context, _ sdk.ConsAddress, _ sdk.ValAddress) {}
+
+// BeforeValidatorModified - unused hooks
+func (h Hooks) BeforeValidatorModified(_ sdk.Context, _ sdk.ValAddress) {}
+
+// BeforeDelegationCreated - unused hooks
+func (h Hooks) BeforeDelegationCreated(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress) {}
+
+// BeforeDelegationSharesModified - unused hooks
 func (h Hooks) BeforeDelegationSharesModified(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress) {}
-func (h Hooks) BeforeDelegationRemoved(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress)        {}
-func (h Hooks) AfterDelegationModified(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress)        {}
-func (h Hooks) BeforeValidatorSlashed(_ sdk.Context, _ sdk.ValAddress, _ sdk.Dec)                {}
+
+// BeforeDelegationRemoved - unused hooks
+func (h Hooks) BeforeDelegationRemoved(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress) {}
+
+// AfterDelegationModified - unused hooks
+func (h Hooks) AfterDelegationModified(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress) {}
+
+// BeforeValidatorSlashed - unused hooks
+func (h Hooks) BeforeValidatorSlashed(_ sdk.Context, _ sdk.ValAddress, _ sdk.Dec) {}

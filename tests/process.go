@@ -81,7 +81,7 @@ func CreateProcess(dir string, name string, args []string) (*Process, error) {
 	return proc, nil
 }
 
-// stop the process
+// Stop - stop the process
 func (proc *Process) Stop(kill bool) error {
 	if kill {
 		// fmt.Printf("Killing process %v\n", proc.Cmd.Process)

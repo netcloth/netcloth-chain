@@ -50,6 +50,7 @@ func (a AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GuardianCmd(cdc)
 }
 
+// GetQueryCmd returns the root query command for the guardian module.
 func (a AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(cdc)
 }

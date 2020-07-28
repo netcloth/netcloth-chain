@@ -58,7 +58,7 @@ func (a AppModuleBasic) GetTxCmd(*codec.Codec) *cobra.Command {
 	return nil
 }
 
-// GetQueryCmd gets the root query command of this module
+// GetQueryCmd gets the root query command of the upgrade module
 func (a AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(upgtypes.ModuleName, cdc)
 }
