@@ -95,7 +95,9 @@ func (a AppModule) ExportGenesis(sdk.Context) json.RawMessage {
 }
 
 // RegisterInvariants performs a no-op.
-func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {}
+func (a AppModule) RegisterInvariants(sdk.InvariantRegistry) {
+	// no op
+}
 
 // Route returns module message route name
 func (a AppModule) Route() string {
