@@ -112,15 +112,18 @@ func (a AppModule) QuerierRoute() string {
 	return upgtypes.QuerierRoute
 }
 
-// nolint
+// NewQuerierHandler returns the auth module sdk.Querier.
 func (a AppModule) NewQuerierHandler() sdk.Querier {
 	return nil
 }
 
+// BeginBlock returns the begin blocker for the upgrade module.
 func (a AppModule) BeginBlock(sdk.Context, types.RequestBeginBlock) {
 	panic("implement me")
 }
 
+// EndBlock returns the end blocker for the upgrade module. It returns no validator
+// updates.
 func (a AppModule) EndBlock(ctx sdk.Context, b types.RequestEndBlock) []types.ValidatorUpdate {
 	EndBlocker(ctx, a.keeper)
 	return nil

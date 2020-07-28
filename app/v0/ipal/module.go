@@ -107,6 +107,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
+// BeginBlock returns the begin blocker for the ipal module.
 func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 

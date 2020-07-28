@@ -101,6 +101,7 @@ func (a AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(a.keeper)
 }
 
+// BeginBlock returns the begin blocker for the guardian module.
 func (a AppModule) BeginBlock(sdk.Context, types.RequestBeginBlock) {
 	panic("implement me")
 }

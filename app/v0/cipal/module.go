@@ -110,6 +110,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
+// BeginBlock returns the begin blocker for the cipal module.
 func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
