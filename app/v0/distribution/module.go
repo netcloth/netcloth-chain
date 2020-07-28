@@ -30,10 +30,10 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// app module basics object
+// AppModuleBasic defines the basic application module used by the distr module.
 type AppModuleBasic struct{}
 
-// module name
+// Name returns the distr module's name.
 func (AppModuleBasic) Name() string {
 	return ModuleName
 }
@@ -73,7 +73,7 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
-// app module
+// AppModule implements an application module for the distr module.
 type AppModule struct {
 	AppModuleBasic
 	keeper          Keeper
@@ -101,37 +101,38 @@ func (am *AppModule) WithStakingKeeper(sk stakingkeeper.Keeper) *AppModule {
 	return am
 }
 
-// module name
+// Name returns the distr module's name.
 func (AppModule) Name() string {
 	return ModuleName
 }
 
-// register invariants
+// RegisterInvariants registers module invariants
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 	RegisterInvariants(ir, am.keeper)
 }
 
-// module message route name
+// Route returns the message routing key for the distr module.
 func (AppModule) Route() string {
 	return RouterKey
 }
 
-// module handler
+// NewHandler returns an sdk.Handler for the distr module.
 func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.keeper)
 }
 
-// module querier route name
+// QuerierRoute returns the distr module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return QuerierRoute
 }
 
-// module querier
+// NewQuerierHandler returns no sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
-// module init-genesis
+// InitGenesis performs genesis initialization for the distr module. It returns
+// no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -139,7 +140,8 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-// module export genesis
+// ExportGenesis returns the exported genesis state as raw bytes for the distr
+// module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return ModuleCdc.MustMarshalJSON(gs)
@@ -150,24 +152,29 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	BeginBlocker(ctx, req, am.keeper)
 }
 
-// module end-block
+// EndBlock returns the end blocker for the distr module. It returns no validator
+// updates.
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
-// for simulation
+// GenerateGenesisState creates a randomized GenState of the distr module.
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	simulation.RandomizedGenState(simState)
 }
 
+// WeightedOperations returns the all the distr module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return simulation.WeightedOperations(simState.AppParams, simState.Cdc, am.keeper, am.akForSimulation, am.skForSimulation)
 }
 
+// ProposalContents returns all the distr content functions used to
+// simulate governance proposals.
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return simulation.ProposalContents(am.keeper)
 }
 
+// RandomizedParams creates randomized distr param changes for the simulator.
 func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return simulation.ParamChanges(r)
 }
