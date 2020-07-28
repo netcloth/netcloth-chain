@@ -104,7 +104,7 @@ func (a AppModule) Route() string {
 	return upgtypes.RouterKey
 }
 
-// nolint
+// NewHandler returns an sdk.Handler for the upgrade module.
 func (a AppModule) NewHandler() sdk.Handler {
 	return nil
 }
