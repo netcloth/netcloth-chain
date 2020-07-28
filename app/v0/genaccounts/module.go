@@ -27,23 +27,24 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// app module basics object
+// AppModuleBasic defines the basic application module used by the auth module.
 type AppModuleBasic struct{}
 
-// module name
+// Name returns the module's name.
 func (AppModuleBasic) Name() string {
 	return ModuleName
 }
 
-// register module codec
+// DefaultGenesis returns default genesis state as raw bytes for the auth
+// module.
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {}
 
-// default genesis state
+// DefaultGenesis returns default genesis state as raw bytes for the module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 	return ModuleCdc.MustMarshalJSON(GenesisState{})
 }
 
-// module validate genesis
+// ValidateGenesis performs genesis state validation for the module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	var data GenesisState
 	err := ModuleCdc.UnmarshalJSON(bz, &data)
@@ -53,16 +54,16 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	return ValidateGenesis(data)
 }
 
-// register rest routes
+// RegisterRESTRoutes registers the REST routes for the module.
 func (AppModuleBasic) RegisterRESTRoutes(_ context.CLIContext, _ *mux.Router) {}
 
-// get the root tx command of this module
+// GetTxCmd returns the root tx command for the module.
 func (AppModuleBasic) GetTxCmd(_ *codec.Codec) *cobra.Command { return nil }
 
-// get the root query command of this module
+// GetQueryCmd returns the root query command for the module.
 func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command { return nil }
 
-// extra function from sdk.AppModuleBasic
+// IterateGenesisAccounts - extra function from sdk.AppModuleBasic
 // iterate the genesis accounts and perform an operation at each of them
 // - to used by other modules
 func (AppModuleBasic) IterateGenesisAccounts(cdc *codec.Codec, appGenesis map[string]json.RawMessage,
@@ -78,7 +79,8 @@ func (AppModuleBasic) IterateGenesisAccounts(cdc *codec.Codec, appGenesis map[st
 }
 
 //___________________________
-// app module
+
+// AppModule implements an application module for the module.
 type AppModule struct {
 	AppModuleBasic
 	accountKeeper types.AccountKeeper
@@ -99,7 +101,8 @@ func NewSimAppModule(accountKeeper types.AccountKeeper) AppModule {
 	}
 }
 
-// module init-genesis
+// InitGenesis performs genesis initialization for the module. It returns
+// no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -107,29 +110,37 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-// module export genesis
+// ExportGenesis returns the exported genesis state as raw bytes for the module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.accountKeeper)
 	return ModuleCdc.MustMarshalJSON(gs)
 }
 
-// simulation
+//____________________________________________________________________________
+
+// AppModuleSimulation functions
+
+// GenerateGenesisState creates a randomized GenState of the module
 func (am AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	genesisAccs := simulation.RandomGenesisAccounts(simState)
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(genesisAccs)
 }
 
+// ProposalContents doesn't return any content functions for governance proposals.
 func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
 	return nil
 }
 
+// RandomizedParams creates randomized param changes for the simulator.
 func (am AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 
+// RegisterStoreDecoder registers a decoder for module's types
 func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
 }
 
+// WeightedOperations doesn't return any module operation.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }

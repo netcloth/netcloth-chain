@@ -105,7 +105,7 @@ func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
 
-// module querier
+// NewQuerierHandler returns the auth module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.accountKeeper)
 }

@@ -62,17 +62,9 @@ func NewMsgIPALNodeClaim(operator sdk.AccAddress, moniker, website, details, ext
 	}
 }
 
+// Implements Msg
 func (msg MsgIPALNodeClaim) Route() string { return RouterKey }
-
-func (msg MsgIPALNodeClaim) Type() string { return TypeMsgIPALNodeClaim }
-
-func (msg *MsgIPALNodeClaim) TrimSpace() {
-	msg.Moniker = strings.TrimSpace(msg.Moniker)
-	msg.Website = strings.TrimSpace(msg.Website)
-	msg.Details = strings.TrimSpace(msg.Details)
-	msg.Extension = strings.TrimSpace(msg.Extension)
-}
-
+func (msg MsgIPALNodeClaim) Type() string  { return TypeMsgIPALNodeClaim }
 func (msg MsgIPALNodeClaim) ValidateBasic() error {
 	if msg.OperatorAddress.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing operator address")
@@ -99,6 +91,13 @@ func (msg MsgIPALNodeClaim) ValidateBasic() error {
 	}
 
 	return nil
+}
+
+func (msg *MsgIPALNodeClaim) TrimSpace() {
+	msg.Moniker = strings.TrimSpace(msg.Moniker)
+	msg.Website = strings.TrimSpace(msg.Website)
+	msg.Details = strings.TrimSpace(msg.Details)
+	msg.Extension = strings.TrimSpace(msg.Extension)
 }
 
 func (msg MsgIPALNodeClaim) GetSigners() []sdk.AccAddress {

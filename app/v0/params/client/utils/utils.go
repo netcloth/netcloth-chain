@@ -45,6 +45,7 @@ type (
 	}
 )
 
+// NewParamChangeJSON
 func NewParamChangeJSON(subspace, key, subkey string, value json.RawMessage) ParamChangeJSON {
 	return ParamChangeJSON{subspace, key, subkey, value}
 }

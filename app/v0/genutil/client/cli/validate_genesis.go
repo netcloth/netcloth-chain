@@ -13,7 +13,7 @@ import (
 	"github.com/netcloth/netcloth-chain/server"
 )
 
-// Validate genesis command takes
+// ValidateGenesisCmd - Validate genesis command takes
 func ValidateGenesisCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "validate-genesis [file]",
