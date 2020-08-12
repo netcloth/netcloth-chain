@@ -18,7 +18,7 @@ func EndBlocker(ctx sdk.Context, keeper Keeper) {
 		ctx.Logger().Info(fmt.Sprintf("----upgrade: new upgradeinfo:%s", upgradeConfig.String()))
 		//uk.metrics.SetVersion(upgradeConfig.Protocol.Version)
 
-		validator, found := keeper.sk.GetValidatorByConsAddr(ctx, (sdk.ConsAddress)(ctx.BlockHeader().ProposerAddress))
+		validator, found := keeper.sk.GetValidatorByConsAddr(ctx, ctx.BlockHeader().ProposerAddress)
 		if !found {
 			panic(fmt.Sprintf("validator with consensus-address %s not found", (sdk.ConsAddress)(ctx.BlockHeader().ProposerAddress).String()))
 		}
