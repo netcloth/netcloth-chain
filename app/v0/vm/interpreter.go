@@ -1,7 +1,9 @@
 package vm
 
 import (
+	"fmt"
 	"hash"
+	"os"
 	"sync/atomic"
 
 	"github.com/netcloth/netcloth-chain/app/v0/vm/common/math"
@@ -150,7 +152,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// Get the operation from the jump table and validate the stack to ensure there are
 		// enough stack items available to perform the operation.
 		op = contract.GetOp(pc)
-		//fmt.Fprintf(os.Stderr, fmt.Sprintf("op code = %s\n", op))
+		fmt.Fprintf(os.Stderr, fmt.Sprintf("op code = %s\n", op))
 		operation := in.cfg.JumpTable[op]
 		operation.constantGas = in.cfg.OpConstGasConfig[op]
 		if !operation.valid {

@@ -97,7 +97,8 @@ func (st StateTransition) TransitionCSDB(ctx sdk.Context, k Keeper) (*big.Int, *
 
 	if vmerr != nil {
 		ctx.EventManager().Clear()
-		return nil, &sdk.Result{Data: ret, GasUsed: curGasMeter.GasConsumed() + vmGasUsed}, vmerr
+		ctx.WithGasMeter(curGasMeter).GasMeter().ConsumeGas(vmGasUsed, "VM execution consumption")
+		return nil, &sdk.Result{Data: ret, GasUsed: curGasMeter.GasConsumed()}, vmerr
 	}
 
 	st.StateDB.Finalise(true)
