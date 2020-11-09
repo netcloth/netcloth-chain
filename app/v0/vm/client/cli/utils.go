@@ -66,6 +66,46 @@ func AbiFromFile(abiFile string) (abiObj abi.ABI, err error) {
 	return abi.JSON(strings.NewReader(string(abiData)))
 }
 
+var emptyAddrHex = [20]byte{}
+
+func stringAddr2hexAddr(stringAddr string) [20]byte {
+	addrStr := stringAddr
+	if len(addrStr) <= 2 {
+		return emptyAddrHex
+	}
+
+	if addrStr[:3] == "nch" {
+		addr, err := sdk.AccAddressFromBech32(addrStr)
+		if err != nil {
+			return emptyAddrHex
+		}
+
+		if len(addr) != 20 {
+			return emptyAddrHex
+		}
+
+		var addrBin [20]byte
+		copy(addrBin[:], addr)
+		return addrBin
+	} else {
+		if addrStr[:2] == "0x" {
+			addrStr = addrStr[2:]
+		}
+
+		if len(addrStr) != 40 {
+			return emptyAddrHex
+		}
+
+		addrV, err := hexutil.Decode(addrStr)
+		if err != nil {
+			return emptyAddrHex
+		}
+		var v = [20]byte{}
+		copy(v[:], addrV)
+		return v
+	}
+}
+
 func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Method, err error) {
 	//fmt.Fprintf(os.Stderr, fmt.Sprintf("abiFile = %s, method = %s, args = %v, len=%d\n", abiFile, method, args, len(args)))
 
@@ -220,6 +260,19 @@ func GenPayload(abiFile, method string, args []string) (payload []byte, m abi.Me
 			default:
 				readyArgs = append(readyArgs, v)
 			}
+
+		case abi.SliceTy:
+			d := a[1 : len(a)-1]
+			rawItems := strings.Split(d, ",")
+			var hexAddrs [][20]byte
+			for _, item := range rawItems {
+				addrHex := stringAddr2hexAddr(item)
+				if addrHex == emptyAddrHex {
+					return nil, emptyMethod, fmt.Errorf("addr:[%s] invalid", a)
+				}
+				hexAddrs = append(hexAddrs, addrHex)
+			}
+			readyArgs = append(readyArgs, hexAddrs)
 
 		default:
 			return nil, emptyMethod, fmt.Errorf("no supported type [%s:%d]", m.Inputs[i].Type.String(), m.Inputs[i].Type.T)
