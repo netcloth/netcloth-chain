@@ -11,7 +11,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.19
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/mattn/go-isatty v0.0.12
 	github.com/pelletier/go-toml v1.8.0
 	github.com/pkg/errors v0.9.1
