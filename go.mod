@@ -29,7 +29,7 @@ require (
 	github.com/tendermint/tendermint v0.32.12
 	github.com/tendermint/tm-db v0.2.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 replace github.com/tendermint/tendermint => github.com/netcloth/tendermint v0.32.15
