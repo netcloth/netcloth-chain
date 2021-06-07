@@ -13,7 +13,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/gorilla/mux v1.7.4
 	github.com/mattn/go-isatty v0.0.12
-	github.com/pelletier/go-toml v1.8.0
+	github.com/pelletier/go-toml v1.9.2
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/afero v1.2.1 // indirect
